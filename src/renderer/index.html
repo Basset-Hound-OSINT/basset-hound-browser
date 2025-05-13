@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: file:;">
+  <title>Basset Hound Browser</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #toolbar {
+      height: 40px;
+      background-color: #2c3e50;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      color: white;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    #address-bar {
+      flex: 1;
+      margin: 0 10px;
+      height: 30px;
+      border-radius: 15px;
+      border: none;
+      padding: 0 15px;
+      font-size: 14px;
+    }
+    #tab-bar {
+      height: 36px;
+      background-color: #34495e;
+      display: flex;
+      align-items: center;
+      padding: 0 5px;
+      user-select: none;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .tab {
+      background-color: #546e7a;
+      color: white;
+      border-radius: 4px 4px 0 0;
+      padding: 8px 25px 8px 15px;
+      margin: 4px 2px 0 2px;
+      font-size: 12px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      min-width: 100px;
+      max-width: 180px;
+      position: relative;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background-color 0.2s;
+    }
+    .tab.active {
+      background-color: #2c3e50;
+    }
+    .tab-close {
+      position: absolute;
+      right: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .tab-close:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    .tab-favicon {
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    #new-tab-button {
+      background-color: transparent;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin-left: 5px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+    #new-tab-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    #webview-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .webview-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+    }
+    .webview-wrapper.active {
+      display: block;
+    }
+    webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    button {
+      background-color: transparent;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    #extensions-container {
+      display: flex;
+      align-items: center;
+      height: 100%;
+    }
+    .extension-icon {
+      width: 24px;
+      height: 24px;
+      margin: 0 5px;
+      cursor: pointer;
+      border-radius: 4px;
+      background-color: #fff;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+    .extension-icon:hover {
+      background-color: #f0f0f0;
+    }
+    .extension-popup {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      width: 300px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 1000;
+      padding: 10px;
+    }
+    .extension-popup.active {
+      display: block;
+    }
+    .extension-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .extension-version {
+      color: #666;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div id="tab-bar">
+    <button id="new-tab-button" title="New Tab">+</button>
+  </div>
+  <div id="toolbar">
+    <button id="back" title="Back">←</button>
+    <button id="forward" title="Forward">→</button>
+    <button id="refresh" title="Refresh">↻</button>
+    <input id="address-bar" type="text" placeholder="Enter URL or search...">
+    <div id="extensions-container"></div>
+  </div>
+  <div id="webview-container">
+    <!-- Webview elements will be dynamically inserted here -->
+  </div>
+
+  <script>
+    // Tab management
+    const tabBar = document.getElementById('tab-bar');
+    const newTabButton = document.getElementById('new-tab-button');
+    const webviewContainer = document.getElementById('webview-container');
+    const addressBar = document.getElementById('address-bar');
+    const backBtn = document.getElementById('back');
+    const forwardBtn = document.getElementById('forward');
+    const refreshBtn = document.getElementById('refresh');
+    const extensionsContainer = document.getElementById('extensions-container');
+    
+    let tabs = [];
+    let activeTabId = null;
+    
+    // Generate unique ID for tabs
+    function generateTabId() {
+      return 'tab-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    }
+    
+    // Create a new tab
+    function createTab(url = 'https://www.google.com') {
+      const tabId = generateTabId();
+      
+      // Create tab element
+      const tabElement = document.createElement('div');
+      tabElement.className = 'tab';
+      tabElement.dataset.id = tabId;
+      
+      // Tab favicon
+      const favicon = document.createElement('div');
+      favicon.className = 'tab-favicon';
+      tabElement.appendChild(favicon);
+      
+      // Tab title
+      const tabTitle = document.createTextNode('New Tab');
+      tabElement.appendChild(tabTitle);
+      
+      // Close button
+      const closeBtn = document.createElement('div');
+      closeBtn.className = 'tab-close';
+      closeBtn.innerHTML = '×';
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeTab(tabId);
+      });
+      tabElement.appendChild(closeBtn);
+      
+      // Switch to this tab when clicked
+      tabElement.addEventListener('click', () => {
+        switchToTab(tabId);
+      });
+      
+      // Insert tab before the new tab button
+      tabBar.insertBefore(tabElement, newTabButton);
+      
+      // Create webview container
+      const webviewWrapper = document.createElement('div');
+      webviewWrapper.className = 'webview-wrapper';
+      webviewWrapper.dataset.id = tabId;
+      
+      // Create webview element
+      const webview = document.createElement('webview');
+      webview.setAttribute('src', url);
+      webview.setAttribute('allowpopups', '');
+      webview.setAttribute('allowfullscreen', '');
+      webview.setAttribute('allowscripts', '');
+      webview.setAttribute('webpreferences', 'contextIsolation=yes,nodeIntegration=no');
+      webview.setAttribute('partition', 'persist:main');
+      
+      webviewWrapper.appendChild(webview);
+      webviewContainer.appendChild(webviewWrapper);
+      
+      // Store tab information
+      tabs.push({
+        id: tabId,
+        title: 'New Tab',
+        url: url,
+        element: tabElement,
+        wrapper: webviewWrapper,
+        webview: webview
+      });
+      
+      // Set up webview event listeners
+      setupWebviewEvents(webview, tabId);
+      
+      // Switch to the new tab
+      switchToTab(tabId);
+      
+      return tabId;
+    }
+    
+    // Close a tab
+    function closeTab(tabId) {
+      const tabIndex = tabs.findIndex(tab => tab.id === tabId);
+      if (tabIndex === -1) return;
+      
+      // Remove DOM elements
+      tabs[tabIndex].element.remove();
+      tabs[tabIndex].wrapper.remove();
+      
+      // Remove from tabs array
+      tabs.splice(tabIndex, 1);
+      
+      // If we closed the active tab, switch to another tab
+      if (activeTabId === tabId) {
+        if (tabs.length > 0) {
+          // Switch to the tab that was to the right, or the last tab if we closed the last tab
+          const newIndex = Math.min(tabIndex, tabs.length - 1);
+          switchToTab(tabs[newIndex].id);
+        } else {
+          // No tabs left, create a new one
+          createTab();
+        }
+      }
+    }
+    
+    // Switch to a specific tab
+    function switchToTab(tabId) {
+      // Deactivate all tabs
+      tabs.forEach(tab => {
+        tab.element.classList.remove('active');
+        tab.wrapper.classList.remove('active');
+      });
+      
+      // Activate the selected tab
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.element.classList.add('active');
+      tab.wrapper.classList.add('active');
+      activeTabId = tabId;
+      
+      // Update address bar
+      addressBar.value = tab.url;
+      
+      // Update navigation buttons state
+      updateNavigationState();
+    }
+    
+    // Setup event listeners for a webview
+    function setupWebviewEvents(webview, tabId) {
+      // Update title when page title changes
+      webview.addEventListener('page-title-updated', (event) => {
+        updateTabTitle(tabId, event.title);
+      });
+      
+      // Update favicon when page favicon changes
+      webview.addEventListener('page-favicon-updated', (event) => {
+        if (event.favicons && event.favicons.length > 0) {
+          updateTabFavicon(tabId, event.favicons[0]);
+        }
+      });
+      
+      // Update URL when navigation happens
+      webview.addEventListener('did-navigate', (event) => {
+        updateTabUrl(tabId, event.url);
+      });
+      
+      webview.addEventListener('did-navigate-in-page', (event) => {
+        updateTabUrl(tabId, event.url);
+      });
+      
+      // Handle new window requests (open in new tab instead)
+      webview.addEventListener('new-window', (event) => {
+        event.preventDefault();
+        createTab(event.url);
+      });
+      
+      // Listen for messages from main process
+      webview.addEventListener('ipc-message', (event) => {
+        if (event.channel === 'open-in-new-tab' && event.args && event.args[0]) {
+          createTab(event.args[0]);
+        }
+      });
+      
+      // Handle errors
+      webview.addEventListener('did-fail-load', (event) => {
+        const { errorCode, errorDescription, validatedURL } = event;
+        console.error(`Failed to load: ${validatedURL}`, errorCode, errorDescription);
+        
+        // Only show error page for major errors (ignore -3 which is often just navigation interruption)
+        if (errorCode !== -3) {
+          webview.executeJavaScript(`
+            document.body.innerHTML = \`
+              <div style="padding: 20px; font-family: system-ui, -apple-system, sans-serif;">
+                <h2>Page failed to load</h2>
+                <p>URL: ${validatedURL}</p>
+                <p>Error: ${errorDescription} (${errorCode})</p>
+                <p>Possible solutions:</p>
+                <ul>
+                  <li>Check your internet connection</li>
+                  <li>Verify the URL is correct</li>
+                  <li>For localhost addresses, try using http:// instead of https://</li>
+                </ul>
+              </div>
+            \`;
+          `);
+        }
+      });
+    }
+    
+    // Update tab title
+    function updateTabTitle(tabId, title) {
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.title = title;
+      
+      // Find the text node (second child after favicon) and update it
+      const textNode = tab.element.childNodes[1];
+      if (textNode) {
+        textNode.nodeValue = title;
+      }
+      
+      // Update tab tooltip
+      tab.element.title = title;
+    }
+    
+    // Update tab favicon
+    function updateTabFavicon(tabId, faviconUrl) {
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      // Find the favicon element (first child) and update it
+      const favicon = tab.element.querySelector('.tab-favicon');
+      if (favicon) {
+        favicon.style.backgroundImage = `url('${faviconUrl}')`;
+      }
+    }
+    
+    // Update tab URL
+    function updateTabUrl(tabId, url) {
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      
+      tab.url = url;
+      
+      // Update address bar if this is the active tab
+      if (activeTabId === tabId) {
+        addressBar.value = url;
+      }
+    }
+    
+    // Get the active webview
+    function getActiveWebview() {
+      if (!activeTabId) return null;
+      const tab = tabs.find(t => t.id === activeTabId);
+      return tab ? tab.webview : null;
+    }
+    
+    // Update navigation buttons state
+    function updateNavigationState() {
+      const webview = getActiveWebview();
+      if (!webview) return;
+      
+      // We have to wait for the webview to be properly initialized
+      setTimeout(() => {
+        try {
+          backBtn.disabled = !webview.canGoBack();
+          forwardBtn.disabled = !webview.canGoForward();
+        } catch (err) {
+          console.error('Error updating navigation state:', err);
+        }
+      }, 100);
+    }
+    
+    // Navigation controls
+    backBtn.addEventListener('click', () => {
+      const webview = getActiveWebview();
+      if (webview && webview.canGoBack()) {
+        webview.goBack();
+      }
+    });
+
+    forwardBtn.addEventListener('click', () => {
+      const webview = getActiveWebview();
+      if (webview && webview.canGoForward()) {
+        webview.goForward();
+      }
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      const webview = getActiveWebview();
+      if (webview) {
+        webview.reload();
+      }
+    });
+    
+    // Handle Enter key in address bar
+    addressBar.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const webview = getActiveWebview();
+        if (!webview) return;
+        
+        let url = addressBar.value.trim();
+        
+        // Handle localhost URLs specially
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+          // For localhost, prefer http:// by default
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'http://' + url;
+          }
+        } else {
+          // For all other URLs, use https://
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+          }
+        }
+        
+        try {
+          webview.loadURL(url);
+        } catch (error) {
+          console.error('Failed to load URL:', error);
+          // Show error message in webview
+          webview.loadURL(`data:text/html,<html><body><h2>Error loading URL</h2><p>${error.message || error}</p></body></html>`);
+        }
+      }
+    });
+    
+    // Create a new tab when the button is clicked
+    newTabButton.addEventListener('click', () => {
+      createTab();
+    });
+    
+    // Load extensions
+    async function loadExtensions() {
+      try {
+        const extensions = await window.electronAPI.listExtensions();
+        
+        // Clear existing extensions
+        extensionsContainer.innerHTML = '';
+        
+        // Add extension icons
+        extensions.forEach(extension => {
+          const extensionElement = document.createElement('div');
+          extensionElement.className = 'extension-icon';
+          extensionElement.title = `${extension.name} v${extension.version}`;
+          extensionElement.dataset.id = extension.id;
+          
+          // Try to load extension icon
+          window.electronAPI.getExtensionIcon(extension.id)
+            .then(iconPath => {
+              if (iconPath) {
+                extensionElement.style.backgroundImage = `url('file://${iconPath}')`;
+              } else {
+                // Default icon if none found
+                extensionElement.textContent = extension.name.charAt(0).toUpperCase();
+              }
+            });
+          
+          // Create popup for this extension
+          const popup = document.createElement('div');
+          popup.className = 'extension-popup';
+          popup.id = `popup-${extension.id}`;
+          
+          const title = document.createElement('div');
+          title.className = 'extension-title';
+          title.textContent = extension.name;
+          
+          const version = document.createElement('div');
+          version.className = 'extension-version';
+          version.textContent = `Version: ${extension.version}`;
+          
+          popup.appendChild(title);
+          popup.appendChild(version);
+          document.body.appendChild(popup);
+          
+          // Toggle popup on click
+          extensionElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Close any open popups
+            document.querySelectorAll('.extension-popup.active').forEach(p => {
+              if (p.id !== `popup-${extension.id}`) {
+                p.classList.remove('active');
+              }
+            });
+            
+            // Toggle this popup
+            const thisPopup = document.getElementById(`popup-${extension.id}`);
+            thisPopup.classList.toggle('active');
+            
+            // Position the popup under the icon
+            const rect = extensionElement.getBoundingClientRect();
+            thisPopup.style.right = `${window.innerWidth - rect.right}px`;
+          });
+          
+          extensionsContainer.appendChild(extensionElement);
+        });
+        
+        // Close popups when clicking elsewhere
+        document.addEventListener('click', () => {
+          document.querySelectorAll('.extension-popup.active').forEach(popup => {
+            popup.classList.remove('active');
+          });
+        });
+        
+      } catch (error) {
+        console.error('Failed to load extensions:', error);
+      }
+    }
+    
+    // Initialize browser
+    document.addEventListener('DOMContentLoaded', () => {
+      // Create first tab
+      createTab();
+      
+      // Load extensions
+      loadExtensions();
+      
+      // Check if there's a URL to open in a new tab
+      if (window.openInNewTabURL) {
+        createTab(window.openInNewTabURL);
+        delete window.openInNewTabURL;
+      }
+      
+      // Listen for open-in-new-tab events from main process
+      window.electronAPI.onOpenInNewTab && window.electronAPI.onOpenInNewTab((url) => {
+        createTab(url);
+      });
+    });
+  </script>
+</body>
+</html>
