@@ -38,5 +38,5 @@ DEBUG=electron* npm start
 ## See project structure
 
 ```bash
-tree -I 'node_modules|package-lock.json'
+tree -I 'node_modules|package-lock.json|venv'
 ```

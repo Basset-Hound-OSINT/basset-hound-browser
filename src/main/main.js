@@ -9,8 +9,10 @@ const fs = require('fs');
 console.log('Starting Electron application...');
 
 // Configure Electron
-app.commandLine.appendSwitch('disable-gpu'); // Disable GPU acceleration for better compatibility
+app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.disableHardwareAcceleration();
 
 // Initialize storage
 const store = new Store();
@@ -224,6 +226,15 @@ async function createWindow() {
   
   console.log('Loading renderer from:', startUrl);
   
+  // Configure webview session
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    // Parse referrer to detect form submissions
+    const referrer = details.requestHeaders['Referer'];
+    
+    // Logic to detect form submissions and handle them
+    callback({ requestHeaders: details.requestHeaders });
+  });
+  
   // Handle permission requests
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     if (permission === 'clipboard-read') {
@@ -235,14 +246,49 @@ async function createWindow() {
 
   // Handle new window creation - intercept to create tabs instead
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    // Send message to renderer to open in new tab instead
-    setImmediate(() => {
-      mainWindow.webContents.send('open-in-new-tab', details.url);
-    });
-    // Prevent default window creation
-    return { action: 'deny' };
+      // Always log the window open attempt for debugging
+      console.log('Window open request:', {
+          url: details.url,
+          disposition: details.disposition,
+          frameName: details.frameName,
+          features: details.features
+      });
+
+      // Conditions for opening in new tab instead of new window
+      const shouldOpenInTab = (
+          // Standard cases for new tab behavior
+          details.disposition === 'foreground-tab' ||
+          details.disposition === 'new-window' ||
+          details.frameName === '_blank' ||
+          
+          // Special cases that indicate form submission
+          (details.features.includes('noopener') && details.features.includes('noreferrer')) ||
+          
+          // POST form submissions often have these characteristics
+          (details.referrer && details.referrer.policy === 'no-referrer')
+      );
+
+      if (shouldOpenInTab) {
+          console.log('Redirecting to new tab:', details.url);
+          mainWindow.webContents.send('open-in-new-tab', details.url);
+          return { action: 'deny' };
+      }
+
+      // Default deny - we want all new windows to be handled as tabs
+      return { action: 'deny' };
   });
 
+  // Handle redirect events that might be from form submissions
+  mainWindow.webContents.on('did-navigate', (event, url, httpResponseCode, httpStatusText) => {
+    // This is not needed for our specific use case, but could be useful for other scenarios
+    console.log(`Main window navigated: ${url}, code: ${httpResponseCode}`);
+  });
+
+  mainWindow.webContents.on('did-create-window', (newWindow) => {
+        // This ensures any new windows are closed immediately
+        newWindow.close();
+        console.log('Prevented new window from opening');
+    });
   // Load the index.html
   try {
     await mainWindow.loadURL(startUrl);
@@ -282,20 +328,10 @@ ipcMain.handle('get-extension-icon', async (event, extensionId) => {
     return extension.icons[0];
   }
   
-  // Try to find icon in manifest
-  try {
-    const manifestPath = path.join(extension.path, 'manifest.json');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-    
-    if (manifest.icons && manifest.icons['128']) {
-      return path.join(extension.path, manifest.icons['128']);
-    } else if (manifest.icons && manifest.icons['48']) {
-      return path.join(extension.path, manifest.icons['48']);
-    } else if (manifest.icons && manifest.icons['16']) {
-      return path.join(extension.path, manifest.icons['16']);
-    }
-  } catch (err) {
-    console.error('Error getting extension icon:', err);
+  // Fallback to default icon path
+  const defaultIconPath = path.join(__dirname, 'assets', 'default-extension-icon.png');
+  if (fs.existsSync(defaultIconPath)) {
+    return defaultIconPath;
   }
   
   return null;
@@ -326,6 +362,13 @@ ipcMain.handle('open-extension-popup', async (event, extensionId) => {
 // IPC handler for creating new tabs
 ipcMain.handle('create-tab', async (event, url) => {
   try {
+    console.log('Main process received create-tab request for URL:', url);
+    
+    // Forward the URL to the renderer to open in a new tab
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('open-in-new-tab', url);
+    }
+    
     return { success: true };
   } catch (err) {
     console.error('Error creating tab:', err);
