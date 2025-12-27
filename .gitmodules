@@ -1,3 +1,0 @@
-[submodule "extensions/autofill"]
-	path = extensions/autofill
-	url = git@github.com:Basset-Hound-OSINT/autofill-extension.git

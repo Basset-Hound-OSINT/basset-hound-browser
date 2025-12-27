@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basset Hound Browser Test Page</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+
+    h1 {
+      color: #00d4ff;
+      border-bottom: 2px solid #00d4ff;
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      color: #00ff88;
+      margin-top: 30px;
+    }
+
+    .section {
+      background: #16213e;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      border: 1px solid #0f3460;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #aaa;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      font-size: 14px;
+      background: #0f0f23;
+      color: #fff;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #00d4ff;
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+    }
+
+    button {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #00d4ff, #00ff88);
+      color: #1a1a2e;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.4);
+    }
+
+    button.secondary {
+      background: linear-gradient(135deg, #6c757d, #495057);
+      color: #fff;
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .status-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .status-card {
+      background: #0f0f23;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #0f3460;
+    }
+
+    .status-card h3 {
+      margin: 0 0 10px 0;
+      color: #00d4ff;
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .status-card .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #00ff88;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.connected {
+      background: #00ff88;
+    }
+
+    .status-indicator.disconnected {
+      background: #ff4757;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    #fingerprint-results {
+      background: #0f0f23;
+      border: 1px solid #0f3460;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .fingerprint-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px;
+      border-bottom: 1px solid #0f3460;
+    }
+
+    .fingerprint-item:last-child {
+      border-bottom: none;
+    }
+
+    .fingerprint-item .key {
+      color: #00d4ff;
+    }
+
+    .fingerprint-item .value {
+      color: #00ff88;
+      text-align: right;
+      max-width: 60%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fingerprint-item.pass {
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .fingerprint-item.fail {
+      background: rgba(255, 71, 87, 0.1);
+    }
+
+    #console-output {
+      background: #0f0f23;
+      border: 1px solid #0f3460;
+      padding: 10px;
+      height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+      border-radius: 4px;
+    }
+
+    #console-output .log-entry {
+      padding: 2px 0;
+      border-bottom: 1px solid #1a1a2e;
+    }
+
+    #console-output .log-entry.info { color: #00d4ff; }
+    #console-output .log-entry.warn { color: #ffa502; }
+    #console-output .log-entry.error { color: #ff4757; }
+    #console-output .log-entry.success { color: #00ff88; }
+
+    .detection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 10px;
+    }
+
+    .detection-item {
+      padding: 10px;
+      background: #0f0f23;
+      border-radius: 4px;
+      border: 1px solid #0f3460;
+    }
+
+    .detection-item.pass {
+      border-color: #00ff88;
+    }
+
+    .detection-item.fail {
+      border-color: #ff4757;
+    }
+
+    .detection-item .name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .detection-item .status {
+      font-size: 12px;
+    }
+
+    .detection-item.pass .status {
+      color: #00ff88;
+    }
+
+    .detection-item.fail .status {
+      color: #ff4757;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #0f0f23;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-bar .progress {
+      height: 100%;
+      background: linear-gradient(90deg, #00d4ff, #00ff88);
+      transition: width 0.3s;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #0f3460;
+    }
+
+    th {
+      background: #0f0f23;
+      color: #00d4ff;
+    }
+
+    tr:hover {
+      background: rgba(0, 212, 255, 0.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>Basset Hound Browser - Test Suite</h1>
+  <p>Comprehensive testing page for browser automation and bot detection evasion.</p>
+
+  <!-- Connection Status -->
+  <div class="section">
+    <h2>WebSocket Connection Status</h2>
+    <div class="status-panel">
+      <div class="status-card">
+        <h3>Connection</h3>
+        <div class="value">
+          <span id="ws-status-indicator" class="status-indicator disconnected"></span>
+          <span id="ws-status-text">Checking...</span>
+        </div>
+      </div>
+      <div class="status-card">
+        <h3>Clients</h3>
+        <div class="value" id="client-count">0</div>
+      </div>
+      <div class="status-card">
+        <h3>Port</h3>
+        <div class="value" id="server-port">8765</div>
+      </div>
+      <div class="status-card">
+        <h3>Uptime</h3>
+        <div class="value" id="uptime">0s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bot Detection Evasion Tests -->
+  <div class="section">
+    <h2>Bot Detection Evasion Tests</h2>
+    <button id="run-evasion-tests" type="button">Run All Tests</button>
+    <button id="clear-evasion-results" type="button" class="secondary">Clear Results</button>
+
+    <div class="progress-bar" style="display: none;" id="test-progress">
+      <div class="progress" style="width: 0%;"></div>
+    </div>
+
+    <div id="evasion-summary" style="margin: 20px 0;"></div>
+
+    <div id="evasion-results" class="detection-grid"></div>
+  </div>
+
+  <!-- Browser Fingerprint -->
+  <div class="section">
+    <h2>Browser Fingerprint Analysis</h2>
+    <button id="collect-fingerprint" type="button">Collect Fingerprint</button>
+    <div id="fingerprint-results"></div>
+  </div>
+
+  <!-- Form Testing -->
+  <div class="section">
+    <h2>Form Automation Test</h2>
+    <form id="test-form" name="testForm">
+      <div class="grid-2">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter username" data-testid="username">
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Enter email" data-testid="email">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter password" data-testid="password">
+        </div>
+        <div class="form-group">
+          <label for="search-field">Search</label>
+          <input type="search" id="search-field" name="search" placeholder="Search...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="select-option">Select Option</label>
+        <select id="select-option" name="option">
+          <option value="">Choose...</option>
+          <option value="opt1">Option 1</option>
+          <option value="opt2">Option 2</option>
+          <option value="opt3">Option 3</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="4" placeholder="Enter your message..."></textarea>
+      </div>
+      <button type="submit">Submit Form</button>
+      <button type="reset" class="secondary">Reset</button>
+    </form>
+  </div>
+
+  <!-- Click Testing -->
+  <div class="section">
+    <h2>Click Automation Test</h2>
+    <button id="click-test-1" type="button">Button 1</button>
+    <button id="click-test-2" type="button">Button 2</button>
+    <button id="click-test-3" type="button">Button 3</button>
+    <button id="click-counter" type="button" data-count="0">Clicks: 0</button>
+    <div id="click-results" style="margin-top: 10px;"></div>
+  </div>
+
+  <!-- Navigation Testing -->
+  <div class="section">
+    <h2>Navigation Test</h2>
+    <div class="form-group">
+      <input type="url" id="nav-url" placeholder="Enter URL to navigate...">
+    </div>
+    <button id="nav-button" type="button">Navigate</button>
+    <button id="nav-back" type="button" class="secondary">Back</button>
+    <button id="nav-forward" type="button" class="secondary">Forward</button>
+    <button id="nav-reload" type="button" class="secondary">Reload</button>
+    <p id="current-url">Current URL: <span id="url-display"></span></p>
+  </div>
+
+  <!-- JavaScript Execution Test -->
+  <div class="section">
+    <h2>Script Execution Test</h2>
+    <div class="form-group">
+      <label for="script-input">JavaScript Code</label>
+      <textarea id="script-input" rows="4" placeholder="return document.title;"></textarea>
+    </div>
+    <button id="run-script" type="button">Execute Script</button>
+    <div id="script-result" style="margin-top: 10px; padding: 10px; background: #0f0f23; border-radius: 4px;"></div>
+  </div>
+
+  <!-- Console Output -->
+  <div class="section">
+    <h2>Console Output</h2>
+    <button id="clear-console" type="button" class="secondary">Clear Console</button>
+    <div id="console-output"></div>
+  </div>
+
+  <!-- Test Results Table -->
+  <div class="section">
+    <h2>Test Results Summary</h2>
+    <table id="results-table">
+      <thead>
+        <tr>
+          <th>Test Name</th>
+          <th>Status</th>
+          <th>Duration</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="results-body">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Console logging utility
+    const consoleOutput = document.getElementById('console-output');
+
+    function log(message, level = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${level}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      consoleOutput.appendChild(entry);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
+    document.getElementById('clear-console').addEventListener('click', () => {
+      consoleOutput.innerHTML = '';
+      log('Console cleared', 'info');
+    });
+
+    // Update current URL display
+    document.getElementById('url-display').textContent = window.location.href;
+
+    // Bot detection evasion tests
+    const evasionTests = [
+      {
+        name: 'navigator.webdriver',
+        description: 'Should be undefined',
+        test: () => navigator.webdriver === undefined,
+        expected: 'undefined'
+      },
+      {
+        name: 'navigator.plugins',
+        description: 'Should have plugins',
+        test: () => navigator.plugins && navigator.plugins.length > 0,
+        expected: 'length > 0'
+      },
+      {
+        name: 'navigator.languages',
+        description: 'Should have languages',
+        test: () => navigator.languages && navigator.languages.length > 0,
+        expected: 'array with items'
+      },
+      {
+        name: 'window.chrome',
+        description: 'Should exist',
+        test: () => typeof window.chrome !== 'undefined',
+        expected: 'defined'
+      },
+      {
+        name: 'Chrome runtime',
+        description: 'Should have runtime object',
+        test: () => window.chrome && typeof window.chrome.runtime === 'object',
+        expected: 'object'
+      },
+      {
+        name: 'window._selenium',
+        description: 'Should not exist',
+        test: () => typeof window._selenium === 'undefined',
+        expected: 'undefined'
+      },
+      {
+        name: 'window._phantom',
+        description: 'Should not exist',
+        test: () => typeof window._phantom === 'undefined',
+        expected: 'undefined'
+      },
+      {
+        name: 'window.__nightmare',
+        description: 'Should not exist',
+        test: () => typeof window.__nightmare === 'undefined',
+        expected: 'undefined'
+      },
+      {
+        name: 'document.__webdriver_script_fn',
+        description: 'Should not exist',
+        test: () => typeof document.__webdriver_script_fn === 'undefined',
+        expected: 'undefined'
+      },
+      {
+        name: 'callPhantom',
+        description: 'Should not exist',
+        test: () => typeof window.callPhantom === 'undefined',
+        expected: 'undefined'
+      },
+      {
+        name: 'Permissions API',
+        description: 'Should work normally',
+        test: async () => {
+          try {
+            await navigator.permissions.query({ name: 'notifications' });
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        async: true,
+        expected: 'functional'
+      },
+      {
+        name: 'User Agent',
+        description: 'Should look realistic',
+        test: () => {
+          const ua = navigator.userAgent;
+          return ua.includes('Chrome') || ua.includes('Firefox') || ua.includes('Safari');
+        },
+        expected: 'realistic browser'
+      },
+      {
+        name: 'Platform',
+        description: 'Should be defined',
+        test: () => navigator.platform && navigator.platform.length > 0,
+        expected: 'defined string'
+      },
+      {
+        name: 'Screen dimensions',
+        description: 'Should have valid dimensions',
+        test: () => screen.width > 0 && screen.height > 0,
+        expected: 'positive values'
+      },
+      {
+        name: 'Device Memory',
+        description: 'Should be defined',
+        test: () => navigator.deviceMemory > 0,
+        expected: '> 0 GB'
+      },
+      {
+        name: 'Hardware Concurrency',
+        description: 'Should be defined',
+        test: () => navigator.hardwareConcurrency > 0,
+        expected: '> 0 cores'
+      },
+      {
+        name: 'WebGL Vendor',
+        description: 'Should return vendor string',
+        test: () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl');
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            return debugInfo && gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL).length > 0;
+          } catch {
+            return false;
+          }
+        },
+        expected: 'vendor string'
+      },
+      {
+        name: 'WebGL Renderer',
+        description: 'Should return renderer string',
+        test: () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl');
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            return debugInfo && gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).length > 0;
+          } catch {
+            return false;
+          }
+        },
+        expected: 'renderer string'
+      },
+      {
+        name: 'Canvas fingerprint',
+        description: 'Should produce consistent output',
+        test: () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillText('test', 0, 0);
+            return canvas.toDataURL().length > 0;
+          } catch {
+            return false;
+          }
+        },
+        expected: 'valid data URL'
+      },
+      {
+        name: 'Timezone offset',
+        description: 'Should return valid offset',
+        test: () => {
+          const offset = new Date().getTimezoneOffset();
+          return typeof offset === 'number' && offset >= -720 && offset <= 720;
+        },
+        expected: 'valid offset'
+      }
+    ];
+
+    async function runEvasionTests() {
+      const results = document.getElementById('evasion-results');
+      const summary = document.getElementById('evasion-summary');
+      const progressBar = document.getElementById('test-progress');
+      const progress = progressBar.querySelector('.progress');
+
+      results.innerHTML = '';
+      progressBar.style.display = 'block';
+      log('Running bot detection evasion tests...', 'info');
+
+      let passed = 0;
+      let failed = 0;
+
+      for (let i = 0; i < evasionTests.length; i++) {
+        const test = evasionTests[i];
+        progress.style.width = `${((i + 1) / evasionTests.length) * 100}%`;
+
+        try {
+          const result = test.async ? await test.test() : test.test();
+          const item = document.createElement('div');
+          item.className = `detection-item ${result ? 'pass' : 'fail'}`;
+          item.innerHTML = `
+            <div class="name">${test.name}</div>
+            <div class="status">${result ? 'PASS' : 'FAIL'} - Expected: ${test.expected}</div>
+          `;
+          results.appendChild(item);
+
+          if (result) {
+            passed++;
+            log(`PASS: ${test.name}`, 'success');
+          } else {
+            failed++;
+            log(`FAIL: ${test.name}`, 'error');
+          }
+        } catch (error) {
+          failed++;
+          const item = document.createElement('div');
+          item.className = 'detection-item fail';
+          item.innerHTML = `
+            <div class="name">${test.name}</div>
+            <div class="status">ERROR: ${error.message}</div>
+          `;
+          results.appendChild(item);
+          log(`ERROR: ${test.name} - ${error.message}`, 'error');
+        }
+
+        // Small delay between tests
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      progressBar.style.display = 'none';
+      summary.innerHTML = `
+        <strong>Results:</strong> ${passed} passed, ${failed} failed out of ${evasionTests.length} tests
+        <br>
+        <strong>Score:</strong> ${Math.round((passed / evasionTests.length) * 100)}%
+      `;
+
+      log(`Evasion tests complete: ${passed}/${evasionTests.length} passed`, passed === evasionTests.length ? 'success' : 'warn');
+
+      addTestResult('Bot Detection Evasion', passed === evasionTests.length, null, `${passed}/${evasionTests.length} tests passed`);
+    }
+
+    document.getElementById('run-evasion-tests').addEventListener('click', runEvasionTests);
+    document.getElementById('clear-evasion-results').addEventListener('click', () => {
+      document.getElementById('evasion-results').innerHTML = '';
+      document.getElementById('evasion-summary').innerHTML = '';
+      log('Evasion test results cleared', 'info');
+    });
+
+    // Fingerprint collection
+    document.getElementById('collect-fingerprint').addEventListener('click', () => {
+      const results = document.getElementById('fingerprint-results');
+      log('Collecting browser fingerprint...', 'info');
+
+      const fingerprint = {
+        'User Agent': navigator.userAgent,
+        'Platform': navigator.platform,
+        'Languages': navigator.languages?.join(', '),
+        'Cookies Enabled': navigator.cookieEnabled,
+        'Do Not Track': navigator.doNotTrack,
+        'Hardware Concurrency': navigator.hardwareConcurrency,
+        'Device Memory': navigator.deviceMemory + ' GB',
+        'Screen Width': screen.width,
+        'Screen Height': screen.height,
+        'Screen Color Depth': screen.colorDepth,
+        'Screen Pixel Ratio': window.devicePixelRatio,
+        'Timezone Offset': new Date().getTimezoneOffset(),
+        'Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+        'Touch Points': navigator.maxTouchPoints,
+        'PDF Viewer': navigator.pdfViewerEnabled,
+        'webdriver': String(navigator.webdriver)
+      };
+
+      results.innerHTML = '';
+      Object.entries(fingerprint).forEach(([key, value]) => {
+        const item = document.createElement('div');
+        item.className = 'fingerprint-item';
+        item.innerHTML = `
+          <span class="key">${key}</span>
+          <span class="value">${value}</span>
+        `;
+        results.appendChild(item);
+      });
+
+      log('Fingerprint collected successfully', 'success');
+    });
+
+    // Form submission
+    document.getElementById('test-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      log(`Form submitted: ${JSON.stringify(data)}`, 'success');
+      addTestResult('Form Submission', true, null, JSON.stringify(data));
+    });
+
+    // Click counter
+    document.getElementById('click-counter').addEventListener('click', function() {
+      const count = parseInt(this.dataset.count) + 1;
+      this.dataset.count = count;
+      this.textContent = `Clicks: ${count}`;
+      log(`Click counter: ${count}`, 'info');
+    });
+
+    // Button click handlers
+    ['click-test-1', 'click-test-2', 'click-test-3'].forEach(id => {
+      document.getElementById(id).addEventListener('click', function() {
+        const clickResults = document.getElementById('click-results');
+        clickResults.textContent = `${this.textContent} clicked at ${new Date().toLocaleTimeString()}`;
+        log(`Button clicked: ${this.textContent}`, 'info');
+      });
+    });
+
+    // Script execution
+    document.getElementById('run-script').addEventListener('click', () => {
+      const script = document.getElementById('script-input').value;
+      const resultDiv = document.getElementById('script-result');
+
+      try {
+        const fn = new Function(script);
+        const result = fn();
+        resultDiv.textContent = `Result: ${JSON.stringify(result)}`;
+        resultDiv.style.color = '#00ff88';
+        log(`Script executed successfully: ${JSON.stringify(result)}`, 'success');
+        addTestResult('Script Execution', true, null, String(result));
+      } catch (error) {
+        resultDiv.textContent = `Error: ${error.message}`;
+        resultDiv.style.color = '#ff4757';
+        log(`Script error: ${error.message}`, 'error');
+        addTestResult('Script Execution', false, null, error.message);
+      }
+    });
+
+    // Test results table
+    function addTestResult(name, passed, duration, details) {
+      const tbody = document.getElementById('results-body');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${name}</td>
+        <td style="color: ${passed ? '#00ff88' : '#ff4757'}">${passed ? 'PASS' : 'FAIL'}</td>
+        <td>${duration ? duration + 'ms' : '-'}</td>
+        <td>${details || '-'}</td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    // WebSocket status check (if electronAPI is available)
+    async function checkWebSocketStatus() {
+      const indicator = document.getElementById('ws-status-indicator');
+      const text = document.getElementById('ws-status-text');
+
+      if (typeof electronAPI !== 'undefined' && electronAPI.getWsStatus) {
+        try {
+          const status = await electronAPI.getWsStatus();
+          if (status.connected) {
+            indicator.classList.remove('disconnected');
+            indicator.classList.add('connected');
+            text.textContent = 'Connected';
+            document.getElementById('client-count').textContent = status.clients || 0;
+            document.getElementById('server-port').textContent = status.port || 8765;
+          } else {
+            indicator.classList.remove('connected');
+            indicator.classList.add('disconnected');
+            text.textContent = 'Disconnected';
+          }
+        } catch (error) {
+          text.textContent = 'Error checking status';
+        }
+      } else {
+        text.textContent = 'API not available';
+      }
+    }
+
+    // Check status periodically
+    setInterval(checkWebSocketStatus, 5000);
+    checkWebSocketStatus();
+
+    // Uptime counter
+    const startTime = Date.now();
+    setInterval(() => {
+      const uptime = Math.floor((Date.now() - startTime) / 1000);
+      const hours = Math.floor(uptime / 3600);
+      const minutes = Math.floor((uptime % 3600) / 60);
+      const seconds = uptime % 60;
+      document.getElementById('uptime').textContent =
+        hours > 0 ? `${hours}h ${minutes}m ${seconds}s` :
+        minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+    }, 1000);
+
+    // Expose utilities for automation
+    window.testUtils = {
+      log,
+      addTestResult,
+      runEvasionTests,
+      getFormData: () => Object.fromEntries(new FormData(document.getElementById('test-form'))),
+      clickButton: (id) => document.getElementById(id)?.click(),
+      fillField: (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = value;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      },
+      getClickCount: () => parseInt(document.getElementById('click-counter').dataset.count)
+    };
+
+    log('Test page loaded successfully', 'success');
+    console.log('Test utilities available at window.testUtils');
+  </script>
+</body>
+</html>
