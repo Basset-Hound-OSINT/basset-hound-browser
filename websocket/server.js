@@ -19,6 +19,24 @@ const { memoryManager, MemoryManager, MEMORY_THRESHOLDS, MemoryStatus } = requir
 const { TechnologyManager } = require('../technology');
 const { ExtractionManager } = require('../extraction');
 const { NetworkAnalysisManager } = require('../network-analysis/manager');
+const { SessionRecordingManager, RECORDING_STATE } = require('../recording/session-recorder');
+const { ReplayEngine, REPLAY_STATE, ERROR_MODE } = require('../recording/replay');
+const { headlessManager, HEADLESS_PRESETS } = require('../headless/manager');
+const { WindowManager, WindowState } = require('../windows/manager');
+const { WindowPool, PoolEntryState } = require('../windows/pool');
+const { PluginManager, PLUGIN_STATE } = require('../plugins');
+
+// Logging and debugging
+const {
+  createLogger,
+  defaultLogger,
+  defaultProfiler,
+  defaultMemoryMonitor,
+  defaultDebugManager,
+  LOG_LEVELS,
+  LEVEL_NAMES,
+  WebSocketTransport
+} = require('../logging');
 
 // ==========================================
 // Error Recovery Configuration
@@ -231,9 +249,38 @@ class WebSocketServer {
     // Network analysis manager
     this.networkAnalysisManager = options.networkAnalysisManager || null;
 
+    // Tor manager
+    this.torManager = options.torManager || null;
+
+    // Proxy chain manager
+    this.proxyChainManager = options.proxyChainManager || null;
+
+    // Headless mode manager
+    this.headlessManager = options.headlessManager || headlessManager;
+
+    // Window orchestration managers
+    this.windowManager = options.windowManager || null;
+    this.windowPool = options.windowPool || null;
+
+    // Session recording and replay managers
+    this.sessionRecordingManager = options.sessionRecordingManager || null;
+    this.replayEngine = options.replayEngine || null;
+
+    // Plugin manager
+    this.pluginManager = options.pluginManager || null;
+
     // Initialize Memory Manager (use global singleton or provided instance)
     this.memoryManager = options.memoryManager || memoryManager;
     this.memoryManager.setWebSocketServer(this);
+
+    // Initialize Logging System
+    this.logger = options.logger || defaultLogger.child('websocket');
+    this.profiler = options.profiler || defaultProfiler;
+    this.memoryMonitor = options.memoryMonitor || defaultMemoryMonitor;
+    this.debugManager = options.debugManager || defaultDebugManager;
+
+    // Set WebSocket server reference for debug manager
+    this.debugManager.setReferences({ wsServer: this });
 
     // Initialize DOM Inspector
     this.domInspector = new DOMInspector(mainWindow);
@@ -312,12 +359,16 @@ class WebSocketServer {
       if (providedToken && this.validateToken(providedToken)) {
         ws.isAuthenticated = true;
         this.authenticatedClients.add(ws);
-        console.log(`[WebSocket] Client authenticated via token: ${clientId}`);
+        this.logger.info(`Client authenticated via token: ${clientId}`);
       } else {
         ws.isAuthenticated = !this.requireAuth;
       }
 
-      console.log(`[WebSocket] Client connected: ${clientId} from ${req.socket.remoteAddress} (auth: ${ws.isAuthenticated}, ssl: ${this.sslActive})`);
+      this.logger.info(`Client connected: ${clientId}`, {
+        remoteAddress: req.socket.remoteAddress,
+        authenticated: ws.isAuthenticated,
+        ssl: this.sslActive
+      });
 
       // Send connection status with auth requirement info
       ws.send(JSON.stringify({
@@ -390,15 +441,34 @@ class WebSocketServer {
             return;
           }
 
-          console.log(`[WebSocket] Received command: ${data.command}`, data);
+          // Log command reception
+          this.logger.debug(`Received command: ${data.command}`, { id: data.id, clientId: ws.clientId });
+          this.debugManager.logWebSocket('command', data, ws.clientId);
+
+          // Start profiling timer for command execution
+          const timerName = `cmd:${data.command}:${data.id || Date.now()}`;
+          this.profiler.startTimer(timerName, { command: data.command, clientId: ws.clientId });
+
           const response = await this.handleCommand(data);
+
+          // End profiling timer
+          const timing = this.profiler.endTimer(timerName);
+
+          // Log response
+          this.logger.debug(`Command response: ${data.command}`, {
+            id: data.id,
+            success: response.success,
+            duration: timing ? timing.duration : null
+          });
+          this.debugManager.logWebSocket('response', { ...response, command: data.command, id: data.id }, ws.clientId);
           ws.send(JSON.stringify({
             id: data.id,
             command: data.command,
             ...response
           }));
         } catch (error) {
-          console.error('[WebSocket] Error processing message:', error);
+          this.logger.error(`Error processing message: ${error.message}`, { error });
+          this.debugManager.logError(error, { clientId: ws.clientId });
           ws.send(JSON.stringify({
             success: false,
             error: error.message
@@ -410,11 +480,11 @@ class WebSocketServer {
         this.clients.delete(ws);
         this.authenticatedClients.delete(ws);
         this.cleanupRateLimitData(ws.clientId);
-        console.log(`[WebSocket] Client disconnected: ${clientId}`);
+        this.logger.info(`Client disconnected: ${clientId}`);
       });
 
       ws.on('error', (error) => {
-        console.error(`[WebSocket] Client error (${clientId}):`, error);
+        this.logger.error(`Client error (${clientId}): ${error.message}`, { error });
         this.clients.delete(ws);
         this.authenticatedClients.delete(ws);
         this.cleanupRateLimitData(ws.clientId);
@@ -422,13 +492,13 @@ class WebSocketServer {
     });
 
     this.wss.on('error', (error) => {
-      console.error('[WebSocket] Server error:', error);
+      this.logger.error(`Server error: ${error.message}`, { error });
     });
 
     const authStatus = this.requireAuth ? 'enabled' : 'disabled';
     const rateLimitStatus = this.rateLimitEnabled ? `enabled (${this.maxRequestsPerMinute}/min, burst: ${this.burstAllowance})` : 'disabled';
     const sslStatus = this.sslActive ? 'enabled' : 'disabled';
-    console.log(`[WebSocket] Server started on ${this.getConnectionUrl()} (auth: ${authStatus}, ssl: ${sslStatus}, rate limit: ${rateLimitStatus})`);
+    this.logger.info(`Server started on ${this.getConnectionUrl()}`, { auth: authStatus, ssl: sslStatus, rateLimit: rateLimitStatus });
   }
 
   /**
@@ -2324,6 +2394,700 @@ class WebSocketServer {
         success: true,
         types: Object.values(PROXY_TYPES)
       };
+    };
+
+    // ==========================================
+    // Tor Integration Commands
+    // ==========================================
+
+    // Connect to Tor network
+    this.commandHandlers.connect_tor = async (params) => {
+      try {
+        const options = {};
+        if (params.socksHost) options.socksHost = params.socksHost;
+        if (params.socksPort) options.socksPort = params.socksPort;
+        if (params.controlHost) options.controlHost = params.controlHost;
+        if (params.controlPort) options.controlPort = params.controlPort;
+        if (params.controlPassword) options.controlPassword = params.controlPassword;
+
+        const result = await proxyManager.connectTor(options);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Disconnect from Tor network
+    this.commandHandlers.disconnect_tor = async (params) => {
+      try {
+        const result = await proxyManager.disconnectTor();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get Tor connection status
+    this.commandHandlers.get_tor_status = async (params) => {
+      try {
+        const status = proxyManager.getTorStatus();
+        return { success: true, ...status };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Request new Tor identity (circuit)
+    this.commandHandlers.new_tor_identity = async (params) => {
+      try {
+        const result = await proxyManager.newTorIdentity();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get current Tor exit node IP
+    this.commandHandlers.get_exit_ip = async (params) => {
+      try {
+        const result = await proxyManager.getTorExitIp();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // ==========================================
+    // Advanced Tor Integration Commands
+    // ==========================================
+
+    // Lazy load advanced Tor manager
+    let advancedTorManager = null;
+    const getAdvancedTorManager = () => {
+      if (!advancedTorManager) {
+        try {
+          const torAdvanced = require('../proxy/tor-advanced');
+          advancedTorManager = torAdvanced.advancedTorManager;
+        } catch (error) {
+          console.error('[WebSocket] Failed to load AdvancedTorManager:', error.message);
+        }
+      }
+      return advancedTorManager;
+    };
+
+    // Start Tor daemon
+    this.commandHandlers.tor_start = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        if (params.torBinaryPath) tor.configure({ torBinaryPath: params.torBinaryPath });
+        if (params.dataDirectory) tor.configure({ dataDirectory: params.dataDirectory });
+
+        const result = await tor.start();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Stop Tor daemon
+    this.commandHandlers.tor_stop = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.stop();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Restart Tor daemon
+    this.commandHandlers.tor_restart = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.restart();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Connect to existing Tor instance
+    this.commandHandlers.tor_connect_existing = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.connectExisting(params);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get advanced Tor status
+    this.commandHandlers.tor_status = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const status = tor.getStatus();
+        return { success: true, ...status };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Set exit countries
+    this.commandHandlers.tor_set_exit_country = async (params) => {
+      const { countries } = params;
+
+      if (!countries) {
+        return { success: false, error: 'Countries parameter is required (string or array)' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.setExitCountries(countries);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Exclude countries from exit nodes
+    this.commandHandlers.tor_exclude_countries = async (params) => {
+      const { countries } = params;
+
+      if (!countries) {
+        return { success: false, error: 'Countries parameter is required (string or array)' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.excludeExitCountries(countries);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Set entry countries
+    this.commandHandlers.tor_set_entry_country = async (params) => {
+      const { countries } = params;
+
+      if (!countries) {
+        return { success: false, error: 'Countries parameter is required (string or array)' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.setEntryCountries(countries);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Clear exit restrictions
+    this.commandHandlers.tor_clear_exit_restrictions = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.clearExitRestrictions();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get circuit information
+    this.commandHandlers.tor_get_circuits = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.getCircuitInfo();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get circuit path with node details
+    this.commandHandlers.tor_get_circuit_path = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.getCircuitPath(params.circuitId);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Rebuild circuit (new identity)
+    this.commandHandlers.tor_rebuild_circuit = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.newIdentity();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Close specific circuit
+    this.commandHandlers.tor_close_circuit = async (params) => {
+      const { circuitId } = params;
+
+      if (!circuitId) {
+        return { success: false, error: 'Circuit ID is required' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.closeCircuit(circuitId);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Enable bridges
+    this.commandHandlers.tor_enable_bridges = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.enableBridges({
+          transport: params.transport || 'obfs4',
+          bridges: params.bridges,
+          useBuiltin: params.useBuiltin !== false
+        });
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Add custom bridge
+    this.commandHandlers.tor_add_bridge = async (params) => {
+      const { bridge } = params;
+
+      if (!bridge) {
+        return { success: false, error: 'Bridge line is required' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.addBridge(bridge);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Disable bridges
+    this.commandHandlers.tor_disable_bridges = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.disableBridges();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Set pluggable transport
+    this.commandHandlers.tor_set_transport = async (params) => {
+      const { transport, bridges, useBuiltin } = params;
+
+      if (!transport) {
+        return { success: false, error: 'Transport type is required (obfs4, meek, snowflake, webtunnel)' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.enableBridges({ transport, bridges, useBuiltin: useBuiltin !== false });
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Set stream isolation mode
+    this.commandHandlers.tor_set_isolation = async (params) => {
+      const { mode } = params;
+
+      if (!mode) {
+        return { success: false, error: 'Isolation mode is required (none, per_tab, per_domain, per_session)' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.setIsolationMode(mode);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get isolated port for key
+    this.commandHandlers.tor_get_isolated_port = async (params) => {
+      const { key } = params;
+
+      if (!key) {
+        return { success: false, error: 'Isolation key is required (e.g., tab ID or domain)' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.getIsolatedPort(key);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Check real exit IP
+    this.commandHandlers.tor_check_connection = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.checkExitIp();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get bandwidth statistics
+    this.commandHandlers.tor_get_bandwidth = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.getBandwidth();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get network consensus info
+    this.commandHandlers.tor_get_consensus = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.getConsensusInfo();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get relay count
+    this.commandHandlers.tor_get_relay_count = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.getRelayCount();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Create onion service
+    this.commandHandlers.tor_create_onion_service = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.createOnionService({
+          port: params.port || 80,
+          targetPort: params.targetPort || 8080,
+          targetHost: params.targetHost || '127.0.0.1'
+        });
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Remove onion service
+    this.commandHandlers.tor_remove_onion_service = async (params) => {
+      const { serviceId } = params;
+
+      if (!serviceId) {
+        return { success: false, error: 'Service ID is required' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.removeOnionService(serviceId);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // List onion services
+    this.commandHandlers.tor_list_onion_services = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.listOnionServices();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Check if URL is onion
+    this.commandHandlers.tor_is_onion_url = async (params) => {
+      const { url } = params;
+
+      if (!url) {
+        return { success: false, error: 'URL is required' };
+      }
+
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.isOnionUrl(url);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get available country codes
+    this.commandHandlers.tor_get_country_codes = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.getCountryCodes();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get available transport types
+    this.commandHandlers.tor_get_transports = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.getTransportTypes();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Configure Tor manager
+    this.commandHandlers.tor_configure = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = tor.configure(params);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get proxy config for Electron session
+    this.commandHandlers.tor_get_proxy_config = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const config = tor.getProxyConfig(params.isolationKey);
+        const rules = tor.getProxyRules(params.isolationKey);
+        return {
+          success: true,
+          config,
+          rules
+        };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // ==========================================
+    // Proxy Chain Commands
+    // ==========================================
+
+    // Set proxy chain
+    this.commandHandlers.set_proxy_chain = async (params) => {
+      const { proxies, chainType, failoverEnabled, bypassRules } = params;
+
+      if (!proxies || !Array.isArray(proxies)) {
+        return { success: false, error: 'Proxies array is required' };
+      }
+
+      try {
+        const result = await proxyManager.setProxyChain(proxies, {
+          chainType,
+          failoverEnabled,
+          bypassRules
+        });
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get current proxy chain configuration
+    this.commandHandlers.get_proxy_chain = async (params) => {
+      try {
+        const config = proxyManager.getProxyChainConfig();
+        return { success: true, ...config };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Test proxy chain connectivity
+    this.commandHandlers.test_proxy_chain = async (params) => {
+      try {
+        const result = await proxyManager.testProxyChain();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Clear proxy chain
+    this.commandHandlers.clear_proxy_chain = async (params) => {
+      try {
+        const result = await proxyManager.clearProxyChain();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get extended proxy status (includes Tor and Chain info)
+    this.commandHandlers.get_extended_proxy_status = async (params) => {
+      try {
+        const status = proxyManager.getExtendedStatus();
+        return { success: true, ...status };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get available proxy modes
+    this.commandHandlers.get_proxy_modes = async (params) => {
+      try {
+        const modes = proxyManager.getAvailableModes();
+        return { success: true, ...modes };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // ==========================================
@@ -4710,8 +5474,11 @@ class WebSocketServer {
           consoleManager: this.consoleManager !== null,
           screenshotManager: this.screenshotManager !== null,
           recordingManager: this.recordingManager !== null,
+          sessionRecordingManager: this.sessionRecordingManager !== null,
+          replayEngine: this.replayEngine !== null,
           domInspector: this.domInspector !== null,
-          memoryManager: this.memoryManager !== null
+          memoryManager: this.memoryManager !== null,
+          headlessManager: this.headlessManager !== null
         }
       };
     };
@@ -5135,6 +5902,1527 @@ class WebSocketServer {
       }
       return this.networkAnalysisManager.getSecurityHeadersList();
     };
+
+    // ==========================================
+    // Session Recording & Replay Commands
+    // ==========================================
+
+    /**
+     * Start recording user actions
+     * @param {Object} params - Recording options
+     * @param {string} params.name - Recording name
+     * @param {string} params.description - Recording description
+     * @param {string} params.startUrl - Starting URL
+     * @param {Object} params.variables - Variables for parameterization
+     * @param {string[]} params.tags - Tags for organizing recordings
+     */
+    this.commandHandlers.start_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return this.sessionRecordingManager.startRecording(params);
+    };
+
+    /**
+     * Stop current recording and save
+     * @param {Object} params - Stop options
+     * @param {string} params.name - Override recording name
+     */
+    this.commandHandlers.stop_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return await this.sessionRecordingManager.stopRecording(params);
+    };
+
+    /**
+     * Pause current recording
+     */
+    this.commandHandlers.pause_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return this.sessionRecordingManager.pauseRecording();
+    };
+
+    /**
+     * Resume paused recording
+     */
+    this.commandHandlers.resume_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return this.sessionRecordingManager.resumeRecording();
+    };
+
+    /**
+     * Get current recording status
+     */
+    this.commandHandlers.get_recording_status = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return {
+        success: true,
+        ...this.sessionRecordingManager.getRecordingStatus()
+      };
+    };
+
+    /**
+     * List all saved recordings
+     * @param {Object} params - List options
+     * @param {string} params.search - Search query
+     * @param {string[]} params.tags - Filter by tags
+     * @param {string} params.sortBy - Sort field (name, createdAt, duration, actionCount)
+     * @param {string} params.sortOrder - Sort order (asc, desc)
+     * @param {number} params.offset - Pagination offset
+     * @param {number} params.limit - Pagination limit
+     */
+    this.commandHandlers.list_recordings = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return this.sessionRecordingManager.listRecordings(params);
+    };
+
+    /**
+     * Load a recording by ID
+     * @param {Object} params
+     * @param {string} params.recordingId - Recording ID to load
+     */
+    this.commandHandlers.load_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.recordingId) {
+        return { success: false, error: 'Recording ID is required' };
+      }
+      return this.sessionRecordingManager.loadRecording(params.recordingId);
+    };
+
+    /**
+     * Get a recording by ID (alias for load_recording)
+     */
+    this.commandHandlers.get_recording = async (params) => {
+      return this.commandHandlers.load_recording(params);
+    };
+
+    /**
+     * Delete a recording
+     * @param {Object} params
+     * @param {string} params.recordingId - Recording ID to delete
+     */
+    this.commandHandlers.delete_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.recordingId) {
+        return { success: false, error: 'Recording ID is required' };
+      }
+      return await this.sessionRecordingManager.deleteRecording(params.recordingId);
+    };
+
+    /**
+     * Update recording metadata
+     * @param {Object} params
+     * @param {string} params.recordingId - Recording ID
+     * @param {string} params.name - New name
+     * @param {string} params.description - New description
+     * @param {string[]} params.tags - New tags
+     * @param {Object} params.variables - New variables
+     */
+    this.commandHandlers.update_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.recordingId) {
+        return { success: false, error: 'Recording ID is required' };
+      }
+      const { recordingId, ...updates } = params;
+      return await this.sessionRecordingManager.updateRecording(recordingId, updates);
+    };
+
+    /**
+     * Export a recording to a specific format
+     * @param {Object} params
+     * @param {string} params.recordingId - Recording ID to export
+     * @param {string} params.format - Export format (json, python, javascript, playwright)
+     */
+    this.commandHandlers.export_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.recordingId) {
+        return { success: false, error: 'Recording ID is required' };
+      }
+      return this.sessionRecordingManager.exportRecording(params.recordingId, params.format || 'json');
+    };
+
+    /**
+     * Import a recording from JSON
+     * @param {Object} params
+     * @param {Object|string} params.data - Recording data (JSON object or string)
+     */
+    this.commandHandlers.import_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.data) {
+        return { success: false, error: 'Recording data is required' };
+      }
+      return await this.sessionRecordingManager.importRecording(params.data);
+    };
+
+    /**
+     * Duplicate a recording
+     * @param {Object} params
+     * @param {string} params.recordingId - Recording ID to duplicate
+     * @param {string} params.name - New name for the duplicate
+     */
+    this.commandHandlers.duplicate_recording = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.recordingId) {
+        return { success: false, error: 'Recording ID is required' };
+      }
+      return await this.sessionRecordingManager.duplicateRecording(params.recordingId, { name: params.name });
+    };
+
+    /**
+     * Add a wait action to current recording
+     * @param {Object} params
+     * @param {number} params.duration - Wait duration in ms
+     * @param {string} params.selector - Wait for element selector
+     * @param {number} params.timeout - Timeout in ms
+     */
+    this.commandHandlers.add_recording_wait = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return this.sessionRecordingManager.addWait(params);
+    };
+
+    /**
+     * Add a screenshot action to current recording
+     * @param {Object} params
+     * @param {string} params.name - Screenshot name
+     * @param {boolean} params.fullPage - Full page screenshot
+     * @param {string} params.selector - Element to screenshot
+     */
+    this.commandHandlers.add_recording_screenshot = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      return this.sessionRecordingManager.addScreenshotAction(params);
+    };
+
+    /**
+     * Add a comment to current recording
+     * @param {Object} params
+     * @param {string} params.comment - Comment text
+     */
+    this.commandHandlers.add_recording_comment = async (params) => {
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.comment) {
+        return { success: false, error: 'Comment text is required' };
+      }
+      return this.sessionRecordingManager.addComment(params.comment);
+    };
+
+    // ==========================================
+    // Replay Commands
+    // ==========================================
+
+    /**
+     * Start replaying a recording
+     * @param {Object} params
+     * @param {string} params.recordingId - Recording ID to replay
+     * @param {number} params.speed - Replay speed multiplier (0.5, 1, 2, etc.)
+     * @param {string} params.errorMode - Error handling mode (fail, skip, retry, pause)
+     * @param {Object} params.variables - Variable overrides for parameterization
+     * @param {number} params.startIndex - Start at specific action index
+     * @param {boolean} params.stepMode - Enable step-by-step mode
+     */
+    this.commandHandlers.start_replay = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      if (!this.sessionRecordingManager) {
+        return { success: false, error: 'Session recording manager not available' };
+      }
+      if (!params.recordingId) {
+        return { success: false, error: 'Recording ID is required' };
+      }
+
+      // Load the recording
+      const loadResult = this.sessionRecordingManager.getRecording(params.recordingId);
+      if (!loadResult.success) {
+        return loadResult;
+      }
+
+      return this.replayEngine.startReplay(loadResult.recording, {
+        speed: params.speed,
+        errorMode: params.errorMode,
+        variables: params.variables,
+        startIndex: params.startIndex,
+        stepMode: params.stepMode
+      });
+    };
+
+    /**
+     * Stop current replay
+     */
+    this.commandHandlers.stop_replay = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return this.replayEngine.stopReplay();
+    };
+
+    /**
+     * Pause current replay
+     */
+    this.commandHandlers.pause_replay = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return this.replayEngine.pauseReplay();
+    };
+
+    /**
+     * Resume paused replay
+     */
+    this.commandHandlers.resume_replay = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return this.replayEngine.resumeReplay();
+    };
+
+    /**
+     * Step to next action in step mode
+     */
+    this.commandHandlers.step_replay = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return this.replayEngine.stepNext();
+    };
+
+    /**
+     * Skip current action during replay
+     */
+    this.commandHandlers.skip_replay_action = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return this.replayEngine.skipAction();
+    };
+
+    /**
+     * Set replay speed
+     * @param {Object} params
+     * @param {number} params.speed - Speed multiplier (0.25, 0.5, 1, 2, 4, etc.)
+     */
+    this.commandHandlers.set_replay_speed = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      if (params.speed === undefined) {
+        return { success: false, error: 'Speed is required' };
+      }
+      return this.replayEngine.setSpeed(params.speed);
+    };
+
+    /**
+     * Set replay error handling mode
+     * @param {Object} params
+     * @param {string} params.errorMode - Error mode (fail, skip, retry, pause)
+     */
+    this.commandHandlers.set_replay_error_mode = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      if (!params.errorMode) {
+        return { success: false, error: 'Error mode is required' };
+      }
+      return this.replayEngine.setErrorMode(params.errorMode);
+    };
+
+    /**
+     * Set replay variables for parameterization
+     * @param {Object} params
+     * @param {Object} params.variables - Variables object
+     */
+    this.commandHandlers.set_replay_variables = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      if (!params.variables) {
+        return { success: false, error: 'Variables object is required' };
+      }
+      return this.replayEngine.setVariables(params.variables);
+    };
+
+    /**
+     * Get current replay status
+     */
+    this.commandHandlers.get_replay_status = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return {
+        success: true,
+        ...this.replayEngine.getStatus()
+      };
+    };
+
+    /**
+     * Get replay results
+     */
+    this.commandHandlers.get_replay_results = async (params) => {
+      if (!this.replayEngine) {
+        return { success: false, error: 'Replay engine not available' };
+      }
+      return this.replayEngine.getResults();
+    };
+
+    /**
+     * Get available error modes
+     */
+    this.commandHandlers.get_replay_error_modes = async (params) => {
+      return {
+        success: true,
+        modes: Object.values(ERROR_MODE),
+        descriptions: {
+          [ERROR_MODE.FAIL]: 'Stop replay on first error',
+          [ERROR_MODE.SKIP]: 'Skip failed action and continue',
+          [ERROR_MODE.RETRY]: 'Retry failed action (up to max retries)',
+          [ERROR_MODE.PAUSE]: 'Pause replay on error for manual intervention'
+        }
+      };
+    };
+
+    /**
+     * Get available export formats
+     */
+    this.commandHandlers.get_recording_export_formats = async (params) => {
+      return {
+        success: true,
+        formats: ['json', 'python', 'javascript', 'playwright'],
+        descriptions: {
+          json: 'Raw JSON format for backup/import',
+          python: 'Python Selenium script',
+          javascript: 'JavaScript Puppeteer script',
+          playwright: 'JavaScript Playwright script'
+        }
+      };
+    };
+
+    // ==========================================
+    // Headless Mode Commands
+    // ==========================================
+
+    /**
+     * Get headless mode status
+     * Returns detailed information about headless configuration and environment
+     */
+    this.commandHandlers.get_headless_status = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+      return {
+        success: true,
+        ...this.headlessManager.getStatus()
+      };
+    };
+
+    /**
+     * Enable or disable offscreen rendering
+     * Useful for optimizing headless performance
+     */
+    this.commandHandlers.set_offscreen_rendering = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+
+      const { enabled } = params;
+      if (enabled === undefined) {
+        return { success: false, error: 'enabled parameter is required (true/false)' };
+      }
+
+      if (!this.mainWindow) {
+        return { success: false, error: 'Main window not available' };
+      }
+
+      if (enabled) {
+        return this.headlessManager.enableOffscreenRendering(this.mainWindow.webContents);
+      } else {
+        return this.headlessManager.disableOffscreenRendering(this.mainWindow.webContents);
+      }
+    };
+
+    /**
+     * Get rendering statistics for headless mode
+     * Returns frame counts, timing, and performance metrics
+     */
+    this.commandHandlers.get_render_stats = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+      return {
+        success: true,
+        ...this.headlessManager.getRenderStats()
+      };
+    };
+
+    /**
+     * Reset rendering statistics
+     */
+    this.commandHandlers.reset_render_stats = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+      return this.headlessManager.resetRenderStats();
+    };
+
+    /**
+     * Set offscreen rendering frame rate
+     */
+    this.commandHandlers.set_frame_rate = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+
+      const { frameRate } = params;
+      if (frameRate === undefined) {
+        return { success: false, error: 'frameRate parameter is required (1-120)' };
+      }
+
+      if (!this.mainWindow) {
+        return { success: false, error: 'Main window not available' };
+      }
+
+      return this.headlessManager.setFrameRate(frameRate, this.mainWindow.webContents);
+    };
+
+    /**
+     * Get available headless presets
+     */
+    this.commandHandlers.get_headless_presets = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+      return this.headlessManager.getPresets();
+    };
+
+    /**
+     * Apply a headless preset configuration
+     */
+    this.commandHandlers.apply_headless_preset = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+
+      const { preset } = params;
+      if (!preset) {
+        return { success: false, error: 'preset parameter is required' };
+      }
+
+      return this.headlessManager.applyPreset(preset);
+    };
+
+    /**
+     * Start virtual display (Xvfb) for headless operation on Linux
+     */
+    this.commandHandlers.start_virtual_display = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+
+      const options = {
+        displayNum: params.displayNum,
+        resolution: params.resolution,
+        screen: params.screen
+      };
+
+      return this.headlessManager.startVirtualDisplay(options);
+    };
+
+    /**
+     * Stop virtual display
+     */
+    this.commandHandlers.stop_virtual_display = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+      return this.headlessManager.stopVirtualDisplay();
+    };
+
+    /**
+     * Detect headless environment
+     * Returns information about display, Docker, CI, WSL environments
+     */
+    this.commandHandlers.detect_headless_environment = async (params) => {
+      if (!this.headlessManager) {
+        return { success: false, error: 'Headless manager not available' };
+      }
+      return {
+        success: true,
+        ...this.headlessManager.detectHeadlessEnvironment()
+      };
+    };
+
+    // ==========================================
+    // Window Orchestration Commands
+    // ==========================================
+
+    /**
+     * Spawn a new browser window
+     * Creates a new independent browser window, optionally from pool
+     */
+    this.commandHandlers.spawn_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { url, partition, profileId, metadata, show, usePool } = params;
+      return await this.windowManager.spawnWindow({
+        url,
+        partition,
+        profileId,
+        metadata,
+        show: show !== false,
+        usePool: usePool !== false
+      });
+    };
+
+    /**
+     * List all browser windows
+     * Returns information about all managed windows
+     */
+    this.commandHandlers.list_windows = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { state, profileId } = params;
+      return this.windowManager.listWindows({ state, profileId });
+    };
+
+    /**
+     * Switch to a specific window
+     * Makes the specified window active and focused
+     */
+    this.commandHandlers.switch_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { windowId } = params;
+      if (!windowId) {
+        return { success: false, error: 'Window ID is required' };
+      }
+
+      return this.windowManager.switchWindow(windowId);
+    };
+
+    /**
+     * Close a specific window
+     * Closes the window, optionally returning it to pool
+     */
+    this.commandHandlers.close_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { windowId, returnToPool, force } = params;
+      if (!windowId) {
+        return { success: false, error: 'Window ID is required' };
+      }
+
+      return await this.windowManager.closeWindow(windowId, {
+        returnToPool: returnToPool || false,
+        force: force || false
+      });
+    };
+
+    /**
+     * Get info about a specific window
+     * Returns detailed state and metadata for a window
+     */
+    this.commandHandlers.get_window_info = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { windowId } = params;
+      if (!windowId) {
+        return { success: false, error: 'Window ID is required' };
+      }
+
+      const windowInfo = this.windowManager.getWindowInfo(windowId);
+      if (!windowInfo) {
+        return { success: false, error: 'Window not found' };
+      }
+
+      return { success: true, window: windowInfo };
+    };
+
+    /**
+     * Get the currently active window
+     * Returns info about the window that has focus
+     */
+    this.commandHandlers.get_active_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const activeWindow = this.windowManager.getActiveWindow();
+      if (!activeWindow) {
+        return { success: false, error: 'No active window' };
+      }
+
+      return { success: true, window: activeWindow };
+    };
+
+    /**
+     * Send command to a specific window
+     * Sends an IPC message to the specified window
+     */
+    this.commandHandlers.send_to_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { windowId, channel, data } = params;
+      if (!windowId) {
+        return { success: false, error: 'Window ID is required' };
+      }
+      if (!channel) {
+        return { success: false, error: 'Channel is required' };
+      }
+
+      return this.windowManager.sendToWindow(windowId, channel, data);
+    };
+
+    /**
+     * Broadcast command to all windows
+     * Sends an IPC message to all (or filtered) windows
+     */
+    this.commandHandlers.broadcast_windows = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { channel, data, excludeWindows, onlyActive, state } = params;
+      if (!channel) {
+        return { success: false, error: 'Channel is required' };
+      }
+
+      return this.windowManager.broadcast(channel, data, {
+        excludeWindows: excludeWindows || [],
+        onlyActive: onlyActive || false,
+        state
+      });
+    };
+
+    /**
+     * Navigate a window to a URL
+     * Changes the URL of a specific window
+     */
+    this.commandHandlers.navigate_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { windowId, url } = params;
+      if (!windowId) {
+        return { success: false, error: 'Window ID is required' };
+      }
+      if (!url) {
+        return { success: false, error: 'URL is required' };
+      }
+
+      return await this.windowManager.navigateWindow(windowId, url);
+    };
+
+    /**
+     * Execute script in a specific window
+     * Runs JavaScript code in the context of the window
+     */
+    this.commandHandlers.execute_in_window = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { windowId, script } = params;
+      if (!windowId) {
+        return { success: false, error: 'Window ID is required' };
+      }
+      if (!script) {
+        return { success: false, error: 'Script is required' };
+      }
+
+      return await this.windowManager.executeInWindow(windowId, script);
+    };
+
+    /**
+     * Close all windows
+     * Closes all managed windows, with optional exceptions
+     */
+    this.commandHandlers.close_all_windows = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      const { force, exceptActive } = params;
+      return await this.windowManager.closeAllWindows({
+        force: force || false,
+        exceptActive: exceptActive || false
+      });
+    };
+
+    /**
+     * Perform health check on all windows
+     * Returns health status of all managed windows
+     */
+    this.commandHandlers.window_health_check = async (params) => {
+      if (!this.windowManager) {
+        return { success: false, error: 'Window manager not available' };
+      }
+
+      return this.windowManager.healthCheck();
+    };
+
+    // ==========================================
+    // Window Pool Commands
+    // ==========================================
+
+    /**
+     * Get window pool status
+     * Returns detailed pool statistics and configuration
+     */
+    this.commandHandlers.get_window_pool_status = async (params) => {
+      if (!this.windowPool) {
+        return { success: false, error: 'Window pool not available' };
+      }
+
+      return this.windowPool.getStatus();
+    };
+
+    /**
+     * Initialize the window pool
+     * Starts pool warming and health monitoring
+     */
+    this.commandHandlers.initialize_window_pool = async (params) => {
+      if (!this.windowPool) {
+        return { success: false, error: 'Window pool not available' };
+      }
+
+      return await this.windowPool.initialize();
+    };
+
+    /**
+     * Update window pool configuration
+     * Modifies pool size limits and timing parameters
+     */
+    this.commandHandlers.update_window_pool_config = async (params) => {
+      if (!this.windowPool) {
+        return { success: false, error: 'Window pool not available' };
+      }
+
+      const { minPoolSize, maxPoolSize, warmupDelay, healthCheckInterval, maxIdleTime } = params;
+      return this.windowPool.updateConfig({
+        minPoolSize,
+        maxPoolSize,
+        warmupDelay,
+        healthCheckInterval,
+        maxIdleTime
+      });
+    };
+
+    /**
+     * Manually warm up the pool
+     * Creates additional pre-warmed windows
+     */
+    this.commandHandlers.warmup_window_pool = async (params) => {
+      if (!this.windowPool) {
+        return { success: false, error: 'Window pool not available' };
+      }
+
+      const { count } = params;
+      return await this.windowPool.warmup(count);
+    };
+
+    /**
+     * Drain the window pool
+     * Disposes all pooled windows
+     */
+    this.commandHandlers.drain_window_pool = async (params) => {
+      if (!this.windowPool) {
+        return { success: false, error: 'Window pool not available' };
+      }
+
+      return await this.windowPool.drain();
+    };
+
+    // ==================== LOGGING COMMANDS ====================
+
+    /**
+     * Set log level
+     * @param {string} level - Log level (error, warn, info, debug, trace)
+     */
+    this.commandHandlers.set_log_level = async (params) => {
+      const { level } = params;
+
+      if (!level) {
+        return { success: false, error: 'Level is required' };
+      }
+
+      if (!LEVEL_NAMES.includes(level)) {
+        return {
+          success: false,
+          error: `Invalid level. Valid levels: ${LEVEL_NAMES.join(', ')}`
+        };
+      }
+
+      try {
+        this.logger.setLevel(level);
+        return {
+          success: true,
+          level,
+          message: `Log level set to ${level}`
+        };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get current log level
+     */
+    this.commandHandlers.get_log_level = async (params) => {
+      return {
+        success: true,
+        level: this.logger.getLevel(),
+        availableLevels: LEVEL_NAMES
+      };
+    };
+
+    /**
+     * Get logs from memory transport (if available)
+     * @param {Object} filter - Optional filter (level, since, limit)
+     */
+    this.commandHandlers.get_logs = async (params) => {
+      const { level, since, limit } = params;
+
+      const memoryTransport = this.logger.getTransport('memory');
+      if (!memoryTransport) {
+        return {
+          success: false,
+          error: 'Memory transport not configured. Logs are not stored in memory.'
+        };
+      }
+
+      const logs = memoryTransport.getEntries({ level, since, limit });
+      return {
+        success: true,
+        count: logs.length,
+        logs
+      };
+    };
+
+    /**
+     * Get logger statistics
+     */
+    this.commandHandlers.get_log_stats = async (params) => {
+      return {
+        success: true,
+        stats: this.logger.getStats()
+      };
+    };
+
+    // ==================== PROFILING COMMANDS ====================
+
+    /**
+     * Start profiling
+     */
+    this.commandHandlers.start_profiling = async (params) => {
+      this.profiler.enable();
+      return {
+        success: true,
+        message: 'Profiling started'
+      };
+    };
+
+    /**
+     * Stop profiling and get summary
+     */
+    this.commandHandlers.stop_profiling = async (params) => {
+      this.profiler.disable();
+      return {
+        success: true,
+        message: 'Profiling stopped',
+        summary: this.profiler.getSummary()
+      };
+    };
+
+    /**
+     * Start a named timer
+     * @param {string} name - Timer name
+     * @param {Object} metadata - Optional metadata
+     */
+    this.commandHandlers.start_timer = async (params) => {
+      const { name, metadata } = params;
+
+      if (!name) {
+        return { success: false, error: 'Timer name is required' };
+      }
+
+      this.profiler.startTimer(name, metadata || {});
+      return {
+        success: true,
+        name,
+        message: `Timer '${name}' started`
+      };
+    };
+
+    /**
+     * Stop a named timer
+     * @param {string} name - Timer name
+     */
+    this.commandHandlers.stop_timer = async (params) => {
+      const { name } = params;
+
+      if (!name) {
+        return { success: false, error: 'Timer name is required' };
+      }
+
+      const result = this.profiler.endTimer(name);
+      if (!result) {
+        return { success: false, error: `Timer '${name}' not found` };
+      }
+
+      return {
+        success: true,
+        ...result
+      };
+    };
+
+    /**
+     * Get all metrics
+     */
+    this.commandHandlers.get_metrics = async (params) => {
+      return {
+        success: true,
+        metrics: this.profiler.getMetrics(),
+        stats: this.profiler.getStats()
+      };
+    };
+
+    /**
+     * Get active timers
+     */
+    this.commandHandlers.get_active_timers = async (params) => {
+      return {
+        success: true,
+        timers: this.profiler.getActiveTimers()
+      };
+    };
+
+    /**
+     * Get timer history
+     * @param {Object} filter - Optional filter (name, since, limit)
+     */
+    this.commandHandlers.get_timer_history = async (params) => {
+      const { name, since, limit } = params;
+      const history = this.profiler.getTimerHistory({ name, since, limit });
+      return {
+        success: true,
+        count: history.length,
+        history
+      };
+    };
+
+    /**
+     * Reset profiling data
+     */
+    this.commandHandlers.reset_profiling = async (params) => {
+      this.profiler.reset();
+      return {
+        success: true,
+        message: 'Profiling data reset'
+      };
+    };
+
+    // ==================== MEMORY MONITORING COMMANDS ====================
+
+    /**
+     * Get current memory usage
+     */
+    this.commandHandlers.get_memory_stats = async (params) => {
+      return {
+        success: true,
+        usage: this.memoryMonitor.getMemoryUsage(),
+        stats: this.memoryMonitor.getStats()
+      };
+    };
+
+    /**
+     * Start memory monitoring
+     * @param {number} interval - Monitoring interval in ms
+     */
+    this.commandHandlers.start_memory_monitoring = async (params) => {
+      const { interval } = params;
+      return this.memoryMonitor.startMonitoring(interval);
+    };
+
+    /**
+     * Stop memory monitoring
+     */
+    this.commandHandlers.stop_memory_monitoring = async (params) => {
+      return this.memoryMonitor.stopMonitoring();
+    };
+
+    /**
+     * Get memory history
+     * @param {number} limit - Max entries to return
+     */
+    this.commandHandlers.get_memory_history = async (params) => {
+      const { limit } = params;
+      const history = this.memoryMonitor.getHistory(limit);
+      return {
+        success: true,
+        count: history.length,
+        history
+      };
+    };
+
+    /**
+     * Detect memory leaks
+     */
+    this.commandHandlers.detect_memory_leaks = async (params) => {
+      const result = this.memoryMonitor.detectLeaks();
+      return {
+        success: true,
+        ...result
+      };
+    };
+
+    /**
+     * Get heap snapshot info
+     */
+    this.commandHandlers.get_heap_snapshot = async (params) => {
+      return {
+        success: true,
+        snapshot: this.memoryMonitor.getHeapSnapshot()
+      };
+    };
+
+    /**
+     * Trigger garbage collection (if available)
+     */
+    this.commandHandlers.trigger_gc = async (params) => {
+      return this.memoryMonitor.triggerGC();
+    };
+
+    // ==================== DEBUG COMMANDS ====================
+
+    /**
+     * Enable debug mode
+     * @param {string} mode - Debug mode (basic, verbose, trace)
+     */
+    this.commandHandlers.enable_debug = async (params) => {
+      const { mode } = params;
+      return this.debugManager.enableDebugMode(mode);
+    };
+
+    /**
+     * Disable debug mode
+     */
+    this.commandHandlers.disable_debug = async (params) => {
+      return this.debugManager.disableDebugMode();
+    };
+
+    /**
+     * Get debug status
+     */
+    this.commandHandlers.get_debug_status = async (params) => {
+      return {
+        success: true,
+        mode: this.debugManager.getDebugMode(),
+        stats: this.debugManager.getStats()
+      };
+    };
+
+    /**
+     * Start tracing IPC messages
+     */
+    this.commandHandlers.trace_ipc = async (params) => {
+      return this.debugManager.traceIPC();
+    };
+
+    /**
+     * Stop tracing IPC messages
+     */
+    this.commandHandlers.stop_trace_ipc = async (params) => {
+      return this.debugManager.stopTraceIPC();
+    };
+
+    /**
+     * Get IPC trace
+     * @param {Object} filter - Optional filter
+     */
+    this.commandHandlers.get_ipc_trace = async (params) => {
+      const { channel, direction, since, limit } = params;
+      const trace = this.debugManager.getIPCTrace({ channel, direction, since, limit });
+      return {
+        success: true,
+        count: trace.length,
+        trace
+      };
+    };
+
+    /**
+     * Start tracing WebSocket commands
+     */
+    this.commandHandlers.trace_websocket = async (params) => {
+      return this.debugManager.traceWebSocket();
+    };
+
+    /**
+     * Stop tracing WebSocket commands
+     */
+    this.commandHandlers.stop_trace_websocket = async (params) => {
+      return this.debugManager.stopTraceWebSocket();
+    };
+
+    /**
+     * Get WebSocket trace
+     * @param {Object} filter - Optional filter
+     */
+    this.commandHandlers.get_websocket_trace = async (params) => {
+      const { command, type, clientId, since, limit } = params;
+      const trace = this.debugManager.getWebSocketTrace({ command, type, clientId, since, limit });
+      return {
+        success: true,
+        count: trace.length,
+        trace
+      };
+    };
+
+    /**
+     * Dump current browser state
+     */
+    this.commandHandlers.dump_state = async (params) => {
+      // Set additional references for more complete state dump
+      this.debugManager.setReferences({
+        tabManager: this.tabManager,
+        sessionManager: this.sessionManager
+      });
+
+      return {
+        success: true,
+        state: this.debugManager.dumpState()
+      };
+    };
+
+    /**
+     * Clear debug buffers
+     */
+    this.commandHandlers.clear_debug_buffers = async (params) => {
+      this.debugManager.clearBuffers();
+      return {
+        success: true,
+        message: 'Debug buffers cleared'
+      };
+    };
+
+    // ==========================================
+    // Plugin System Commands
+    // ==========================================
+
+    /**
+     * Load a plugin from file path
+     * @param {string} path - Path to the plugin file
+     * @param {boolean} replace - Replace existing plugin if loaded
+     */
+    this.commandHandlers.load_plugin = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { path: pluginPath, replace } = params;
+      if (!pluginPath) {
+        return { success: false, error: 'Plugin path is required' };
+      }
+
+      try {
+        return await this.pluginManager.loadPlugin(pluginPath, { replace });
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Unload a plugin by name
+     * @param {string} name - Plugin name to unload
+     */
+    this.commandHandlers.unload_plugin = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { name } = params;
+      if (!name) {
+        return { success: false, error: 'Plugin name is required' };
+      }
+
+      try {
+        return await this.pluginManager.unloadPlugin(name);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Reload a plugin
+     * @param {string} name - Plugin name to reload
+     */
+    this.commandHandlers.reload_plugin = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { name } = params;
+      if (!name) {
+        return { success: false, error: 'Plugin name is required' };
+      }
+
+      try {
+        return await this.pluginManager.reloadPlugin(name);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * List all loaded plugins
+     */
+    this.commandHandlers.list_plugins = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      try {
+        return this.pluginManager.listPlugins();
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Enable a plugin
+     * @param {string} name - Plugin name to enable
+     */
+    this.commandHandlers.enable_plugin = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { name } = params;
+      if (!name) {
+        return { success: false, error: 'Plugin name is required' };
+      }
+
+      try {
+        return this.pluginManager.enablePlugin(name);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Disable a plugin
+     * @param {string} name - Plugin name to disable
+     */
+    this.commandHandlers.disable_plugin = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { name } = params;
+      if (!name) {
+        return { success: false, error: 'Plugin name is required' };
+      }
+
+      try {
+        return this.pluginManager.disablePlugin(name);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get plugin configuration
+     * @param {string} name - Plugin name
+     */
+    this.commandHandlers.get_plugin_config = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { name } = params;
+      if (!name) {
+        return { success: false, error: 'Plugin name is required' };
+      }
+
+      try {
+        return this.pluginManager.getPluginConfig(name);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Set plugin configuration
+     * @param {string} name - Plugin name
+     * @param {Object} config - Configuration object
+     */
+    this.commandHandlers.set_plugin_config = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { name, config } = params;
+      if (!name) {
+        return { success: false, error: 'Plugin name is required' };
+      }
+      if (!config || typeof config !== 'object') {
+        return { success: false, error: 'Config object is required' };
+      }
+
+      try {
+        return this.pluginManager.setPluginConfig(name, config);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Execute a plugin command
+     * @param {string} command - Full command name (plugin:name:command)
+     * @param {Object} params - Command parameters
+     */
+    this.commandHandlers.plugin_command = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { command, commandParams } = params;
+      if (!command) {
+        return { success: false, error: 'Command name is required' };
+      }
+
+      try {
+        return await this.pluginManager.executeCommand(command, commandParams || {});
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * List all plugin commands
+     */
+    this.commandHandlers.list_plugin_commands = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      try {
+        return this.pluginManager.listCommands();
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get plugin system status
+     */
+    this.commandHandlers.get_plugin_status = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      try {
+        return this.pluginManager.getStatus();
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Load plugins from a directory
+     * @param {string} directory - Path to plugins directory
+     */
+    this.commandHandlers.load_plugins_directory = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { directory } = params;
+      if (!directory) {
+        return { success: false, error: 'Directory path is required' };
+      }
+
+      try {
+        return await this.pluginManager.loadPluginsFromDirectory(directory);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Trigger a plugin hook
+     * @param {string} hook - Hook name
+     * @param {Object} data - Hook data
+     */
+    this.commandHandlers.trigger_plugin_hook = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      const { hook, data } = params;
+      if (!hook) {
+        return { success: false, error: 'Hook name is required' };
+      }
+
+      try {
+        const results = await this.pluginManager.triggerHook(hook, data || {});
+        return { success: true, results };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get available plugin hooks
+     */
+    this.commandHandlers.get_plugin_hooks = async (params) => {
+      if (!this.pluginManager) {
+        return { success: false, error: 'Plugin manager not available' };
+      }
+
+      try {
+        return this.pluginManager.getAvailableHooks();
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
   }
 
   /**
@@ -5288,6 +7576,12 @@ class WebSocketServer {
     }
     if (this.recordingManager) {
       this.recordingManager.cleanup();
+    }
+    if (this.sessionRecordingManager) {
+      this.sessionRecordingManager.cleanup();
+    }
+    if (this.replayEngine) {
+      this.replayEngine.cleanup();
     }
     if (this.memoryManager) {
       this.memoryManager.cleanup();

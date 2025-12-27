@@ -5,6 +5,26 @@
 
 const { EventEmitter } = require('events');
 
+// Import logger (lazy initialization to avoid circular dependencies)
+let logger = null;
+function getLogger() {
+  if (!logger) {
+    try {
+      const { defaultLogger } = require('../logging');
+      logger = defaultLogger.child('tabs');
+    } catch (e) {
+      // Fallback to console if logging not available
+      logger = {
+        info: (...args) => console.log('[TabManager]', ...args),
+        debug: (...args) => console.log('[TabManager]', ...args),
+        warn: (...args) => console.warn('[TabManager]', ...args),
+        error: (...args) => console.error('[TabManager]', ...args)
+      };
+    }
+  }
+  return logger;
+}
+
 /**
  * Generate a unique tab ID
  * @returns {string} Unique tab identifier
@@ -185,7 +205,7 @@ class TabManager extends EventEmitter {
     // Default home page
     this.homePage = options.homePage || 'https://www.google.com';
 
-    console.log('[TabManager] Initialized');
+    getLogger().info('TabManager initialized', { maxTabs: this.maxTabs });
   }
 
   /**
@@ -232,7 +252,7 @@ class TabManager extends EventEmitter {
     this.emit('tab-created', tabInfo);
     this.onTabCreated(tabInfo);
 
-    console.log(`[TabManager] Created tab: ${tab.id} with URL: ${initialUrl}`);
+    getLogger().info(`Created tab: ${tab.id}`, { url: initialUrl });
 
     return {
       success: true,
@@ -280,7 +300,7 @@ class TabManager extends EventEmitter {
     this.emit('tab-closed', eventData);
     this.onTabClosed(eventData);
 
-    console.log(`[TabManager] Closed tab: ${tabId}`);
+    getLogger().info(`Closed tab: ${tabId}`);
 
     return {
       success: true,
@@ -318,7 +338,7 @@ class TabManager extends EventEmitter {
     this.emit('tab-switched', eventData);
     this.onTabSwitched(eventData);
 
-    console.log(`[TabManager] Switched to tab: ${tabId}`);
+    getLogger().debug(`Switched to tab: ${tabId}`);
 
     return {
       success: true,
@@ -894,7 +914,7 @@ class TabManager extends EventEmitter {
       this.activeTabId = this.tabOrder[0];
     }
 
-    console.log(`[TabManager] Restored ${this.tabs.size} tabs`);
+    getLogger().info(`Restored ${this.tabs.size} tabs`);
 
     return {
       success: true,
@@ -910,7 +930,7 @@ class TabManager extends EventEmitter {
     this.tabOrder = [];
     this.activeTabId = null;
 
-    console.log('[TabManager] Cleanup complete');
+    getLogger().info('Cleanup complete');
   }
 }
 

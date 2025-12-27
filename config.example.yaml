@@ -1,0 +1,365 @@
+# ============================================================
+# Basset Hound Browser - Configuration File
+# ============================================================
+# This file contains all available configuration options.
+# Copy this file to 'basset.yaml' or 'config.yaml' to use.
+#
+# Configuration Priority (highest to lowest):
+#   1. Command-line arguments
+#   2. Environment variables (BASSET_*)
+#   3. Configuration file
+#   4. Default values
+# ============================================================
+
+# ------------------------------------------------------------
+# Server Configuration
+# ------------------------------------------------------------
+# WebSocket server settings for external control
+server:
+  # Host address to bind the WebSocket server to
+  # Use 0.0.0.0 to allow external connections
+  host: "127.0.0.1"
+
+  # Port number for the WebSocket server
+  port: 8765
+
+  # SSL/TLS encryption settings
+  ssl:
+    enabled: false
+    certPath: null       # Path to SSL certificate file
+    keyPath: null        # Path to SSL private key file
+    caPath: null         # Path to CA certificate file (for client cert validation)
+
+  # Authentication settings
+  auth:
+    enabled: false
+    token: null          # Authentication token (or set BASSET_WS_TOKEN env var)
+    requireAuth: false   # Require auth for all connections
+
+  # Connection health monitoring
+  heartbeat:
+    interval: 30000      # Send heartbeat every 30 seconds
+    timeout: 60000       # Consider connection dead after 60 seconds
+
+  # Error recovery settings
+  errorRecovery:
+    maxRetries: 3        # Maximum retry attempts for failed operations
+    retryDelay: 1000     # Base delay (exponential backoff applied)
+
+# ------------------------------------------------------------
+# Browser Configuration
+# ------------------------------------------------------------
+# Browser window and behavior settings
+browser:
+  # Window dimensions and positioning
+  window:
+    width: 1280
+    height: 720
+    minWidth: 800
+    minHeight: 600
+    randomizeSize: true       # Randomize size for fingerprint evasion
+    randomizePosition: true   # Randomize window position
+
+  # Tab settings
+  tabs:
+    maxTabs: 50               # Maximum number of open tabs
+    homePage: "https://www.google.com"
+    defaultTab: true          # Create a default tab on startup
+
+  # Session recovery (auto-save state for crash recovery)
+  recovery:
+    enabled: true
+    autoSaveInterval: 30000   # Auto-save every 30 seconds
+    maxRecoveryAttempts: 3
+    stateVersion: 1
+
+  # Developer Tools settings
+  devTools:
+    enabled: true
+    defaultMode: "right"      # right, bottom, undocked, detach
+
+  # Download settings
+  downloads:
+    path: null                # null = system downloads folder
+    askBeforeDownload: false
+    maxConcurrent: 5
+
+  # Browsing history settings
+  history:
+    enabled: true
+    maxEntries: 10000
+    retentionDays: 90
+
+# ------------------------------------------------------------
+# Evasion Configuration
+# ------------------------------------------------------------
+# Bot detection evasion and fingerprint spoofing settings
+evasion:
+  # Browser fingerprint spoofing
+  fingerprint:
+    enabled: true             # Enable fingerprint evasion
+    randomize: true           # Randomize fingerprint per session
+    persistPerSession: true   # Keep same fingerprint within a session
+
+  # User agent settings
+  userAgent:
+    randomize: true           # Use randomized user agent
+    rotateOnNavigation: false # Change user agent on each page load
+    category: "desktop"       # desktop, mobile, bot, random
+
+  # WebGL fingerprint spoofing
+  webgl:
+    spoof: true               # Spoof WebGL vendor/renderer
+    noise: true               # Add noise to WebGL output
+
+  # Canvas fingerprint spoofing
+  canvas:
+    noise: true               # Add noise to canvas output
+    noiseFactor: 5            # Noise amount (0-10)
+
+  # Audio context fingerprint spoofing
+  audio:
+    noise: true               # Add noise to audio context
+    noiseFactor: 0.0001       # Audio noise factor
+
+  # Hardware information spoofing
+  hardware:
+    spoof: true
+    concurrency: null         # CPU cores (null = random 4-16)
+    memory: null              # Device memory in GB (null = random 4-32)
+
+  # Timezone spoofing
+  timezone:
+    spoof: false
+    value: null               # e.g., "America/New_York"
+
+  # Geolocation spoofing
+  geolocation:
+    enabled: false
+    latitude: null            # e.g., 40.7128
+    longitude: null           # e.g., -74.0060
+    accuracy: 100             # Accuracy in meters
+
+  # Human behavior simulation
+  humanize:
+    enabled: true
+
+    # Human-like typing
+    typing:
+      enabled: true
+      minDelay: 50            # Minimum delay between keystrokes (ms)
+      maxDelay: 150           # Maximum delay between keystrokes (ms)
+      mistakeRate: 0.02       # Typo rate (0.02 = 2%)
+
+    # Human-like mouse movement
+    mouse:
+      enabled: true
+      curvature: 0.5          # Movement curvature (0-1)
+      speed: 1.0              # Speed multiplier
+
+    # Human-like scrolling
+    scroll:
+      enabled: true
+      smoothness: 0.8         # Scroll smoothness (0-1)
+
+# ------------------------------------------------------------
+# Network Configuration
+# ------------------------------------------------------------
+# Proxy, Tor, and network settings
+network:
+  # HTTP/SOCKS proxy settings
+  proxy:
+    enabled: false
+    type: "http"              # http, https, socks4, socks5
+    host: null
+    port: null
+    username: null            # For authenticated proxies
+    password: null
+    bypassList:               # Hosts to access directly
+      - "localhost"
+      - "127.0.0.1"
+
+  # Tor integration settings
+  tor:
+    enabled: false
+    socksPort: 9050           # Tor SOCKS port
+    controlPort: 9051         # Tor control port
+    dataDirectory: null       # Tor data directory
+
+  # Proxy chain settings (route through multiple proxies)
+  proxyChain:
+    enabled: false
+    proxies: []               # List of proxy configurations
+
+  # Network throttling (simulate slow connections)
+  throttling:
+    enabled: false
+    preset: null              # slow3G, fast3G, 4G, offline, custom
+    download: null            # Download speed in bytes/second
+    upload: null              # Upload speed in bytes/second
+    latency: null             # Added latency in milliseconds
+
+  # Request interception and blocking
+  interception:
+    enabled: false
+    blockAds: false           # Block advertisements
+    blockTrackers: false      # Block tracking scripts
+    blockImages: false        # Block image loading
+    customRules: []           # Custom blocking rules
+
+  # SSL/Certificate settings
+  certificates:
+    ignoreCertificateErrors: true    # Allow self-signed certs
+    clientCertificates: []           # Client certificates for mTLS
+
+  # HTTP header customization
+  headers:
+    customHeaders: {}                # Additional headers to add
+    removeHeaders:                   # Headers to remove
+      - "Sec-Ch-Ua-Platform"
+    acceptLanguage: "en-US,en;q=0.9"
+    acceptEncoding: "gzip, deflate, br"
+
+# ------------------------------------------------------------
+# Logging Configuration
+# ------------------------------------------------------------
+logging:
+  # Log level: error, warn, info, debug, trace
+  level: "info"
+
+  # Console output settings
+  console:
+    enabled: true
+    colorize: true
+    timestamp: true
+
+  # File logging settings
+  file:
+    enabled: false
+    path: null                # Log file path
+    maxSize: "10m"            # Max size before rotation
+    maxFiles: 5               # Number of rotated files to keep
+    rotate: true              # Enable log rotation
+
+  # Network request/response logging
+  network:
+    enabled: false
+    logRequests: true
+    logResponses: true
+    logHeaders: false         # Log request/response headers
+    logBody: false            # Log request/response bodies
+
+  # Browser console capture
+  browserConsole:
+    capture: true             # Capture browser console messages
+    maxLogs: 1000             # Maximum logs to keep in memory
+    levels:                   # Levels to capture
+      - "error"
+      - "warn"
+      - "info"
+      - "log"
+
+  # Performance logging
+  performance:
+    enabled: false
+    metrics: true
+    timing: true
+
+# ------------------------------------------------------------
+# Automation Configuration
+# ------------------------------------------------------------
+automation:
+  # Script execution settings
+  scripts:
+    enabled: true
+    storagePath: null         # Custom scripts storage path
+    timeout: 30000            # Script timeout (30 seconds)
+    sandboxed: true           # Run scripts in sandbox
+
+  # Screen recording settings
+  recording:
+    enabled: true
+    format: "webm"            # webm, mp4, gif
+    quality: "high"           # low, medium, high, maximum
+    fps: 30                   # Frames per second
+    maxDuration: 3600         # Max duration in seconds (1 hour)
+
+  # Screenshot settings
+  screenshots:
+    format: "png"             # png, jpeg, webp
+    quality: 90               # Quality for jpeg/webp (1-100)
+    path: null                # Custom screenshots path
+
+# ------------------------------------------------------------
+# Profile Configuration
+# ------------------------------------------------------------
+# Browser profile management (isolated sessions)
+profiles:
+  enabled: true
+  storagePath: null           # Custom profiles storage path
+  defaultProfile: null        # Default profile ID to load
+
+  # Profile isolation settings
+  isolation:
+    cookies: true             # Isolate cookies per profile
+    localStorage: true        # Isolate localStorage per profile
+    sessionStorage: true      # Isolate sessionStorage per profile
+    indexedDB: true           # Isolate IndexedDB per profile
+    cache: true               # Isolate cache per profile
+
+# ------------------------------------------------------------
+# Headless Mode Configuration
+# ------------------------------------------------------------
+# Settings for running without a visible window
+headless:
+  enabled: false              # Run in headless mode
+  disableGpu: true            # Disable GPU (recommended for servers)
+  noSandbox: false            # Disable sandbox (required for Docker/root)
+  virtualDisplay: false       # Use Xvfb virtual display
+  displaySize: "1920x1080"    # Virtual display resolution
+  displayDepth: 24            # Color depth
+  offscreenRendering: false   # Use offscreen rendering
+  preset: null                # Preset: server, docker, ci, minimal
+
+# ------------------------------------------------------------
+# Memory Management Configuration
+# ------------------------------------------------------------
+memory:
+  # Memory usage monitoring
+  monitoring:
+    enabled: true
+    interval: 60000           # Check every 60 seconds
+
+  # Memory thresholds (percentage of heap limit)
+  thresholds:
+    warning: 70               # Warning at 70% usage
+    critical: 85              # Critical at 85% usage
+    emergency: 95             # Emergency at 95% usage
+
+  # Automatic cleanup actions
+  cleanup:
+    enabled: true
+    onWarning: false          # Cleanup when warning threshold reached
+    onCritical: true          # Cleanup when critical threshold reached
+    onEmergency: true         # Cleanup when emergency threshold reached
+
+  # Cache settings
+  cache:
+    maxSize: null             # Max cache size in bytes (null = auto)
+    clearOnMemoryPressure: true
+
+# ============================================================
+# Environment Variables
+# ============================================================
+# All settings can also be configured via environment variables.
+# Environment variables take precedence over this file.
+#
+# Examples:
+#   BASSET_PORT=9000
+#   BASSET_HEADLESS=true
+#   BASSET_PROXY_HOST=localhost
+#   BASSET_PROXY_PORT=8080
+#   BASSET_LOG_LEVEL=debug
+#
+# See documentation for full list of supported variables.
+# ============================================================

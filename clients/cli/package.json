@@ -1,0 +1,35 @@
+{
+  "name": "basset-hound-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for Basset Hound Browser automation",
+  "main": "src/index.js",
+  "bin": {
+    "basset-hound": "./bin/basset-hound.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "browser",
+    "automation",
+    "websocket",
+    "osint",
+    "cli"
+  ],
+  "author": "Basset Hound Team",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.1.0",
+    "ws": "^8.14.2",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.3",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

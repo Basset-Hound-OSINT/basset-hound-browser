@@ -2,9 +2,14 @@
  * Basset Hound Browser - Proxy Manager Module
  * Handles proxy configuration, rotation, and authentication
  * Supports HTTP, HTTPS, SOCKS4, and SOCKS5 proxies
+ * Integrates with Tor and Proxy Chain managers
  */
 
 const { session } = require('electron');
+
+// Lazy load Tor and Chain managers to avoid circular dependencies
+let torManager = null;
+let proxyChainManager = null;
 
 /**
  * Proxy types supported
@@ -14,8 +19,49 @@ const PROXY_TYPES = {
   HTTPS: 'https',
   SOCKS4: 'socks4',
   SOCKS5: 'socks5',
-  DIRECT: 'direct'
+  DIRECT: 'direct',
+  TOR: 'tor'
 };
+
+/**
+ * Proxy modes
+ */
+const PROXY_MODES = {
+  SINGLE: 'single',
+  ROTATION: 'rotation',
+  TOR: 'tor',
+  CHAIN: 'chain'
+};
+
+/**
+ * Get TorManager instance (lazy load)
+ */
+function getTorManager() {
+  if (!torManager) {
+    try {
+      const torModule = require('./tor');
+      torManager = torModule.torManager;
+    } catch (error) {
+      console.error('[ProxyManager] Failed to load TorManager:', error.message);
+    }
+  }
+  return torManager;
+}
+
+/**
+ * Get ProxyChainManager instance (lazy load)
+ */
+function getProxyChainManager() {
+  if (!proxyChainManager) {
+    try {
+      const chainModule = require('./chain');
+      proxyChainManager = chainModule.proxyChainManager;
+    } catch (error) {
+      console.error('[ProxyManager] Failed to load ProxyChainManager:', error.message);
+    }
+  }
+  return proxyChainManager;
+}
 
 /**
  * Proxy Manager class
@@ -33,6 +79,11 @@ class ProxyManager {
     this.isEnabled = false;
     this.authCredentials = new Map(); // Store auth credentials by proxy URL
     this.proxyStats = new Map(); // Track proxy performance
+
+    // Extended proxy mode tracking
+    this.proxyMode = PROXY_MODES.SINGLE;
+    this.torConnected = false;
+    this.chainEnabled = false;
   }
 
   /**
@@ -554,6 +605,355 @@ class ProxyManager {
       }
     }
   }
+
+  // ==========================================
+  // Tor Integration Methods
+  // ==========================================
+
+  /**
+   * Connect to Tor network
+   * @param {Object} options - Tor configuration options
+   * @returns {Promise<Object>} - Connection result
+   */
+  async connectTor(options = {}) {
+    try {
+      const tor = getTorManager();
+      if (!tor) {
+        return {
+          success: false,
+          error: 'Tor manager not available'
+        };
+      }
+
+      // Configure Tor if options provided
+      if (Object.keys(options).length > 0) {
+        tor.configure(options);
+      }
+
+      // Connect to Tor
+      const result = await tor.connect();
+
+      if (result.success) {
+        // Apply Tor proxy to Electron session
+        const proxyConfig = tor.getProxyConfig();
+        await this.setProxy(proxyConfig);
+
+        this.torConnected = true;
+        this.proxyMode = PROXY_MODES.TOR;
+
+        console.log('[ProxyManager] Connected to Tor network');
+
+        return {
+          success: true,
+          message: 'Connected to Tor network',
+          proxyConfig,
+          exitIp: result.exitIp,
+          latency: result.latency
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ProxyManager] Error connecting to Tor:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Disconnect from Tor network
+   * @returns {Promise<Object>} - Disconnection result
+   */
+  async disconnectTor() {
+    try {
+      const tor = getTorManager();
+      if (!tor) {
+        return {
+          success: false,
+          error: 'Tor manager not available'
+        };
+      }
+
+      tor.disconnect();
+      await this.clearProxy();
+
+      this.torConnected = false;
+      this.proxyMode = PROXY_MODES.SINGLE;
+
+      console.log('[ProxyManager] Disconnected from Tor network');
+
+      return {
+        success: true,
+        message: 'Disconnected from Tor network'
+      };
+    } catch (error) {
+      console.error('[ProxyManager] Error disconnecting from Tor:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get Tor connection status
+   * @returns {Object} - Tor status
+   */
+  getTorStatus() {
+    const tor = getTorManager();
+    if (!tor) {
+      return {
+        available: false,
+        error: 'Tor manager not available'
+      };
+    }
+
+    const status = tor.getStatus();
+    return {
+      available: true,
+      ...status,
+      connectedViaProxyManager: this.torConnected
+    };
+  }
+
+  /**
+   * Request new Tor identity (circuit)
+   * @returns {Promise<Object>} - New identity result
+   */
+  async newTorIdentity() {
+    try {
+      const tor = getTorManager();
+      if (!tor) {
+        return {
+          success: false,
+          error: 'Tor manager not available'
+        };
+      }
+
+      if (!this.torConnected) {
+        return {
+          success: false,
+          error: 'Not connected to Tor. Use connect_tor first.'
+        };
+      }
+
+      const result = await tor.newIdentity();
+
+      if (result.success) {
+        console.log(`[ProxyManager] New Tor identity: ${result.previousExitIp} -> ${result.newExitIp}`);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ProxyManager] Error requesting new Tor identity:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get current Tor exit node IP
+   * @returns {Promise<Object>} - Exit IP result
+   */
+  async getTorExitIp() {
+    const tor = getTorManager();
+    if (!tor) {
+      return {
+        success: false,
+        error: 'Tor manager not available'
+      };
+    }
+
+    return await tor.getExitIp();
+  }
+
+  // ==========================================
+  // Proxy Chain Integration Methods
+  // ==========================================
+
+  /**
+   * Set proxy chain
+   * @param {Array} proxies - Array of proxy configurations
+   * @param {Object} options - Chain options
+   * @returns {Promise<Object>} - Result
+   */
+  async setProxyChain(proxies, options = {}) {
+    try {
+      const chain = getProxyChainManager();
+      if (!chain) {
+        return {
+          success: false,
+          error: 'Proxy chain manager not available'
+        };
+      }
+
+      // Configure chain options
+      if (options.chainType) {
+        chain.setChainType(options.chainType);
+      }
+      if (options.failoverEnabled !== undefined) {
+        chain.configure({ failoverEnabled: options.failoverEnabled });
+      }
+
+      // Set the chain
+      const result = chain.setChain(proxies);
+
+      if (result.success) {
+        // Apply the first proxy in the chain to Electron session
+        const proxyRules = chain.getProxyRules();
+        await session.defaultSession.setProxy({
+          proxyRules,
+          proxyBypassRules: options.bypassRules || '<local>'
+        });
+
+        this.chainEnabled = true;
+        this.proxyMode = PROXY_MODES.CHAIN;
+        this.isEnabled = true;
+
+        console.log(`[ProxyManager] Proxy chain set with ${result.chainLength} proxies`);
+
+        return {
+          success: true,
+          chainLength: result.chainLength,
+          chainType: chain.chainType,
+          proxyRules
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ProxyManager] Error setting proxy chain:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get current proxy chain configuration
+   * @returns {Object} - Chain configuration
+   */
+  getProxyChainConfig() {
+    const chain = getProxyChainManager();
+    if (!chain) {
+      return {
+        available: false,
+        error: 'Proxy chain manager not available'
+      };
+    }
+
+    return {
+      available: true,
+      ...chain.getChainConfig(),
+      enabledViaProxyManager: this.chainEnabled
+    };
+  }
+
+  /**
+   * Get proxy chain status
+   * @returns {Object} - Chain status
+   */
+  getProxyChainStatus() {
+    const chain = getProxyChainManager();
+    if (!chain) {
+      return {
+        available: false,
+        error: 'Proxy chain manager not available'
+      };
+    }
+
+    return {
+      available: true,
+      ...chain.getStatus(),
+      enabledViaProxyManager: this.chainEnabled
+    };
+  }
+
+  /**
+   * Test proxy chain connectivity
+   * @returns {Promise<Object>} - Test result
+   */
+  async testProxyChain() {
+    const chain = getProxyChainManager();
+    if (!chain) {
+      return {
+        success: false,
+        error: 'Proxy chain manager not available'
+      };
+    }
+
+    return await chain.validateChain();
+  }
+
+  /**
+   * Clear proxy chain
+   * @returns {Promise<Object>} - Result
+   */
+  async clearProxyChain() {
+    try {
+      const chain = getProxyChainManager();
+      if (!chain) {
+        return {
+          success: false,
+          error: 'Proxy chain manager not available'
+        };
+      }
+
+      chain.clearChain();
+      await this.clearProxy();
+
+      this.chainEnabled = false;
+      this.proxyMode = PROXY_MODES.SINGLE;
+
+      console.log('[ProxyManager] Proxy chain cleared');
+
+      return {
+        success: true,
+        message: 'Proxy chain cleared'
+      };
+    } catch (error) {
+      console.error('[ProxyManager] Error clearing proxy chain:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // ==========================================
+  // Extended Status Methods
+  // ==========================================
+
+  /**
+   * Get extended proxy status including Tor and Chain
+   * @returns {Object} - Extended status
+   */
+  getExtendedStatus() {
+    const baseStatus = this.getProxyStatus();
+
+    return {
+      ...baseStatus,
+      proxyMode: this.proxyMode,
+      tor: this.getTorStatus(),
+      chain: this.getProxyChainStatus()
+    };
+  }
+
+  /**
+   * Get available proxy modes
+   * @returns {Object} - Available modes
+   */
+  getAvailableModes() {
+    return {
+      modes: Object.values(PROXY_MODES),
+      currentMode: this.proxyMode
+    };
+  }
 }
 
 // Export singleton instance and class
@@ -562,5 +962,8 @@ const proxyManager = new ProxyManager();
 module.exports = {
   proxyManager,
   ProxyManager,
-  PROXY_TYPES
+  PROXY_TYPES,
+  PROXY_MODES,
+  getTorManager,
+  getProxyChainManager
 };

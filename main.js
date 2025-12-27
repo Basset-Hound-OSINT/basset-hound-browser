@@ -4,6 +4,8 @@ const fs = require('fs');
 const WebSocketServer = require('./websocket/server');
 const { getRandomViewport, getRealisticUserAgent, getEvasionScript, getEvasionScriptWithConfig } = require('./evasion/fingerprint');
 const { proxyManager } = require('./proxy/manager');
+const { torManager } = require('./proxy/tor');
+const { proxyChainManager } = require('./proxy/chain');
 const { userAgentManager } = require('./utils/user-agents');
 const SessionManager = require('./sessions/manager');
 const { TabManager } = require('./tabs/manager');
@@ -25,16 +27,56 @@ const { memoryManager } = require('./utils/memory-manager');
 const { TechnologyManager } = require('./technology');
 const { ExtractionManager } = require('./extraction');
 const { NetworkAnalysisManager } = require('./network-analysis/manager');
+const { SessionRecordingManager, RECORDING_STATE } = require('./recording/session-recorder');
+const { ReplayEngine, REPLAY_STATE, ERROR_MODE } = require('./recording/replay');
+const { HeadlessManager, headlessManager, HEADLESS_PRESETS } = require('./headless/manager');
+const { WindowManager, WindowState } = require('./windows/manager');
+const { WindowPool, PoolEntryState } = require('./windows/pool');
+
+// ==========================================
+// Configuration System
+// ==========================================
+const { initConfig } = require('./config');
+
+// Initialize configuration from all sources (CLI, env, file, defaults)
+const configResult = initConfig({ watch: true });
+
+// Handle --help flag
+if (configResult.help) {
+  console.log(configResult.helpText);
+  process.exit(0);
+}
+
+// Handle --version flag
+if (configResult.version) {
+  const packageJson = require('./package.json');
+  console.log(`Basset Hound Browser v${packageJson.version}`);
+  process.exit(0);
+}
+
+// Log configuration errors (non-fatal)
+if (configResult.errors.length > 0) {
+  console.warn('[Config] Configuration warnings:');
+  configResult.errors.forEach(err => console.warn(`  - ${err}`));
+}
+
+// Log active configuration source
+if (configResult.configPath) {
+  console.log(`[Config] Loaded configuration from: ${configResult.configPath}`);
+}
+
+// Make config accessible globally for this module
+const appConfig = configResult.config;
 
 // ==========================================
 // Error Recovery Configuration
 // ==========================================
 const RECOVERY_CONFIG = {
-  autoSaveInterval: 30000, // Auto-save session state every 30 seconds
+  autoSaveInterval: appConfig.browser?.recovery?.autoSaveInterval || 30000,
   recoveryFilePath: null, // Set during app ready
   lockFilePath: null, // Lock file to detect unclean shutdown
-  maxRecoveryAttempts: 3,
-  recoveryStateVersion: 1
+  maxRecoveryAttempts: appConfig.browser?.recovery?.maxRecoveryAttempts || 3,
+  recoveryStateVersion: appConfig.browser?.recovery?.stateVersion || 1
 };
 
 // Recovery state management
@@ -412,15 +454,21 @@ function setupMemoryManager() {
     }, 20);
   }
 
-  // Start memory monitoring with 60 second interval
-  memoryManager.startMonitoring(60000);
+  // Get memory config
+  const memoryConfig = appConfig.memory || {};
 
-  // Listen for memory status changes
-  memoryManager.on('statusChange', ({ oldStatus, newStatus, memInfo }) => {
-    console.log(`[MemoryManager] Status changed: ${oldStatus} -> ${newStatus} (${memInfo.heapUsedMB} MB)`);
-  });
+  // Start memory monitoring with configured interval
+  if (memoryConfig.monitoring?.enabled !== false) {
+    const monitoringInterval = memoryConfig.monitoring?.interval || 60000;
+    memoryManager.startMonitoring(monitoringInterval);
 
-  console.log('[MemoryManager] Memory monitoring initialized');
+    // Listen for memory status changes
+    memoryManager.on('statusChange', ({ oldStatus, newStatus, memInfo }) => {
+      console.log(`[MemoryManager] Status changed: ${oldStatus} -> ${newStatus} (${memInfo.heapUsedMB} MB)`);
+    });
+
+    console.log(`[MemoryManager] Memory monitoring initialized (interval: ${monitoringInterval}ms)`);
+  }
 }
 
 let mainWindow = null;
@@ -439,18 +487,129 @@ let scriptManager = null;
 let technologyManager = null;
 let extractionManager = null;
 let networkAnalysisManager = null;
+let sessionRecordingManager = null;
+let replayEngine = null;
+let windowManager = null;
+let windowPool = null;
 
-// Realistic viewport sizes for randomization
-const viewportConfig = getRandomViewport();
+// ==========================================
+// Headless Mode Configuration
+// ==========================================
+
+/**
+ * Get headless options from configuration
+ * Falls back to command-line arguments for backwards compatibility
+ * @returns {Object} Headless options
+ */
+function getHeadlessOptions() {
+  const args = process.argv;
+  // Config takes precedence, with CLI fallback for backwards compatibility
+  return {
+    headless: appConfig.headless?.enabled || args.includes('--headless'),
+    disableGpu: appConfig.headless?.disableGpu || args.includes('--disable-gpu'),
+    noSandbox: appConfig.headless?.noSandbox || args.includes('--no-sandbox'),
+    virtualDisplay: appConfig.headless?.virtualDisplay || args.includes('--virtual-display'),
+    preset: appConfig.headless?.preset || null
+  };
+}
+
+/**
+ * Configure Electron app for headless operation
+ * Must be called before app.whenReady()
+ */
+function configureHeadlessMode() {
+  const headlessOpts = getHeadlessOptions();
+
+  if (!headlessOpts.headless) {
+    console.log('[Headless] Headless mode not enabled');
+    return false;
+  }
+
+  console.log('[Headless] Configuring headless mode...');
+
+  // Apply preset if specified
+  if (headlessOpts.preset) {
+    headlessManager.applyPreset(headlessOpts.preset);
+    console.log(`[Headless] Applied preset: ${headlessOpts.preset}`);
+  }
+
+  // Initialize headless manager
+  headlessManager.parseCommandLineArgs();
+
+  // Apply GPU flags
+  if (headlessOpts.disableGpu) {
+    app.commandLine.appendSwitch('disable-gpu');
+    app.commandLine.appendSwitch('disable-gpu-compositing');
+    app.commandLine.appendSwitch('disable-software-rasterizer');
+    console.log('[Headless] GPU disabled');
+  }
+
+  // Apply sandbox flags (needed for Docker/root)
+  if (headlessOpts.noSandbox) {
+    app.commandLine.appendSwitch('no-sandbox');
+    app.commandLine.appendSwitch('disable-setuid-sandbox');
+    console.log('[Headless] Sandbox disabled');
+  }
+
+  // Apply common headless flags
+  app.commandLine.appendSwitch('disable-dev-shm-usage');
+  app.commandLine.appendSwitch('disable-background-networking');
+
+  // Detect and configure virtual display
+  if (headlessOpts.virtualDisplay) {
+    const envDetection = headlessManager.detectHeadlessEnvironment();
+    if (!envDetection.hasDisplay) {
+      const result = headlessManager.startVirtualDisplay();
+      if (result.success) {
+        console.log(`[Headless] Virtual display started: ${result.display}`);
+      } else {
+        console.warn(`[Headless] Failed to start virtual display: ${result.error}`);
+      }
+    }
+  }
+
+  // Enable headless manager
+  headlessManager.enabled = true;
+  headlessManager.initialized = true;
+
+  console.log('[Headless] Headless mode configured');
+  return true;
+}
+
+// Configure headless mode before app is ready
+const isHeadlessMode = configureHeadlessMode();
+
+// Get viewport configuration from config or use random
+function getViewportConfig() {
+  const browserConfig = appConfig.browser?.window || {};
+
+  // Use config values if randomization is disabled, otherwise use random viewport
+  if (!browserConfig.randomizeSize) {
+    return {
+      width: browserConfig.width || 1280,
+      height: browserConfig.height || 720
+    };
+  }
+
+  // Use random viewport for fingerprint evasion
+  return getRandomViewport();
+}
+
+const viewportConfig = getViewportConfig();
 
 function createWindow() {
   // Remove command line switches that reveal automation
   app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
   app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
 
-  mainWindow = new BrowserWindow({
+  const browserConfig = appConfig.browser?.window || {};
+
+  // Base window configuration using config values
+  let windowConfig = {
     width: viewportConfig.width,
     height: viewportConfig.height,
+    minWidth: browserConfig.minWidth || 800,
+    minHeight: browserConfig.minHeight || 600,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -460,10 +619,18 @@ function createWindow() {
       // Disable webdriver detection
       enableBlinkFeatures: '',
     },
-    // Anti-fingerprinting: randomize window position slightly
-    x: Math.floor(Math.random() * 100),
-    y: Math.floor(Math.random() * 100),
-  });
+    // Anti-fingerprinting: randomize window position based on config
+    x: browserConfig.randomizePosition !== false ? Math.floor(Math.random() * 100) : undefined,
+    y: browserConfig.randomizePosition !== false ? Math.floor(Math.random() * 100) : undefined,
+  };
+
+  // Apply headless mode configuration if enabled
+  if (isHeadlessMode) {
+    windowConfig = headlessManager.getBrowserWindowConfig(windowConfig);
+    console.log('[Headless] BrowserWindow configured for headless mode');
+  }
+
+  mainWindow = new BrowserWindow(windowConfig);
 
   // Set realistic user agent
   const userAgent = getRealisticUserAgent();
@@ -473,11 +640,22 @@ function createWindow() {
   const headerStoragePath = path.join(app.getPath('userData'), 'headers');
   headerManager = new HeaderManager({ storagePath: headerStoragePath });
 
-  // Set up default headers for human-like appearance
-  headerManager.setRequestHeader('Accept-Language', 'en-US,en;q=0.9');
-  headerManager.setRequestHeader('Accept-Encoding', 'gzip, deflate, br');
+  // Set up default headers for human-like appearance using config values
+  const headersConfig = appConfig.network?.headers || {};
+  headerManager.setRequestHeader('Accept-Language', headersConfig.acceptLanguage || 'en-US,en;q=0.9');
+  headerManager.setRequestHeader('Accept-Encoding', headersConfig.acceptEncoding || 'gzip, deflate, br');
   headerManager.setRequestHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8');
-  headerManager.removeRequestHeader('Sec-Ch-Ua-Platform');
+
+  // Remove headers as specified in config
+  const removeHeaders = headersConfig.removeHeaders || ['Sec-Ch-Ua-Platform'];
+  removeHeaders.forEach(header => headerManager.removeRequestHeader(header));
+
+  // Add custom headers from config
+  if (headersConfig.customHeaders) {
+    Object.entries(headersConfig.customHeaders).forEach(([name, value]) => {
+      headerManager.setRequestHeader(name, value);
+    });
+  }
 
   // Load predefined profiles into header manager
   for (const [name, profile] of Object.entries(PREDEFINED_PROFILES)) {
@@ -499,9 +677,12 @@ function createWindow() {
   // Initialize Cookie Manager
   cookieManager = new CookieManager(session.defaultSession);
 
-  // Initialize Download Manager
+  // Initialize Download Manager with config values
+  const downloadsConfig = appConfig.browser?.downloads || {};
   downloadManager = new DownloadManager({
-    downloadPath: app.getPath('downloads')
+    downloadPath: downloadsConfig.path || app.getPath('downloads'),
+    askBeforeDownload: downloadsConfig.askBeforeDownload || false,
+    maxConcurrent: downloadsConfig.maxConcurrent || 5
   });
 
   // Setup download manager event handlers
@@ -520,10 +701,11 @@ function createWindow() {
     });
   });
 
-  // Initialize Tab Manager with event callbacks
+  // Initialize Tab Manager with config values
+  const tabsConfig = appConfig.browser?.tabs || {};
   tabManager = new TabManager({
-    homePage: 'https://www.google.com',
-    maxTabs: 50,
+    homePage: tabsConfig.homePage || 'https://www.google.com',
+    maxTabs: tabsConfig.maxTabs || 50,
     onTabCreated: (tab) => {
       if (mainWindow) {
         mainWindow.webContents.send('tab-created', tab);
@@ -546,8 +728,12 @@ function createWindow() {
     }
   });
 
-  // Create initial tab
-  tabManager.createTab({ url: 'https://www.google.com', active: true });
+  // Create initial tab if configured
+  if (tabsConfig.defaultTab !== false) {
+    // Use positional URL argument if provided, otherwise use home page
+    const startupUrl = configResult.positionalArgs?.[0] || tabsConfig.homePage || 'https://www.google.com';
+    tabManager.createTab({ url: startupUrl, active: true });
+  }
 
   // Initialize Network Throttler with webContents for CDP access
   networkThrottler.initialize(mainWindow.webContents);
@@ -608,8 +794,54 @@ function createWindow() {
   // Initialize Network Analysis Manager
   networkAnalysisManager = new NetworkAnalysisManager();
 
+  // Initialize Session Recording Manager for action recording
+  sessionRecordingManager = new SessionRecordingManager({
+    mainWindow,
+    storagePath: path.join(__dirname, 'recordings')
+  });
+
+  // Initialize Replay Engine for playing back recordings
+  replayEngine = new ReplayEngine({
+    mainWindow
+  });
+
+  // Initialize Window Manager and Window Pool for multi-window orchestration
+  windowManager = new WindowManager({
+    mainWindow,
+    maxWindows: 20,
+    homePage: 'about:blank',
+    preloadPath: path.join(__dirname, 'preload.js'),
+    rendererPath: path.join(__dirname, 'renderer', 'index.html')
+  });
+
+  windowPool = new WindowPool({
+    minPoolSize: 2,
+    maxPoolSize: 10,
+    warmupDelay: 1000,
+    healthCheckInterval: 60000,
+    maxIdleTime: 300000,
+    preloadPath: path.join(__dirname, 'preload.js'),
+    rendererPath: path.join(__dirname, 'renderer', 'index.html')
+  });
+
+  // Link window manager and pool
+  windowManager.setWindowPool(windowPool);
+
   // Initialize WebSocket server for external communication with managers
-  wsServer = new WebSocketServer(8765, mainWindow, {
+  const serverConfig = appConfig.server || {};
+  const wsPort = serverConfig.port || 8765;
+
+  wsServer = new WebSocketServer(wsPort, mainWindow, {
+    // Server options from config
+    sslEnabled: serverConfig.ssl?.enabled || false,
+    sslCertPath: serverConfig.ssl?.certPath,
+    sslKeyPath: serverConfig.ssl?.keyPath,
+    sslCaPath: serverConfig.ssl?.caPath,
+    authToken: serverConfig.auth?.token,
+    requireAuth: serverConfig.auth?.requireAuth || false,
+    heartbeatInterval: serverConfig.heartbeat?.interval || 30000,
+    heartbeatTimeout: serverConfig.heartbeat?.timeout || 60000,
+    // Managers
     sessionManager,
     tabManager,
     cookieManager,
@@ -625,10 +857,28 @@ function createWindow() {
     blockingManager,
     headerManager,
     memoryManager,
+    torManager,
+    proxyChainManager,
     technologyManager,
     extractionManager,
-    networkAnalysisManager
+    networkAnalysisManager,
+    sessionRecordingManager,
+    replayEngine,
+    headlessManager,
+    windowManager,
+    windowPool
   });
+
+  console.log(`[WebSocket] Server initialized on port ${wsPort}`);
+
+  // Set main window reference for headless manager
+  headlessManager.setMainWindow(mainWindow);
+  headlessManager.setWebSocketServer(wsServer);
+
+  // Enable offscreen rendering if in headless mode
+  if (isHeadlessMode && headlessManager.presetConfig.offscreenRendering) {
+    headlessManager.enableOffscreenRendering(mainWindow.webContents);
+  }
 
   // Initialize Memory Manager with cleanup callbacks
   setupMemoryManager();
@@ -701,6 +951,26 @@ function createWindow() {
     // Cleanup Network Analysis manager
     if (networkAnalysisManager) {
       networkAnalysisManager.cleanup();
+    }
+    // Cleanup Session Recording manager
+    if (sessionRecordingManager) {
+      sessionRecordingManager.cleanup();
+    }
+    // Cleanup Replay Engine
+    if (replayEngine) {
+      replayEngine.cleanup();
+    }
+    // Cleanup Headless manager
+    if (headlessManager) {
+      headlessManager.cleanup();
+    }
+    // Cleanup Window Pool
+    if (windowPool) {
+      windowPool.cleanup();
+    }
+    // Cleanup Window Manager
+    if (windowManager) {
+      windowManager.cleanup();
     }
     mainWindow = null;
     if (wsServer) {

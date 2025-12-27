@@ -1,0 +1,64 @@
+# Basset Hound Browser - Docker Compose Configuration
+# For running the browser in headless mode with Xvfb
+
+version: '3.8'
+
+services:
+  basset-hound-browser:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: basset-hound-browser
+    ports:
+      # WebSocket API port
+      - "8765:8765"
+    environment:
+      # Display configuration
+      - DISPLAY=:99
+      - SCREEN_RESOLUTION=1920x1080x24
+      # Electron configuration
+      - ELECTRON_DISABLE_SANDBOX=1
+      # Optional: WebSocket authentication token
+      # - BASSET_WS_TOKEN=your-secure-token
+      # Optional: Enable SSL for WebSocket
+      # - BASSET_WS_SSL_ENABLED=true
+      # - BASSET_WS_SSL_CERT=/app/certs/server.crt
+      # - BASSET_WS_SSL_KEY=/app/certs/server.key
+    volumes:
+      # Mount for downloads
+      - ./downloads:/app/downloads
+      # Mount for screenshots
+      - ./screenshots:/app/screenshots
+      # Mount for session data (optional, for persistence)
+      - basset-data:/app/data
+      # Mount for certificates (if using SSL)
+      # - ./certs:/app/certs:ro
+    # Security: drop unnecessary capabilities
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN  # Required for Electron sandbox
+    # Security context
+    security_opt:
+      - no-new-privileges:true
+    # Limit resources
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Restart policy
+    restart: unless-stopped
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  basset-data:
+    driver: local

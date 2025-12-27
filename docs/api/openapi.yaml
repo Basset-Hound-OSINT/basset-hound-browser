@@ -1,0 +1,1067 @@
+openapi: 3.0.3
+info:
+  title: Basset Hound Browser API
+  description: |
+    WebSocket API for controlling Basset Hound Browser.
+
+    This API uses WebSocket for communication. All commands are sent as JSON messages
+    with the following structure:
+
+    ```json
+    {
+      "id": "unique-request-id",
+      "command": "command_name",
+      "param1": "value1",
+      "param2": "value2"
+    }
+    ```
+
+    Responses follow this structure:
+
+    ```json
+    {
+      "id": "unique-request-id",
+      "success": true,
+      "data": { ... }
+    }
+    ```
+
+    Error responses:
+
+    ```json
+    {
+      "id": "unique-request-id",
+      "success": false,
+      "error": "Error message",
+      "recovery": "Suggestion for recovery"
+    }
+    ```
+  version: 4.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    name: Basset Hound Team
+    url: https://github.com/basset-hound/browser
+
+servers:
+  - url: ws://localhost:8765
+    description: Default local WebSocket server
+
+tags:
+  - name: Navigation
+    description: Page navigation commands
+  - name: Tabs
+    description: Tab management
+  - name: Content Extraction
+    description: Extract content from pages
+  - name: Technology Detection
+    description: Detect technologies used on pages
+  - name: Network Analysis
+    description: Capture and analyze network traffic
+  - name: Screenshots
+    description: Take screenshots
+  - name: Cookies
+    description: Cookie management
+  - name: Input
+    description: Simulate user input
+  - name: JavaScript
+    description: Execute JavaScript
+  - name: Proxy
+    description: Proxy configuration
+  - name: Fingerprint
+    description: Browser fingerprint and evasion
+
+paths:
+  /navigate:
+    post:
+      tags: [Navigation]
+      summary: Navigate to URL
+      description: Navigate the browser to a specified URL
+      x-websocket-command: navigate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: URL to navigate to
+                  example: "https://example.com"
+                waitUntil:
+                  type: string
+                  enum: [load, domcontentloaded, networkidle]
+                  default: load
+                  description: Wait condition
+      responses:
+        '200':
+          description: Navigation successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /go_back:
+    post:
+      tags: [Navigation]
+      summary: Navigate back
+      x-websocket-command: go_back
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /go_forward:
+    post:
+      tags: [Navigation]
+      summary: Navigate forward
+      x-websocket-command: go_forward
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /reload:
+    post:
+      tags: [Navigation]
+      summary: Reload page
+      x-websocket-command: reload
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ignoreCache:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /get_url:
+    post:
+      tags: [Navigation]
+      summary: Get current URL
+      x-websocket-command: get_url
+      responses:
+        '200':
+          description: Current URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  url: { type: string }
+
+  /get_title:
+    post:
+      tags: [Navigation]
+      summary: Get page title
+      x-websocket-command: get_title
+      responses:
+        '200':
+          description: Page title
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  title: { type: string }
+
+  # Tabs
+  /get_tabs:
+    post:
+      tags: [Tabs]
+      summary: Get all tabs
+      x-websocket-command: get_tabs
+      responses:
+        '200':
+          description: List of tabs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  tabs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tab'
+
+  /new_tab:
+    post:
+      tags: [Tabs]
+      summary: Open new tab
+      x-websocket-command: new_tab
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: Tab created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  tabId: { type: string }
+
+  /switch_tab:
+    post:
+      tags: [Tabs]
+      summary: Switch to tab
+      x-websocket-command: switch_tab
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tabId]
+              properties:
+                tabId: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /close_tab:
+    post:
+      tags: [Tabs]
+      summary: Close tab
+      x-websocket-command: close_tab
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tabId: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  # Content Extraction
+  /extract_metadata:
+    post:
+      tags: [Content Extraction]
+      summary: Extract page metadata
+      description: Extract meta tags, Open Graph, Twitter Cards
+      x-websocket-command: extract_metadata
+      responses:
+        '200':
+          description: Page metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetadataResponse'
+
+  /extract_links:
+    post:
+      tags: [Content Extraction]
+      summary: Extract links
+      x-websocket-command: extract_links
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                includeExternal:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Extracted links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LinksResponse'
+
+  /extract_forms:
+    post:
+      tags: [Content Extraction]
+      summary: Extract forms
+      x-websocket-command: extract_forms
+      responses:
+        '200':
+          description: Extracted forms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormsResponse'
+
+  /extract_images:
+    post:
+      tags: [Content Extraction]
+      summary: Extract images
+      x-websocket-command: extract_images
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                includeLazy:
+                  type: boolean
+                  default: true
+      responses:
+        '200':
+          description: Extracted images
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImagesResponse'
+
+  /extract_scripts:
+    post:
+      tags: [Content Extraction]
+      summary: Extract scripts
+      x-websocket-command: extract_scripts
+      responses:
+        '200':
+          description: Extracted scripts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScriptsResponse'
+
+  /extract_structured_data:
+    post:
+      tags: [Content Extraction]
+      summary: Extract structured data
+      description: Extract JSON-LD and microdata
+      x-websocket-command: extract_structured_data
+      responses:
+        '200':
+          description: Structured data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  jsonLd: { type: array }
+                  microdata: { type: array }
+
+  /extract_all:
+    post:
+      tags: [Content Extraction]
+      summary: Extract all content
+      x-websocket-command: extract_all
+      responses:
+        '200':
+          description: All extracted content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  metadata: { type: object }
+                  links: { type: array }
+                  forms: { type: array }
+                  images: { type: array }
+                  scripts: { type: array }
+                  structuredData: { type: object }
+
+  # Technology Detection
+  /detect_technologies:
+    post:
+      tags: [Technology Detection]
+      summary: Detect technologies
+      description: Detect technologies used on the current page
+      x-websocket-command: detect_technologies
+      responses:
+        '200':
+          description: Detected technologies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnologiesResponse'
+
+  /get_technology_categories:
+    post:
+      tags: [Technology Detection]
+      summary: Get technology categories
+      x-websocket-command: get_technology_categories
+      responses:
+        '200':
+          description: Technology categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  categories: { type: array, items: { type: string } }
+
+  /get_technology_info:
+    post:
+      tags: [Technology Detection]
+      summary: Get technology info
+      x-websocket-command: get_technology_info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: Technology details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnologyInfo'
+
+  /search_technologies:
+    post:
+      tags: [Technology Detection]
+      summary: Search technologies
+      x-websocket-command: search_technologies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query: { type: string }
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Technology'
+
+  # Network Analysis
+  /start_network_capture:
+    post:
+      tags: [Network Analysis]
+      summary: Start network capture
+      x-websocket-command: start_network_capture
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filterTypes:
+                  type: array
+                  items: { type: string }
+                  description: Resource types to capture
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /stop_network_capture:
+    post:
+      tags: [Network Analysis]
+      summary: Stop network capture
+      x-websocket-command: stop_network_capture
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /get_network_requests:
+    post:
+      tags: [Network Analysis]
+      summary: Get captured requests
+      x-websocket-command: get_network_requests
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filterType: { type: string }
+                filterDomain: { type: string }
+      responses:
+        '200':
+          description: Network requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkRequestsResponse'
+
+  /get_network_statistics:
+    post:
+      tags: [Network Analysis]
+      summary: Get network statistics
+      x-websocket-command: get_network_statistics
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetworkStatistics'
+
+  /export_network_capture:
+    post:
+      tags: [Network Analysis]
+      summary: Export network capture
+      x-websocket-command: export_network_capture
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                format:
+                  type: string
+                  enum: [har, json]
+                  default: har
+      responses:
+        '200':
+          description: Export data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: object }
+
+  /clear_network_capture:
+    post:
+      tags: [Network Analysis]
+      summary: Clear captured data
+      x-websocket-command: clear_network_capture
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /analyze_security_headers:
+    post:
+      tags: [Network Analysis]
+      summary: Analyze security headers
+      x-websocket-command: analyze_security_headers
+      responses:
+        '200':
+          description: Security analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecurityHeadersResponse'
+
+  # Screenshots
+  /screenshot:
+    post:
+      tags: [Screenshots]
+      summary: Take screenshot
+      x-websocket-command: screenshot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullPage:
+                  type: boolean
+                  default: false
+                format:
+                  type: string
+                  enum: [png, jpeg]
+                  default: png
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 80
+      responses:
+        '200':
+          description: Screenshot data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: string
+                    format: byte
+                    description: Base64 encoded image
+
+  /save_screenshot:
+    post:
+      tags: [Screenshots]
+      summary: Save screenshot to file
+      x-websocket-command: save_screenshot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path]
+              properties:
+                path: { type: string }
+                fullPage: { type: boolean, default: false }
+                format: { type: string, enum: [png, jpeg] }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  # Cookies
+  /get_cookies:
+    post:
+      tags: [Cookies]
+      summary: Get cookies
+      x-websocket-command: get_cookies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: { type: string }
+      responses:
+        '200':
+          description: Cookies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  cookies:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Cookie'
+
+  /set_cookie:
+    post:
+      tags: [Cookies]
+      summary: Set cookie
+      x-websocket-command: set_cookie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cookie'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /delete_cookies:
+    post:
+      tags: [Cookies]
+      summary: Delete cookies
+      x-websocket-command: delete_cookies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: { type: string }
+                name: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  # Input
+  /click:
+    post:
+      tags: [Input]
+      summary: Click element
+      x-websocket-command: click
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [selector]
+              properties:
+                selector: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /type:
+    post:
+      tags: [Input]
+      summary: Type text
+      x-websocket-command: type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [selector, text]
+              properties:
+                selector: { type: string }
+                text: { type: string }
+                delay:
+                  type: integer
+                  default: 50
+                  description: Delay between keystrokes (ms)
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /scroll:
+    post:
+      tags: [Input]
+      summary: Scroll page
+      x-websocket-command: scroll
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                x: { type: integer, default: 0 }
+                y: { type: integer, default: 0 }
+                selector: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  # JavaScript
+  /execute_script:
+    post:
+      tags: [JavaScript]
+      summary: Execute JavaScript
+      x-websocket-command: execute_script
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [script]
+              properties:
+                script: { type: string }
+      responses:
+        '200':
+          description: Script result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  result: {}
+
+  # Proxy
+  /set_proxy:
+    post:
+      tags: [Proxy]
+      summary: Set proxy
+      x-websocket-command: set_proxy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [host, port]
+              properties:
+                host: { type: string }
+                port: { type: integer }
+                protocol:
+                  type: string
+                  enum: [http, https, socks5]
+                  default: http
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /clear_proxy:
+    post:
+      tags: [Proxy]
+      summary: Clear proxy
+      x-websocket-command: clear_proxy
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  # Fingerprint
+  /set_user_agent:
+    post:
+      tags: [Fingerprint]
+      summary: Set user agent
+      x-websocket-command: set_user_agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userAgent]
+              properties:
+                userAgent: { type: string }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /set_viewport:
+    post:
+      tags: [Fingerprint]
+      summary: Set viewport size
+      x-websocket-command: set_viewport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [width, height]
+              properties:
+                width: { type: integer }
+                height: { type: integer }
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+  /get_fingerprint:
+    post:
+      tags: [Fingerprint]
+      summary: Get browser fingerprint
+      x-websocket-command: get_fingerprint
+      responses:
+        '200':
+          description: Fingerprint data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  fingerprint: { type: object }
+
+  /randomize_fingerprint:
+    post:
+      tags: [Fingerprint]
+      summary: Randomize fingerprint
+      x-websocket-command: randomize_fingerprint
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+
+components:
+  schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        id: { type: string }
+        success: { type: boolean }
+        data: { type: object }
+
+    ErrorResponse:
+      type: object
+      properties:
+        id: { type: string }
+        success:
+          type: boolean
+          enum: [false]
+        error: { type: string }
+        recovery: { type: string }
+
+    Tab:
+      type: object
+      properties:
+        id: { type: string }
+        url: { type: string }
+        title: { type: string }
+        active: { type: boolean }
+
+    Cookie:
+      type: object
+      properties:
+        name: { type: string }
+        value: { type: string }
+        domain: { type: string }
+        path: { type: string, default: "/" }
+        secure: { type: boolean }
+        httpOnly: { type: boolean }
+        expirationDate: { type: number }
+
+    Technology:
+      type: object
+      properties:
+        name: { type: string }
+        version: { type: string }
+        categories: { type: array, items: { type: string } }
+        website: { type: string }
+        icon: { type: string }
+
+    TechnologyInfo:
+      type: object
+      properties:
+        success: { type: boolean }
+        name: { type: string }
+        description: { type: string }
+        website: { type: string }
+        categories: { type: array, items: { type: string } }
+        patterns: { type: object }
+
+    TechnologiesResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        url: { type: string }
+        technologies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Technology'
+
+    MetadataResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        title: { type: string }
+        description: { type: string }
+        keywords: { type: array, items: { type: string } }
+        author: { type: string }
+        canonical: { type: string }
+        openGraph: { type: object }
+        twitterCard: { type: object }
+
+    LinksResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        links:
+          type: array
+          items:
+            type: object
+            properties:
+              href: { type: string }
+              text: { type: string }
+              rel: { type: string }
+              external: { type: boolean }
+
+    FormsResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        forms:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              action: { type: string }
+              method: { type: string }
+              fields: { type: array }
+
+    ImagesResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              src: { type: string }
+              alt: { type: string }
+              width: { type: integer }
+              height: { type: integer }
+
+    ScriptsResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        scripts:
+          type: array
+          items:
+            type: object
+            properties:
+              src: { type: string }
+              type: { type: string }
+              async: { type: boolean }
+              defer: { type: boolean }
+
+    NetworkRequest:
+      type: object
+      properties:
+        id: { type: string }
+        url: { type: string }
+        method: { type: string }
+        type: { type: string }
+        status: { type: integer }
+        statusText: { type: string }
+        size: { type: integer }
+        duration: { type: number }
+        timestamp: { type: number }
+
+    NetworkRequestsResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkRequest'
+
+    NetworkStatistics:
+      type: object
+      properties:
+        success: { type: boolean }
+        totalRequests: { type: integer }
+        totalSize: { type: integer }
+        byType: { type: object }
+        byStatus: { type: object }
+        averageDuration: { type: number }
+
+    SecurityHeadersResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        score: { type: integer }
+        headers:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              present: { type: boolean }
+              value: { type: string }
+              recommendation: { type: string }
+
+  responses:
+    Success:
+      description: Operation successful
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessResponse'
+
+    Error:
+      description: Operation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

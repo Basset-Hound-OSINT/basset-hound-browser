@@ -77,6 +77,7 @@
       "storage/**/*.js",
       "tabs/**/*.js",
       "sessions/**/*.js",
+      "logging/**/*.js",
       "!**/node_modules/**"
     ],
     "coverageThreshold": {
@@ -111,7 +112,8 @@
       "utils/**/*",
       "screenshots/**/*",
       "recording/**/*",
-      "input/**/*"
+      "input/**/*",
+      "logging/**/*"
     ],
     "win": {
       "target": "nsis",
