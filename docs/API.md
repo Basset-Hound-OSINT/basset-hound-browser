@@ -5,12 +5,16 @@ Complete documentation for the WebSocket API that enables programmatic control o
 ## Table of Contents
 
 - [Connection](#connection)
+- [SSL/TLS Configuration](#ssltls-configuration)
 - [Message Format](#message-format)
 - [Response Format](#response-format)
 - [Commands Reference](#commands-reference)
   - [Navigation](#navigation)
   - [DOM Manipulation](#dom-manipulation)
   - [Content Extraction](#content-extraction)
+  - [Technology Detection](#technology-detection) *(New in v4.0)*
+  - [Advanced Content Extraction](#advanced-content-extraction) *(New in v4.0)*
+  - [Network Analysis](#network-analysis) *(New in v4.0)*
   - [Script Execution](#script-execution)
   - [Cookie Management](#cookie-management)
   - [Utility Commands](#utility-commands)
@@ -23,10 +27,53 @@ Complete documentation for the WebSocket API that enables programmatic control o
 ### WebSocket Endpoint
 
 ```
-ws://localhost:8765
+ws://localhost:8765   # Unencrypted connection
+wss://localhost:8765  # SSL/TLS encrypted connection (when SSL is enabled)
 ```
 
-The WebSocket server starts automatically when the browser launches and listens on port 8765 by default.
+The WebSocket server starts automatically when the browser launches and listens on port 8765 by default. For secure connections, see [SSL/TLS Configuration](#ssltls-configuration) to enable `wss://` support.
+
+### Authentication
+
+The WebSocket server supports optional token-based authentication. When authentication is enabled (via `BASSET_WS_TOKEN` environment variable or constructor option), clients must authenticate before executing commands.
+
+#### Authentication Methods
+
+1. **Query Parameter** - Pass token in the connection URL:
+   ```
+   ws://localhost:8765?token=your-secret-token
+   ```
+
+2. **Authorization Header** - Pass token in the HTTP header:
+   ```
+   Authorization: Bearer your-secret-token
+   ```
+
+3. **Authenticate Command** - Send auth command after connecting:
+   ```json
+   {
+     "id": "1",
+     "command": "authenticate",
+     "token": "your-secret-token"
+   }
+   ```
+
+#### Setting Up Authentication
+
+Set the `BASSET_WS_TOKEN` environment variable before starting the browser:
+
+```bash
+BASSET_WS_TOKEN=my-secure-token npm start
+```
+
+Or pass it in code when initializing the WebSocket server:
+
+```javascript
+const wsServer = new WebSocketServer(8765, mainWindow, {
+  authToken: 'my-secure-token',
+  requireAuth: true
+});
+```
 
 ### Connection Events
 
@@ -36,9 +83,20 @@ Upon successful connection, the server sends a status message:
 {
   "type": "status",
   "message": "connected",
-  "clientId": "client-1703123456789-abc123def"
+  "clientId": "client-1703123456789-abc123def",
+  "authenticated": true,
+  "authRequired": false
 }
 ```
+
+### Heartbeat / Keepalive
+
+The server implements automatic heartbeat monitoring to detect dead connections:
+
+- **Ping Interval**: 30 seconds (configurable via `heartbeatInterval` option)
+- **Timeout**: 60 seconds (configurable via `heartbeatTimeout` option)
+- Clients that don't respond to ping within the timeout are automatically disconnected
+- Standard WebSocket ping/pong frames are used (handled automatically by WebSocket libraries)
 
 ### Connection Example (JavaScript)
 
@@ -64,6 +122,74 @@ ws.on('error', (error) => {
 });
 ```
 
+### Connection with Auto-Reconnect (JavaScript)
+
+```javascript
+const WebSocket = require('ws');
+
+class ResilientWebSocket {
+  constructor(url, options = {}) {
+    this.url = url;
+    this.reconnectInterval = options.reconnectInterval || 3000;
+    this.maxReconnectAttempts = options.maxReconnectAttempts || 10;
+    this.reconnectAttempts = 0;
+    this.ws = null;
+    this.messageHandlers = [];
+    this.connect();
+  }
+
+  connect() {
+    this.ws = new WebSocket(this.url);
+
+    this.ws.on('open', () => {
+      console.log('Connected to Basset Hound Browser');
+      this.reconnectAttempts = 0;
+    });
+
+    this.ws.on('message', (data) => {
+      const response = JSON.parse(data);
+      this.messageHandlers.forEach(handler => handler(response));
+    });
+
+    this.ws.on('close', () => {
+      console.log('Disconnected, attempting reconnect...');
+      this.scheduleReconnect();
+    });
+
+    this.ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
+  }
+
+  scheduleReconnect() {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      console.log(`Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
+      setTimeout(() => this.connect(), this.reconnectInterval);
+    } else {
+      console.error('Max reconnect attempts reached');
+    }
+  }
+
+  send(command) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(command));
+    } else {
+      console.error('WebSocket not connected');
+    }
+  }
+
+  onMessage(handler) {
+    this.messageHandlers.push(handler);
+  }
+}
+
+// Usage
+const client = new ResilientWebSocket('ws://localhost:8765');
+client.onMessage((response) => console.log('Received:', response));
+client.send({ id: '1', command: 'ping' });
+```
+
 ### Connection Example (Python)
 
 ```python
@@ -84,6 +210,373 @@ async def connect():
 
 asyncio.run(connect())
 ```
+
+### Connection with Auto-Reconnect (Python)
+
+```python
+import asyncio
+import websockets
+import json
+from typing import Callable, Optional
+
+class ResilientWebSocket:
+    def __init__(
+        self,
+        url: str,
+        reconnect_interval: float = 3.0,
+        max_reconnect_attempts: int = 10,
+        auth_token: Optional[str] = None
+    ):
+        self.url = url
+        self.reconnect_interval = reconnect_interval
+        self.max_reconnect_attempts = max_reconnect_attempts
+        self.auth_token = auth_token
+        self.ws = None
+        self.reconnect_attempts = 0
+        self.message_handlers = []
+        self._running = False
+
+    async def connect(self):
+        self._running = True
+        while self._running and self.reconnect_attempts < self.max_reconnect_attempts:
+            try:
+                # Add token to URL if provided
+                url = f"{self.url}?token={self.auth_token}" if self.auth_token else self.url
+                async with websockets.connect(url) as ws:
+                    self.ws = ws
+                    self.reconnect_attempts = 0
+                    print("Connected to Basset Hound Browser")
+
+                    async for message in ws:
+                        response = json.loads(message)
+                        for handler in self.message_handlers:
+                            await handler(response)
+
+            except websockets.ConnectionClosed:
+                print("Connection closed, reconnecting...")
+            except Exception as e:
+                print(f"Connection error: {e}")
+
+            if self._running:
+                self.reconnect_attempts += 1
+                print(f"Reconnect attempt {self.reconnect_attempts}/{self.max_reconnect_attempts}")
+                await asyncio.sleep(self.reconnect_interval)
+
+        if self.reconnect_attempts >= self.max_reconnect_attempts:
+            print("Max reconnect attempts reached")
+
+    async def send(self, command: dict):
+        if self.ws:
+            await self.ws.send(json.dumps(command))
+
+    def on_message(self, handler: Callable):
+        self.message_handlers.append(handler)
+
+    def close(self):
+        self._running = False
+
+# Usage
+async def main():
+    client = ResilientWebSocket(
+        'ws://localhost:8765',
+        auth_token='your-token-here'
+    )
+
+    async def handle_message(response):
+        print(f"Received: {response}")
+
+    client.on_message(handle_message)
+
+    # Run in background
+    asyncio.create_task(client.connect())
+
+    # Send commands
+    await asyncio.sleep(1)  # Wait for connection
+    await client.send({"id": "1", "command": "ping"})
+
+    # Keep running
+    await asyncio.sleep(10)
+    client.close()
+
+asyncio.run(main())
+```
+
+## SSL/TLS Configuration
+
+Enable secure WebSocket connections (`wss://`) for encrypted communication between clients and the Basset Hound Browser.
+
+### Environment Variables
+
+Configure SSL/TLS by setting the following environment variables before starting the browser:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `BASSET_WS_SSL_ENABLED` | Yes | Set to `true` to enable SSL/TLS |
+| `BASSET_WS_SSL_CERT` | Yes | Path to the SSL certificate file (PEM format) |
+| `BASSET_WS_SSL_KEY` | Yes | Path to the SSL private key file (PEM format) |
+| `BASSET_WS_SSL_CA` | No | Path to the CA certificate file (PEM format) for client verification |
+
+**Example:**
+
+```bash
+export BASSET_WS_SSL_ENABLED=true
+export BASSET_WS_SSL_CERT=/path/to/cert.pem
+export BASSET_WS_SSL_KEY=/path/to/key.pem
+export BASSET_WS_SSL_CA=/path/to/ca.pem  # Optional: for mutual TLS
+
+npm start
+```
+
+Or as a single command:
+
+```bash
+BASSET_WS_SSL_ENABLED=true \
+BASSET_WS_SSL_CERT=/path/to/cert.pem \
+BASSET_WS_SSL_KEY=/path/to/key.pem \
+npm start
+```
+
+### Connection Examples with SSL/TLS
+
+#### JavaScript (Node.js)
+
+```javascript
+const WebSocket = require('ws');
+
+// Basic wss:// connection
+const ws = new WebSocket('wss://localhost:8765');
+
+ws.on('open', () => {
+  console.log('Secure connection established');
+});
+
+ws.on('message', (data) => {
+  const response = JSON.parse(data);
+  console.log('Received:', response);
+});
+
+ws.on('error', (error) => {
+  console.error('WebSocket error:', error);
+});
+```
+
+**With custom SSL options (e.g., self-signed certificates):**
+
+```javascript
+const WebSocket = require('ws');
+const https = require('https');
+const fs = require('fs');
+
+// For self-signed certificates in development
+const ws = new WebSocket('wss://localhost:8765', {
+  rejectUnauthorized: false  // WARNING: Only use in development!
+});
+
+// For production with custom CA
+const ws = new WebSocket('wss://localhost:8765', {
+  ca: fs.readFileSync('/path/to/ca.pem')
+});
+```
+
+#### Python
+
+```python
+import asyncio
+import websockets
+import ssl
+import json
+
+async def connect_secure():
+    # Create SSL context
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+
+    # For production: load CA certificate
+    ssl_context.load_verify_locations('/path/to/ca.pem')
+
+    async with websockets.connect(
+        "wss://localhost:8765",
+        ssl=ssl_context
+    ) as ws:
+        response = await ws.recv()
+        print(f"Connected: {response}")
+
+        await ws.send(json.dumps({"command": "ping"}))
+        response = await ws.recv()
+        print(f"Response: {response}")
+
+asyncio.run(connect_secure())
+```
+
+**With self-signed certificates (development only):**
+
+```python
+import asyncio
+import websockets
+import ssl
+import json
+
+async def connect_self_signed():
+    # WARNING: Only use in development!
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
+    async with websockets.connect(
+        "wss://localhost:8765",
+        ssl=ssl_context
+    ) as ws:
+        response = await ws.recv()
+        print(f"Connected: {response}")
+
+asyncio.run(connect_self_signed())
+```
+
+**Note:** Disabling certificate verification (`rejectUnauthorized: false` in Node.js or `verify_mode = ssl.CERT_NONE` in Python) should only be used in development environments. Always use properly signed certificates in production.
+
+### Generating Self-Signed Certificates
+
+For development and testing, you can generate self-signed certificates using OpenSSL or the built-in generator.
+
+#### Using OpenSSL
+
+Generate a self-signed certificate valid for 365 days:
+
+```bash
+# Generate private key
+openssl genrsa -out key.pem 2048
+
+# Generate self-signed certificate
+openssl req -new -x509 -key key.pem -out cert.pem -days 365 \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+```
+
+For a certificate with Subject Alternative Names (recommended for modern browsers):
+
+```bash
+# Create a config file for SAN
+cat > openssl.cnf << EOF
+[req]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = v3_req
+
+[dn]
+C = US
+ST = State
+L = City
+O = Organization
+CN = localhost
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+IP.1 = 127.0.0.1
+EOF
+
+# Generate key and certificate
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout key.pem -out cert.pem -config openssl.cnf
+```
+
+#### Using the Built-in Generator
+
+The Basset Hound Browser includes a utility to generate development certificates:
+
+```javascript
+const { generateDevCertificates } = require('basset-hound-browser/utils/ssl');
+
+// Generate certificates in the default location (~/.basset-hound/certs/)
+await generateDevCertificates();
+
+// Or specify a custom output directory
+await generateDevCertificates({
+  outputDir: '/path/to/certs',
+  commonName: 'localhost',
+  validDays: 365
+});
+```
+
+This creates `cert.pem` and `key.pem` files that can be used with the `BASSET_WS_SSL_CERT` and `BASSET_WS_SSL_KEY` environment variables.
+
+### Production Considerations
+
+#### Using Let's Encrypt or CA-Signed Certificates
+
+For production deployments, use certificates from a trusted Certificate Authority:
+
+**Let's Encrypt with Certbot:**
+
+```bash
+# Install certbot
+sudo apt-get install certbot
+
+# Obtain certificate (requires domain ownership)
+sudo certbot certonly --standalone -d your-domain.com
+
+# Certificates are stored in:
+# /etc/letsencrypt/live/your-domain.com/fullchain.pem (certificate)
+# /etc/letsencrypt/live/your-domain.com/privkey.pem (private key)
+
+# Start browser with Let's Encrypt certificates
+BASSET_WS_SSL_ENABLED=true \
+BASSET_WS_SSL_CERT=/etc/letsencrypt/live/your-domain.com/fullchain.pem \
+BASSET_WS_SSL_KEY=/etc/letsencrypt/live/your-domain.com/privkey.pem \
+npm start
+```
+
+#### Certificate Renewal
+
+Let's Encrypt certificates expire every 90 days. Set up automatic renewal:
+
+```bash
+# Test renewal
+sudo certbot renew --dry-run
+
+# Add to crontab for automatic renewal
+sudo crontab -e
+# Add this line:
+0 0 1 * * certbot renew --quiet && systemctl restart basset-hound
+```
+
+For other CA providers, follow their renewal procedures and ensure the browser is restarted after certificate updates.
+
+#### Security Best Practices
+
+1. **Protect Private Keys**
+   - Store private keys with restrictive permissions (`chmod 600 key.pem`)
+   - Never commit private keys to version control
+   - Use environment variables or secrets management for key paths
+
+2. **Use Strong Cipher Suites**
+   - The server defaults to secure TLS 1.2+ cipher suites
+   - Avoid deprecated protocols (SSLv3, TLS 1.0, TLS 1.1)
+
+3. **Enable Certificate Verification**
+   - Always verify certificates in production
+   - Never use `rejectUnauthorized: false` or `verify_mode = ssl.CERT_NONE` in production
+
+4. **Consider Mutual TLS (mTLS)**
+   - For high-security environments, require client certificates:
+   ```bash
+   BASSET_WS_SSL_ENABLED=true \
+   BASSET_WS_SSL_CERT=/path/to/cert.pem \
+   BASSET_WS_SSL_KEY=/path/to/key.pem \
+   BASSET_WS_SSL_CA=/path/to/client-ca.pem \
+   npm start
+   ```
+
+5. **Monitor Certificate Expiration**
+   - Set up alerts for certificate expiration
+   - Automate renewal where possible
+
+6. **Use Appropriate Key Sizes**
+   - Minimum 2048-bit RSA keys
+   - Consider 4096-bit for higher security requirements
+   - ECDSA keys (P-256 or P-384) are also supported
 
 ## Message Format
 
@@ -566,6 +1059,279 @@ if response.get("success"):
     with open("screenshot.png", "wb") as f:
         f.write(base64.b64decode(img_data))
 ```
+
+---
+
+### Technology Detection
+
+#### detect_technologies
+
+Detect web technologies used on the current page.
+
+**Request:**
+```json
+{
+  "id": "100",
+  "command": "detect_technologies"
+}
+```
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `html` | string | No | HTML content to analyze (if not provided, uses current page) |
+| `url` | string | No | URL for context |
+| `scripts` | array | No | Array of script URLs |
+| `meta` | array | No | Array of meta tag objects |
+
+**Response:**
+```json
+{
+  "id": "100",
+  "command": "detect_technologies",
+  "success": true,
+  "technologies": [
+    {
+      "name": "React",
+      "category": "JavaScript frameworks",
+      "confidence": 100,
+      "version": "18.2.0"
+    },
+    {
+      "name": "Cloudflare",
+      "category": "CDN",
+      "confidence": 100
+    }
+  ],
+  "count": 2
+}
+```
+
+#### get_technology_categories
+
+Get all available technology categories.
+
+**Request:**
+```json
+{
+  "id": "101",
+  "command": "get_technology_categories"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "101",
+  "success": true,
+  "categories": [
+    { "key": "javascript-frameworks", "name": "JavaScript frameworks", "technologyCount": 45 },
+    { "key": "cms", "name": "CMS", "technologyCount": 30 }
+  ],
+  "totalCategories": 15
+}
+```
+
+#### get_technology_info
+
+Get information about a specific technology.
+
+**Request:**
+```json
+{
+  "id": "102",
+  "command": "get_technology_info",
+  "name": "React"
+}
+```
+
+---
+
+### Advanced Content Extraction
+
+#### extract_metadata
+
+Extract all metadata from the page (OG tags, meta tags, Twitter cards).
+
+**Request:**
+```json
+{
+  "id": "110",
+  "command": "extract_metadata"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "110",
+  "success": true,
+  "data": {
+    "basic": {
+      "title": "Page Title",
+      "description": "Meta description",
+      "canonical": "https://example.com/page"
+    },
+    "openGraph": {
+      "og:title": "OG Title",
+      "og:image": "https://example.com/image.jpg"
+    },
+    "twitterCard": {
+      "twitter:card": "summary_large_image"
+    }
+  },
+  "count": 15
+}
+```
+
+#### extract_links
+
+Extract all links from the page with categorization.
+
+**Request:**
+```json
+{
+  "id": "111",
+  "command": "extract_links"
+}
+```
+
+#### extract_forms
+
+Extract all forms and their fields.
+
+#### extract_images
+
+Extract all images with attributes (src, alt, dimensions).
+
+#### extract_scripts
+
+Extract all scripts (external and inline).
+
+#### extract_stylesheets
+
+Extract all stylesheets.
+
+#### extract_structured_data
+
+Extract JSON-LD, Microdata, and RDFa structured data.
+
+#### extract_all
+
+Extract all content types at once.
+
+**Request:**
+```json
+{
+  "id": "118",
+  "command": "extract_all"
+}
+```
+
+---
+
+### Network Analysis
+
+#### start_network_capture
+
+Start capturing network traffic.
+
+**Request:**
+```json
+{
+  "id": "120",
+  "command": "start_network_capture"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "120",
+  "success": true,
+  "captureStartTime": 1703123456789,
+  "message": "Network capture started"
+}
+```
+
+#### stop_network_capture
+
+Stop capturing and get summary.
+
+**Request:**
+```json
+{
+  "id": "121",
+  "command": "stop_network_capture"
+}
+```
+
+#### get_network_requests
+
+Get captured requests with optional filtering.
+
+**Request:**
+```json
+{
+  "id": "122",
+  "command": "get_network_requests",
+  "filter": {
+    "resourceType": "script",
+    "status": ["complete"]
+  }
+}
+```
+
+#### get_request_details
+
+Get full details for a specific request.
+
+**Request:**
+```json
+{
+  "id": "123",
+  "command": "get_request_details",
+  "requestId": "req-12345"
+}
+```
+
+#### analyze_security_headers
+
+Analyze security headers for a URL.
+
+**Request:**
+```json
+{
+  "id": "124",
+  "command": "analyze_security_headers",
+  "url": "https://example.com"
+}
+```
+
+#### get_requests_by_domain
+
+Group captured requests by domain.
+
+#### get_slow_requests
+
+Get requests slower than a threshold.
+
+**Request:**
+```json
+{
+  "id": "126",
+  "command": "get_slow_requests",
+  "thresholdMs": 1000
+}
+```
+
+#### get_failed_requests
+
+Get all failed network requests.
+
+#### export_network_capture
+
+Export all captured data as JSON.
 
 ---
 

@@ -1,4 +1,8 @@
 const WebSocket = require('ws');
+const https = require('https');
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 const { ipcMain } = require('electron');
 const { humanDelay, humanType, humanMouseMove, humanScroll } = require('../evasion/humanize');
 const { ScreenshotManager, validateAnnotation, applyAnnotationDefaults } = require('../screenshots/manager');
@@ -11,6 +15,154 @@ const { requestInterceptor, RESOURCE_TYPES, PREDEFINED_BLOCK_RULES } = require('
 const { DOMInspector } = require('../inspector/manager');
 const { HeaderManager } = require('../headers/manager');
 const { PREDEFINED_PROFILES, profileStorage, getPredefinedProfileNames } = require('../headers/profiles');
+const { memoryManager, MemoryManager, MEMORY_THRESHOLDS, MemoryStatus } = require('../utils/memory-manager');
+const { TechnologyManager } = require('../technology');
+const { ExtractionManager } = require('../extraction');
+const { NetworkAnalysisManager } = require('../network-analysis/manager');
+
+// ==========================================
+// Error Recovery Configuration
+// ==========================================
+const ERROR_RECOVERY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000, // Base delay in ms (exponential backoff applied)
+  retryableErrors: [
+    'ETIMEDOUT',
+    'ECONNRESET',
+    'ECONNREFUSED',
+    'EPIPE',
+    'ENOTFOUND',
+    'ENETUNREACH',
+    'EAI_AGAIN',
+    'TIMEOUT',
+    'temporarily unavailable'
+  ],
+  // Commands that are safe to retry (idempotent operations)
+  retryableCommands: [
+    'get_url', 'get_content', 'get_page_state', 'screenshot', 'screenshot_viewport',
+    'screenshot_full_page', 'screenshot_element', 'get_cookies', 'get_all_cookies',
+    'list_sessions', 'list_tabs', 'get_tab_info', 'get_active_tab', 'get_history',
+    'get_downloads', 'get_proxy_status', 'get_user_agent_status', 'status', 'ping',
+    'get_network_logs', 'get_console_logs', 'list_profiles', 'get_profile',
+    'get_storage_stats', 'get_local_storage', 'get_session_storage', 'list_scripts',
+    'get_script', 'get_blocking_stats', 'get_devtools_status', 'get_console_status'
+  ]
+};
+
+/**
+ * Check if an error is transient/retryable
+ * @param {Error|string} error - The error to check
+ * @returns {boolean}
+ */
+function isRetryableError(error) {
+  const errorMessage = error?.message || error?.toString() || '';
+  return ERROR_RECOVERY_CONFIG.retryableErrors.some(
+    retryableError => errorMessage.toLowerCase().includes(retryableError.toLowerCase())
+  );
+}
+
+/**
+ * Check if a command is safe to retry (idempotent)
+ * @param {string} command - The command name
+ * @returns {boolean}
+ */
+function isRetryableCommand(command) {
+  return ERROR_RECOVERY_CONFIG.retryableCommands.includes(command);
+}
+
+/**
+ * Calculate delay for retry with exponential backoff
+ * @param {number} attempt - Current attempt number (0-based)
+ * @returns {number} Delay in milliseconds
+ */
+function calculateRetryDelay(attempt) {
+  return ERROR_RECOVERY_CONFIG.retryDelay * Math.pow(2, attempt);
+}
+
+/**
+ * Sleep for specified duration
+ * @param {number} ms - Duration in milliseconds
+ * @returns {Promise<void>}
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Generate a recovery suggestion based on error type
+ * @param {string} command - The failed command
+ * @param {Error|string} error - The error that occurred
+ * @param {string} managerName - The name of the manager that's unavailable
+ * @returns {Object} Recovery suggestion object
+ */
+function generateRecoverySuggestion(command, error, managerName = null) {
+  const errorMessage = error?.message || error?.toString() || 'Unknown error';
+  const suggestion = {
+    error: errorMessage,
+    recoverable: false,
+    suggestion: '',
+    alternativeCommands: []
+  };
+
+  // Manager unavailable errors
+  if (managerName) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = `The ${managerName} is not initialized. This may happen if the browser is still starting up. ` +
+      `Try waiting a few seconds and retry the command. If the issue persists, the manager may have failed to initialize.`;
+    suggestion.alternativeCommands = ['status', 'ping'];
+    return suggestion;
+  }
+
+  // Network/connection errors
+  if (errorMessage.includes('ETIMEDOUT') || errorMessage.includes('ECONNRESET')) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = 'Network timeout or connection reset. Check your network connection and retry. ' +
+      'For proxy-related issues, verify your proxy settings with get_proxy_status.';
+    suggestion.alternativeCommands = ['get_proxy_status', 'status'];
+  }
+  // Element not found
+  else if (errorMessage.includes('not found') || errorMessage.includes('no such element')) {
+    suggestion.suggestion = 'Element not found on the page. Verify the selector is correct and the page has fully loaded. ' +
+      'Use wait_for_element before interacting with dynamic content.';
+    suggestion.alternativeCommands = ['wait_for_element', 'get_page_state', 'get_content'];
+  }
+  // Timeout waiting for element
+  else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = 'Operation timed out. The page may be slow to load or the element may not exist. ' +
+      'Increase the timeout parameter or check if the element exists.';
+    suggestion.alternativeCommands = ['get_page_state', 'screenshot_viewport'];
+  }
+  // Navigation errors
+  else if (errorMessage.includes('navigation') || errorMessage.includes('ERR_')) {
+    suggestion.suggestion = 'Navigation failed. The URL may be invalid, blocked, or the server is unavailable. ' +
+      'Check the URL and your network/proxy settings.';
+    suggestion.alternativeCommands = ['get_url', 'get_proxy_status', 'status'];
+  }
+  // Permission/access errors
+  else if (errorMessage.includes('permission') || errorMessage.includes('access denied')) {
+    suggestion.suggestion = 'Permission denied. The operation may require authentication or the resource may be restricted.';
+    suggestion.alternativeCommands = ['get_cookies', 'status'];
+  }
+  // Script execution errors
+  else if (errorMessage.includes('script') || errorMessage.includes('JavaScript')) {
+    suggestion.suggestion = 'Script execution failed. Check the script syntax and ensure the page context is correct.';
+    suggestion.alternativeCommands = ['get_console_logs', 'get_page_state'];
+  }
+  // Generic recoverable errors
+  else if (isRetryableError(error)) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = 'A transient error occurred. The command may succeed if retried.';
+  }
+  // Unknown errors
+  else {
+    suggestion.suggestion = 'An unexpected error occurred. Check the browser console and logs for more details. ' +
+      'Use the status command to verify the browser state.';
+    suggestion.alternativeCommands = ['status', 'get_console_logs'];
+  }
+
+  return suggestion;
+}
 
 /**
  * WebSocket Server for Basset Hound Browser
@@ -22,8 +174,33 @@ class WebSocketServer {
     this.port = port;
     this.mainWindow = mainWindow;
     this.wss = null;
+    this.httpsServer = null; // HTTPS server for SSL/TLS support
     this.clients = new Set();
     this.commandHandlers = {};
+
+    // SSL/TLS configuration (disabled by default for backwards compatibility)
+    this.sslEnabled = options.sslEnabled || (process.env.BASSET_WS_SSL_ENABLED === 'true') || false;
+    this.sslCertPath = options.sslCertPath || process.env.BASSET_WS_SSL_CERT || null;
+    this.sslKeyPath = options.sslKeyPath || process.env.BASSET_WS_SSL_KEY || null;
+    this.sslCaPath = options.sslCaPath || process.env.BASSET_WS_SSL_CA || null;
+    this.sslActive = false; // Tracks whether SSL is actually in use
+
+    // Authentication configuration
+    this.authToken = options.authToken || process.env.BASSET_WS_TOKEN || null;
+    this.requireAuth = options.requireAuth !== undefined ? options.requireAuth : (this.authToken !== null);
+    this.authenticatedClients = new Set();
+
+    // Heartbeat configuration
+    this.heartbeatInterval = options.heartbeatInterval || 30000; // 30 seconds
+    this.heartbeatTimeout = options.heartbeatTimeout || 60000; // 60 seconds
+    this.heartbeatLoop = null;
+
+    // Rate limiting configuration (disabled by default for backwards compatibility)
+    this.rateLimitEnabled = options.rateLimitEnabled || false;
+    this.maxRequestsPerMinute = options.maxRequestsPerMinute || 60;
+    this.rateLimitWindow = options.rateLimitWindow || 60000; // 60 seconds (1 minute)
+    this.burstAllowance = options.burstAllowance || 10; // Allow short bursts above the limit
+    this.rateLimitData = new Map(); // Track request counts per client
 
     // Initialize screenshot and recording managers
     this.screenshotManager = new ScreenshotManager(mainWindow);
@@ -44,6 +221,19 @@ class WebSocketServer {
     this.profileManager = options.profileManager || null;
     this.devToolsManager = options.devToolsManager || null;
     this.consoleManager = options.consoleManager || null;
+
+    // Technology detection manager
+    this.technologyManager = options.technologyManager || null;
+
+    // Content extraction manager
+    this.extractionManager = options.extractionManager || null;
+
+    // Network analysis manager
+    this.networkAnalysisManager = options.networkAnalysisManager || null;
+
+    // Initialize Memory Manager (use global singleton or provided instance)
+    this.memoryManager = options.memoryManager || memoryManager;
+    this.memoryManager.setWebSocketServer(this);
 
     // Initialize DOM Inspector
     this.domInspector = new DOMInspector(mainWindow);
@@ -77,19 +267,129 @@ class WebSocketServer {
   }
 
   start() {
-    this.wss = new WebSocket.Server({ port: this.port });
+    // Determine if we should use SSL/TLS
+    if (this.sslEnabled && this.sslCertPath && this.sslKeyPath) {
+      try {
+        const sslOptions = this._loadSslCertificates();
+        this.httpsServer = https.createServer(sslOptions);
+        this.wss = new WebSocket.Server({ server: this.httpsServer });
+        this.httpsServer.listen(this.port);
+        this.sslActive = true;
+        console.log(`[WebSocket] SSL/TLS enabled with certificate: ${this.sslCertPath}`);
+      } catch (error) {
+        console.error(`[WebSocket] Failed to load SSL certificates: ${error.message}`);
+        console.log('[WebSocket] Falling back to non-SSL mode');
+        this.wss = new WebSocket.Server({ port: this.port });
+        this.sslActive = false;
+      }
+    } else {
+      // Standard non-SSL WebSocket server
+      this.wss = new WebSocket.Server({ port: this.port });
+      this.sslActive = false;
+
+      if (this.sslEnabled && (!this.sslCertPath || !this.sslKeyPath)) {
+        console.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
+      }
+    }
+
+    // Start heartbeat monitoring
+    this.startHeartbeat();
 
     this.wss.on('connection', (ws, req) => {
       const clientId = `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       ws.clientId = clientId;
+      ws.isAlive = true;
+      ws.lastHeartbeat = Date.now();
       this.clients.add(ws);
 
-      console.log(`[WebSocket] Client connected: ${clientId} from ${req.socket.remoteAddress}`);
-      this.broadcast({ type: 'status', message: 'connected', clientId });
+      // Check for token in query string or headers for immediate authentication
+      const protocol = this.sslActive ? 'https' : 'http';
+      const urlParams = new URL(req.url, `${protocol}://localhost:${this.port}`).searchParams;
+      const queryToken = urlParams.get('token');
+      const headerToken = req.headers['authorization']?.replace('Bearer ', '');
+      const providedToken = queryToken || headerToken;
+
+      if (providedToken && this.validateToken(providedToken)) {
+        ws.isAuthenticated = true;
+        this.authenticatedClients.add(ws);
+        console.log(`[WebSocket] Client authenticated via token: ${clientId}`);
+      } else {
+        ws.isAuthenticated = !this.requireAuth;
+      }
+
+      console.log(`[WebSocket] Client connected: ${clientId} from ${req.socket.remoteAddress} (auth: ${ws.isAuthenticated}, ssl: ${this.sslActive})`);
+
+      // Send connection status with auth requirement info
+      ws.send(JSON.stringify({
+        type: 'status',
+        message: 'connected',
+        clientId,
+        authenticated: ws.isAuthenticated,
+        authRequired: this.requireAuth,
+        ssl: this.sslActive,
+        protocol: this.getProtocol(),
+        connectionUrl: this.getConnectionUrl()
+      }));
+
+      // Handle pong responses for heartbeat
+      ws.on('pong', () => {
+        ws.isAlive = true;
+        ws.lastHeartbeat = Date.now();
+      });
 
       ws.on('message', async (message) => {
         try {
           const data = JSON.parse(message.toString());
+
+          // Handle authentication command
+          if (data.command === 'authenticate') {
+            const authResult = this.handleAuthenticate(ws, data);
+            ws.send(JSON.stringify({
+              id: data.id,
+              command: 'authenticate',
+              ...authResult
+            }));
+            return;
+          }
+
+          // Check authentication for all other commands
+          if (this.requireAuth && !ws.isAuthenticated) {
+            ws.send(JSON.stringify({
+              id: data.id,
+              command: data.command,
+              success: false,
+              error: 'Authentication required. Send authenticate command with token.'
+            }));
+            return;
+          }
+
+          // Handle get_rate_limit_status command without counting against rate limit
+          if (data.command === 'get_rate_limit_status') {
+            const status = this.getRateLimitStatus(ws.clientId);
+            ws.send(JSON.stringify({
+              id: data.id,
+              command: 'get_rate_limit_status',
+              success: true,
+              ...status
+            }));
+            return;
+          }
+
+          // Check rate limit before processing command
+          const rateLimitResult = this.checkRateLimit(ws.clientId);
+          if (!rateLimitResult.allowed) {
+            ws.send(JSON.stringify({
+              id: data.id,
+              command: data.command,
+              success: false,
+              error: rateLimitResult.error,
+              rateLimited: true,
+              resetIn: rateLimitResult.resetIn,
+              remaining: rateLimitResult.remaining
+            }));
+            return;
+          }
+
           console.log(`[WebSocket] Received command: ${data.command}`, data);
           const response = await this.handleCommand(data);
           ws.send(JSON.stringify({
@@ -108,12 +408,16 @@ class WebSocketServer {
 
       ws.on('close', () => {
         this.clients.delete(ws);
+        this.authenticatedClients.delete(ws);
+        this.cleanupRateLimitData(ws.clientId);
         console.log(`[WebSocket] Client disconnected: ${clientId}`);
       });
 
       ws.on('error', (error) => {
         console.error(`[WebSocket] Client error (${clientId}):`, error);
         this.clients.delete(ws);
+        this.authenticatedClients.delete(ws);
+        this.cleanupRateLimitData(ws.clientId);
       });
     });
 
@@ -121,7 +425,401 @@ class WebSocketServer {
       console.error('[WebSocket] Server error:', error);
     });
 
-    console.log(`[WebSocket] Server started on port ${this.port}`);
+    const authStatus = this.requireAuth ? 'enabled' : 'disabled';
+    const rateLimitStatus = this.rateLimitEnabled ? `enabled (${this.maxRequestsPerMinute}/min, burst: ${this.burstAllowance})` : 'disabled';
+    const sslStatus = this.sslActive ? 'enabled' : 'disabled';
+    console.log(`[WebSocket] Server started on ${this.getConnectionUrl()} (auth: ${authStatus}, ssl: ${sslStatus}, rate limit: ${rateLimitStatus})`);
+  }
+
+  /**
+   * Load SSL certificates from the configured paths
+   * @returns {Object} SSL options for https.createServer
+   * @throws {Error} If certificates cannot be loaded
+   * @private
+   */
+  _loadSslCertificates() {
+    // Validate certificate path exists
+    if (!fs.existsSync(this.sslCertPath)) {
+      throw new Error(`SSL certificate file not found: ${this.sslCertPath}`);
+    }
+
+    // Validate key path exists
+    if (!fs.existsSync(this.sslKeyPath)) {
+      throw new Error(`SSL private key file not found: ${this.sslKeyPath}`);
+    }
+
+    let cert, key, ca;
+
+    try {
+      cert = fs.readFileSync(this.sslCertPath);
+    } catch (error) {
+      throw new Error(`Failed to read SSL certificate: ${error.message}`);
+    }
+
+    try {
+      key = fs.readFileSync(this.sslKeyPath);
+    } catch (error) {
+      throw new Error(`Failed to read SSL private key: ${error.message}`);
+    }
+
+    // Validate certificate format (basic check for PEM format)
+    const certString = cert.toString();
+    if (!certString.includes('-----BEGIN CERTIFICATE-----') &&
+        !certString.includes('-----BEGIN TRUSTED CERTIFICATE-----')) {
+      throw new Error('Invalid certificate format: Expected PEM format with BEGIN CERTIFICATE header');
+    }
+
+    // Validate key format (basic check for PEM format)
+    const keyString = key.toString();
+    if (!keyString.includes('-----BEGIN') || !keyString.includes('KEY-----')) {
+      throw new Error('Invalid private key format: Expected PEM format with BEGIN key header');
+    }
+
+    const sslOptions = { cert, key };
+
+    // Load CA certificate if provided (for client certificate verification)
+    if (this.sslCaPath) {
+      if (!fs.existsSync(this.sslCaPath)) {
+        console.warn(`[WebSocket] CA certificate file not found: ${this.sslCaPath}. Client verification disabled.`);
+      } else {
+        try {
+          ca = fs.readFileSync(this.sslCaPath);
+          sslOptions.ca = ca;
+          sslOptions.requestCert = true;
+          sslOptions.rejectUnauthorized = true;
+          console.log(`[WebSocket] Client certificate verification enabled with CA: ${this.sslCaPath}`);
+        } catch (error) {
+          console.warn(`[WebSocket] Failed to read CA certificate: ${error.message}. Client verification disabled.`);
+        }
+      }
+    }
+
+    return sslOptions;
+  }
+
+  /**
+   * Check if SSL/TLS is currently active
+   * @returns {boolean} True if SSL is active
+   */
+  isSslEnabled() {
+    return this.sslActive;
+  }
+
+  /**
+   * Get the WebSocket protocol based on SSL status
+   * @returns {string} 'wss' if SSL is active, 'ws' otherwise
+   */
+  getProtocol() {
+    return this.sslActive ? 'wss' : 'ws';
+  }
+
+  /**
+   * Get the full connection URL for the WebSocket server
+   * @param {string} [hostname='localhost'] - The hostname to use in the URL
+   * @returns {string} Full connection URL (e.g., wss://localhost:8765)
+   */
+  getConnectionUrl(hostname = 'localhost') {
+    return `${this.getProtocol()}://${hostname}:${this.port}`;
+  }
+
+  /**
+   * Generate a self-signed certificate for development/testing
+   * @param {string} outputDir - Directory to store the generated certificates
+   * @param {Object} [options] - Certificate generation options
+   * @param {string} [options.commonName='localhost'] - Common name for the certificate
+   * @param {number} [options.days=365] - Validity period in days
+   * @param {string} [options.keySize=2048] - RSA key size
+   * @returns {Object} Paths to the generated certificate and key files
+   * @static
+   */
+  static generateSelfSignedCert(outputDir, options = {}) {
+    const {
+      commonName = 'localhost',
+      days = 365,
+      keySize = 2048
+    } = options;
+
+    // Ensure output directory exists
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    const keyPath = path.join(outputDir, 'server.key');
+    const certPath = path.join(outputDir, 'server.crt');
+
+    // Check if openssl is available
+    try {
+      execSync('openssl version', { stdio: 'ignore' });
+    } catch (error) {
+      throw new Error('OpenSSL is required to generate self-signed certificates. Please install OpenSSL and try again.');
+    }
+
+    try {
+      // Generate private key and self-signed certificate in one command
+      const opensslCmd = `openssl req -x509 -newkey rsa:${keySize} -keyout "${keyPath}" -out "${certPath}" -days ${days} -nodes -subj "/CN=${commonName}" -addext "subjectAltName=DNS:${commonName},DNS:localhost,IP:127.0.0.1"`;
+
+      execSync(opensslCmd, { stdio: 'pipe' });
+
+      console.log(`[WebSocket] Self-signed certificate generated:`);
+      console.log(`  Certificate: ${certPath}`);
+      console.log(`  Private Key: ${keyPath}`);
+      console.log(`  Valid for: ${days} days`);
+      console.log(`  Common Name: ${commonName}`);
+
+      return {
+        certPath,
+        keyPath,
+        commonName,
+        validDays: days
+      };
+    } catch (error) {
+      throw new Error(`Failed to generate self-signed certificate: ${error.message}`);
+    }
+  }
+
+  /**
+   * Start heartbeat monitoring to detect dead connections
+   */
+  startHeartbeat() {
+    this.heartbeatLoop = setInterval(() => {
+      this.clients.forEach((ws) => {
+        if (!ws.isAlive) {
+          // Connection failed to respond to ping
+          console.log(`[WebSocket] Client ${ws.clientId} failed heartbeat, terminating`);
+          this.clients.delete(ws);
+          this.authenticatedClients.delete(ws);
+          this.cleanupRateLimitData(ws.clientId);
+          return ws.terminate();
+        }
+
+        // Check if client hasn't responded within timeout
+        if (Date.now() - ws.lastHeartbeat > this.heartbeatTimeout) {
+          console.log(`[WebSocket] Client ${ws.clientId} heartbeat timeout, terminating`);
+          this.clients.delete(ws);
+          this.authenticatedClients.delete(ws);
+          this.cleanupRateLimitData(ws.clientId);
+          return ws.terminate();
+        }
+
+        ws.isAlive = false;
+        ws.ping();
+      });
+    }, this.heartbeatInterval);
+  }
+
+  /**
+   * Stop heartbeat monitoring
+   */
+  stopHeartbeat() {
+    if (this.heartbeatLoop) {
+      clearInterval(this.heartbeatLoop);
+      this.heartbeatLoop = null;
+    }
+  }
+
+  /**
+   * Validate authentication token
+   * @param {string} token - Token to validate
+   * @returns {boolean} - True if token is valid
+   */
+  validateToken(token) {
+    if (!this.authToken) return false;
+    return token === this.authToken;
+  }
+
+  /**
+   * Handle authentication command
+   * @param {WebSocket} ws - Client WebSocket
+   * @param {Object} data - Command data with token
+   * @returns {Object} - Authentication result
+   */
+  handleAuthenticate(ws, data) {
+    const { token } = data;
+
+    if (!token) {
+      return { success: false, error: 'Token is required' };
+    }
+
+    if (this.validateToken(token)) {
+      ws.isAuthenticated = true;
+      this.authenticatedClients.add(ws);
+      console.log(`[WebSocket] Client ${ws.clientId} authenticated successfully`);
+      return { success: true, message: 'Authentication successful' };
+    } else {
+      console.log(`[WebSocket] Client ${ws.clientId} authentication failed`);
+      return { success: false, error: 'Invalid token' };
+    }
+  }
+
+  /**
+   * Set authentication token at runtime
+   * @param {string} token - New authentication token
+   */
+  setAuthToken(token) {
+    this.authToken = token;
+    this.requireAuth = token !== null;
+    console.log(`[WebSocket] Auth token ${token ? 'set' : 'cleared'}, auth ${this.requireAuth ? 'enabled' : 'disabled'}`);
+  }
+
+  /**
+   * Initialize rate limit data for a client
+   * @param {string} clientId - Client identifier
+   */
+  initRateLimitData(clientId) {
+    this.rateLimitData.set(clientId, {
+      requestCount: 0,
+      burstCount: 0,
+      windowStart: Date.now(),
+      lastRequest: Date.now()
+    });
+  }
+
+  /**
+   * Check if a client has exceeded the rate limit
+   * @param {string} clientId - Client identifier
+   * @returns {Object} - { allowed: boolean, error?: string, remaining?: number, resetIn?: number }
+   */
+  checkRateLimit(clientId) {
+    if (!this.rateLimitEnabled) {
+      return { allowed: true };
+    }
+
+    let data = this.rateLimitData.get(clientId);
+    if (!data) {
+      this.initRateLimitData(clientId);
+      data = this.rateLimitData.get(clientId);
+    }
+
+    const now = Date.now();
+    const windowElapsed = now - data.windowStart;
+
+    // Reset counters if window has expired
+    if (windowElapsed >= this.rateLimitWindow) {
+      data.requestCount = 0;
+      data.burstCount = 0;
+      data.windowStart = now;
+    }
+
+    // Calculate effective limit (base limit + burst allowance)
+    const effectiveLimit = this.maxRequestsPerMinute + this.burstAllowance;
+
+    // Check if within limits
+    if (data.requestCount < this.maxRequestsPerMinute) {
+      // Within normal limit
+      data.requestCount++;
+      data.lastRequest = now;
+      const remaining = this.maxRequestsPerMinute - data.requestCount;
+      return {
+        allowed: true,
+        remaining,
+        resetIn: this.rateLimitWindow - windowElapsed
+      };
+    } else if (data.requestCount < effectiveLimit) {
+      // Within burst allowance
+      data.requestCount++;
+      data.burstCount++;
+      data.lastRequest = now;
+      const remaining = effectiveLimit - data.requestCount;
+      console.log(`[WebSocket] Client ${clientId} using burst allowance (${data.burstCount}/${this.burstAllowance})`);
+      return {
+        allowed: true,
+        remaining,
+        resetIn: this.rateLimitWindow - windowElapsed,
+        usingBurst: true,
+        burstRemaining: this.burstAllowance - data.burstCount
+      };
+    } else {
+      // Rate limit exceeded
+      const resetIn = this.rateLimitWindow - windowElapsed;
+      console.log(`[WebSocket] Client ${clientId} rate limited, reset in ${resetIn}ms`);
+      return {
+        allowed: false,
+        error: `Rate limit exceeded. Maximum ${this.maxRequestsPerMinute} requests per ${this.rateLimitWindow / 1000} seconds (plus ${this.burstAllowance} burst). Try again in ${Math.ceil(resetIn / 1000)} seconds.`,
+        remaining: 0,
+        resetIn
+      };
+    }
+  }
+
+  /**
+   * Get rate limit status for a client
+   * @param {string} clientId - Client identifier
+   * @returns {Object} - Current rate limit status
+   */
+  getRateLimitStatus(clientId) {
+    if (!this.rateLimitEnabled) {
+      return {
+        enabled: false,
+        message: 'Rate limiting is disabled'
+      };
+    }
+
+    let data = this.rateLimitData.get(clientId);
+    if (!data) {
+      this.initRateLimitData(clientId);
+      data = this.rateLimitData.get(clientId);
+    }
+
+    const now = Date.now();
+    const windowElapsed = now - data.windowStart;
+    const resetIn = Math.max(0, this.rateLimitWindow - windowElapsed);
+
+    // If window has expired, show fresh limits
+    if (windowElapsed >= this.rateLimitWindow) {
+      return {
+        enabled: true,
+        requestCount: 0,
+        maxRequestsPerMinute: this.maxRequestsPerMinute,
+        burstAllowance: this.burstAllowance,
+        burstUsed: 0,
+        remaining: this.maxRequestsPerMinute,
+        burstRemaining: this.burstAllowance,
+        rateLimitWindow: this.rateLimitWindow,
+        resetIn: this.rateLimitWindow,
+        windowStart: now
+      };
+    }
+
+    return {
+      enabled: true,
+      requestCount: data.requestCount,
+      maxRequestsPerMinute: this.maxRequestsPerMinute,
+      burstAllowance: this.burstAllowance,
+      burstUsed: data.burstCount,
+      remaining: Math.max(0, this.maxRequestsPerMinute - data.requestCount),
+      burstRemaining: Math.max(0, this.burstAllowance - data.burstCount),
+      rateLimitWindow: this.rateLimitWindow,
+      resetIn,
+      windowStart: data.windowStart,
+      lastRequest: data.lastRequest
+    };
+  }
+
+  /**
+   * Clean up rate limit data for a client
+   * @param {string} clientId - Client identifier
+   */
+  cleanupRateLimitData(clientId) {
+    this.rateLimitData.delete(clientId);
+  }
+
+  /**
+   * Enable or disable rate limiting at runtime
+   * @param {boolean} enabled - Whether to enable rate limiting
+   * @param {Object} options - Optional configuration overrides
+   */
+  setRateLimitEnabled(enabled, options = {}) {
+    this.rateLimitEnabled = enabled;
+    if (options.maxRequestsPerMinute !== undefined) {
+      this.maxRequestsPerMinute = options.maxRequestsPerMinute;
+    }
+    if (options.rateLimitWindow !== undefined) {
+      this.rateLimitWindow = options.rateLimitWindow;
+    }
+    if (options.burstAllowance !== undefined) {
+      this.burstAllowance = options.burstAllowance;
+    }
+    console.log(`[WebSocket] Rate limiting ${enabled ? 'enabled' : 'disabled'} (max: ${this.maxRequestsPerMinute}/min, burst: ${this.burstAllowance})`);
   }
 
   setupCommandHandlers() {
@@ -3788,10 +4486,666 @@ class WebSocketServer {
       try { return { success: true, history: this.scriptManager.runner.getHistory(params || {}) }; }
       catch (error) { return { success: false, error: error.message }; }
     };
+
+    // ==========================================
+    // Memory Management Commands
+    // ==========================================
+
+    /**
+     * Get current memory usage statistics
+     * Returns heap, RSS, external memory with MB values and percentages
+     */
+    this.commandHandlers.get_memory_usage = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      try {
+        const usage = this.memoryManager.getMemoryUsage();
+        const status = this.memoryManager.getMemoryStatus(usage);
+        return {
+          success: true,
+          memory: {
+            heapUsed: usage.heapUsed,
+            heapTotal: usage.heapTotal,
+            external: usage.external,
+            rss: usage.rss,
+            arrayBuffers: usage.arrayBuffers,
+            heapUsedMB: usage.heapUsedMB,
+            heapTotalMB: usage.heapTotalMB,
+            externalMB: usage.externalMB,
+            rssMB: usage.rssMB,
+            arrayBuffersMB: usage.arrayBuffersMB,
+            heapUsedPercent: usage.heapUsedPercent
+          },
+          status,
+          thresholds: this.memoryManager.thresholds,
+          gcAvailable: this.memoryManager.isGCAvailable()
+        };
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Get memory statistics including peak usage, counts, and uptime
+     */
+    this.commandHandlers.get_memory_stats = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      try {
+        const stats = this.memoryManager.getStats();
+        return { success: true, ...stats };
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Force garbage collection if available
+     * Requires Node.js to be started with --expose-gc flag
+     */
+    this.commandHandlers.force_gc = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      const { full = true } = params || {};
+      try {
+        const result = this.memoryManager.triggerGC(full);
+        return { success: result.success, ...result };
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Clear various caches to free memory
+     * Runs all registered cleanup callbacks and triggers GC
+     */
+    this.commandHandlers.clear_caches = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      try {
+        const result = await this.memoryManager.runCleanup();
+        return { success: true, ...result };
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Start periodic memory monitoring
+     * Optional interval parameter in milliseconds
+     */
+    this.commandHandlers.start_memory_monitoring = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      const { interval } = params || {};
+      try {
+        const result = this.memoryManager.startMonitoring(interval);
+        return result;
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Stop periodic memory monitoring
+     */
+    this.commandHandlers.stop_memory_monitoring = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      try {
+        const result = this.memoryManager.stopMonitoring();
+        return result;
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Set custom memory thresholds
+     * Parameters: warning (MB), critical (MB), cleanup (MB)
+     */
+    this.commandHandlers.set_memory_thresholds = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      const { warning, critical, cleanup } = params || {};
+      if (!warning && !critical && !cleanup) {
+        return { success: false, error: 'At least one threshold (warning, critical, or cleanup) is required' };
+      }
+      try {
+        const result = this.memoryManager.setThresholds({ warning, critical, cleanup });
+        return result;
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Apply a preset threshold configuration
+     * Parameters: preset (low, medium, high)
+     */
+    this.commandHandlers.apply_memory_preset = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      const { preset } = params || {};
+      if (!preset) {
+        return { success: false, error: 'Preset name is required (low, medium, high)' };
+      }
+      try {
+        const result = this.memoryManager.applyPreset(preset);
+        return result;
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Get memory history entries
+     * Optional limit parameter for number of entries
+     */
+    this.commandHandlers.get_memory_history = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      const { limit } = params || {};
+      try {
+        const history = this.memoryManager.getHistory(limit);
+        return { success: true, history, count: history.length };
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Reset memory statistics
+     */
+    this.commandHandlers.reset_memory_stats = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      try {
+        const result = this.memoryManager.resetStats();
+        return result;
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    /**
+     * Check memory now and return status
+     * Will trigger cleanup if in critical state with autoCleanup enabled
+     */
+    this.commandHandlers.check_memory = async (params) => {
+      if (!this.memoryManager) return { success: false, error: 'Memory manager not available' };
+      try {
+        const result = await this.memoryManager.checkMemory();
+        return { success: true, ...result };
+      } catch (error) { return { success: false, error: error.message }; }
+    };
+
+    // ==========================================
+    // Error Recovery Commands
+    // ==========================================
+
+    /**
+     * Get error recovery configuration and status
+     */
+    this.commandHandlers.get_recovery_config = async (params) => {
+      return {
+        success: true,
+        config: {
+          maxRetries: ERROR_RECOVERY_CONFIG.maxRetries,
+          retryDelay: ERROR_RECOVERY_CONFIG.retryDelay,
+          retryableErrorPatterns: ERROR_RECOVERY_CONFIG.retryableErrors,
+          retryableCommands: ERROR_RECOVERY_CONFIG.retryableCommands
+        }
+      };
+    };
+
+    /**
+     * Check if a specific command is retryable
+     */
+    this.commandHandlers.is_command_retryable = async (params) => {
+      const { command } = params;
+      if (!command) {
+        return { success: false, error: 'Command name is required' };
+      }
+
+      return {
+        success: true,
+        command,
+        retryable: isRetryableCommand(command),
+        exists: command in this.commandHandlers
+      };
+    };
+
+    /**
+     * Get manager availability status
+     * Useful for clients to check which features are available
+     */
+    this.commandHandlers.get_manager_status = async (params) => {
+      return {
+        success: true,
+        managers: {
+          sessionManager: this.sessionManager !== null,
+          tabManager: this.tabManager !== null,
+          cookieManager: this.cookieManager !== null,
+          downloadManager: this.downloadManager !== null,
+          blockingManager: this.blockingManager !== null,
+          geolocationManager: this.geolocationManager !== null,
+          networkThrottler: this.networkThrottler !== null,
+          headerManager: this.headerManager !== null,
+          scriptManager: this.scriptManager !== null,
+          storageManager: this.storageManager !== null,
+          historyManager: this.historyManager !== null,
+          profileManager: this.profileManager !== null,
+          devToolsManager: this.devToolsManager !== null,
+          consoleManager: this.consoleManager !== null,
+          screenshotManager: this.screenshotManager !== null,
+          recordingManager: this.recordingManager !== null,
+          domInspector: this.domInspector !== null,
+          memoryManager: this.memoryManager !== null
+        }
+      };
+    };
+
+    /**
+     * Execute a command with explicit retry, useful for one-off retries
+     */
+    this.commandHandlers.retry_command = async (params) => {
+      const { command: targetCommand, params: targetParams, maxRetries = ERROR_RECOVERY_CONFIG.maxRetries } = params;
+
+      if (!targetCommand) {
+        return { success: false, error: 'Target command is required' };
+      }
+
+      if (!isRetryableCommand(targetCommand)) {
+        return {
+          success: false,
+          error: `Command "${targetCommand}" is not safe to retry automatically`,
+          suggestion: 'Only read-only (idempotent) commands can be retried automatically'
+        };
+      }
+
+      // Execute with explicit retry
+      const result = await this.executeWithRetry(
+        { command: targetCommand, ...(targetParams || {}) },
+        maxRetries
+      );
+
+      return result;
+    };
+
+    // ==========================================
+    // Technology Detection Commands
+    // ==========================================
+
+    this.commandHandlers.detect_technologies = async (params) => {
+      if (!this.technologyManager) {
+        return { success: false, error: 'Technology manager not available', recovery: generateRecoverySuggestion('detect_technologies', null, 'technologyManager') };
+      }
+
+      // Get page content if not provided
+      let pageData = params;
+      if (!params.html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            (() => {
+              const scripts = Array.from(document.querySelectorAll('script[src]')).map(s => s.src);
+              const meta = Array.from(document.querySelectorAll('meta')).map(m => ({
+                name: m.getAttribute('name'),
+                property: m.getAttribute('property'),
+                content: m.getAttribute('content')
+              }));
+              return {
+                url: window.location.href,
+                html: document.documentElement.outerHTML,
+                scripts,
+                meta
+              };
+            })()
+          `);
+          pageData = { ...result, ...params };
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return await this.technologyManager.detectTechnologies(pageData);
+    };
+
+    this.commandHandlers.get_technology_categories = async (params) => {
+      if (!this.technologyManager) {
+        return { success: false, error: 'Technology manager not available' };
+      }
+      return this.technologyManager.getCategories();
+    };
+
+    this.commandHandlers.get_technology_info = async (params) => {
+      if (!this.technologyManager) {
+        return { success: false, error: 'Technology manager not available' };
+      }
+      if (!params.name) {
+        return { success: false, error: 'Technology name is required' };
+      }
+      return this.technologyManager.getTechnologyInfo(params.name);
+    };
+
+    this.commandHandlers.search_technologies = async (params) => {
+      if (!this.technologyManager) {
+        return { success: false, error: 'Technology manager not available' };
+      }
+      if (!params.query) {
+        return { success: false, error: 'Search query is required' };
+      }
+      return this.technologyManager.searchTechnologies(params.query, params.options);
+    };
+
+    // ==========================================
+    // Content Extraction Commands
+    // ==========================================
+
+    this.commandHandlers.extract_metadata = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+      let url = params.url || '';
+
+      if (!html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            ({ html: document.documentElement.outerHTML, url: window.location.href })
+          `);
+          html = result.html;
+          url = url || result.url;
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractMetadata(html, url);
+    };
+
+    this.commandHandlers.extract_links = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+      let baseUrl = params.baseUrl || params.url || '';
+
+      if (!html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            ({ html: document.documentElement.outerHTML, url: window.location.href })
+          `);
+          html = result.html;
+          baseUrl = baseUrl || result.url;
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractLinks(html, baseUrl);
+    };
+
+    this.commandHandlers.extract_forms = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+
+      if (!html && this.mainWindow) {
+        try {
+          html = await this.mainWindow.webContents.executeJavaScript(`document.documentElement.outerHTML`);
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractForms(html);
+    };
+
+    this.commandHandlers.extract_images = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+      let baseUrl = params.baseUrl || params.url || '';
+
+      if (!html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            ({ html: document.documentElement.outerHTML, url: window.location.href })
+          `);
+          html = result.html;
+          baseUrl = baseUrl || result.url;
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractImages(html, baseUrl);
+    };
+
+    this.commandHandlers.extract_scripts = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+      let baseUrl = params.baseUrl || params.url || '';
+
+      if (!html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            ({ html: document.documentElement.outerHTML, url: window.location.href })
+          `);
+          html = result.html;
+          baseUrl = baseUrl || result.url;
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractScripts(html, baseUrl);
+    };
+
+    this.commandHandlers.extract_stylesheets = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+      let baseUrl = params.baseUrl || params.url || '';
+
+      if (!html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            ({ html: document.documentElement.outerHTML, url: window.location.href })
+          `);
+          html = result.html;
+          baseUrl = baseUrl || result.url;
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractStylesheets(html, baseUrl);
+    };
+
+    this.commandHandlers.extract_structured_data = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+
+      if (!html && this.mainWindow) {
+        try {
+          html = await this.mainWindow.webContents.executeJavaScript(`document.documentElement.outerHTML`);
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractStructuredData(html);
+    };
+
+    this.commandHandlers.extract_all = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+
+      let html = params.html;
+      let url = params.url || '';
+
+      if (!html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            ({ html: document.documentElement.outerHTML, url: window.location.href })
+          `);
+          html = result.html;
+          url = url || result.url;
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      return this.extractionManager.extractAll(html, url);
+    };
+
+    this.commandHandlers.get_extraction_stats = async (params) => {
+      if (!this.extractionManager) {
+        return { success: false, error: 'Extraction manager not available' };
+      }
+      return { success: true, stats: this.extractionManager.stats };
+    };
+
+    // ==========================================
+    // Network Analysis Commands
+    // ==========================================
+
+    this.commandHandlers.start_network_capture = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+
+      let webContents = null;
+      if (this.mainWindow) {
+        webContents = this.mainWindow.webContents;
+      }
+
+      return this.networkAnalysisManager.startCapture(webContents);
+    };
+
+    this.commandHandlers.stop_network_capture = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.stopCapture();
+    };
+
+    this.commandHandlers.get_network_requests = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getRequests(params.filter || {});
+    };
+
+    this.commandHandlers.get_request_details = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      if (!params.requestId) {
+        return { success: false, error: 'Request ID is required' };
+      }
+      return this.networkAnalysisManager.getRequestDetails(params.requestId);
+    };
+
+    this.commandHandlers.get_response_headers = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      if (!params.requestId) {
+        return { success: false, error: 'Request ID is required' };
+      }
+      return this.networkAnalysisManager.getResponseHeaders(params.requestId);
+    };
+
+    this.commandHandlers.get_security_info = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      if (!params.url) {
+        return { success: false, error: 'URL is required' };
+      }
+      return this.networkAnalysisManager.getSecurityInfo(params.url, params.requestId);
+    };
+
+    this.commandHandlers.analyze_security_headers = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      if (!params.url) {
+        return { success: false, error: 'URL is required' };
+      }
+      return this.networkAnalysisManager.analyzeSecurityHeaders(params.url, params.headers);
+    };
+
+    this.commandHandlers.get_resource_timing = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getResourceTiming();
+    };
+
+    this.commandHandlers.get_requests_by_domain = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getRequestsByDomain();
+    };
+
+    this.commandHandlers.get_slow_requests = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getSlowRequests(params.thresholdMs || 1000);
+    };
+
+    this.commandHandlers.get_failed_requests = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getFailedRequests();
+    };
+
+    this.commandHandlers.get_network_statistics = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getStatistics();
+    };
+
+    this.commandHandlers.get_network_capture_status = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getStatus();
+    };
+
+    this.commandHandlers.clear_network_capture = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.clearCapture();
+    };
+
+    this.commandHandlers.export_network_capture = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.exportCapture();
+    };
+
+    this.commandHandlers.get_requests_by_status = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      const minStatus = params.minStatus || 400;
+      const maxStatus = params.maxStatus || 599;
+      return this.networkAnalysisManager.getRequestsByStatusRange(minStatus, maxStatus);
+    };
+
+    this.commandHandlers.get_security_headers_list = async (params) => {
+      if (!this.networkAnalysisManager) {
+        return { success: false, error: 'Network analysis manager not available' };
+      }
+      return this.networkAnalysisManager.getSecurityHeadersList();
+    };
   }
 
-  async handleCommand(data) {
+  /**
+   * Handle incoming command with retry logic for transient failures
+   * @param {Object} data - Command data
+   * @param {Object} options - Execution options
+   * @returns {Promise<Object>} Command result
+   */
+  async handleCommand(data, options = {}) {
     const { command, ...params } = data;
+    const { enableRetry = true, maxRetries = ERROR_RECOVERY_CONFIG.maxRetries } = options;
 
     if (!command) {
       return { success: false, error: 'Command is required' };
@@ -3799,14 +5153,92 @@ class WebSocketServer {
 
     const handler = this.commandHandlers[command];
     if (!handler) {
-      return { success: false, error: `Unknown command: ${command}` };
+      const recovery = generateRecoverySuggestion(command, new Error(`Unknown command: ${command}`));
+      return {
+        success: false,
+        error: `Unknown command: ${command}`,
+        recovery: {
+          ...recovery,
+          suggestion: `The command "${command}" is not recognized. Check the command name and try again.`,
+          availableCommands: Object.keys(this.commandHandlers).slice(0, 20) // Return first 20 commands as hint
+        }
+      };
     }
 
-    try {
-      return await handler(params);
-    } catch (error) {
-      return { success: false, error: error.message };
+    let lastError = null;
+    let attemptCount = 0;
+    const canRetry = enableRetry && isRetryableCommand(command);
+
+    // Execute with retry logic for idempotent commands
+    while (attemptCount <= (canRetry ? maxRetries : 0)) {
+      try {
+        const result = await handler(params);
+
+        // Check if the result indicates a manager unavailable error
+        if (!result.success && result.error && result.error.includes('not available')) {
+          const managerName = result.error.replace(' not available', '').replace(' manager', ' Manager');
+          const recovery = generateRecoverySuggestion(command, result.error, managerName);
+          return {
+            ...result,
+            recovery
+          };
+        }
+
+        // If we had to retry and succeeded, include that info
+        if (attemptCount > 0 && result.success) {
+          result.retriedCount = attemptCount;
+          console.log(`[WebSocket] Command ${command} succeeded after ${attemptCount} retry(ies)`);
+        }
+
+        return result;
+      } catch (error) {
+        lastError = error;
+        attemptCount++;
+
+        // Check if error is retryable and we have retries left
+        if (canRetry && isRetryableError(error) && attemptCount <= maxRetries) {
+          const delay = calculateRetryDelay(attemptCount - 1);
+          console.log(`[WebSocket] Command ${command} failed (attempt ${attemptCount}/${maxRetries + 1}), retrying in ${delay}ms: ${error.message}`);
+          await sleep(delay);
+          continue;
+        }
+
+        // No more retries or non-retryable error
+        break;
+      }
     }
+
+    // Generate recovery suggestion for the final error
+    const recovery = generateRecoverySuggestion(command, lastError);
+
+    // Log the failure
+    console.error(`[WebSocket] Command ${command} failed after ${attemptCount} attempt(s): ${lastError.message}`);
+
+    return {
+      success: false,
+      error: lastError.message,
+      attemptCount,
+      recovery
+    };
+  }
+
+  /**
+   * Execute a command with explicit retry options
+   * @param {Object} data - Command data
+   * @param {number} maxRetries - Maximum retry attempts
+   * @returns {Promise<Object>} Command result
+   */
+  async executeWithRetry(data, maxRetries = ERROR_RECOVERY_CONFIG.maxRetries) {
+    return this.handleCommand(data, { enableRetry: true, maxRetries });
+  }
+
+  /**
+   * Execute a command without retry (for non-idempotent operations)
+   * @param {Object} data - Command data
+   * @returns {Promise<Object>} Command result
+   */
+  async executeWithoutRetry(data) {
+    return this.handleCommand(data, { enableRetry: false });
   }
 
   broadcast(message) {
@@ -3822,17 +5254,43 @@ class WebSocketServer {
     return {
       connected: this.wss !== null,
       clients: this.clients.size,
-      port: this.port
+      authenticatedClients: this.authenticatedClients.size,
+      port: this.port,
+      authEnabled: this.requireAuth,
+      heartbeatInterval: this.heartbeatInterval,
+      heartbeatTimeout: this.heartbeatTimeout,
+      ssl: {
+        enabled: this.sslEnabled,
+        active: this.sslActive,
+        protocol: this.getProtocol(),
+        connectionUrl: this.getConnectionUrl(),
+        certPath: this.sslActive ? this.sslCertPath : null,
+        keyPath: this.sslActive ? this.sslKeyPath : null,
+        caPath: this.sslActive && this.sslCaPath ? this.sslCaPath : null,
+        clientCertVerification: this.sslActive && this.sslCaPath ? true : false
+      },
+      errorRecovery: {
+        enabled: true,
+        maxRetries: ERROR_RECOVERY_CONFIG.maxRetries,
+        retryDelay: ERROR_RECOVERY_CONFIG.retryDelay,
+        retryableCommandCount: ERROR_RECOVERY_CONFIG.retryableCommands.length
+      }
     };
   }
 
   close() {
+    // Stop heartbeat monitoring
+    this.stopHeartbeat();
+
     // Cleanup managers
     if (this.screenshotManager) {
       this.screenshotManager.cleanup();
     }
     if (this.recordingManager) {
       this.recordingManager.cleanup();
+    }
+    if (this.memoryManager) {
+      this.memoryManager.cleanup();
     }
 
     if (this.wss) {
@@ -3841,6 +5299,16 @@ class WebSocketServer {
       });
       this.wss.close();
       this.wss = null;
+      this.authenticatedClients.clear();
+      this.rateLimitData.clear();
+
+      // Close HTTPS server if SSL was active
+      if (this.httpsServer) {
+        this.httpsServer.close();
+        this.httpsServer = null;
+        this.sslActive = false;
+      }
+
       console.log('[WebSocket] Server closed');
     }
   }

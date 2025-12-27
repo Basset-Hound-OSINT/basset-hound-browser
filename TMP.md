@@ -22,7 +22,9 @@
 
 ---
 
-## 2. Current State (December 2024)
+## 2. Current State (December 2024) - Version 3.1.0
+
+> **Architecture Note**: Basset Hound Browser is an **API-first tool**. It exposes a WebSocket API (port 8765) that external applications connect to for browser automation. It does NOT connect to other backends - other apps connect to IT.
 
 ### Completed Features
 
@@ -64,6 +66,19 @@
 - [x] Proxy support (HTTP, HTTPS, SOCKS4, SOCKS5 with rotation)
 - [x] Screenshots and recording
 - [x] Session persistence
+
+#### Security & Stability (Phase 5 - Completed)
+- [x] WebSocket authentication (token-based: query param, header, or command)
+- [x] Heartbeat/keepalive (30s ping, 60s timeout, configurable)
+- [x] Rate limiting with burst allowance (disabled by default)
+- [x] Memory management (MemoryManager class with threshold monitoring)
+- [x] Crash recovery (session state persistence, auto-save)
+- [x] Connection resilience (auto-reconnect patterns documented)
+- [x] SSL/TLS support for WebSocket (wss://) with BASSET_WS_SSL_* env vars
+
+### API Statistics
+- **Total WebSocket Commands**: 221 commands across 24 categories
+- **Categories**: Navigation, DOM, Mouse, Content, Screenshots, Recording, Cookies, Tabs, Sessions, History, Proxy, User Agent, Throttling, Request Interception, Geolocation, Headers, Profiles, Storage, DOM Inspector, DevTools, Automation Scripts, Memory Management, Health/Utility, Downloads
 
 ---
 
@@ -108,7 +123,7 @@
 | `sessions/` | `manager.js` | Session persistence and restoration |
 | `storage/` | `manager.js` | LocalStorage and IndexedDB management |
 | `tabs/` | `manager.js` | Multi-tab management |
-| `utils/` | `user-agents.js`, `request-interceptor.js` | User agent library, request interception |
+| `utils/` | `user-agents.js`, `request-interceptor.js`, `memory-manager.js` | User agent library, request interception, memory management |
 | `websocket/` | `server.js` | WebSocket server for remote control (port 8765) |
 
 ### Documentation
@@ -119,7 +134,8 @@
 | `docs/API.md` | Complete WebSocket API reference |
 | `docs/EVASION.md` | Bot detection evasion techniques |
 | `docs/DEVELOPMENT.md` | Development setup and contribution guide |
-| `docs/roadmap.md` | Development roadmap with task status |
+| `docs/ROADMAP.md` | Development roadmap with task status |
+| `docs/rsync.md` | Rsync deployment commands and techniques |
 
 ### Tests
 
@@ -227,29 +243,80 @@ External Client (Python, Node.js, etc.)
 
 ## 6. Next Steps / TODOs
 
-### Immediate Tasks
-- [ ] Complete Phase 3 testing (stealth and fingerprint management tests)
-- [ ] Add authentication to WebSocket server
-- [ ] Implement heartbeat/keepalive for WebSocket connections
+### Immediate Tasks (Completed)
+- [x] Complete Phase 3 testing (stealth and fingerprint management tests)
+- [x] Add authentication to WebSocket server (token-based via query param, header, or command)
+- [x] Implement heartbeat/keepalive for WebSocket connections (30s ping interval, 60s timeout)
+- [x] Add rate limiting with burst allowance (disabled by default for backwards compatibility)
+- [x] Implement memory management utilities (MemoryManager class in utils/memory-manager.js)
+- [x] Add crash recovery and error recovery mechanisms (session state persistence, auto-save)
 
-### Phase 5: Backend Integration
-- [ ] Direct API connection to main basset-hound backend
-- [ ] Entity creation from extracted data
-- [ ] Relationship mapping from discovered links
-- [ ] Profile enrichment from web data
+### Phase 5: Security & Stability (Completed)
+- [x] WebSocket authentication (token-based: query param, header, or command)
+- [x] Heartbeat/keepalive (30s ping, 60s timeout)
+- [x] Rate limiting (configurable, disabled by default)
+- [x] Memory management (threshold monitoring, GC hints, cache cleanup)
+- [x] Error recovery (crash detection, session restore, auto-save)
+- [x] Connection resilience examples (auto-reconnect patterns in API docs)
+- [x] SSL/TLS support for WebSocket (wss://) with BASSET_WS_SSL_* env vars
 
-### Phase 6: Advanced Features
+### Phase 6: Enhanced Data Extraction API (Next)
+
+> **Note**: This phase focuses on expanding the API capabilities for external applications to extract more data from web pages.
+
+#### 6.1 Technology Detection (Wappalyzer-like)
+- [ ] Integrate `wappalyzer-core` library for technology detection
+- [ ] `detect_technologies` command - Return detected tech stack
+- [ ] Framework detection (React, Vue, Angular, etc.)
+- [ ] CMS detection (WordPress, Drupal, Shopify, etc.)
+- [ ] Server/hosting detection (Apache, Nginx, Cloudflare, etc.)
+- [ ] Analytics detection (Google Analytics, Mixpanel, etc.)
+
+**Recommended Library**: `wappalyzer-core` (MIT license)
+- Lightweight, no browser dependency (Electron IS the browser)
+- 3000+ technology fingerprints
+- Detects via HTML patterns, headers, scripts, cookies, meta tags, JS globals
+
+#### 6.2 Advanced Content Extraction
+- [ ] `extract_metadata` command - OG tags, meta tags, structured data
+- [ ] `extract_links` command - All links with categorization
+- [ ] `extract_forms` command - Form fields and attributes
+- [ ] `extract_images` command - Image URLs, alt text, dimensions
+- [ ] `extract_scripts` command - External/inline scripts
+- [ ] JSON-LD/Schema.org extraction
+
+#### 6.3 Network Analysis API
+- [ ] `get_network_requests` command - All HTTP requests made by page
+- [ ] `get_response_headers` command - Response headers for any request
+- [ ] `get_security_info` command - SSL/TLS cert info, HSTS, CSP
+- [ ] `get_resource_timing` command - Performance metrics
+- [ ] WebSocket traffic monitoring
+
+#### 6.4 API Client Libraries
+- [ ] Python client library (`pip install basset-hound-client`)
+- [ ] Node.js client library (`npm install basset-hound-client`)
+- [ ] CLI tool for command-line usage
+- [ ] OpenAPI/Swagger specification
+
+### Phase 7: Advanced Orchestration
 - [ ] Multi-window orchestration
 - [ ] Tor integration for proxy
 - [ ] Recording and replay functionality
 - [ ] Headless mode
 
-### Future Phases
-- Phase 7: Developer Experience (plugin system, configuration, logging)
-- Phase 8: Distribution (electron-builder, auto-update, Docker)
+### Phase 8: Developer Experience
+- [ ] Plugin system with API
+- [ ] YAML/JSON configuration
+- [ ] Structured logging
+- [ ] Performance profiling
+
+### Phase 9: Distribution
+- [ ] electron-builder packaging
+- [ ] Auto-update system
+- [ ] Docker deployment
 
 ### Reference
-See `docs/roadmap.md` for complete roadmap with detailed task status.
+See `docs/ROADMAP.md` for complete roadmap with detailed task status.
 
 ---
 
@@ -307,14 +374,15 @@ npm test -- tests/unit/fingerprint.test.js
 
 ### Key Documentation to Review
 
-1. `docs/roadmap.md` - Current task status and next steps
+1. `docs/ROADMAP.md` - Current task status and next steps (consolidated roadmap)
 2. `docs/ARCHITECTURE.md` - System design and component interaction
-3. `docs/API.md` - Complete WebSocket command reference
+3. `docs/API.md` - Complete WebSocket command reference (includes auth, heartbeat, rate limiting)
 4. `docs/EVASION.md` - Bot detection evasion implementation details
+5. `docs/rsync.md` - Deployment commands for syncing to remote servers
 
 ### Development Workflow
 
-1. Check `docs/roadmap.md` for current phase and pending tasks
+1. Check `docs/ROADMAP.md` for current phase and pending tasks
 2. Review relevant module in its directory (e.g., `cookies/manager.js`)
 3. Write/update tests in `tests/` before implementing
 4. Update roadmap when completing tasks
@@ -326,10 +394,10 @@ npm test -- tests/unit/fingerprint.test.js
 ### Security Considerations
 - WebSocket server binds to localhost only - do not expose externally
 - Browser accepts self-signed certificates (for OSINT purposes)
-- No authentication on WebSocket by default - implement before production use
+- Authentication available but disabled by default - enable with `BASSET_WS_TOKEN` env var
+- Rate limiting available but disabled by default - enable for production use
 
 ### Known Limitations
-- Memory usage can grow with long sessions; restart periodically
 - Some highly protected sites may still detect automation
 - CDP exposure not yet implemented
 
@@ -339,10 +407,12 @@ npm test -- tests/unit/fingerprint.test.js
 |-------|----------|
 | WebSocket connection fails | Ensure browser is running; check port 8765 is free |
 | Bot detection triggered | Increase delays; add random mouse movements |
-| High memory usage | Navigate to `about:blank`; restart browser |
+| High memory usage | Use memory management commands (`force_gc`, `clear_caches`) or restart browser |
 | Build fails | Run `npm install`; check electron-builder requirements |
+| Rate limit exceeded | Increase `maxRequestsPerMinute` or disable rate limiting |
 
 ---
 
 *Last Updated: December 2024*
-*For Claude Code sessions: Start by reading this file and `docs/roadmap.md`*
+*Version: 3.1.0 - Phase 5 Complete, SSL/TLS Added*
+*For Claude Code sessions: Start by reading this file and `docs/ROADMAP.md`*

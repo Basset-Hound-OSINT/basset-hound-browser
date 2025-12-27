@@ -1,5 +1,6 @@
-const { app, BrowserWindow, ipcMain, session } = require('electron');
+const { app, BrowserWindow, ipcMain, session, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const WebSocketServer = require('./websocket/server');
 const { getRandomViewport, getRealisticUserAgent, getEvasionScript, getEvasionScriptWithConfig } = require('./evasion/fingerprint');
 const { proxyManager } = require('./proxy/manager');
@@ -20,6 +21,407 @@ const { PREDEFINED_PROFILES, profileStorage } = require('./headers/profiles');
 const { DOMInspector } = require('./inspector/manager');
 const { blockingManager } = require('./blocking/manager');
 const { ScriptManager } = require('./automation/scripts');
+const { memoryManager } = require('./utils/memory-manager');
+const { TechnologyManager } = require('./technology');
+const { ExtractionManager } = require('./extraction');
+const { NetworkAnalysisManager } = require('./network-analysis/manager');
+
+// ==========================================
+// Error Recovery Configuration
+// ==========================================
+const RECOVERY_CONFIG = {
+  autoSaveInterval: 30000, // Auto-save session state every 30 seconds
+  recoveryFilePath: null, // Set during app ready
+  lockFilePath: null, // Lock file to detect unclean shutdown
+  maxRecoveryAttempts: 3,
+  recoveryStateVersion: 1
+};
+
+// Recovery state management
+let autoSaveTimer = null;
+let isCleanShutdown = false;
+
+// ==========================================
+// Error Recovery Helper Functions
+// ==========================================
+
+/**
+ * Initialize recovery file paths
+ */
+function initializeRecoveryPaths() {
+  const userDataPath = app.getPath('userData');
+  RECOVERY_CONFIG.recoveryFilePath = path.join(userDataPath, 'session-recovery.json');
+  RECOVERY_CONFIG.lockFilePath = path.join(userDataPath, '.browser-running.lock');
+}
+
+/**
+ * Create a lock file to detect unclean shutdowns
+ */
+function createLockFile() {
+  try {
+    const lockData = {
+      pid: process.pid,
+      startTime: Date.now(),
+      version: RECOVERY_CONFIG.recoveryStateVersion
+    };
+    fs.writeFileSync(RECOVERY_CONFIG.lockFilePath, JSON.stringify(lockData), 'utf8');
+    console.log('[Recovery] Lock file created');
+  } catch (error) {
+    console.error('[Recovery] Failed to create lock file:', error.message);
+  }
+}
+
+/**
+ * Remove the lock file on clean shutdown
+ */
+function removeLockFile() {
+  try {
+    if (fs.existsSync(RECOVERY_CONFIG.lockFilePath)) {
+      fs.unlinkSync(RECOVERY_CONFIG.lockFilePath);
+      console.log('[Recovery] Lock file removed');
+    }
+  } catch (error) {
+    console.error('[Recovery] Failed to remove lock file:', error.message);
+  }
+}
+
+/**
+ * Check if there was an unclean shutdown
+ * @returns {boolean}
+ */
+function detectUncleanShutdown() {
+  try {
+    if (fs.existsSync(RECOVERY_CONFIG.lockFilePath)) {
+      const lockData = JSON.parse(fs.readFileSync(RECOVERY_CONFIG.lockFilePath, 'utf8'));
+      console.log('[Recovery] Detected previous unclean shutdown (PID:', lockData.pid, ')');
+      return true;
+    }
+  } catch (error) {
+    console.error('[Recovery] Error checking lock file:', error.message);
+  }
+  return false;
+}
+
+/**
+ * Save current session state for recovery
+ */
+function saveSessionState() {
+  try {
+    const state = {
+      version: RECOVERY_CONFIG.recoveryStateVersion,
+      savedAt: Date.now(),
+      tabs: [],
+      activeTabId: null,
+      activeSessionId: null,
+      windowBounds: null
+    };
+
+    // Save tab state
+    if (tabManager) {
+      const tabList = tabManager.listTabs();
+      if (tabList.success) {
+        state.tabs = tabList.tabs.map(tab => ({
+          id: tab.id,
+          url: tab.url,
+          title: tab.title,
+          active: tab.active,
+          pinned: tab.pinned
+        }));
+        state.activeTabId = tabManager.activeTabId;
+      }
+    }
+
+    // Save session state
+    if (sessionManager) {
+      state.activeSessionId = sessionManager.activeSessionId;
+    }
+
+    // Save window bounds
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      state.windowBounds = mainWindow.getBounds();
+    }
+
+    // Write state to file atomically (write to temp, then rename)
+    const tempPath = RECOVERY_CONFIG.recoveryFilePath + '.tmp';
+    fs.writeFileSync(tempPath, JSON.stringify(state, null, 2), 'utf8');
+    fs.renameSync(tempPath, RECOVERY_CONFIG.recoveryFilePath);
+
+    console.log('[Recovery] Session state saved (' + state.tabs.length + ' tabs)');
+  } catch (error) {
+    console.error('[Recovery] Failed to save session state:', error.message);
+  }
+}
+
+/**
+ * Load saved session state
+ * @returns {Object|null}
+ */
+function loadSessionState() {
+  try {
+    if (fs.existsSync(RECOVERY_CONFIG.recoveryFilePath)) {
+      const data = fs.readFileSync(RECOVERY_CONFIG.recoveryFilePath, 'utf8');
+      const state = JSON.parse(data);
+
+      // Validate state version
+      if (state.version !== RECOVERY_CONFIG.recoveryStateVersion) {
+        console.log('[Recovery] State version mismatch, ignoring saved state');
+        return null;
+      }
+
+      // Check if state is too old (more than 24 hours)
+      if (Date.now() - state.savedAt > 24 * 60 * 60 * 1000) {
+        console.log('[Recovery] Saved state is too old, ignoring');
+        return null;
+      }
+
+      console.log('[Recovery] Loaded session state from', new Date(state.savedAt).toISOString());
+      return state;
+    }
+  } catch (error) {
+    console.error('[Recovery] Failed to load session state:', error.message);
+  }
+  return null;
+}
+
+/**
+ * Clear saved session state after successful recovery or clean start
+ */
+function clearSessionState() {
+  try {
+    if (fs.existsSync(RECOVERY_CONFIG.recoveryFilePath)) {
+      fs.unlinkSync(RECOVERY_CONFIG.recoveryFilePath);
+      console.log('[Recovery] Session state cleared');
+    }
+  } catch (error) {
+    console.error('[Recovery] Failed to clear session state:', error.message);
+  }
+}
+
+/**
+ * Start auto-save timer for periodic session state saving
+ */
+function startAutoSave() {
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer);
+  }
+
+  autoSaveTimer = setInterval(() => {
+    saveSessionState();
+  }, RECOVERY_CONFIG.autoSaveInterval);
+
+  console.log('[Recovery] Auto-save started (interval:', RECOVERY_CONFIG.autoSaveInterval / 1000, 'seconds)');
+}
+
+/**
+ * Stop auto-save timer
+ */
+function stopAutoSave() {
+  if (autoSaveTimer) {
+    clearInterval(autoSaveTimer);
+    autoSaveTimer = null;
+    console.log('[Recovery] Auto-save stopped');
+  }
+}
+
+/**
+ * Offer recovery dialog to user
+ * @param {Object} state - Saved session state
+ * @returns {Promise<boolean>}
+ */
+async function offerRecovery(state) {
+  const tabCount = state.tabs ? state.tabs.length : 0;
+  const savedTime = new Date(state.savedAt).toLocaleString();
+
+  const result = await dialog.showMessageBox({
+    type: 'question',
+    buttons: ['Restore Session', 'Start Fresh'],
+    defaultId: 0,
+    title: 'Recover Previous Session',
+    message: 'Basset Hound Browser was not closed properly.',
+    detail: `Would you like to restore your previous session?\n\n` +
+            `Tabs to restore: ${tabCount}\n` +
+            `Last saved: ${savedTime}`,
+    cancelId: 1
+  });
+
+  return result.response === 0;
+}
+
+/**
+ * Restore session from saved state
+ * @param {Object} state - Saved session state
+ */
+async function restoreSession(state) {
+  console.log('[Recovery] Starting session restoration...');
+
+  try {
+    // Restore window bounds if available
+    if (state.windowBounds && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setBounds(state.windowBounds);
+    }
+
+    // Restore tabs
+    if (state.tabs && state.tabs.length > 0 && tabManager) {
+      // Close the default tab first
+      const currentTabs = tabManager.listTabs();
+      if (currentTabs.success && currentTabs.tabs.length === 1) {
+        const defaultTab = currentTabs.tabs[0];
+
+        // Restore saved tabs
+        for (const savedTab of state.tabs) {
+          const result = tabManager.createTab({
+            url: savedTab.url,
+            active: savedTab.id === state.activeTabId
+          });
+
+          if (result.success && savedTab.pinned) {
+            tabManager.pinTab(result.tab.id, true);
+          }
+        }
+
+        // Close the original default tab if we restored at least one tab
+        const newTabs = tabManager.listTabs();
+        if (newTabs.success && newTabs.tabs.length > 1) {
+          tabManager.closeTab(defaultTab.id);
+        }
+      }
+    }
+
+    console.log('[Recovery] Session restoration complete');
+  } catch (error) {
+    console.error('[Recovery] Error during session restoration:', error.message);
+  }
+}
+
+/**
+ * Setup global error handlers for uncaught exceptions
+ */
+function setupGlobalErrorHandlers() {
+  // Handle uncaught exceptions in main process
+  process.on('uncaughtException', (error) => {
+    console.error('[Error] Uncaught exception:', error);
+
+    // Try to save session state before crashing
+    try {
+      saveSessionState();
+    } catch (e) {
+      console.error('[Error] Failed to save state during crash:', e.message);
+    }
+
+    // Show error dialog
+    if (app.isReady()) {
+      dialog.showErrorBox(
+        'Unexpected Error',
+        `An unexpected error occurred:\n\n${error.message}\n\nThe application will attempt to recover on next start.`
+      );
+    }
+  });
+
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('[Error] Unhandled promise rejection:', reason);
+
+    // Save state but don't crash for promise rejections
+    try {
+      saveSessionState();
+    } catch (e) {
+      console.error('[Error] Failed to save state during promise rejection:', e.message);
+    }
+  });
+
+  console.log('[Recovery] Global error handlers installed');
+}
+
+/**
+ * Setup Memory Manager with cleanup callbacks and start monitoring
+ */
+function setupMemoryManager() {
+  // Register cleanup callbacks for various caches/managers
+
+  // Session cache cleanup
+  if (session && session.defaultSession) {
+    memoryManager.registerCleanupCallback('session-cache', async () => {
+      try {
+        await session.defaultSession.clearCache();
+        console.log('[MemoryManager] Session cache cleared');
+        return { cleared: true };
+      } catch (error) {
+        console.error('[MemoryManager] Failed to clear session cache:', error.message);
+        return { cleared: false, error: error.message };
+      }
+    }, 5);
+  }
+
+  // History manager cleanup (clear old entries)
+  if (historyManager) {
+    memoryManager.registerCleanupCallback('history-trim', async () => {
+      try {
+        // Keep only last 7 days of history during cleanup
+        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const result = await historyManager.deleteBeforeDate(new Date(sevenDaysAgo));
+        console.log('[MemoryManager] Old history entries cleared');
+        return result;
+      } catch (error) {
+        console.error('[MemoryManager] Failed to trim history:', error.message);
+        return { success: false, error: error.message };
+      }
+    }, 10);
+  }
+
+  // Console logs cleanup
+  if (consoleManager) {
+    memoryManager.registerCleanupCallback('console-logs', async () => {
+      try {
+        const result = consoleManager.clearConsoleLogs();
+        console.log('[MemoryManager] Console logs cleared');
+        return result;
+      } catch (error) {
+        console.error('[MemoryManager] Failed to clear console logs:', error.message);
+        return { success: false, error: error.message };
+      }
+    }, 15);
+  }
+
+  // DevTools network logs cleanup
+  if (devToolsManager) {
+    memoryManager.registerCleanupCallback('network-logs', async () => {
+      try {
+        const result = devToolsManager.clearNetworkLogs();
+        console.log('[MemoryManager] Network logs cleared');
+        return result;
+      } catch (error) {
+        console.error('[MemoryManager] Failed to clear network logs:', error.message);
+        return { success: false, error: error.message };
+      }
+    }, 15);
+  }
+
+  // Storage manager pending operations cleanup
+  if (storageManager) {
+    memoryManager.registerCleanupCallback('storage-pending', async () => {
+      try {
+        // Clear any stuck pending operations
+        const count = storageManager.pendingOperations.size;
+        storageManager.pendingOperations.clear();
+        console.log(`[MemoryManager] Cleared ${count} pending storage operations`);
+        return { cleared: count };
+      } catch (error) {
+        console.error('[MemoryManager] Failed to clear pending operations:', error.message);
+        return { success: false, error: error.message };
+      }
+    }, 20);
+  }
+
+  // Start memory monitoring with 60 second interval
+  memoryManager.startMonitoring(60000);
+
+  // Listen for memory status changes
+  memoryManager.on('statusChange', ({ oldStatus, newStatus, memInfo }) => {
+    console.log(`[MemoryManager] Status changed: ${oldStatus} -> ${newStatus} (${memInfo.heapUsedMB} MB)`);
+  });
+
+  console.log('[MemoryManager] Memory monitoring initialized');
+}
 
 let mainWindow = null;
 let wsServer = null;
@@ -34,6 +436,9 @@ let historyManager = null;
 let profileManager = null;
 let headerManager = null;
 let scriptManager = null;
+let technologyManager = null;
+let extractionManager = null;
+let networkAnalysisManager = null;
 
 // Realistic viewport sizes for randomization
 const viewportConfig = getRandomViewport();
@@ -194,6 +599,15 @@ function createWindow() {
     }
   });
 
+  // Initialize Technology Manager
+  technologyManager = new TechnologyManager();
+
+  // Initialize Extraction Manager
+  extractionManager = new ExtractionManager();
+
+  // Initialize Network Analysis Manager
+  networkAnalysisManager = new NetworkAnalysisManager();
+
   // Initialize WebSocket server for external communication with managers
   wsServer = new WebSocketServer(8765, mainWindow, {
     sessionManager,
@@ -209,8 +623,15 @@ function createWindow() {
     scriptManager,
     historyManager,
     blockingManager,
-    headerManager
+    headerManager,
+    memoryManager,
+    technologyManager,
+    extractionManager,
+    networkAnalysisManager
   });
+
+  // Initialize Memory Manager with cleanup callbacks
+  setupMemoryManager();
 
   mainWindow.on('closed', () => {
     // Cleanup blocking manager
@@ -264,6 +685,22 @@ function createWindow() {
     // Cleanup Header manager
     if (headerManager) {
       headerManager.cleanup();
+    }
+    // Cleanup Memory manager
+    if (memoryManager) {
+      memoryManager.cleanup();
+    }
+    // Cleanup Technology manager
+    if (technologyManager) {
+      technologyManager.cleanup && technologyManager.cleanup();
+    }
+    // Cleanup Extraction manager
+    if (extractionManager) {
+      extractionManager.cleanup && extractionManager.cleanup();
+    }
+    // Cleanup Network Analysis manager
+    if (networkAnalysisManager) {
+      networkAnalysisManager.cleanup();
     }
     mainWindow = null;
     if (wsServer) {
@@ -1768,6 +2205,74 @@ function setupIPCHandlers() {
     }
     return await storageManager.clearAllStorage(origin, types);
   });
+
+  // ==========================================
+  // Recovery Management IPC Handlers
+  // ==========================================
+
+  // Get recovery status
+  ipcMain.handle('get-recovery-status', async () => {
+    return {
+      success: true,
+      autoSaveEnabled: autoSaveTimer !== null,
+      autoSaveInterval: RECOVERY_CONFIG.autoSaveInterval,
+      recoveryFilePath: RECOVERY_CONFIG.recoveryFilePath,
+      lockFilePath: RECOVERY_CONFIG.lockFilePath,
+      hasRecoveryFile: fs.existsSync(RECOVERY_CONFIG.recoveryFilePath),
+      hasLockFile: fs.existsSync(RECOVERY_CONFIG.lockFilePath)
+    };
+  });
+
+  // Manually save session state
+  ipcMain.handle('save-session-state', async () => {
+    try {
+      saveSessionState();
+      return { success: true, message: 'Session state saved' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Load saved session state (for inspection, not restoration)
+  ipcMain.handle('get-saved-session-state', async () => {
+    try {
+      const state = loadSessionState();
+      return { success: true, state };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Clear saved session state
+  ipcMain.handle('clear-saved-session-state', async () => {
+    try {
+      clearSessionState();
+      return { success: true, message: 'Session state cleared' };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Set auto-save interval
+  ipcMain.handle('set-auto-save-interval', async (event, intervalMs) => {
+    if (typeof intervalMs !== 'number' || intervalMs < 5000) {
+      return { success: false, error: 'Interval must be at least 5000ms' };
+    }
+    RECOVERY_CONFIG.autoSaveInterval = intervalMs;
+    // Restart auto-save with new interval
+    startAutoSave();
+    return { success: true, interval: intervalMs };
+  });
+
+  // Enable/disable auto-save
+  ipcMain.handle('toggle-auto-save', async (event, enabled) => {
+    if (enabled) {
+      startAutoSave();
+    } else {
+      stopAutoSave();
+    }
+    return { success: true, autoSaveEnabled: autoSaveTimer !== null };
+  });
 }
 
 /**
@@ -1827,12 +2332,59 @@ function setupDownloadManagerEvents() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  // Initialize recovery system
+  initializeRecoveryPaths();
+  setupGlobalErrorHandlers();
+
+  // Check for unclean shutdown
+  const hadUncleanShutdown = detectUncleanShutdown();
+  let savedState = null;
+
+  if (hadUncleanShutdown) {
+    savedState = loadSessionState();
+  }
+
+  // Create the main window
+  createWindow();
+
+  // If we had an unclean shutdown and have saved state, offer recovery
+  if (hadUncleanShutdown && savedState && savedState.tabs && savedState.tabs.length > 0) {
+    // Wait a moment for the window to be ready
+    setTimeout(async () => {
+      const shouldRestore = await offerRecovery(savedState);
+      if (shouldRestore) {
+        await restoreSession(savedState);
+      }
+      // Clear the saved state after handling
+      clearSessionState();
+    }, 1000);
+  }
+
+  // Create new lock file and start auto-save
+  createLockFile();
+  startAutoSave();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// Clean shutdown handler
+app.on('before-quit', () => {
+  console.log('[Recovery] Application shutting down cleanly...');
+  isCleanShutdown = true;
+
+  // Stop auto-save
+  stopAutoSave();
+
+  // Save final state
+  saveSessionState();
+
+  // Remove lock file for clean shutdown
+  removeLockFile();
 });
 
 app.on('activate', () => {
