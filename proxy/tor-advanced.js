@@ -1463,6 +1463,15 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
+   * Check if Tor is currently running/connected
+   * @returns {boolean} True if Tor is running (connected or bootstrapping with active process)
+   */
+  isRunning() {
+    return this.state === TOR_STATES.CONNECTED ||
+           (this.torProcess !== null && this.state === TOR_STATES.BOOTSTRAPPING);
+  }
+
+  /**
    * Get proxy configuration for Electron
    * @param {string} isolationKey - Optional isolation key
    * @returns {Object} Proxy config

@@ -1,0 +1,64 @@
+# Docker build optimization - exclude unnecessary files
+# This reduces build context size and improves build speed
+
+# Version control
+.git
+.gitignore
+.gitmodules
+
+# Dependencies (will be reinstalled in container)
+node_modules
+
+# Build outputs
+dist
+out
+release
+
+# Development files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Test files
+tests
+coverage
+*.test.js
+jest.config.js
+
+# Documentation (not needed in container)
+docs
+*.md
+!README.md
+
+# Client libraries (external tools)
+clients
+
+# Example configurations
+*.example.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.log
+
+# IDE metadata
+.claude
+
+# Runtime data directories (created at runtime)
+recordings
+screenshots
+sessions
+downloads
+
+# Development scripts (not needed in production)
+scripts/install
+
+# Profiles data (user-specific)
+profiles/data

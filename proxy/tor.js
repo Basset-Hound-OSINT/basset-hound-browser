@@ -309,7 +309,9 @@ class TorManager extends EventEmitter {
 
       // Timeout for auth response
       setTimeout(() => {
-        this.controlSocket.removeListener('data', onData);
+        if (this.controlSocket && !this.controlSocket.destroyed) {
+          this.controlSocket.removeListener('data', onData);
+        }
         if (!this.isAuthenticated) {
           resolve({
             success: false,
@@ -361,7 +363,9 @@ class TorManager extends EventEmitter {
 
       // Timeout for command response
       setTimeout(() => {
-        this.controlSocket.removeListener('data', onData);
+        if (this.controlSocket && !this.controlSocket.destroyed) {
+          this.controlSocket.removeListener('data', onData);
+        }
         if (!responseData) {
           reject(new Error('Command timeout'));
         } else {
@@ -484,6 +488,14 @@ class TorManager extends EventEmitter {
       circuitChangeCount: this.circuitChangeCount,
       stats: { ...this.stats }
     };
+  }
+
+  /**
+   * Check if Tor is currently running/connected
+   * @returns {boolean} True if Tor is connected
+   */
+  isRunning() {
+    return this.state === TOR_STATES.CONNECTED;
   }
 
   /**

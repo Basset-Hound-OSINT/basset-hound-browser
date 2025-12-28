@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Basset Hound Browser Logo -->
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#2D3748"/>
+
+  <!-- Basset Hound Silhouette (Simplified) -->
+  <ellipse cx="256" cy="280" rx="140" ry="100" fill="#8B4513"/>
+
+  <!-- Head -->
+  <circle cx="256" cy="200" r="80" fill="#A0522D"/>
+
+  <!-- Ears (Droopy) -->
+  <ellipse cx="160" cy="240" rx="40" ry="80" fill="#8B4513" transform="rotate(-20, 160, 240)"/>
+  <ellipse cx="352" cy="240" rx="40" ry="80" fill="#8B4513" transform="rotate(20, 352, 240)"/>
+
+  <!-- Snout -->
+  <ellipse cx="256" cy="230" rx="50" ry="35" fill="#CD853F"/>
+
+  <!-- Nose -->
+  <ellipse cx="256" cy="245" rx="20" ry="15" fill="#1A1A1A"/>
+
+  <!-- Eyes -->
+  <circle cx="220" cy="185" r="15" fill="#1A1A1A"/>
+  <circle cx="292" cy="185" r="15" fill="#1A1A1A"/>
+  <circle cx="224" cy="182" r="5" fill="#FFFFFF"/>
+  <circle cx="296" cy="182" r="5" fill="#FFFFFF"/>
+
+  <!-- Browser indicator - magnifying glass -->
+  <circle cx="380" cy="380" r="50" fill="none" stroke="#4299E1" stroke-width="12"/>
+  <line x1="415" y1="415" x2="460" y2="460" stroke="#4299E1" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Text "BH" stylized -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#FFFFFF" text-anchor="middle">BASSET</text>
+</svg>

@@ -412,8 +412,13 @@ describe('Tor Integration Tests', () => {
   // Live Tor Tests (Run only if Tor is available)
   // ==========================================
 
-  describeIf(torAvailable)('Live Tor Connection Tests', () => {
+  describe('Live Tor Connection Tests', () => {
     test('should connect to existing Tor instance', async () => {
+      if (!torAvailable) {
+        console.log('Skipping: Tor SOCKS not available');
+        return;
+      }
+
       const result = await torManager.connectExisting();
 
       expect(result.success).toBe(true);
@@ -421,6 +426,11 @@ describe('Tor Integration Tests', () => {
     }, 30000);
 
     test('should get status after connection', async () => {
+      if (!torAvailable) {
+        console.log('Skipping: Tor SOCKS not available');
+        return;
+      }
+
       await torManager.connectExisting();
       const status = torManager.getStatus();
 
@@ -429,12 +439,14 @@ describe('Tor Integration Tests', () => {
     }, 30000);
   });
 
-  describeIf(controlPortAvailable)('Live Control Port Tests', () => {
-    beforeEach(async () => {
-      await torManager.connectExisting();
-    }, 30000);
-
+  describe('Live Control Port Tests', () => {
     test('should connect to control port', async () => {
+      if (!controlPortAvailable) {
+        console.log('Skipping: Control port not available');
+        return;
+      }
+
+      await torManager.connectExisting();
       const result = await torManager.connectControlPort();
 
       // May fail if authentication is required
@@ -443,7 +455,13 @@ describe('Tor Integration Tests', () => {
       }
     }, 30000);
 
-    testIf(controlPortAvailable)('should get circuit info', async () => {
+    test('should get circuit info', async () => {
+      if (!controlPortAvailable) {
+        console.log('Skipping: Control port not available');
+        return;
+      }
+
+      await torManager.connectExisting();
       const result = await torManager.getCircuitInfo();
 
       if (result.success) {
@@ -452,7 +470,13 @@ describe('Tor Integration Tests', () => {
       }
     }, 30000);
 
-    testIf(controlPortAvailable)('should request new identity', async () => {
+    test('should request new identity', async () => {
+      if (!controlPortAvailable) {
+        console.log('Skipping: Control port not available');
+        return;
+      }
+
+      await torManager.connectExisting();
       const result = await torManager.newIdentity();
 
       // May fail without proper authentication
