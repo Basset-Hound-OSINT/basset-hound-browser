@@ -560,13 +560,17 @@ External Client (Python, Node.js, etc.)
 | Icon generation | ✅ Done | SVG source with generation script for all platforms |
 | Distribution docs | ✅ Done | Comprehensive DISTRIBUTION.md guide |
 
-### 10.2 Auto-Update 📋 PLANNED
+### 10.2 Auto-Update ✅ COMPLETED
 | Task | Status | Description |
 |------|--------|-------------|
-| Update server | 📋 Planned | Update distribution |
-| Delta updates | 📋 Planned | Incremental updates |
-| Update notifications | 📋 Planned | User notifications |
-| Rollback capability | 📋 Planned | Version rollback |
+| Update server | ✅ Done | GitHub releases as default provider, custom server support |
+| Delta updates | ✅ Done | Differential downloads via electron-updater |
+| Update notifications | ✅ Done | Toast-style UI notifications with progress |
+| Rollback capability | ✅ Done | Version history with rollback support |
+| WebSocket API | ✅ Done | 10 update commands (check, download, install, config, etc.) |
+| Update manager | ✅ Done | UpdateManager class with full lifecycle management |
+| IPC integration | ✅ Done | Renderer-side update manager with IPC handlers |
+| Configuration | ✅ Done | Schema validation with 17 configurable options |
 
 ### 10.3 Docker Deployment ✅ COMPLETED
 | Task | Status | Description |
@@ -585,10 +589,16 @@ External Client (Python, Node.js, etc.)
 |------|----------|-------------|
 | Memory management | ✅ Resolved | MemoryManager class with monitoring and cleanup |
 | Error recovery | ✅ Resolved | Crash recovery with session state persistence |
-| Performance profiling | Medium | Optimize IPC communication |
+| Performance profiling | ✅ Resolved | IPC timeout handling prevents memory leaks from hanging promises |
 | Code documentation | Medium | Add JSDoc comments |
 | Dependency updates | Low | Update Electron version |
 | SSL/TLS for WebSocket | ✅ Resolved | wss:// support with BASSET_WS_SSL_* env vars |
+| IPC memory leaks | ✅ Resolved | Added timeouts and cleanup functions for all IPC handlers |
+| Event listener leaks | ✅ Resolved | Preload event listeners return cleanup functions |
+| JavaScript injection | ✅ Resolved | Used JSON.stringify() for safe selector escaping in renderer |
+| Certificate bypass | ✅ Resolved | Made certificate error handling configurable (disabled by default) |
+| WebSocket IPC timeouts | ✅ Resolved | Added ipcWithTimeout helper for all WebSocket server commands |
+| Command injection in cert gen | ✅ Resolved | Used execFileSync with input validation instead of execSync |
 
 ---
 
@@ -616,6 +626,9 @@ External Client (Python, Node.js, etc.)
 | 6.0.0 | 2024-12 | Completed Phase 8 Developer Experience (Plugin, Config, Logging) |
 | 7.0.0 | 2024-12 | Completed Phase 9 Advanced Tor Integration |
 | 8.0.0 | 2024-12 | Phase 10.1 Packaging Complete - electron-builder config for all platforms |
+| 8.1.0 | 2024-12 | Phase 10.2 Auto-Update Complete - electron-updater, WebSocket API, rollback support |
+| 8.1.1 | 2024-12 | Security & Stability Fixes - IPC memory leaks, event listener cleanup, injection vulnerabilities (renderer + websocket cert gen), certificate handling |
+| 8.1.2 | 2024-12 | Verified all security fixes: IPC timeouts in main.js, cleanup functions in preload.js, JSON.stringify() escaping in renderer.js, configurable certificate handling, execFileSync in websocket server |
 
 ---
 
@@ -663,8 +676,8 @@ External Client (Python, Node.js, etc.)
 - [x] Phase 9 Advanced Tor Integration complete
 - [x] Phase 10.1 Packaging complete (electron-builder config, all platforms)
 - [x] Phase 10.3 Docker Deployment complete (Dockerfile, docker-compose, .dockerignore)
-- [ ] No critical bugs
-- [ ] Phase 10.2 Auto-Update implementation
+- [x] Phase 10.2 Auto-Update complete (UpdateManager, WebSocket API, UI notifications)
+- [x] No critical bugs (v8.1.1 security & stability fixes applied)
 
 ---
 
@@ -741,4 +754,4 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 ---
 
 *Last Updated: December 2024*
-*Version: 8.0.0 - Phase 10.1 & 10.3 Complete (Packaging & Docker Deployment)*
+*Version: 8.1.2 - Verified Security & Stability Fixes (IPC memory leaks, event listeners, injection vulnerabilities, certificate handling)*

@@ -609,7 +609,7 @@ class DebugManager extends EventEmitter {
       });
     }
 
-    this.emit('error', entry);
+    this.emit('log-error', entry);
   }
 
   /**

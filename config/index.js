@@ -5,7 +5,7 @@
 
 const path = require('path');
 const { ConfigManager, getConfigManager, resetConfigManager } = require('./manager');
-const { defaults, serverDefaults, browserDefaults, evasionDefaults, networkDefaults, loggingDefaults, automationDefaults, profileDefaults, headlessDefaults, memoryDefaults } = require('./defaults');
+const { defaults, serverDefaults, browserDefaults, evasionDefaults, networkDefaults, loggingDefaults, automationDefaults, profileDefaults, headlessDefaults, memoryDefaults, updaterDefaults } = require('./defaults');
 const { schema, validateConfig, getDefault, getSchema, Types } = require('./schema');
 const { loadFromEnv, getMappings, getEnvVarForPath, generateEnvDocs } = require('./env');
 const { parseArgs, generateHelp, shouldShowHelp, shouldShowVersion, getArgDefinitions } = require('./cli');
@@ -304,6 +304,7 @@ module.exports = {
   profileDefaults,
   headlessDefaults,
   memoryDefaults,
+  updaterDefaults,
 
   // Schema
   schema,

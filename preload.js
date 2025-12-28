@@ -89,8 +89,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   notifyPageLoadComplete: (details) => ipcRenderer.send('page-load-complete', details),
 
   // History event listeners
-  onHistoryEntryAdded: (callback) => ipcRenderer.on('history-entry-added', (event, entry) => callback(entry)),
-  onHistoryCleared: (callback) => ipcRenderer.on('history-cleared', () => callback()),
+  onHistoryEntryAdded: (callback) => {
+    const handler = (event, entry) => callback(entry);
+    ipcRenderer.on('history-entry-added', handler);
+    return () => ipcRenderer.removeListener('history-entry-added', handler);
+  },
+  onHistoryCleared: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('history-cleared', handler);
+    return () => ipcRenderer.removeListener('history-cleared', handler);
+  },
 
   // ==========================================
   // Download Management
@@ -109,11 +117,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getDownloadStatus: () => ipcRenderer.invoke('get-download-status'),
 
   // Download event listeners
-  onDownloadStarted: (callback) => ipcRenderer.on('download-started', (event, download) => callback(download)),
-  onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (event, download) => callback(download)),
-  onDownloadCompleted: (callback) => ipcRenderer.on('download-completed', (event, download) => callback(download)),
-  onDownloadFailed: (callback) => ipcRenderer.on('download-failed', (event, download) => callback(download)),
-  onDownloadCancelled: (callback) => ipcRenderer.on('download-cancelled', (event, download) => callback(download)),
+  onDownloadStarted: (callback) => {
+    const handler = (event, download) => callback(download);
+    ipcRenderer.on('download-started', handler);
+    return () => ipcRenderer.removeListener('download-started', handler);
+  },
+  onDownloadProgress: (callback) => {
+    const handler = (event, download) => callback(download);
+    ipcRenderer.on('download-progress', handler);
+    return () => ipcRenderer.removeListener('download-progress', handler);
+  },
+  onDownloadCompleted: (callback) => {
+    const handler = (event, download) => callback(download);
+    ipcRenderer.on('download-completed', handler);
+    return () => ipcRenderer.removeListener('download-completed', handler);
+  },
+  onDownloadFailed: (callback) => {
+    const handler = (event, download) => callback(download);
+    ipcRenderer.on('download-failed', handler);
+    return () => ipcRenderer.removeListener('download-failed', handler);
+  },
+  onDownloadCancelled: (callback) => {
+    const handler = (event, download) => callback(download);
+    ipcRenderer.on('download-cancelled', handler);
+    return () => ipcRenderer.removeListener('download-cancelled', handler);
+  },
 
   // ==========================================
   // Tab Management
@@ -154,29 +182,105 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateTab: (tabId, updates) => ipcRenderer.send('update-tab', { tabId, updates }),
 
   // Event listeners for IPC from main process
-  onNavigateWebview: (callback) => ipcRenderer.on('navigate-webview', (event, url) => callback(url)),
-  onGetWebviewUrl: (callback) => ipcRenderer.on('get-webview-url', () => callback()),
-  onExecuteInWebview: (callback) => ipcRenderer.on('execute-in-webview', (event, script) => callback(script)),
-  onGetPageContent: (callback) => ipcRenderer.on('get-page-content', () => callback()),
-  onCaptureScreenshot: (callback) => ipcRenderer.on('capture-screenshot', () => callback()),
+  onNavigateWebview: (callback) => {
+    const handler = (event, url) => callback(url);
+    ipcRenderer.on('navigate-webview', handler);
+    return () => ipcRenderer.removeListener('navigate-webview', handler);
+  },
+  onGetWebviewUrl: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('get-webview-url', handler);
+    return () => ipcRenderer.removeListener('get-webview-url', handler);
+  },
+  onExecuteInWebview: (callback) => {
+    const handler = (event, script) => callback(script);
+    ipcRenderer.on('execute-in-webview', handler);
+    return () => ipcRenderer.removeListener('execute-in-webview', handler);
+  },
+  onGetPageContent: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('get-page-content', handler);
+    return () => ipcRenderer.removeListener('get-page-content', handler);
+  },
+  onCaptureScreenshot: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('capture-screenshot', handler);
+    return () => ipcRenderer.removeListener('capture-screenshot', handler);
+  },
 
   // Enhanced screenshot listeners
-  onScreenshotFullPage: (callback) => ipcRenderer.on('screenshot-full-page', (event, data) => callback(data)),
-  onScreenshotElement: (callback) => ipcRenderer.on('screenshot-element', (event, data) => callback(data)),
-  onScreenshotArea: (callback) => ipcRenderer.on('screenshot-area', (event, data) => callback(data)),
-  onScreenshotViewport: (callback) => ipcRenderer.on('screenshot-viewport', (event, data) => callback(data)),
-  onAnnotateScreenshot: (callback) => ipcRenderer.on('annotate-screenshot', (event, data) => callback(data)),
+  onScreenshotFullPage: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('screenshot-full-page', handler);
+    return () => ipcRenderer.removeListener('screenshot-full-page', handler);
+  },
+  onScreenshotElement: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('screenshot-element', handler);
+    return () => ipcRenderer.removeListener('screenshot-element', handler);
+  },
+  onScreenshotArea: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('screenshot-area', handler);
+    return () => ipcRenderer.removeListener('screenshot-area', handler);
+  },
+  onScreenshotViewport: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('screenshot-viewport', handler);
+    return () => ipcRenderer.removeListener('screenshot-viewport', handler);
+  },
+  onAnnotateScreenshot: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('annotate-screenshot', handler);
+    return () => ipcRenderer.removeListener('annotate-screenshot', handler);
+  },
 
   // Recording listeners
-  onStartRecording: (callback) => ipcRenderer.on('start-recording', (event, data) => callback(data)),
-  onStopRecording: (callback) => ipcRenderer.on('stop-recording', (event, data) => callback(data)),
-  onPauseRecording: (callback) => ipcRenderer.on('pause-recording', (event, data) => callback(data)),
-  onResumeRecording: (callback) => ipcRenderer.on('resume-recording', (event, data) => callback(data)),
-  onClickElement: (callback) => ipcRenderer.on('click-element', (event, selector) => callback(selector)),
-  onFillField: (callback) => ipcRenderer.on('fill-field', (event, data) => callback(data)),
-  onGetPageState: (callback) => ipcRenderer.on('get-page-state', () => callback()),
-  onWaitForElement: (callback) => ipcRenderer.on('wait-for-element', (event, data) => callback(data)),
-  onScroll: (callback) => ipcRenderer.on('scroll', (event, data) => callback(data)),
+  onStartRecording: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('start-recording', handler);
+    return () => ipcRenderer.removeListener('start-recording', handler);
+  },
+  onStopRecording: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('stop-recording', handler);
+    return () => ipcRenderer.removeListener('stop-recording', handler);
+  },
+  onPauseRecording: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('pause-recording', handler);
+    return () => ipcRenderer.removeListener('pause-recording', handler);
+  },
+  onResumeRecording: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('resume-recording', handler);
+    return () => ipcRenderer.removeListener('resume-recording', handler);
+  },
+  onClickElement: (callback) => {
+    const handler = (event, selector) => callback(selector);
+    ipcRenderer.on('click-element', handler);
+    return () => ipcRenderer.removeListener('click-element', handler);
+  },
+  onFillField: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('fill-field', handler);
+    return () => ipcRenderer.removeListener('fill-field', handler);
+  },
+  onGetPageState: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('get-page-state', handler);
+    return () => ipcRenderer.removeListener('get-page-state', handler);
+  },
+  onWaitForElement: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('wait-for-element', handler);
+    return () => ipcRenderer.removeListener('wait-for-element', handler);
+  },
+  onScroll: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('scroll', handler);
+    return () => ipcRenderer.removeListener('scroll', handler);
+  },
 
   // Send responses back to main process
   sendWebviewUrlResponse: (url) => ipcRenderer.send('webview-url-response', url),
@@ -207,25 +311,69 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // ==========================================
   // Session Event Listeners
   // ==========================================
-  onSessionChanged: (callback) => ipcRenderer.on('session-changed', (event, data) => callback(data)),
+  onSessionChanged: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('session-changed', handler);
+    return () => ipcRenderer.removeListener('session-changed', handler);
+  },
 
   // ==========================================
   // Tab Event Listeners
   // ==========================================
-  onTabCreated: (callback) => ipcRenderer.on('tab-created', (event, tab) => callback(tab)),
-  onTabClosed: (callback) => ipcRenderer.on('tab-closed', (event, data) => callback(data)),
-  onTabSwitched: (callback) => ipcRenderer.on('tab-switched', (event, data) => callback(data)),
-  onTabUpdated: (callback) => ipcRenderer.on('tab-updated', (event, data) => callback(data)),
-  onTabNavigate: (callback) => ipcRenderer.on('tab-navigate', (event, data) => callback(data)),
-  onTabReload: (callback) => ipcRenderer.on('tab-reload', (event, data) => callback(data)),
-  onTabMute: (callback) => ipcRenderer.on('tab-mute', (event, data) => callback(data)),
-  onTabZoom: (callback) => ipcRenderer.on('tab-zoom', (event, data) => callback(data)),
-  onTabsClosedOther: (callback) => ipcRenderer.on('tabs-closed-other', (event, data) => callback(data)),
+  onTabCreated: (callback) => {
+    const handler = (event, tab) => callback(tab);
+    ipcRenderer.on('tab-created', handler);
+    return () => ipcRenderer.removeListener('tab-created', handler);
+  },
+  onTabClosed: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-closed', handler);
+    return () => ipcRenderer.removeListener('tab-closed', handler);
+  },
+  onTabSwitched: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-switched', handler);
+    return () => ipcRenderer.removeListener('tab-switched', handler);
+  },
+  onTabUpdated: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-updated', handler);
+    return () => ipcRenderer.removeListener('tab-updated', handler);
+  },
+  onTabNavigate: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-navigate', handler);
+    return () => ipcRenderer.removeListener('tab-navigate', handler);
+  },
+  onTabReload: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-reload', handler);
+    return () => ipcRenderer.removeListener('tab-reload', handler);
+  },
+  onTabMute: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-mute', handler);
+    return () => ipcRenderer.removeListener('tab-mute', handler);
+  },
+  onTabZoom: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tab-zoom', handler);
+    return () => ipcRenderer.removeListener('tab-zoom', handler);
+  },
+  onTabsClosedOther: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('tabs-closed-other', handler);
+    return () => ipcRenderer.removeListener('tabs-closed-other', handler);
+  },
 
   // ==========================================
   // Download Event Listeners
   // ==========================================
-  onDownloadFile: (callback) => ipcRenderer.on('download-file', (event, data) => callback(data)),
+  onDownloadFile: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('download-file', handler);
+    return () => ipcRenderer.removeListener('download-file', handler);
+  },
 
   // ==========================================
   // Network Throttling
@@ -329,7 +477,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   resetGeolocation: () => ipcRenderer.invoke('reset-geolocation'),
 
   // Event listener for geolocation script injection
-  onInjectGeolocationScript: (callback) => ipcRenderer.on('inject-geolocation-script', (event, script) => callback(script)),
+  onInjectGeolocationScript: (callback) => {
+    const handler = (event, script) => callback(script);
+    ipcRenderer.on('inject-geolocation-script', handler);
+    return () => ipcRenderer.removeListener('inject-geolocation-script', handler);
+  },
 
   // ==========================================
   // DOM Inspector
@@ -464,7 +616,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getActiveProfilePartition: () => ipcRenderer.invoke('get-active-profile-partition'),
 
   // Profile event listeners
-  onProfileChanged: (callback) => ipcRenderer.on('profile-changed', (event, data) => callback(data)),
+  onProfileChanged: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('profile-changed', handler);
+    return () => ipcRenderer.removeListener('profile-changed', handler);
+  },
 
   // ==========================================
   // Storage Management
@@ -500,7 +656,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendStorageOperationResponse: (operationId, result, error) => ipcRenderer.send('storage-operation-response', { operationId, result, error }),
 
   // Listen for storage operations to execute in webview
-  onExecuteStorageOperation: (callback) => ipcRenderer.on('execute-storage-operation', (event, data) => callback(data)),
+  onExecuteStorageOperation: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('execute-storage-operation', handler);
+    return () => ipcRenderer.removeListener('execute-storage-operation', handler);
+  },
 
   // ==========================================
   // DevTools Management
@@ -586,28 +746,96 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendConsoleExecuteResult: (result) => ipcRenderer.send(`console-execute-result-${result.executionId}`, result),
 
   // Listen for console capture injection request
-  onInjectConsoleCapture: (callback) => ipcRenderer.on('inject-console-capture', () => callback()),
+  onInjectConsoleCapture: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('inject-console-capture', handler);
+    return () => ipcRenderer.removeListener('inject-console-capture', handler);
+  },
 
   // Listen for console execute request
-  onExecuteInConsole: (callback) => ipcRenderer.on('execute-in-console', (event, data) => callback(data)),
+  onExecuteInConsole: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('execute-in-console', handler);
+    return () => ipcRenderer.removeListener('execute-in-console', handler);
+  },
 
   // Listen for DevTools open request
-  onOpenDevTools: (callback) => ipcRenderer.on('open-devtools', (event, data) => callback(data)),
+  onOpenDevTools: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('open-devtools', handler);
+    return () => ipcRenderer.removeListener('open-devtools', handler);
+  },
 
   // Listen for DevTools close request
-  onCloseDevTools: (callback) => ipcRenderer.on('close-devtools', () => callback()),
+  onCloseDevTools: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('close-devtools', handler);
+    return () => ipcRenderer.removeListener('close-devtools', handler);
+  },
 
   // Listen for performance metrics request
-  onGetPerformanceMetrics: (callback) => ipcRenderer.on('get-performance-metrics', () => callback()),
+  onGetPerformanceMetrics: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('get-performance-metrics', handler);
+    return () => ipcRenderer.removeListener('get-performance-metrics', handler);
+  },
 
   // Send performance metrics response
   sendPerformanceMetricsResponse: (metrics) => ipcRenderer.send('performance-metrics-response', metrics),
 
   // Listen for coverage data request
-  onGetCoverageData: (callback) => ipcRenderer.on('get-coverage-data', () => callback()),
+  onGetCoverageData: (callback) => {
+    const handler = () => callback();
+    ipcRenderer.on('get-coverage-data', handler);
+    return () => ipcRenderer.removeListener('get-coverage-data', handler);
+  },
 
   // Send coverage data response
   sendCoverageDataResponse: (data) => ipcRenderer.send('coverage-data-response', data),
+
+  // ==========================================
+  // Auto-Update Management
+  // ==========================================
+
+  // Listen for update available notification
+  onUpdateAvailable: (callback) => {
+    const handler = (event, info) => callback(info);
+    ipcRenderer.on('update-available', handler);
+    return () => ipcRenderer.removeListener('update-available', handler);
+  },
+
+  // Listen for download progress updates
+  onUpdateDownloading: (callback) => {
+    const handler = (event, progress) => callback(progress);
+    ipcRenderer.on('update-downloading', handler);
+    return () => ipcRenderer.removeListener('update-downloading', handler);
+  },
+
+  // Listen for update downloaded notification
+  onUpdateDownloaded: (callback) => {
+    const handler = (event, info) => callback(info);
+    ipcRenderer.on('update-downloaded', handler);
+    return () => ipcRenderer.removeListener('update-downloaded', handler);
+  },
+
+  // Listen for update error
+  onUpdateError: (callback) => {
+    const handler = (event, error) => callback(error);
+    ipcRenderer.on('update-error', handler);
+    return () => ipcRenderer.removeListener('update-error', handler);
+  },
+
+  // Check for updates manually
+  checkForUpdates: () => ipcRenderer.invoke('updater-check'),
+
+  // Start downloading the update
+  downloadUpdate: () => ipcRenderer.invoke('updater-download'),
+
+  // Install the update and restart
+  installUpdate: (options) => ipcRenderer.invoke('updater-install', options),
+
+  // Get current update status
+  getUpdateStatus: () => ipcRenderer.invoke('updater-status'),
 
   // ==========================================
   // Automation Scripts

@@ -32,6 +32,7 @@ const { ReplayEngine, REPLAY_STATE, ERROR_MODE } = require('./recording/replay')
 const { HeadlessManager, headlessManager, HEADLESS_PRESETS } = require('./headless/manager');
 const { WindowManager, WindowState } = require('./windows/manager');
 const { WindowPool, PoolEntryState } = require('./windows/pool');
+const { getUpdateManager, UPDATE_STATUS } = require('./updater/manager');
 
 // ==========================================
 // Configuration System
@@ -491,6 +492,7 @@ let sessionRecordingManager = null;
 let replayEngine = null;
 let windowManager = null;
 let windowPool = null;
+let updateManager = null;
 
 // ==========================================
 // Headless Mode Configuration
@@ -688,17 +690,17 @@ function createWindow() {
   // Setup download manager event handlers
   setupDownloadManagerEvents();
 
+  // Setup download progress listener ONCE (outside will-download to prevent memory leaks)
+  downloadManager.on('download-progress', (downloadInfo) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('download-progress', downloadInfo);
+    }
+  });
+
   // Hook into Electron's will-download event
   session.defaultSession.on('will-download', (event, downloadItem, webContents) => {
     // Register the download with our download manager
     const download = downloadManager.registerDownload(downloadItem, webContents);
-
-    // Notify renderer of download progress
-    downloadManager.on('download-progress', (downloadInfo) => {
-      if (mainWindow) {
-        mainWindow.webContents.send('download-progress', downloadInfo);
-      }
-    });
   });
 
   // Initialize Tab Manager with config values
@@ -827,6 +829,46 @@ function createWindow() {
   // Link window manager and pool
   windowManager.setWindowPool(windowPool);
 
+  // Initialize UpdateManager for auto-updates
+  const updaterConfig = appConfig.updater || {};
+  if (updaterConfig.enabled !== false) {
+    updateManager = getUpdateManager({
+      autoDownload: updaterConfig.autoDownload || false,
+      autoInstallOnAppQuit: updaterConfig.autoInstallOnAppQuit !== false,
+      allowPrerelease: updaterConfig.allowPrerelease || false,
+      allowDowngrade: updaterConfig.allowDowngrade || false,
+      checkInterval: updaterConfig.checkInterval || 3600000,
+      channel: updaterConfig.allowPrerelease ? 'beta' : 'latest',
+      provider: updaterConfig.provider || 'github',
+      owner: updaterConfig.owner || null,
+      repo: updaterConfig.repo || null,
+      feedUrl: updaterConfig.updateServerUrl || null
+    });
+
+    // Set main window reference for IPC notifications
+    updateManager.setMainWindow(mainWindow);
+    updateManager.setupIpcHandlers();
+
+    // Check for updates on startup if enabled
+    if (updaterConfig.checkOnStartup !== false) {
+      setTimeout(() => {
+        console.log('[UpdateManager] Checking for updates on startup...');
+        updateManager.checkForUpdates();
+      }, 5000); // Delay to allow app to fully initialize
+    }
+
+    // Start auto-check if interval is configured
+    if (updaterConfig.checkInterval > 0) {
+      updateManager.startAutoCheck();
+    }
+
+    console.log('[UpdateManager] Initialized with config:', {
+      autoDownload: updateManager.config.autoDownload,
+      checkOnStartup: updaterConfig.checkOnStartup !== false,
+      checkInterval: updateManager.config.checkInterval
+    });
+  }
+
   // Initialize WebSocket server for external communication with managers
   const serverConfig = appConfig.server || {};
   const wsPort = serverConfig.port || 8765;
@@ -866,7 +908,8 @@ function createWindow() {
     replayEngine,
     headlessManager,
     windowManager,
-    windowPool
+    windowPool,
+    updateManager
   });
 
   console.log(`[WebSocket] Server initialized on port ${wsPort}`);
@@ -972,6 +1015,10 @@ function createWindow() {
     if (windowManager) {
       windowManager.cleanup();
     }
+    // Cleanup Update Manager
+    if (updateManager) {
+      updateManager.cleanup();
+    }
     mainWindow = null;
     if (wsServer) {
       wsServer.close();
@@ -980,6 +1027,40 @@ function createWindow() {
 
   // Setup IPC handlers
   setupIPCHandlers();
+}
+
+// Helper function to create IPC Promise with timeout to prevent memory leaks
+// If renderer crashes or fails to respond, the Promise will reject after timeout
+const IPC_TIMEOUT = 10000; // 10 seconds
+
+function createIPCPromiseWithTimeout(channel, responseChannel, sendData = null) {
+  return new Promise((resolve, reject) => {
+    let timeoutId;
+    let responseHandler;
+
+    const cleanup = () => {
+      clearTimeout(timeoutId);
+      ipcMain.removeListener(responseChannel, responseHandler);
+    };
+
+    responseHandler = (event, data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    timeoutId = setTimeout(() => {
+      ipcMain.removeListener(responseChannel, responseHandler);
+      reject(new Error(`IPC timeout: No response from renderer for ${responseChannel} within ${IPC_TIMEOUT}ms`));
+    }, IPC_TIMEOUT);
+
+    ipcMain.once(responseChannel, responseHandler);
+
+    if (sendData !== null) {
+      mainWindow.webContents.send(channel, sendData);
+    } else {
+      mainWindow.webContents.send(channel);
+    }
+  });
 }
 
 function setupIPCHandlers() {
@@ -993,182 +1074,92 @@ function setupIPCHandlers() {
   });
 
   ipcMain.handle('get-webview-url', async () => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('get-webview-url');
-      ipcMain.once('webview-url-response', (event, url) => {
-        resolve(url);
-      });
-    });
+    return createIPCPromiseWithTimeout('get-webview-url', 'webview-url-response');
   });
 
   // Execute script in webview
   ipcMain.handle('execute-in-webview', async (event, script) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('execute-in-webview', script);
-      ipcMain.once('webview-execute-response', (event, result) => {
-        resolve(result);
-      });
-    });
+    return createIPCPromiseWithTimeout('execute-in-webview', 'webview-execute-response', script);
   });
 
   // Get page content
   ipcMain.handle('get-page-content', async () => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('get-page-content');
-      ipcMain.once('page-content-response', (event, content) => {
-        resolve(content);
-      });
-    });
+    return createIPCPromiseWithTimeout('get-page-content', 'page-content-response');
   });
 
   // Screenshot (basic viewport)
   ipcMain.handle('capture-screenshot', async () => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('capture-screenshot');
-      ipcMain.once('screenshot-response', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('capture-screenshot', 'screenshot-response');
   });
 
   // Enhanced screenshot - full page
   ipcMain.handle('screenshot-full-page', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('screenshot-full-page', options);
-      ipcMain.once('screenshot-full-page-response', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('screenshot-full-page', 'screenshot-full-page-response', options);
   });
 
   // Enhanced screenshot - element
   ipcMain.handle('screenshot-element', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('screenshot-element', options);
-      ipcMain.once('screenshot-element-response', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('screenshot-element', 'screenshot-element-response', options);
   });
 
   // Enhanced screenshot - area
   ipcMain.handle('screenshot-area', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('screenshot-area', options);
-      ipcMain.once('screenshot-area-response', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('screenshot-area', 'screenshot-area-response', options);
   });
 
   // Enhanced screenshot - viewport with options
   ipcMain.handle('screenshot-viewport', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('screenshot-viewport', options);
-      ipcMain.once('screenshot-viewport-response', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('screenshot-viewport', 'screenshot-viewport-response', options);
   });
 
   // Annotate screenshot
   ipcMain.handle('annotate-screenshot', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('annotate-screenshot', options);
-      ipcMain.once('annotate-screenshot-response', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('annotate-screenshot', 'annotate-screenshot-response', options);
   });
 
   // Screen recording - start
   ipcMain.handle('start-recording', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('start-recording', options);
-      ipcMain.once('recording-started', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('start-recording', 'recording-started', options);
   });
 
   // Screen recording - stop
   ipcMain.handle('stop-recording', async (event, options) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('stop-recording', options);
-      ipcMain.once('recording-stopped', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('stop-recording', 'recording-stopped', options);
   });
 
   // Screen recording - pause
   ipcMain.handle('pause-recording', async () => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('pause-recording');
-      ipcMain.once('recording-paused', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('pause-recording', 'recording-paused');
   });
 
   // Screen recording - resume
   ipcMain.handle('resume-recording', async () => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('resume-recording');
-      ipcMain.once('recording-resumed', (event, data) => {
-        resolve(data);
-      });
-    });
+    return createIPCPromiseWithTimeout('resume-recording', 'recording-resumed');
   });
 
   // Click element
   ipcMain.handle('click-element', async (event, selector) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('click-element', selector);
-      ipcMain.once('click-response', (event, result) => {
-        resolve(result);
-      });
-    });
+    return createIPCPromiseWithTimeout('click-element', 'click-response', selector);
   });
 
   // Fill form field
   ipcMain.handle('fill-field', async (event, { selector, value }) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('fill-field', { selector, value });
-      ipcMain.once('fill-response', (event, result) => {
-        resolve(result);
-      });
-    });
+    return createIPCPromiseWithTimeout('fill-field', 'fill-response', { selector, value });
   });
 
   // Get page state (forms, links, buttons)
   ipcMain.handle('get-page-state', async () => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('get-page-state');
-      ipcMain.once('page-state-response', (event, state) => {
-        resolve(state);
-      });
-    });
+    return createIPCPromiseWithTimeout('get-page-state', 'page-state-response');
   });
 
   // Wait for element
   ipcMain.handle('wait-for-element', async (event, { selector, timeout }) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('wait-for-element', { selector, timeout });
-      ipcMain.once('wait-response', (event, result) => {
-        resolve(result);
-      });
-    });
+    return createIPCPromiseWithTimeout('wait-for-element', 'wait-response', { selector, timeout });
   });
 
   // Scroll
   ipcMain.handle('scroll', async (event, { x, y, selector }) => {
-    return new Promise((resolve) => {
-      mainWindow.webContents.send('scroll', { x, y, selector });
-      ipcMain.once('scroll-response', (event, result) => {
-        resolve(result);
-      });
-    });
+    return createIPCPromiseWithTimeout('scroll', 'scroll-response', { x, y, selector });
   });
 
   // ==========================================
@@ -2665,6 +2656,11 @@ app.on('activate', () => {
 
 // Handle certificate errors (useful for OSINT on sites with bad certs)
 app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
-  event.preventDefault();
-  callback(true);
+  if (appConfig.network?.certificates?.ignoreCertificateErrors) {
+    console.warn(`[Security] Bypassing certificate error for ${url}: ${error}`);
+    event.preventDefault();
+    callback(true);
+  } else {
+    callback(false);
+  }
 });

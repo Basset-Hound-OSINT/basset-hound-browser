@@ -1,0 +1,308 @@
+/* Update Notification Styles for Basset Hound Browser */
+
+/* Container for update notification - toast style at bottom right */
+.update-notification {
+  position: fixed;
+  bottom: 50px;
+  right: 20px;
+  background: #16213e;
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  min-width: 320px;
+  max-width: 400px;
+  animation: updateSlideIn 0.3s ease-out;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.update-notification.hidden {
+  display: none;
+}
+
+.update-notification.dismissing {
+  animation: updateSlideOut 0.3s ease-in forwards;
+}
+
+@keyframes updateSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes updateSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Header section with icon and title */
+.update-notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.update-notification-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.update-notification-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.update-notification-icon.available {
+  color: #00ff88;
+}
+
+.update-notification-icon.downloading {
+  color: #00bfff;
+}
+
+.update-notification-icon.ready {
+  color: #e94560;
+}
+
+.update-notification-icon.error {
+  color: #ff4444;
+}
+
+.update-notification-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #eaeaea;
+  margin: 0;
+}
+
+/* Close/dismiss button */
+.update-notification-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: background 0.2s, color 0.2s;
+  padding: 0;
+}
+
+.update-notification-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #eaeaea;
+}
+
+/* Message/description area */
+.update-notification-message {
+  font-size: 13px;
+  color: #8892b0;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.update-notification-version {
+  color: #00ff88;
+  font-weight: 500;
+}
+
+/* Progress bar container */
+.update-progress-container {
+  margin-bottom: 12px;
+}
+
+.update-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: #0f3460;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.update-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00bfff);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.update-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #666;
+  margin-top: 6px;
+}
+
+.update-progress-percent {
+  color: #00bfff;
+  font-weight: 500;
+}
+
+.update-progress-speed {
+  color: #666;
+}
+
+/* Action buttons */
+.update-notification-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.update-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.update-btn:active {
+  transform: scale(0.98);
+}
+
+.update-btn-primary {
+  background: #e94560;
+  color: white;
+}
+
+.update-btn-primary:hover {
+  background: #ff6b6b;
+}
+
+.update-btn-primary:disabled {
+  background: #4a4a4a;
+  cursor: not-allowed;
+}
+
+.update-btn-secondary {
+  background: #0f3460;
+  color: #eaeaea;
+}
+
+.update-btn-secondary:hover {
+  background: #1a4c7c;
+}
+
+/* State-specific styles */
+.update-notification.update-available {
+  border-left: 3px solid #00ff88;
+}
+
+.update-notification.update-downloading {
+  border-left: 3px solid #00bfff;
+}
+
+.update-notification.update-ready {
+  border-left: 3px solid #e94560;
+}
+
+.update-notification.update-error {
+  border-left: 3px solid #ff4444;
+}
+
+/* Pulse animation for downloading state */
+@keyframes downloadPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.update-notification.update-downloading .update-notification-icon {
+  animation: downloadPulse 1.5s ease-in-out infinite;
+}
+
+/* Spinning animation for downloading icon */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.update-notification-icon.downloading svg {
+  animation: spin 2s linear infinite;
+}
+
+/* Error message styling */
+.update-error-message {
+  font-size: 12px;
+  color: #ff6b6b;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+/* Release notes link */
+.update-release-notes {
+  font-size: 12px;
+  color: #00bfff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.update-release-notes:hover {
+  color: #00ff88;
+  text-decoration: underline;
+}
+
+/* Compact mode for minimal intrusion */
+.update-notification.compact {
+  min-width: 280px;
+  padding: 12px 16px;
+}
+
+.update-notification.compact .update-notification-message {
+  margin-bottom: 8px;
+}
+
+.update-notification.compact .update-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .update-notification {
+    left: 10px;
+    right: 10px;
+    bottom: 40px;
+    min-width: auto;
+    max-width: none;
+  }
+
+  .update-notification-actions {
+    flex-direction: column;
+  }
+
+  .update-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

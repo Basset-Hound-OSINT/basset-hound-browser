@@ -216,7 +216,7 @@ const networkDefaults = {
 
   // SSL/Certificate settings
   certificates: {
-    ignoreCertificateErrors: true,
+    ignoreCertificateErrors: false,  // Set to true to bypass certificate errors (security risk - use with caution)
     clientCertificates: []
   },
 
@@ -384,6 +384,44 @@ const memoryDefaults = {
 };
 
 /**
+ * Auto-update configuration defaults
+ */
+const updaterDefaults = {
+  // Update checking
+  enabled: true,
+  checkOnStartup: true,
+  checkInterval: 3600000,  // 1 hour in milliseconds
+
+  // Download behavior
+  autoDownload: false,
+  autoInstallOnAppQuit: true,
+
+  // Release channel
+  allowPrerelease: false,
+  allowDowngrade: false,
+
+  // Provider settings (GitHub by default)
+  provider: 'github',
+  owner: null,       // GitHub owner/org
+  repo: null,        // GitHub repo name
+
+  // Update server (for custom server)
+  updateServerUrl: null,
+
+  // Notifications
+  notifyOnAvailable: true,
+  notifyOnDownloaded: true,
+  notifyOnError: true,
+
+  // Delta updates
+  differentialDownload: true,
+
+  // Rollback
+  keepPreviousVersion: true,
+  maxPreviousVersions: 2
+};
+
+/**
  * Complete default configuration object
  */
 const defaults = {
@@ -395,7 +433,8 @@ const defaults = {
   automation: automationDefaults,
   profiles: profileDefaults,
   headless: headlessDefaults,
-  memory: memoryDefaults
+  memory: memoryDefaults,
+  updater: updaterDefaults
 };
 
 module.exports = {
@@ -408,5 +447,6 @@ module.exports = {
   automationDefaults,
   profileDefaults,
   headlessDefaults,
-  memoryDefaults
+  memoryDefaults,
+  updaterDefaults
 };

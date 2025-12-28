@@ -107,6 +107,49 @@ function sleep(ms) {
 }
 
 /**
+ * Default timeout for IPC responses (30 seconds)
+ */
+const IPC_DEFAULT_TIMEOUT = 30000;
+
+/**
+ * Execute an IPC request with timeout to prevent hanging promises
+ * @param {Electron.WebContents} webContents - The webContents to send to
+ * @param {string} sendChannel - The channel to send the request on
+ * @param {string} responseChannel - The channel to listen for response on
+ * @param {any} data - Data to send (optional)
+ * @param {number} timeout - Timeout in milliseconds (default: 30000)
+ * @returns {Promise<any>} The response from the renderer
+ */
+function ipcWithTimeout(webContents, sendChannel, responseChannel, data = null, timeout = IPC_DEFAULT_TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    let timeoutId;
+    let resolved = false;
+
+    const handler = (event, result) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeoutId);
+      resolve(result);
+    };
+
+    ipcMain.once(responseChannel, handler);
+
+    timeoutId = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      ipcMain.removeListener(responseChannel, handler);
+      reject(new Error(`IPC timeout: No response from '${responseChannel}' within ${timeout}ms`));
+    }, timeout);
+
+    if (data !== null) {
+      webContents.send(sendChannel, data);
+    } else {
+      webContents.send(sendChannel);
+    }
+  });
+}
+
+/**
  * Generate a recovery suggestion based on error type
  * @param {string} command - The failed command
  * @param {Error|string} error - The error that occurred
@@ -269,6 +312,9 @@ class WebSocketServer {
     // Plugin manager
     this.pluginManager = options.pluginManager || null;
 
+    // Update manager for auto-updates
+    this.updateManager = options.updateManager || null;
+
     // Initialize Memory Manager (use global singleton or provided instance)
     this.memoryManager = options.memoryManager || memoryManager;
     this.memoryManager.setWebSocketServer(this);
@@ -337,6 +383,12 @@ class WebSocketServer {
       if (this.sslEnabled && (!this.sslCertPath || !this.sslKeyPath)) {
         console.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
       }
+    }
+
+    // Verify WebSocket server was created successfully
+    if (!this.wss) {
+      this.logger.error('Failed to create WebSocket server');
+      return;
     }
 
     // Start heartbeat monitoring
@@ -609,13 +661,41 @@ class WebSocketServer {
       keySize = 2048
     } = options;
 
-    // Ensure output directory exists
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
+    // Validate and sanitize inputs to prevent command injection
+    // Validate commonName: only allow alphanumeric, dots, hyphens (valid DNS characters)
+    if (typeof commonName !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/.test(commonName)) {
+      throw new Error('Invalid commonName: must contain only alphanumeric characters, dots, and hyphens');
+    }
+    if (commonName.length > 253) {
+      throw new Error('Invalid commonName: maximum length is 253 characters');
     }
 
-    const keyPath = path.join(outputDir, 'server.key');
-    const certPath = path.join(outputDir, 'server.crt');
+    // Validate days: must be a positive integer
+    const daysNum = parseInt(days, 10);
+    if (!Number.isInteger(daysNum) || daysNum < 1 || daysNum > 3650) {
+      throw new Error('Invalid days: must be an integer between 1 and 3650');
+    }
+
+    // Validate keySize: only allow specific secure key sizes
+    const allowedKeySizes = [2048, 3072, 4096];
+    const keySizeNum = parseInt(keySize, 10);
+    if (!allowedKeySizes.includes(keySizeNum)) {
+      throw new Error(`Invalid keySize: must be one of ${allowedKeySizes.join(', ')}`);
+    }
+
+    // Validate outputDir: must be an absolute path within expected directories
+    const resolvedDir = path.resolve(outputDir);
+    if (resolvedDir.includes('..') || !path.isAbsolute(resolvedDir)) {
+      throw new Error('Invalid outputDir: must be an absolute path without directory traversal');
+    }
+
+    // Ensure output directory exists
+    if (!fs.existsSync(resolvedDir)) {
+      fs.mkdirSync(resolvedDir, { recursive: true });
+    }
+
+    const keyPath = path.join(resolvedDir, 'server.key');
+    const certPath = path.join(resolvedDir, 'server.crt');
 
     // Check if openssl is available
     try {
@@ -625,10 +705,20 @@ class WebSocketServer {
     }
 
     try {
-      // Generate private key and self-signed certificate in one command
-      const opensslCmd = `openssl req -x509 -newkey rsa:${keySize} -keyout "${keyPath}" -out "${certPath}" -days ${days} -nodes -subj "/CN=${commonName}" -addext "subjectAltName=DNS:${commonName},DNS:localhost,IP:127.0.0.1"`;
+      // Generate private key and self-signed certificate using spawn for safety
+      // Use execFileSync instead of execSync to avoid shell interpretation
+      const { execFileSync } = require('child_process');
 
-      execSync(opensslCmd, { stdio: 'pipe' });
+      execFileSync('openssl', [
+        'req', '-x509',
+        '-newkey', `rsa:${keySizeNum}`,
+        '-keyout', keyPath,
+        '-out', certPath,
+        '-days', String(daysNum),
+        '-nodes',
+        '-subj', `/CN=${commonName}`,
+        '-addext', `subjectAltName=DNS:${commonName},DNS:localhost,IP:127.0.0.1`
+      ], { stdio: 'pipe' });
 
       console.log(`[WebSocket] Self-signed certificate generated:`);
       console.log(`  Certificate: ${certPath}`);
@@ -921,12 +1011,16 @@ class WebSocketServer {
         await humanDelay(50, 200);
       }
 
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('click-element', selector);
-        ipcMain.once('click-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'click-element',
+          'click-response',
+          selector
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Fill form field
@@ -942,43 +1036,56 @@ class WebSocketServer {
         await humanDelay(50, 150);
       }
 
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('fill-field', { selector, value });
-        ipcMain.once('fill-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'fill-field',
+          'fill-response',
+          { selector, value }
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Get page content
     this.commandHandlers.get_content = async (params) => {
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('get-page-content');
-        ipcMain.once('page-content-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'get-page-content',
+          'page-content-response'
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Capture screenshot
     this.commandHandlers.screenshot = async (params) => {
       const { format = 'png' } = params;
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('capture-screenshot');
-        ipcMain.once('screenshot-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'capture-screenshot',
+          'screenshot-response'
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Get page state (forms, links, buttons)
     this.commandHandlers.get_page_state = async (params) => {
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('get-page-state');
-        ipcMain.once('page-state-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'get-page-state',
+          'page-state-response'
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Execute arbitrary JavaScript
@@ -988,12 +1095,16 @@ class WebSocketServer {
         return { success: false, error: 'Script is required' };
       }
 
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('execute-in-webview', script);
-        ipcMain.once('webview-execute-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Wait for element to appear
@@ -1003,12 +1114,18 @@ class WebSocketServer {
         return { success: false, error: 'Selector is required' };
       }
 
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('wait-for-element', { selector, timeout });
-        ipcMain.once('wait-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        // Use longer timeout for wait_for_element since it has its own internal timeout
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'wait-for-element',
+          'wait-response',
+          { selector, timeout },
+          timeout + 5000 // Give extra buffer beyond the element wait timeout
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // Scroll to position or element
@@ -1019,12 +1136,16 @@ class WebSocketServer {
         await humanScroll();
       }
 
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('scroll', { x, y, selector });
-        ipcMain.once('scroll-response', (event, result) => {
-          resolve(result);
-        });
-      });
+      try {
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'scroll',
+          'scroll-response',
+          { x, y, selector }
+        );
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // ==================== COOKIE MANAGEMENT COMMANDS ====================
@@ -1215,12 +1336,16 @@ class WebSocketServer {
 
     // Get current URL
     this.commandHandlers.get_url = async (params) => {
-      return new Promise((resolve) => {
-        this.mainWindow.webContents.send('get-webview-url');
-        ipcMain.once('webview-url-response', (event, url) => {
-          resolve({ success: true, url });
-        });
-      });
+      try {
+        const url = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'get-webview-url',
+          'webview-url-response'
+        );
+        return { success: true, url };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
     };
 
     // ==================== SESSION MANAGEMENT COMMANDS ====================
@@ -3699,12 +3824,13 @@ class WebSocketServer {
           ? keyboard.getSpecialKeyScript(key, { repeat: params.repeat || 1 })
           : keyboard.getFullKeyPressScript(key, { modifiers, layout: params.layout || 'en-US' });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3727,12 +3853,13 @@ class WebSocketServer {
           holdTime: params.holdTime || 50
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3768,12 +3895,12 @@ class WebSocketServer {
             })();
           `;
 
-          const focusResult = await new Promise((resolve) => {
-            this.mainWindow.webContents.send('execute-in-webview', focusScript);
-            ipcMain.once('webview-execute-response', (event, result) => {
-              resolve(result);
-            });
-          });
+          const focusResult = await ipcWithTimeout(
+            this.mainWindow.webContents,
+            'execute-in-webview',
+            'webview-execute-response',
+            focusScript
+          );
 
           if (!focusResult.success) {
             return focusResult;
@@ -3790,12 +3917,13 @@ class WebSocketServer {
           layout
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3863,12 +3991,13 @@ class WebSocketServer {
           overshoot: humanize
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3900,12 +4029,13 @@ class WebSocketServer {
           moveFirst: moveFirst && humanize
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3928,12 +4058,13 @@ class WebSocketServer {
           moveFirst: humanize
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3956,12 +4087,13 @@ class WebSocketServer {
           moveFirst: humanize
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -3995,12 +4127,13 @@ class WebSocketServer {
           { steps, holdTime }
         );
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4029,12 +4162,13 @@ class WebSocketServer {
           moveFirst: humanize
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4066,12 +4200,13 @@ class WebSocketServer {
           selector
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4096,12 +4231,13 @@ class WebSocketServer {
           deltaMode
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4133,12 +4269,13 @@ class WebSocketServer {
           offset: { x: offsetX, y: offsetY }
         });
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4149,12 +4286,13 @@ class WebSocketServer {
       try {
         const script = mouse.getMousePositionTrackingScript();
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, position: result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, position: result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4169,12 +4307,13 @@ class WebSocketServer {
           })();
         `;
 
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => {
-            resolve({ success: true, ...result });
-          });
-        });
+        const result = await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
+        return { success: true, ...result };
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -4984,10 +5123,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getElement(selector);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -4996,10 +5137,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getElementTree(selector, depth);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5008,10 +5151,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getElementStyles(selector);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5020,10 +5165,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getElementAttributes(selector);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5032,10 +5179,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getGenerateSelectorScript(selector);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5044,20 +5193,24 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.highlightElement(selector, color);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
     this.commandHandlers.remove_highlight = async (params) => {
       try {
         const script = this.domInspector.removeHighlight();
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5067,10 +5220,12 @@ class WebSocketServer {
       try {
         const query = { selector, tagName, text, attribute, attributeValue, xpath, visibleOnly: visibleOnly || false, limit: limit || 100, exact: exact || false };
         const script = this.domInspector.findElements(query);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5079,10 +5234,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getParent(selector);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -5091,10 +5248,12 @@ class WebSocketServer {
       if (!selector) return { success: false, error: 'Selector is required' };
       try {
         const script = this.domInspector.getChildren(selector);
-        return new Promise((resolve) => {
-          this.mainWindow.webContents.send('execute-in-webview', script);
-          ipcMain.once('webview-execute-response', (event, result) => resolve(result));
-        });
+        return await ipcWithTimeout(
+          this.mainWindow.webContents,
+          'execute-in-webview',
+          'webview-execute-response',
+          script
+        );
       } catch (error) { return { success: false, error: error.message }; }
     };
 
@@ -7423,6 +7582,245 @@ class WebSocketServer {
         return { success: false, error: error.message };
       }
     };
+
+    // ==========================================
+    // Auto-Update Commands
+    // ==========================================
+
+    /**
+     * Check for updates
+     */
+    this.commandHandlers.check_for_updates = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        const result = await this.updateManager.checkForUpdates();
+        return {
+          success: result.success,
+          updateAvailable: result.updateAvailable || false,
+          updateInfo: result.updateInfo || null,
+          currentVersion: this.updateManager.currentVersion,
+          error: result.error || null
+        };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Download available update
+     */
+    this.commandHandlers.download_update = async (params, ws) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        const result = await this.updateManager.downloadUpdate();
+
+        // Setup progress notifications for this client if download started
+        if (result.success && ws) {
+          this.setupUpdateProgressNotifications(ws);
+        }
+
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Install update and restart
+     */
+    this.commandHandlers.install_update = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        const silent = params?.silent || false;
+        const forceRunAfter = params?.forceRunAfter !== false;
+        return this.updateManager.installUpdate(silent, forceRunAfter);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get current update status
+     */
+    this.commandHandlers.get_update_status = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        const status = this.updateManager.getStatus();
+        return { success: true, ...status };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Configure update settings
+     */
+    this.commandHandlers.set_update_config = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        return this.updateManager.setConfig(params || {});
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get update history
+     */
+    this.commandHandlers.get_update_history = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        return this.updateManager.getUpdateHistory(params || {});
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Rollback to previous version
+     */
+    this.commandHandlers.rollback_update = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      if (!params?.version) {
+        return { success: false, error: 'Version parameter is required' };
+      }
+
+      try {
+        return this.updateManager.rollback(params.version);
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Start automatic update checking
+     */
+    this.commandHandlers.start_auto_update_check = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        if (params?.interval) {
+          this.updateManager.setConfig({ checkInterval: params.interval });
+        }
+        this.updateManager.startAutoCheck();
+        return {
+          success: true,
+          message: 'Auto-check started',
+          interval: this.updateManager.config.checkInterval
+        };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Stop automatic update checking
+     */
+    this.commandHandlers.stop_auto_update_check = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        this.updateManager.stopAutoCheck();
+        return { success: true, message: 'Auto-check stopped' };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    /**
+     * Get available rollback versions
+     */
+    this.commandHandlers.get_rollback_versions = async (params) => {
+      if (!this.updateManager) {
+        return { success: false, error: 'Update manager not available' };
+      }
+
+      try {
+        const versions = this.updateManager.getRollbackVersions();
+        return {
+          success: true,
+          versions,
+          currentVersion: this.updateManager.currentVersion
+        };
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+  }
+
+  /**
+   * Setup progress notifications for update downloads
+   * @param {WebSocket} ws - WebSocket client
+   */
+  setupUpdateProgressNotifications(ws) {
+    if (!this.updateManager) return;
+
+    const progressHandler = (progress) => {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'update_progress',
+          data: progress
+        }));
+      }
+    };
+
+    const statusHandler = (info) => {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'update_status',
+          data: {
+            status: this.updateManager.status,
+            info
+          }
+        }));
+      }
+    };
+
+    const errorHandler = (error) => {
+      if (ws.readyState === ws.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'update_error',
+          data: error
+        }));
+      }
+    };
+
+    // Register event handlers
+    this.updateManager.on('downloading', progressHandler);
+    this.updateManager.on('downloaded', statusHandler);
+    this.updateManager.on('error', errorHandler);
+
+    // Cleanup on connection close
+    ws.on('close', () => {
+      this.updateManager.off('downloading', progressHandler);
+      this.updateManager.off('downloaded', statusHandler);
+      this.updateManager.off('error', errorHandler);
+    });
   }
 
   /**

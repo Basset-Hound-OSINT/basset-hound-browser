@@ -598,9 +598,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       try {
+        const safeSelector = JSON.stringify(selector);
         const result = await webview.executeJavaScript(`
           (function() {
-            const element = document.querySelector('${selector.replace(/'/g, "\\'")}');
+            const element = document.querySelector(${safeSelector});
             if (element) {
               element.click();
               return { success: true };
@@ -622,11 +623,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       try {
+        const safeSelector = JSON.stringify(selector);
+        const safeValue = JSON.stringify(value);
         const result = await webview.executeJavaScript(`
           (function() {
-            const element = document.querySelector('${selector.replace(/'/g, "\\'")}');
+            const element = document.querySelector(${safeSelector});
             if (element) {
-              element.value = '${value.replace(/'/g, "\\'")}';
+              element.value = ${safeValue};
               element.dispatchEvent(new Event('input', { bubbles: true }));
               element.dispatchEvent(new Event('change', { bubbles: true }));
               return { success: true };
@@ -711,14 +714,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       try {
+        const safeSelector = JSON.stringify(selector);
+        const safeTimeout = Number.isFinite(timeout) ? timeout : 10000;
         const result = await webview.executeJavaScript(`
           new Promise((resolve) => {
             const startTime = Date.now();
             const check = () => {
-              const element = document.querySelector('${selector.replace(/'/g, "\\'")}');
+              const element = document.querySelector(${safeSelector});
               if (element) {
                 resolve({ success: true, found: true });
-              } else if (Date.now() - startTime > ${timeout}) {
+              } else if (Date.now() - startTime > ${safeTimeout}) {
                 resolve({ success: false, error: 'Timeout waiting for element' });
               } else {
                 requestAnimationFrame(check);
@@ -743,9 +748,10 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         let result;
         if (selector) {
+          const safeSelector = JSON.stringify(selector);
           result = await webview.executeJavaScript(`
             (function() {
-              const element = document.querySelector('${selector.replace(/'/g, "\\'")}');
+              const element = document.querySelector(${safeSelector});
               if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return { success: true };
@@ -754,9 +760,11 @@ document.addEventListener('DOMContentLoaded', () => {
             })()
           `);
         } else {
+          const safeX = Number.isFinite(x) ? x : 0;
+          const safeY = Number.isFinite(y) ? y : 0;
           result = await webview.executeJavaScript(`
             (function() {
-              window.scrollTo({ top: ${y || 0}, left: ${x || 0}, behavior: 'smooth' });
+              window.scrollTo({ top: ${safeY}, left: ${safeX}, behavior: 'smooth' });
               return { success: true };
             })()
           `);

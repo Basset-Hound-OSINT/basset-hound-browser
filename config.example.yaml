@@ -208,8 +208,11 @@ network:
     customRules: []           # Custom blocking rules
 
   # SSL/Certificate settings
+  # WARNING: Setting ignoreCertificateErrors to true is a security risk
+  # and may expose you to man-in-the-middle (MITM) attacks. Only enable
+  # this for testing or when accessing sites with known self-signed certs.
   certificates:
-    ignoreCertificateErrors: true    # Allow self-signed certs
+    ignoreCertificateErrors: false   # Set to true to bypass certificate errors (security risk)
     clientCertificates: []           # Client certificates for mTLS
 
   # HTTP header customization
@@ -347,6 +350,57 @@ memory:
   cache:
     maxSize: null             # Max cache size in bytes (null = auto)
     clearOnMemoryPressure: true
+
+# ------------------------------------------------------------
+# Auto-Update Configuration
+# ------------------------------------------------------------
+# Settings for automatic application updates
+updater:
+  # Enable/disable auto-update functionality
+  enabled: true
+
+  # Check for updates when the application starts
+  checkOnStartup: true
+
+  # Interval between automatic update checks (in milliseconds)
+  # Default: 3600000 (1 hour)
+  checkInterval: 3600000
+
+  # Automatically download updates when available
+  autoDownload: false
+
+  # Install update automatically when app quits
+  autoInstallOnAppQuit: true
+
+  # Include pre-release versions (alpha, beta, rc)
+  allowPrerelease: false
+
+  # Allow downgrading to older versions
+  allowDowngrade: false
+
+  # Update provider settings
+  # Supported providers: github, s3, spaces, generic, custom
+  provider: "github"
+
+  # GitHub-specific settings (when provider is "github")
+  # Set these to your GitHub repository for auto-updates
+  owner: null                 # GitHub owner/organization name
+  repo: null                  # GitHub repository name
+
+  # Custom update server URL (for "generic" or "custom" provider)
+  updateServerUrl: null
+
+  # Notification settings
+  notifyOnAvailable: true     # Notify when update is available
+  notifyOnDownloaded: true    # Notify when update is downloaded
+  notifyOnError: true         # Notify on update errors
+
+  # Enable differential/delta downloads for faster updates
+  differentialDownload: true
+
+  # Rollback settings
+  keepPreviousVersion: true   # Keep previous version info for rollback
+  maxPreviousVersions: 2      # Maximum previous versions to keep
 
 # ============================================================
 # Environment Variables
