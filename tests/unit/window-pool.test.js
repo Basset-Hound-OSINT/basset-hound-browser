@@ -49,6 +49,26 @@ jest.mock('../../windows/manager', () => {
 const { WindowPool, PoolEntryState } = require('../../windows/pool');
 const { WindowState } = require('../../windows/manager');
 
+// Helper function to wait for a condition with timeout
+const waitFor = async (condition, { timeout = 2000, interval = 50 } = {}) => {
+  const startTime = Date.now();
+  while (Date.now() - startTime < timeout) {
+    if (await condition()) {
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  return false;
+};
+
+// Helper to wait for pool to have available windows
+const waitForPoolReady = async (pool, minAvailable = 1, timeout = 2000) => {
+  return waitFor(() => {
+    const available = pool.getStatus().available;
+    return available >= minAvailable && !pool.isWarming;
+  }, { timeout });
+};
+
 describe('PoolEntryState Enumeration', () => {
   test('should define all pool entry states', () => {
     expect(PoolEntryState).toHaveProperty('WARMING');
@@ -141,8 +161,9 @@ describe('WindowPool', () => {
     test('should initialize the pool', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       const result = await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       expect(result.success).toBe(true);
       expect(pool.isInitialized).toBe(true);
@@ -153,8 +174,9 @@ describe('WindowPool', () => {
     test('should return success if already initialized', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
       const result = await pool.initialize();
 
       expect(result.success).toBe(true);
@@ -167,10 +189,11 @@ describe('WindowPool', () => {
       jest.useRealTimers();
 
       const handler = jest.fn();
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       pool.on('pool-initialized', handler);
 
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       expect(handler).toHaveBeenCalled();
 
@@ -180,8 +203,9 @@ describe('WindowPool', () => {
     test('should start health check loop', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       expect(pool.healthCheckTimer).not.toBeNull();
 
@@ -200,8 +224,9 @@ describe('WindowPool', () => {
     test('should acquire available window from pool', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       const wrapper = await pool.acquire();
 
@@ -216,10 +241,11 @@ describe('WindowPool', () => {
       jest.useRealTimers();
 
       const handler = jest.fn();
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       pool.on('window-acquired', handler);
 
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
       await pool.acquire();
 
       expect(handler).toHaveBeenCalled();
@@ -230,8 +256,9 @@ describe('WindowPool', () => {
     test('should remove window from pool after acquisition', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10, maxPoolSize: 2 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100, maxPoolSize: 2 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       const initialSize = pool.pool.size;
       await pool.acquire();
@@ -244,8 +271,9 @@ describe('WindowPool', () => {
     test('should show acquired window', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       await pool.acquire();
 
@@ -257,8 +285,9 @@ describe('WindowPool', () => {
     test('should set window position on acquire', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       await pool.acquire();
 
@@ -288,7 +317,7 @@ describe('WindowPool', () => {
     test('should recycle healthy wrapper', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 100 });
 
       const mockWrapper = {
         id: 'test-window-1',
@@ -319,7 +348,7 @@ describe('WindowPool', () => {
     test('should hide recycled window', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 100 });
 
       const mockWrapper = {
         id: 'test-window-1',
@@ -343,7 +372,7 @@ describe('WindowPool', () => {
       jest.useRealTimers();
 
       const handler = jest.fn();
-      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 100 });
       pool.on('window-recycled', handler);
 
       const mockWrapper = {
@@ -367,8 +396,9 @@ describe('WindowPool', () => {
     test('should return false when pool is full', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, maxPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, maxPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       const mockWrapper = {
         id: 'test-window-1',
@@ -387,7 +417,7 @@ describe('WindowPool', () => {
     test('should position recycled window off-screen', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 100 });
 
       const mockWrapper = {
         id: 'test-window-1',
@@ -434,8 +464,9 @@ describe('WindowPool', () => {
     test('should include state breakdown', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 2, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 2, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 2);
 
       const status = pool.getStatus();
 
@@ -496,8 +527,9 @@ describe('WindowPool', () => {
     test('should warm pool to specified count', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 5, warmupDelay: 100 });
       const result = await pool.warmup(2);
+      await waitForPoolReady(pool, 2);
 
       expect(result.success).toBe(true);
       expect(result.available).toBeGreaterThanOrEqual(0);
@@ -508,8 +540,9 @@ describe('WindowPool', () => {
     test('should respect max pool size', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 2, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 0, maxPoolSize: 2, warmupDelay: 100 });
       const result = await pool.warmup(5);
+      await waitForPoolReady(pool, 2);
 
       expect(result.total).toBeLessThanOrEqual(2);
 
@@ -519,8 +552,9 @@ describe('WindowPool', () => {
     test('should use minPoolSize as default count', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, maxPoolSize: 5, warmupDelay: 100 });
       await pool.warmup();
+      await waitForPoolReady(pool, 1);
 
       expect(pool.pool.size).toBeGreaterThanOrEqual(0);
 
@@ -532,8 +566,9 @@ describe('WindowPool', () => {
     test('should dispose all windows in pool', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 2, maxPoolSize: 5, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 2, maxPoolSize: 5, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 2);
 
       const result = await pool.drain();
 
@@ -546,8 +581,9 @@ describe('WindowPool', () => {
     test('should return disposed count', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       const result = await pool.drain();
 
@@ -561,8 +597,9 @@ describe('WindowPool', () => {
     test('should stop health check timer', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       await pool.cleanup();
 
@@ -572,8 +609,9 @@ describe('WindowPool', () => {
     test('should drain all windows', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       await pool.cleanup();
 
@@ -583,8 +621,9 @@ describe('WindowPool', () => {
     test('should set initialized to false', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       await pool.cleanup();
 
@@ -599,15 +638,16 @@ describe('WindowPool', () => {
       const handler = jest.fn();
       const pool = new WindowPool({
         minPoolSize: 1,
-        warmupDelay: 10,
-        healthCheckInterval: 100
+        warmupDelay: 100,
+        healthCheckInterval: 150
       });
       pool.on('health-check-completed', handler);
 
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
-      // Wait for health check to run
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for health check to run (healthCheckInterval + buffer)
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       expect(handler).toHaveBeenCalled();
 
@@ -620,10 +660,11 @@ describe('WindowPool', () => {
       jest.useRealTimers();
 
       const handler = jest.fn();
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       pool.on('window-warmed', handler);
 
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       expect(handler).toHaveBeenCalled();
 
@@ -635,8 +676,9 @@ describe('WindowPool', () => {
     test('should track totalCreated', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 2, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 2, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 2);
 
       expect(pool.stats.totalCreated).toBeGreaterThan(0);
 
@@ -646,8 +688,9 @@ describe('WindowPool', () => {
     test('should track acquire hits and misses', async () => {
       jest.useRealTimers();
 
-      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 10 });
+      const pool = new WindowPool({ minPoolSize: 1, warmupDelay: 100 });
       await pool.initialize();
+      await waitForPoolReady(pool, 1);
 
       // First acquire should be a hit
       await pool.acquire();

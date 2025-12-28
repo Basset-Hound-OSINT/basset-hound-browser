@@ -449,9 +449,18 @@ describe('Fingerprint Evasion Module', () => {
 
     test('script should not contain undefined variables in substitutions', () => {
       const script = getEvasionScript();
-      expect(script).not.toContain('undefined');
+      // Check for template substitution failures (e.g., ${undefined} or string concatenation with undefined)
+      // Note: The script intentionally contains 'undefined' keyword for things like:
+      // - `get: () => undefined` (setting navigator.webdriver to undefined)
+      // - `typeof X !== 'undefined'` (type checks)
+      // - `=== undefined` (equality checks)
+      // These are valid JavaScript, not substitution errors.
       expect(script).not.toContain('${undefined}');
-      expect(script).not.toContain('NaN');
+      expect(script).not.toMatch(/\+ undefined/);
+      expect(script).not.toMatch(/undefined \+/);
+      expect(script).not.toContain('${NaN}');
+      expect(script).not.toMatch(/\+ NaN[^a-zA-Z]/);
+      expect(script).not.toMatch(/NaN \+/);
     });
 
     test('script should properly escape strings', () => {

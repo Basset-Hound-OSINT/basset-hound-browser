@@ -91,7 +91,6 @@ describe('HEADLESS_FLAGS', () => {
 
 describe('HeadlessManager', () => {
   let headlessManager;
-  const originalPlatform = process.platform;
   const originalArgv = process.argv;
   const originalEnv = process.env;
 
@@ -285,64 +284,64 @@ describe('HeadlessManager', () => {
 
     test('should detect no display when DISPLAY not set on Linux', () => {
       delete process.env.DISPLAY;
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
 
       const result = headlessManager.detectHeadlessEnvironment();
 
       expect(result.hasDisplay).toBe(false);
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
   });
 
   describe('checkXvfbRunning', () => {
     test('should return false on non-Linux platform', () => {
-      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      headlessManager.setPlatform('darwin');
 
       const result = headlessManager.checkXvfbRunning();
 
       expect(result).toBe(false);
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should detect Xvfb running on Linux', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockReturnValue('12345 Xvfb :99 -screen 0 1920x1080x24');
 
       const result = headlessManager.checkXvfbRunning();
 
       expect(result).toBe(true);
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should return false when Xvfb not running', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockReturnValue('');
 
       const result = headlessManager.checkXvfbRunning();
 
       expect(result).toBe(false);
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
   });
 
   describe('startVirtualDisplay', () => {
     test('should fail on non-Linux platform', () => {
-      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      headlessManager.setPlatform('darwin');
 
       const result = headlessManager.startVirtualDisplay();
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('only supported on Linux');
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should fail when Xvfb not installed', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
         if (cmd === 'which Xvfb') {
           throw new Error('Command not found');
@@ -355,11 +354,11 @@ describe('HeadlessManager', () => {
       expect(result.success).toBe(false);
       expect(result.error).toContain('Xvfb is not installed');
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should start Xvfb with default options', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
         if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
         if (cmd.includes('pgrep')) return '12345 Xvfb :99';
@@ -373,11 +372,11 @@ describe('HeadlessManager', () => {
       expect(result.resolution).toBe('1920x1080x24');
       expect(spawn).toHaveBeenCalledWith('Xvfb', expect.arrayContaining([':99']), expect.any(Object));
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should accept custom display options', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
         if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
         if (cmd.includes('pgrep')) return '12345 Xvfb :50';
@@ -392,11 +391,11 @@ describe('HeadlessManager', () => {
       expect(result.success).toBe(true);
       expect(result.display).toBe(':50');
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should set DISPLAY environment variable', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
         if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
         if (cmd.includes('pgrep')) return '12345 Xvfb :99';
@@ -407,7 +406,7 @@ describe('HeadlessManager', () => {
 
       expect(process.env.DISPLAY).toBe(':99');
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
   });
 
@@ -420,7 +419,7 @@ describe('HeadlessManager', () => {
     });
 
     test('should stop running virtual display', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
         if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
         if (cmd.includes('pgrep')) return '12345 Xvfb :99';
@@ -434,7 +433,7 @@ describe('HeadlessManager', () => {
       expect(headlessManager.xvfbRunning).toBe(false);
       expect(headlessManager.virtualDisplay).toBeNull();
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
   });
 
@@ -762,7 +761,7 @@ describe('HeadlessManager', () => {
 
   describe('cleanup', () => {
     test('should stop virtual display if running', () => {
-      Object.defineProperty(process, 'platform', { value: 'linux' });
+      headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
         if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
         if (cmd.includes('pgrep')) return '12345 Xvfb :99';
@@ -774,7 +773,7 @@ describe('HeadlessManager', () => {
 
       expect(headlessManager.xvfbRunning).toBe(false);
 
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
+      headlessManager.setPlatform(null);
     });
 
     test('should set initialized to false', () => {

@@ -82,6 +82,9 @@ class HeadlessManager extends EventEmitter {
     this.preset = options.preset || 'standard';
     this.presetConfig = HEADLESS_PRESETS[this.preset] || HEADLESS_PRESETS.standard;
 
+    // Platform getter (can be overridden for testing)
+    this._platform = null;
+
     // State
     this.displayDetected = true;
     this.virtualDisplay = null;
@@ -113,6 +116,22 @@ class HeadlessManager extends EventEmitter {
     this.wsServer = null;
 
     console.log('[HeadlessManager] Initialized');
+  }
+
+  /**
+   * Get current platform (can be overridden for testing)
+   * @returns {string} Platform name
+   */
+  getPlatform() {
+    return this._platform || process.platform;
+  }
+
+  /**
+   * Set platform for testing purposes
+   * @param {string} platform - Platform name to use
+   */
+  setPlatform(platform) {
+    this._platform = platform;
   }
 
   /**
@@ -156,6 +175,7 @@ class HeadlessManager extends EventEmitter {
    * @returns {Object} Detection result with details
    */
   detectHeadlessEnvironment() {
+    const platform = this.getPlatform();
     const result = {
       hasDisplay: true,
       displayVariable: process.env.DISPLAY || null,
@@ -163,7 +183,7 @@ class HeadlessManager extends EventEmitter {
       dockerEnvironment: false,
       ciEnvironment: false,
       wslEnvironment: false,
-      platform: process.platform
+      platform: platform
     };
 
     // Check for Docker environment
@@ -182,12 +202,12 @@ class HeadlessManager extends EventEmitter {
     );
 
     // Check for WSL environment
-    result.wslEnvironment = process.platform === 'linux' &&
+    result.wslEnvironment = platform === 'linux' &&
       fs.existsSync('/proc/version') &&
       fs.readFileSync('/proc/version', 'utf8').toLowerCase().includes('microsoft');
 
     // Check for display on Linux
-    if (process.platform === 'linux') {
+    if (platform === 'linux') {
       // No DISPLAY variable set
       if (!process.env.DISPLAY) {
         result.hasDisplay = false;
@@ -217,7 +237,7 @@ class HeadlessManager extends EventEmitter {
    * @returns {boolean} True if Xvfb is detected
    */
   checkXvfbRunning() {
-    if (process.platform !== 'linux') {
+    if (this.getPlatform() !== 'linux') {
       return false;
     }
 
@@ -236,7 +256,7 @@ class HeadlessManager extends EventEmitter {
    * @returns {Object} Start result
    */
   startVirtualDisplay(options = {}) {
-    if (process.platform !== 'linux') {
+    if (this.getPlatform() !== 'linux') {
       return {
         success: false,
         error: 'Virtual display (Xvfb) is only supported on Linux'

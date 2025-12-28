@@ -1,6 +1,13 @@
 /**
  * Basset Hound Browser - WebSocket Server Unit Tests
  * Tests for WebSocket command handling and message processing
+ *
+ * Fixed race conditions by:
+ * 1. Using proper async/await patterns with Promise-based server initialization
+ * 2. Using fixed ports with port allocation helper to avoid conflicts
+ * 3. Properly waiting for 'listening' event before connecting clients
+ * 4. Using robust cleanup in afterEach with proper connection closing
+ * 5. Increased timeouts for reliability
  */
 
 const WebSocket = require('ws');
@@ -142,6 +149,165 @@ jest.mock('../../input/mouse', () => ({
   getMousePositionTrackingScript: jest.fn().mockReturnValue('return { x: 0, y: 0 };')
 }));
 
+// Increase Jest timeout for all tests
+jest.setTimeout(30000);
+
+// Port allocation helper to avoid port conflicts
+let portCounter = 19000;
+function getNextPort() {
+  return portCounter++;
+}
+
+/**
+ * Helper to wait for WebSocket server to be ready
+ * @param {WebSocketServer} server - The server instance
+ * @returns {Promise<void>}
+ */
+function waitForServerReady(server) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Server failed to start within timeout'));
+    }, 5000);
+
+    if (server.wss) {
+      // Check if already listening
+      if (server.wss.address()) {
+        clearTimeout(timeout);
+        resolve();
+        return;
+      }
+
+      server.wss.once('listening', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+
+      server.wss.once('error', (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    } else {
+      clearTimeout(timeout);
+      reject(new Error('WebSocket server not initialized'));
+    }
+  });
+}
+
+/**
+ * Helper to create a connected client and wait for connection
+ * @param {number} port - The port to connect to
+ * @returns {Promise<WebSocket>}
+ */
+function createConnectedClient(port) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Client connection timeout'));
+    }, 5000);
+
+    const client = new WebSocket(`ws://localhost:${port}`);
+
+    client.once('open', () => {
+      // Wait for the connection status message
+      client.once('message', () => {
+        clearTimeout(timeout);
+        resolve(client);
+      });
+    });
+
+    client.once('error', (err) => {
+      clearTimeout(timeout);
+      reject(err);
+    });
+  });
+}
+
+/**
+ * Helper to send command and wait for response
+ * @param {WebSocket} client - The WebSocket client
+ * @param {object} command - The command to send
+ * @returns {Promise<object>}
+ */
+function sendCommand(client, command) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Command timeout: ${command.command}`));
+    }, 5000);
+
+    const handler = (data) => {
+      const response = JSON.parse(data.toString());
+      if (response.id === command.id) {
+        clearTimeout(timeout);
+        client.removeListener('message', handler);
+        resolve(response);
+      }
+    };
+
+    client.on('message', handler);
+    client.send(JSON.stringify(command));
+  });
+}
+
+/**
+ * Helper to safely close a WebSocket client
+ * @param {WebSocket} client - The client to close
+ * @returns {Promise<void>}
+ */
+function closeClient(client) {
+  return new Promise((resolve) => {
+    if (!client || client.readyState === WebSocket.CLOSED) {
+      resolve();
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      // Force terminate if close doesn't complete
+      if (client.readyState !== WebSocket.CLOSED) {
+        client.terminate();
+      }
+      resolve();
+    }, 1000);
+
+    client.once('close', () => {
+      clearTimeout(timeout);
+      resolve();
+    });
+
+    if (client.readyState === WebSocket.OPEN || client.readyState === WebSocket.CONNECTING) {
+      client.close();
+    } else {
+      clearTimeout(timeout);
+      resolve();
+    }
+  });
+}
+
+/**
+ * Helper to safely close a server
+ * @param {WebSocketServer} server - The server to close
+ * @returns {Promise<void>}
+ */
+function closeServer(server) {
+  return new Promise((resolve) => {
+    if (!server || !server.wss) {
+      resolve();
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      resolve();
+    }, 2000);
+
+    try {
+      server.close();
+      clearTimeout(timeout);
+      resolve();
+    } catch (e) {
+      clearTimeout(timeout);
+      resolve();
+    }
+  });
+}
+
 describe('WebSocketServer', () => {
   let WebSocketServer;
   let mockMainWindow;
@@ -162,404 +328,265 @@ describe('WebSocketServer', () => {
     };
   });
 
-  afterEach(() => {
-    if (client && client.readyState === WebSocket.OPEN) {
-      client.close();
+  afterEach(async () => {
+    // Clean up client
+    if (client) {
+      await closeClient(client);
+      client = null;
     }
+
+    // Clean up server
     if (server) {
-      server.close();
+      await closeServer(server);
+      server = null;
     }
+
+    // Small delay to ensure port is released
+    await new Promise(resolve => setTimeout(resolve, 50));
   });
 
   describe('Server Initialization', () => {
-    test('should create WebSocket server on specified port', (done) => {
-      const port = 18765 + Math.floor(Math.random() * 1000);
+    test('should create WebSocket server on specified port', async () => {
+      const port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
 
-      setTimeout(() => {
-        expect(server.wss).toBeDefined();
-        expect(server.port).toBe(port);
-        done();
-      }, 100);
+      await waitForServerReady(server);
+
+      expect(server.wss).toBeDefined();
+      expect(server.port).toBe(port);
     });
 
-    test('should accept client connections', (done) => {
-      const port = 18765 + Math.floor(Math.random() * 1000);
+    test('should accept client connections', async () => {
+      const port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
 
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
+      await waitForServerReady(server);
 
-        client.on('open', () => {
-          expect(server.clients.size).toBe(1);
-          done();
-        });
+      client = await createConnectedClient(port);
 
-        client.on('error', done);
-      }, 100);
+      expect(server.clients.size).toBe(1);
     });
 
-    test('should assign unique client IDs', (done) => {
-      const port = 18765 + Math.floor(Math.random() * 1000);
+    test('should assign unique client IDs', async () => {
+      const port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
 
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
+      await waitForServerReady(server);
 
-        client.on('message', (data) => {
+      const clientPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+        const ws = new WebSocket(`ws://localhost:${port}`);
+
+        ws.once('message', (data) => {
+          clearTimeout(timeout);
           const message = JSON.parse(data.toString());
           if (message.type === 'status' && message.message === 'connected') {
-            expect(message.clientId).toMatch(/^client-\d+-[a-z0-9]+$/);
-            done();
+            client = ws;
+            resolve(message.clientId);
           }
         });
 
-        client.on('error', done);
-      }, 100);
+        ws.once('error', (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        });
+      });
+
+      const clientId = await clientPromise;
+      expect(clientId).toMatch(/^client-\d+-[a-z0-9]+$/);
     });
   });
 
   describe('Command Handling', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          // Wait for connection status message
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('ping command should return pong', (done) => {
+    test('ping command should return pong', async () => {
       const id = 'test-ping-1';
+      const response = await sendCommand(client, { id, command: 'ping' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.message).toBe('pong');
-          expect(response.timestamp).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'ping' }));
+      expect(response.success).toBe(true);
+      expect(response.message).toBe('pong');
+      expect(response.timestamp).toBeDefined();
     });
 
-    test('status command should return server status', (done) => {
+    test('status command should return server status', async () => {
       const id = 'test-status-1';
+      const response = await sendCommand(client, { id, command: 'status' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.status).toBeDefined();
-          expect(response.status.ready).toBe(true);
-          expect(response.status.port).toBe(port);
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'status' }));
+      expect(response.success).toBe(true);
+      expect(response.status).toBeDefined();
+      expect(response.status.ready).toBe(true);
+      expect(response.status.port).toBe(port);
     });
 
-    test('unknown command should return error', (done) => {
+    test('unknown command should return error', async () => {
       const id = 'test-unknown-1';
+      const response = await sendCommand(client, { id, command: 'unknown_command_xyz' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Unknown command');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'unknown_command_xyz' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Unknown command');
     });
 
-    test('navigate command should require URL', (done) => {
+    test('navigate command should require URL', async () => {
       const id = 'test-navigate-1';
+      const response = await sendCommand(client, { id, command: 'navigate' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('URL is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'navigate' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('URL is required');
     });
 
-    test('click command should require selector', (done) => {
+    test('click command should require selector', async () => {
       const id = 'test-click-1';
+      const response = await sendCommand(client, { id, command: 'click' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Selector is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'click' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Selector is required');
     });
 
-    test('fill command should require selector and value', (done) => {
+    test('fill command should require selector and value', async () => {
       const id = 'test-fill-1';
+      const response = await sendCommand(client, { id, command: 'fill' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Selector and value are required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'fill' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Selector and value are required');
     });
 
-    test('execute_script command should require script', (done) => {
+    test('execute_script command should require script', async () => {
       const id = 'test-script-1';
+      const response = await sendCommand(client, { id, command: 'execute_script' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Script is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'execute_script' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Script is required');
     });
 
-    test('wait_for_element command should require selector', (done) => {
+    test('wait_for_element command should require selector', async () => {
       const id = 'test-wait-1';
+      const response = await sendCommand(client, { id, command: 'wait_for_element' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Selector is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'wait_for_element' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Selector is required');
     });
 
-    test('get_cookies command should require URL', (done) => {
+    test('get_cookies command should require URL', async () => {
       const id = 'test-cookies-1';
+      const response = await sendCommand(client, { id, command: 'get_cookies' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('URL is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'get_cookies' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('URL is required');
     });
 
-    test('set_cookies command should require cookies array', (done) => {
+    test('set_cookies command should require cookies array', async () => {
       const id = 'test-set-cookies-1';
+      const response = await sendCommand(client, { id, command: 'set_cookies' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Cookies array is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'set_cookies' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Cookies array is required');
     });
   });
 
   describe('Proxy Commands', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('set_proxy should require host and port', (done) => {
+    test('set_proxy should require host and port', async () => {
       const id = 'test-proxy-1';
+      const response = await sendCommand(client, { id, command: 'set_proxy' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Host and port are required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'set_proxy' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Host and port are required');
     });
 
-    test('get_proxy_status should return proxy status', (done) => {
+    test('get_proxy_status should return proxy status', async () => {
       const id = 'test-proxy-status-1';
+      const response = await sendCommand(client, { id, command: 'get_proxy_status' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.enabled).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'get_proxy_status' }));
+      expect(response.success).toBe(true);
+      expect(response.enabled).toBeDefined();
     });
 
-    test('set_proxy_list should require proxies array', (done) => {
+    test('set_proxy_list should require proxies array', async () => {
       const id = 'test-proxy-list-1';
+      const response = await sendCommand(client, { id, command: 'set_proxy_list' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Proxies array is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'set_proxy_list' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Proxies array is required');
     });
   });
 
   describe('Screenshot Commands', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('screenshot_element should require selector', (done) => {
+    test('screenshot_element should require selector', async () => {
       const id = 'test-screenshot-element-1';
+      const response = await sendCommand(client, { id, command: 'screenshot_element' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Selector is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'screenshot_element' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Selector is required');
     });
 
-    test('screenshot_area should require coordinates', (done) => {
+    test('screenshot_area should require coordinates', async () => {
       const id = 'test-screenshot-area-1';
+      const response = await sendCommand(client, { id, command: 'screenshot_area' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('x, y, width, and height are required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'screenshot_area' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('x, y, width, and height are required');
     });
 
-    test('screenshot_formats should return supported formats', (done) => {
+    test('screenshot_formats should return supported formats', async () => {
       const id = 'test-screenshot-formats-1';
+      const response = await sendCommand(client, { id, command: 'screenshot_formats' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.formats).toBeDefined();
-          expect(Array.isArray(response.formats)).toBe(true);
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'screenshot_formats' }));
+      expect(response.success).toBe(true);
+      expect(response.formats).toBeDefined();
+      expect(Array.isArray(response.formats)).toBe(true);
     });
   });
 
   describe('Recording Commands', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('recording_status should return current status', (done) => {
+    test('recording_status should return current status', async () => {
       const id = 'test-recording-status-1';
+      const response = await sendCommand(client, { id, command: 'recording_status' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.state).toBe('idle');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'recording_status' }));
+      expect(response.success).toBe(true);
+      expect(response.state).toBe('idle');
     });
 
-    test('recording_formats should return formats and quality presets', (done) => {
+    test('recording_formats should return formats and quality presets', async () => {
       const id = 'test-recording-formats-1';
+      const response = await sendCommand(client, { id, command: 'recording_formats' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.formats).toBeDefined();
-          expect(response.qualityPresets).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'recording_formats' }));
+      expect(response.success).toBe(true);
+      expect(response.formats).toBeDefined();
+      expect(response.qualityPresets).toBeDefined();
     });
   });
 
@@ -567,8 +594,8 @@ describe('WebSocketServer', () => {
     let port;
     let mockSessionManager;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
 
       mockSessionManager = {
         createSession: jest.fn().mockReturnValue({ success: true, session: { id: 'test-session' } }),
@@ -584,44 +611,24 @@ describe('WebSocketServer', () => {
       };
 
       server = new WebSocketServer(port, mockMainWindow, { sessionManager: mockSessionManager });
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('list_sessions should return sessions', (done) => {
+    test('list_sessions should return sessions', async () => {
       const id = 'test-list-sessions-1';
+      const response = await sendCommand(client, { id, command: 'list_sessions' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.sessions).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'list_sessions' }));
+      expect(response.success).toBe(true);
+      expect(response.sessions).toBeDefined();
     });
 
-    test('get_session_info should return session details', (done) => {
+    test('get_session_info should return session details', async () => {
       const id = 'test-session-info-1';
+      const response = await sendCommand(client, { id, command: 'get_session_info' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.session).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'get_session_info' }));
+      expect(response.success).toBe(true);
+      expect(response.session).toBeDefined();
     });
   });
 
@@ -629,8 +636,8 @@ describe('WebSocketServer', () => {
     let port;
     let mockTabManager;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
 
       mockTabManager = {
         createTab: jest.fn().mockReturnValue({ success: true, tab: { id: 'tab-1' } }),
@@ -657,353 +664,236 @@ describe('WebSocketServer', () => {
       };
 
       server = new WebSocketServer(port, mockMainWindow, { tabManager: mockTabManager });
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('list_tabs should return tabs', (done) => {
+    test('list_tabs should return tabs', async () => {
       const id = 'test-list-tabs-1';
+      const response = await sendCommand(client, { id, command: 'list_tabs' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.tabs).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'list_tabs' }));
+      expect(response.success).toBe(true);
+      expect(response.tabs).toBeDefined();
     });
 
-    test('get_active_tab should return active tab', (done) => {
+    test('get_active_tab should return active tab', async () => {
       const id = 'test-active-tab-1';
+      const response = await sendCommand(client, { id, command: 'get_active_tab' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.tab).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'get_active_tab' }));
+      expect(response.success).toBe(true);
+      expect(response.tab).toBeDefined();
     });
 
-    test('close_tab should require tab ID', (done) => {
+    test('close_tab should require tab ID', async () => {
       const id = 'test-close-tab-1';
+      const response = await sendCommand(client, { id, command: 'close_tab' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Tab ID is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'close_tab' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Tab ID is required');
     });
 
-    test('navigate_tab should require URL', (done) => {
+    test('navigate_tab should require URL', async () => {
       const id = 'test-navigate-tab-1';
+      const response = await sendCommand(client, { id, command: 'navigate_tab' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('URL is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'navigate_tab' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('URL is required');
     });
   });
 
   describe('Keyboard Commands', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('key_press should require key', (done) => {
+    test('key_press should require key', async () => {
       const id = 'test-keypress-1';
+      const response = await sendCommand(client, { id, command: 'key_press' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Key is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'key_press' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Key is required');
     });
 
-    test('key_combination should require keys array', (done) => {
+    test('key_combination should require keys array', async () => {
       const id = 'test-keycombination-1';
+      const response = await sendCommand(client, { id, command: 'key_combination' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Keys array is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'key_combination' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Keys array is required');
     });
 
-    test('type_text should require text', (done) => {
+    test('type_text should require text', async () => {
       const id = 'test-typetext-1';
+      const response = await sendCommand(client, { id, command: 'type_text' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Text is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'type_text' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Text is required');
     });
 
-    test('keyboard_layouts should return available layouts', (done) => {
+    test('keyboard_layouts should return available layouts', async () => {
       const id = 'test-layouts-1';
+      const response = await sendCommand(client, { id, command: 'keyboard_layouts' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.layouts).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'keyboard_layouts' }));
+      expect(response.success).toBe(true);
+      expect(response.layouts).toBeDefined();
     });
 
-    test('special_keys should return available keys', (done) => {
+    test('special_keys should return available keys', async () => {
       const id = 'test-special-keys-1';
+      const response = await sendCommand(client, { id, command: 'special_keys' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(true);
-          expect(response.keys).toBeDefined();
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'special_keys' }));
+      expect(response.success).toBe(true);
+      expect(response.keys).toBeDefined();
     });
   });
 
   describe('Mouse Commands', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('mouse_move should require coordinates', (done) => {
+    test('mouse_move should require coordinates', async () => {
       const id = 'test-mousemove-1';
+      const response = await sendCommand(client, { id, command: 'mouse_move' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('X and Y coordinates are required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'mouse_move' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('X and Y coordinates are required');
     });
 
-    test('mouse_click should require coordinates', (done) => {
+    test('mouse_click should require coordinates', async () => {
       const id = 'test-mouseclick-1';
+      const response = await sendCommand(client, { id, command: 'mouse_click' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('X and Y coordinates are required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'mouse_click' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('X and Y coordinates are required');
     });
 
-    test('mouse_drag should require start and end coordinates', (done) => {
+    test('mouse_drag should require start and end coordinates', async () => {
       const id = 'test-mousedrag-1';
+      const response = await sendCommand(client, { id, command: 'mouse_drag' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Start and end coordinates are required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'mouse_drag' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Start and end coordinates are required');
     });
 
-    test('click_at_element should require selector', (done) => {
+    test('click_at_element should require selector', async () => {
       const id = 'test-clickelement-1';
+      const response = await sendCommand(client, { id, command: 'click_at_element' });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Selector is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id, command: 'click_at_element' }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Selector is required');
     });
   });
 
   describe('Error Handling', () => {
     let port;
 
-    beforeEach((done) => {
-      port = 18765 + Math.floor(Math.random() * 1000);
+    beforeEach(async () => {
+      port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
-
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
-        client.on('open', () => {
-          client.once('message', () => done());
-        });
-        client.on('error', done);
-      }, 100);
+      await waitForServerReady(server);
+      client = await createConnectedClient(port);
     });
 
-    test('should handle malformed JSON gracefully', (done) => {
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.success === false && response.error) {
-          expect(response.error).toBeDefined();
-          done();
-        }
+    test('should handle malformed JSON gracefully', async () => {
+      const responsePromise = new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(null), 3000);
+        client.once('message', (data) => {
+          clearTimeout(timeout);
+          const response = JSON.parse(data.toString());
+          if (response.success === false && response.error) {
+            resolve(response);
+          }
+        });
       });
 
       client.send('not valid json');
+
+      const response = await responsePromise;
+      expect(response).not.toBeNull();
+      expect(response.error).toBeDefined();
     });
 
-    test('should handle missing command field', (done) => {
+    test('should handle missing command field', async () => {
       const id = 'test-missing-command';
+      const response = await sendCommand(client, { id });
 
-      client.on('message', (data) => {
-        const response = JSON.parse(data.toString());
-        if (response.id === id) {
-          expect(response.success).toBe(false);
-          expect(response.error).toContain('Command is required');
-          done();
-        }
-      });
-
-      client.send(JSON.stringify({ id }));
+      expect(response.success).toBe(false);
+      expect(response.error).toContain('Command is required');
     });
   });
 
   describe('Broadcast', () => {
-    test('should broadcast to all connected clients', (done) => {
-      const port = 18765 + Math.floor(Math.random() * 1000);
+    test('should broadcast to all connected clients', async () => {
+      const port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
+      await waitForServerReady(server);
 
-      setTimeout(() => {
-        const client1 = new WebSocket(`ws://localhost:${port}`);
-        const client2 = new WebSocket(`ws://localhost:${port}`);
+      const client1 = await createConnectedClient(port);
+      const client2 = await createConnectedClient(port);
 
-        let receivedCount = 0;
-        const broadcastMessage = { type: 'test', data: 'broadcast' };
+      const broadcastMessage = { type: 'test', data: 'broadcast' };
+      let receivedCount = 0;
+
+      const receivePromise = new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(receivedCount), 3000);
 
         const handleMessage = (data) => {
           const message = JSON.parse(data.toString());
           if (message.type === 'test') {
             receivedCount++;
             if (receivedCount === 2) {
-              client1.close();
-              client2.close();
-              done();
+              clearTimeout(timeout);
+              resolve(receivedCount);
             }
           }
         };
 
-        let connected = 0;
-        const onConnect = () => {
-          connected++;
-          if (connected === 2) {
-            client1.on('message', handleMessage);
-            client2.on('message', handleMessage);
-            server.broadcast(broadcastMessage);
-          }
-        };
+        client1.on('message', handleMessage);
+        client2.on('message', handleMessage);
+      });
 
-        client1.on('open', () => {
-          client1.once('message', onConnect);
-        });
-        client2.on('open', () => {
-          client2.once('message', onConnect);
-        });
-      }, 100);
+      server.broadcast(broadcastMessage);
+
+      const count = await receivePromise;
+      expect(count).toBe(2);
+
+      await closeClient(client1);
+      await closeClient(client2);
     });
   });
 
   describe('Cleanup', () => {
-    test('should close all connections on server close', (done) => {
-      const port = 18765 + Math.floor(Math.random() * 1000);
+    test('should close all connections on server close', async () => {
+      const port = getNextPort();
       server = new WebSocketServer(port, mockMainWindow);
+      await waitForServerReady(server);
 
-      setTimeout(() => {
-        client = new WebSocket(`ws://localhost:${port}`);
+      client = await createConnectedClient(port);
 
-        client.on('open', () => {
-          client.once('message', () => {
-            server.close();
-          });
+      const closePromise = new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 3000);
+        client.once('close', () => {
+          clearTimeout(timeout);
+          resolve(true);
         });
+      });
 
-        client.on('close', () => {
-          expect(server.wss).toBeNull();
-          done();
-        });
-      }, 100);
+      server.close();
+
+      const closed = await closePromise;
+      expect(closed).toBe(true);
+      expect(server.wss).toBeNull();
     });
   });
 });

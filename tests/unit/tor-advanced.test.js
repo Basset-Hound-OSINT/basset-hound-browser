@@ -798,17 +798,33 @@ describe('Advanced Tor Manager Module', () => {
     });
 
     test('should handle connection timeout', async () => {
-      jest.useFakeTimers();
+      // Store the timeout callback so we can manually trigger it
+      let timeoutCallback = null;
+      const originalSetTimeout = global.setTimeout;
+      global.setTimeout = (cb, ms) => {
+        // Capture the timeout callback from connectControlPort (30000ms in tor-advanced)
+        if (ms >= 30000) {
+          timeoutCallback = cb;
+        }
+        return originalSetTimeout(cb, 0); // Return immediately to not block
+      };
 
       mockSocket.connect.mockImplementation(() => {
-        // Don't call callback to simulate timeout
+        // Don't call callback to simulate timeout scenario
         return mockSocket;
       });
 
+      // Start the connection attempt
       const resultPromise = torManager.connectControlPort();
-      jest.advanceTimersByTime(35000);
 
-      jest.useRealTimers();
+      // Wait a tick for the socket setup, then trigger the timeout callback
+      await new Promise(resolve => originalSetTimeout(resolve, 10));
+      if (timeoutCallback) {
+        timeoutCallback();
+      }
+
+      // Restore original setTimeout
+      global.setTimeout = originalSetTimeout;
 
       const result = await resultPromise;
       expect(result.success).toBe(false);

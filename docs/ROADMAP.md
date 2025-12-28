@@ -592,6 +592,7 @@ External Client (Python, Node.js, etc.)
 | Performance profiling | ✅ Resolved | IPC timeout handling prevents memory leaks from hanging promises |
 | Code documentation | Medium | Add JSDoc comments |
 | Dependency updates | Low | Update Electron version |
+| Test flakiness | Low | Some manager tests have timing issues (extraction, tab, cookies, proxy, profiles, window, storage managers) - tests have mock synchronization issues |
 | SSL/TLS for WebSocket | ✅ Resolved | wss:// support with BASSET_WS_SSL_* env vars |
 | IPC memory leaks | ✅ Resolved | Added timeouts and cleanup functions for all IPC handlers |
 | Event listener leaks | ✅ Resolved | Preload event listeners return cleanup functions |
@@ -629,6 +630,7 @@ External Client (Python, Node.js, etc.)
 | 8.1.0 | 2024-12 | Phase 10.2 Auto-Update Complete - electron-updater, WebSocket API, rollback support |
 | 8.1.1 | 2024-12 | Security & Stability Fixes - IPC memory leaks, event listener cleanup, injection vulnerabilities (renderer + websocket cert gen), certificate handling |
 | 8.1.2 | 2024-12 | Verified all security fixes: IPC timeouts in main.js, cleanup functions in preload.js, JSON.stringify() escaping in renderer.js, configurable certificate handling, execFileSync in websocket server |
+| 8.1.3 | 2024-12 | Test suite improvements: Fixed humanize.test.js (60 tests), fingerprint.test.js, tor-manager.test.js, tor-advanced.test.js, websocket-server.test.js, window-pool.test.js, headless-manager.test.js. Improved test tolerances for randomness-based functions and platform-dependent tests. 903/1011 tests passing (89.3% pass rate). |
 
 ---
 
@@ -754,4 +756,4 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 ---
 
 *Last Updated: December 2024*
-*Version: 8.1.2 - Verified Security & Stability Fixes (IPC memory leaks, event listeners, injection vulnerabilities, certificate handling)*
+*Version: 8.1.3 - Test Suite Improvements (903/1011 tests passing, 89.3% pass rate)*
