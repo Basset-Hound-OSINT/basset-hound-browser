@@ -182,6 +182,7 @@ Once running, connect to `ws://localhost:8765` to control the browser programmat
 - Node.js 18.x or higher
 - npm 9.x or higher
 - Git (for cloning the repository)
+- **Tor** (required for Tor integration features)
 
 ### Development Installation
 
@@ -189,7 +190,17 @@ Once running, connect to `ws://localhost:8765` to control the browser programmat
 # Navigate to the browser directory
 cd basset-hound-browser
 
-# Install dependencies
+# Install system dependencies (Node.js, Tor, Electron dependencies)
+# For Ubuntu/Debian:
+sudo ./scripts/install/main-install.sh --all
+
+# Or install individual components:
+sudo ./scripts/install/install-node.sh     # Install Node.js via nvm (v20 LTS)
+sudo ./scripts/install/install-tor.sh      # Install Tor with control port
+sudo ./scripts/install/install-electron-deps.sh  # Install Electron dependencies
+sudo ./scripts/install/install-xvfb.sh     # Install Xvfb for headless mode
+
+# Install npm dependencies
 npm install
 
 # Run in development mode (with DevTools)
@@ -198,6 +209,49 @@ npm run dev
 # Or run in production mode
 npm start
 ```
+
+#### Tor Installation
+
+Tor is required for Tor integration features (circuit management, exit node selection, onion services, etc.). The browser can run without Tor, but Tor-related commands will fail.
+
+**Quick Install (Ubuntu 22.04)**:
+```bash
+sudo ./scripts/install/install-tor.sh
+```
+
+This script will:
+- Add the official Tor Project repository
+- Install Tor with latest stable version
+- Configure ControlPort 9051 for programmatic access
+- Set up SOCKS proxy on port 9050
+- Start and enable Tor service
+
+**Manual Tor Installation**:
+```bash
+# Ubuntu/Debian
+sudo apt-get install tor
+
+# Fedora/RHEL
+sudo dnf install tor
+
+# macOS
+brew install tor
+
+# Then start Tor service
+sudo systemctl start tor    # Linux
+brew services start tor     # macOS
+```
+
+**Verify Tor Installation**:
+```bash
+# Check Tor is running
+sudo systemctl status tor
+
+# Test SOCKS proxy (should show Tor exit IP)
+curl --socks5 127.0.0.1:9050 https://check.torproject.org/api/ip
+```
+
+See [docs/deployment/tor-deployment.md](docs/deployment/tor-deployment.md) for detailed Tor configuration.
 
 ### Building for Distribution
 

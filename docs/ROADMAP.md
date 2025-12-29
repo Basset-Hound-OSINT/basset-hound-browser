@@ -16,6 +16,13 @@ Basset Hound Browser is a custom Electron-based automation browser designed for 
 - **Language**: JavaScript (ES6+)
 - **Testing**: Jest for unit tests, custom integration test harness
 
+### System Requirements
+- **Node.js**: v18+ (recommended v20 LTS via nvm)
+- **npm**: v9+
+- **Tor**: Required for Tor integration features (install via `scripts/install/install-tor.sh`)
+- **Xvfb**: Optional, for headless mode on Linux
+- **Electron Dependencies**: X11 libraries, GTK+, etc. (install via `scripts/install/install-electron-deps.sh`)
+
 ---
 
 ## Current Architecture
@@ -581,6 +588,20 @@ External Client (Python, Node.js, etc.)
 | Health check endpoints | ✅ Done | Container health monitoring configured |
 | Kubernetes manifests | 📋 Planned | K8s deployment (future) |
 
+### 10.4 SSL Certificate Auto-Generation ✅ COMPLETED
+| Task | Status | Description |
+|------|--------|-------------|
+| Certificate generator module | ✅ Done | CertificateGenerator class with multiple generation methods |
+| OpenSSL support | ✅ Done | Primary method for creating X.509 certificates |
+| node-forge support | ✅ Done | Fallback for pure JavaScript certificate generation |
+| Node.js crypto fallback | ✅ Done | Last-resort method using built-in crypto module |
+| Auto-generation on startup | ✅ Done | Automatic certificate creation when SSL enabled but no certs provided |
+| Certificate renewal | ✅ Done | Automatic renewal when certificates expire (<30 days) |
+| Configurable storage | ✅ Done | Store certificates in userData directory or custom location |
+| Certificate validation | ✅ Done | Check certificate existence, validity, and expiration |
+| Integration with WebSocket server | ✅ Done | Seamless integration with existing WSS support |
+| Documentation | ✅ Done | Comprehensive SSL-CERTIFICATES.md guide |
+
 ---
 
 ## Technical Debt
@@ -631,6 +652,7 @@ External Client (Python, Node.js, etc.)
 | 8.1.1 | 2024-12 | Security & Stability Fixes - IPC memory leaks, event listener cleanup, injection vulnerabilities (renderer + websocket cert gen), certificate handling |
 | 8.1.2 | 2024-12 | Verified all security fixes: IPC timeouts in main.js, cleanup functions in preload.js, JSON.stringify() escaping in renderer.js, configurable certificate handling, execFileSync in websocket server |
 | 8.1.3 | 2024-12 | Test suite improvements: Fixed humanize.test.js (60 tests), fingerprint.test.js, tor-manager.test.js, tor-advanced.test.js, websocket-server.test.js, window-pool.test.js, headless-manager.test.js. Improved test tolerances for randomness-based functions and platform-dependent tests. 903/1011 tests passing (89.3% pass rate). |
+| 8.1.4 | 2024-12 | Phase 10.4 SSL Certificate Auto-Generation - Automatic certificate creation for WebSocket SSL, multi-method generation (OpenSSL, node-forge, Node.js crypto), automatic renewal, configurable storage location, integration with main.js startup sequence |
 
 ---
 
@@ -688,8 +710,40 @@ External Client (Python, Node.js, etc.)
 ### Development Setup
 ```bash
 cd ~/basset-hound-browser
+
+# Install system dependencies (recommended)
+sudo ./scripts/install/main-install.sh --all
+
+# Or install npm dependencies only (if system deps already installed)
 npm install
+
+# Start the browser
 npm start  # or npm run dev for DevTools
+```
+
+### Installation Scripts
+
+Comprehensive installation scripts are available in `scripts/install/`:
+
+- **main-install.sh**: Interactive installer for all components (Node.js, Tor, Electron deps, Xvfb)
+- **install-node.sh**: Install Node.js v20 LTS via nvm with bash integration
+- **install-tor.sh**: Install and configure Tor with ControlPort for programmatic access
+- **install-electron-deps.sh**: Install X11, GTK+, and other Electron dependencies
+- **install-xvfb.sh**: Install Xvfb for headless browser operation
+
+**Usage Examples**:
+```bash
+# Install everything (interactive)
+sudo ./scripts/install/main-install.sh
+
+# Install specific components
+sudo ./scripts/install/main-install.sh --tor --node
+
+# Non-interactive installation
+sudo ./scripts/install/main-install.sh --all --assume-yes
+
+# Dry run (see what would be installed)
+sudo ./scripts/install/main-install.sh --all --dry-run
 ```
 
 ### Using Python Client
@@ -756,4 +810,4 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 ---
 
 *Last Updated: December 2024*
-*Version: 8.1.3 - Test Suite Improvements (903/1011 tests passing, 89.3% pass rate)*
+*Version: 8.1.4 - SSL Certificate Auto-Generation for Production Deployment*

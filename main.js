@@ -33,6 +33,7 @@ const { HeadlessManager, headlessManager, HEADLESS_PRESETS } = require('./headle
 const { WindowManager, WindowState } = require('./windows/manager');
 const { WindowPool, PoolEntryState } = require('./windows/pool');
 const { getUpdateManager, UPDATE_STATUS } = require('./updater/manager');
+const CertificateGenerator = require('./utils/cert-generator');
 
 // ==========================================
 // Configuration System
@@ -873,12 +874,39 @@ function createWindow() {
   const serverConfig = appConfig.server || {};
   const wsPort = serverConfig.port || 8765;
 
+  // Auto-generate SSL certificates if SSL is enabled but no certificate paths are provided
+  let sslCertPath = serverConfig.ssl?.certPath;
+  let sslKeyPath = serverConfig.ssl?.keyPath;
+  let sslCaPath = serverConfig.ssl?.caPath;
+
+  if (serverConfig.ssl?.enabled && (!sslCertPath || !sslKeyPath)) {
+    console.log('[CertificateManager] SSL enabled but no certificates provided, auto-generating...');
+    try {
+      const certGenerator = new CertificateGenerator({
+        logger: console
+      });
+      const certs = await certGenerator.ensureCertificates();
+      sslCertPath = certs.certPath;
+      sslKeyPath = certs.keyPath;
+      sslCaPath = certs.caPath;
+      console.log('[CertificateManager] SSL certificates ready:', {
+        certPath: sslCertPath,
+        keyPath: sslKeyPath,
+        caPath: sslCaPath,
+        location: certs.certsDir
+      });
+    } catch (error) {
+      console.error('[CertificateManager] Failed to generate SSL certificates:', error.message);
+      console.error('[CertificateManager] Continuing without SSL...');
+    }
+  }
+
   wsServer = new WebSocketServer(wsPort, mainWindow, {
     // Server options from config
     sslEnabled: serverConfig.ssl?.enabled || false,
-    sslCertPath: serverConfig.ssl?.certPath,
-    sslKeyPath: serverConfig.ssl?.keyPath,
-    sslCaPath: serverConfig.ssl?.caPath,
+    sslCertPath,
+    sslKeyPath,
+    sslCaPath,
     authToken: serverConfig.auth?.token,
     requireAuth: serverConfig.auth?.requireAuth || false,
     heartbeatInterval: serverConfig.heartbeat?.interval || 30000,

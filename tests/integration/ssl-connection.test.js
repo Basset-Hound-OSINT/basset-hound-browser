@@ -148,11 +148,34 @@ function createMockSSLServer(options = {}) {
     },
     stop() {
       return new Promise((resolve) => {
-        wss.close(() => {
-          httpsServer.close(() => {
+        // Close all client connections first
+        wss.clients.forEach((client) => {
+          try {
+            client.terminate();
+          } catch (err) {
+            // Ignore errors during cleanup
+          }
+        });
+
+        // Close WebSocket server
+        wss.close((err1) => {
+          // Close HTTPS server
+          httpsServer.close((err2) => {
+            // Force close any remaining connections
+            httpsServer.closeAllConnections?.();
             resolve();
           });
         });
+
+        // Force close after 3 seconds
+        setTimeout(() => {
+          try {
+            httpsServer.closeAllConnections?.();
+          } catch (err) {
+            // Ignore
+          }
+          resolve();
+        }, 3000);
       });
     },
     getUrl() {
@@ -205,7 +228,23 @@ function createMockWSServer(options = {}) {
     },
     stop() {
       return new Promise((resolve) => {
-        wss.close(() => resolve());
+        // Close all client connections first
+        wss.clients.forEach((client) => {
+          try {
+            client.terminate();
+          } catch (err) {
+            // Ignore errors during cleanup
+          }
+        });
+
+        wss.close((err) => {
+          resolve();
+        });
+
+        // Force close after 2 seconds
+        setTimeout(() => {
+          resolve();
+        }, 2000);
       });
     },
     getUrl() {
@@ -297,13 +336,20 @@ describeSsl('SSL WebSocket Connection Tests', () => {
   });
 
   afterAll(async () => {
-    if (sslServer) {
-      await sslServer.stop();
+    // Add timeout and proper cleanup
+    const timeout = new Promise((resolve) => setTimeout(resolve, 5000));
+
+    try {
+      if (sslServer) {
+        await Promise.race([sslServer.stop(), timeout]);
+      }
+      if (wsServer) {
+        await Promise.race([wsServer.stop(), timeout]);
+      }
+    } catch (error) {
+      console.warn('Warning: Server cleanup error:', error.message);
     }
-    if (wsServer) {
-      await wsServer.stop();
-    }
-  });
+  }, 10000); // 10 second timeout for afterAll
 
   describe('WSS Connection Establishment', () => {
     test('should establish wss:// connection with self-signed certificate', async () => {
@@ -325,7 +371,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       expect(connectionMessage.secure).toBe(true);
       expect(connectionMessage.protocol).toBe('wss');
 
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     test('should establish wss:// connection with CA certificate', async () => {
@@ -335,7 +382,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       });
 
       expect(ws.readyState).toBe(WebSocket.OPEN);
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     test('should fail connection with invalid SSL options', async () => {
@@ -363,9 +411,10 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       });
     });
 
-    afterEach(() => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.close();
+    afterEach(async () => {
+      if (ws) {
+        ws.terminate();
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     });
 
@@ -481,7 +530,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       expect(connectionMessage.secure).toBe(false);
       expect(connectionMessage.protocol).toBe('ws');
 
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     test('should fallback to ws:// after wss:// connection failure', async () => {
@@ -519,7 +569,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
 
       const ws = await connectWithFallback(TEST_HOST, TEST_PORT);
       expect(ws.readyState).toBe(WebSocket.OPEN);
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     test('should detect protocol from connection', async () => {
@@ -534,7 +585,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       const url = new URL(wsServer.getUrl());
       expect(url.protocol).toBe('ws:');
 
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
   });
 
@@ -557,7 +609,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       }
 
       expect(ws.readyState).toBe(WebSocket.OPEN);
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     test('should handle reconnection after disconnect', async () => {
@@ -584,7 +637,8 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       });
       expect(ws.readyState).toBe(WebSocket.OPEN);
 
-      ws.close();
+      ws.terminate();
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
   });
 
@@ -613,7 +667,10 @@ describeSsl('SSL WebSocket Connection Tests', () => {
       expect(responses.every(r => r.success)).toBe(true);
 
       // Close all clients
-      clients.forEach(ws => ws.close());
+      for (const client of clients) {
+        client.terminate();
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
   });
 });

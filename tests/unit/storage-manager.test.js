@@ -316,13 +316,14 @@ describe('StorageManager', () => {
       });
     });
 
-    describe('clearIndexedDB', () => {
-      test('should clear IndexedDB database', async () => {
-        mockWebviewResponse = { success: true };
+    describe('deleteIndexedDBDatabase', () => {
+      test('should delete IndexedDB database', async () => {
+        mockWebviewResponse = { success: true, deletedDatabase: 'testdb' };
 
-        const result = await storageManager.clearIndexedDB('https://example.com', 'testdb');
+        const result = await storageManager.deleteIndexedDBDatabase('https://example.com', 'testdb');
 
         expect(result.success).toBe(true);
+        expect(result.deletedDatabase).toBe('testdb');
       });
     });
   });
@@ -332,17 +333,14 @@ describe('StorageManager', () => {
       test('should export all storage data', async () => {
         mockWebviewResponse = {
           success: true,
-          data: {
-            localStorage: { key: 'value' },
-            sessionStorage: {},
-            indexedDB: []
-          }
+          data: { key: 'value' }
         };
 
         const result = await storageManager.exportStorage('https://example.com');
 
         expect(result.success).toBe(true);
-        expect(result.data).toBeDefined();
+        expect(result.export).toBeDefined();
+        expect(result.export.data).toBeDefined();
       });
     });
 
@@ -360,34 +358,36 @@ describe('StorageManager', () => {
       });
     });
 
-    describe('exportToFile', () => {
+    describe('exportStorageToFile', () => {
       test('should export to file', async () => {
         mockWebviewResponse = {
           success: true,
           data: { localStorage: {} }
         };
 
-        const result = await storageManager.exportToFile(
-          'https://example.com',
-          '/tmp/storage.json'
+        const result = await storageManager.exportStorageToFile(
+          '/tmp/storage.json',
+          'https://example.com'
         );
 
         expect(result.success).toBe(true);
       });
     });
 
-    describe('importFromFile', () => {
+    describe('importStorageFromFile', () => {
       test('should import from file', async () => {
         const fs = require('fs');
         fs.readFileSync.mockReturnValue(JSON.stringify({
           origin: 'https://example.com',
-          localStorage: {}
+          data: {
+            localStorage: {}
+          }
         }));
         mockWebviewResponse = { success: true };
 
-        const result = await storageManager.importFromFile(
-          'https://example.com',
-          '/tmp/storage.json'
+        const result = await storageManager.importStorageFromFile(
+          '/tmp/storage.json',
+          'https://example.com'
         );
 
         expect(result.success).toBe(true);

@@ -490,8 +490,7 @@ describe('ProfileManager', () => {
     test('should return null when no active profile', () => {
       const result = profileManager.getActiveProfile();
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('No active profile');
+      expect(result).toBeNull();
     });
 
     test('should return active profile', async () => {
@@ -501,8 +500,8 @@ describe('ProfileManager', () => {
 
       const result = profileManager.getActiveProfile();
 
-      expect(result.success).toBe(true);
-      expect(result.profile.name).toBe('Active');
+      expect(result).toBeDefined();
+      expect(result.name).toBe('Active');
     });
   });
 
@@ -547,13 +546,15 @@ describe('ProfileManager', () => {
       const result = profileManager.randomizeFingerprint(profileId);
 
       expect(result.success).toBe(true);
-      expect(result.fingerprint).toBeDefined();
+      expect(result.profile).toBeDefined();
+      expect(result.profile.fingerprint).toBeDefined();
     });
 
     test('should return error for non-existent profile', () => {
       const result = profileManager.randomizeFingerprint('non-existent');
 
       expect(result.success).toBe(false);
+      expect(result.error).toContain('Profile not found');
     });
   });
 
@@ -566,16 +567,19 @@ describe('ProfileManager', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
-      expect(result.data.name).toBe('Export Test');
+      expect(result.data.profile).toBeDefined();
+      expect(result.data.profile.name).toBe('Export Test');
     });
   });
 
   describe('importProfile', () => {
     test('should import profile data', async () => {
       const importData = {
-        name: 'Imported Profile',
-        userAgent: 'Imported UA',
-        fingerprint: { platform: 'Win32' }
+        profile: {
+          name: 'Imported Profile',
+          userAgent: 'Imported UA',
+          fingerprint: { platform: 'Win32' }
+        }
       };
 
       const result = await profileManager.importProfile(importData);
@@ -587,7 +591,8 @@ describe('ProfileManager', () => {
     test('should handle missing required fields', async () => {
       const result = await profileManager.importProfile({});
 
-      expect(result.success).toBe(true); // Should still create with defaults
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Invalid import data');
     });
   });
 
