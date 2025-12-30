@@ -935,3 +935,18 @@ module.exports = {
 if (require.main === module) {
   main();
 }
+
+// Jest wrapper for integration tests
+// Skip in CI or when SKIP_INTEGRATION_TESTS is set (requires running Basset Hound Browser)
+const shouldSkipJest = process.env.CI === 'true' || process.env.SKIP_INTEGRATION_TESTS === 'true';
+
+describe('Basset Hound Integration Tests', () => {
+  (shouldSkipJest ? it.skip : it)('integration tests require running Basset Hound Browser', async () => {
+    await connect();
+    await sendCommand('navigate', { url: CONFIG.TEST_PAGE_URL });
+    await new Promise(r => setTimeout(r, 2000));
+    const success = await runAllTests();
+    disconnect();
+    expect(success).toBe(true);
+  }, 300000);
+});

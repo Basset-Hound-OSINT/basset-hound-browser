@@ -149,7 +149,32 @@ const CLI_ARGS = {
     flags: ['--tor'],
     configPath: 'network.tor.enabled',
     type: 'boolean',
-    description: 'Enable Tor routing'
+    description: 'Enable Tor routing (uses embedded Tor by default)'
+  },
+  systemTor: {
+    flags: ['--system-tor'],
+    configPath: 'network.tor.useSystem',
+    type: 'boolean',
+    description: 'Use system-installed Tor instead of embedded'
+  },
+  embeddedTor: {
+    flags: ['--embedded-tor'],
+    configPath: 'network.tor.useEmbedded',
+    type: 'boolean',
+    description: 'Use embedded Tor (default when --tor is enabled)'
+  },
+  torAutoDownload: {
+    flags: ['--tor-auto-download'],
+    configPath: 'network.tor.autoDownload',
+    type: 'boolean',
+    description: 'Auto-download embedded Tor if not present (default: true)'
+  },
+  noTorAutoDownload: {
+    flags: ['--no-tor-auto-download'],
+    configPath: 'network.tor.autoDownload',
+    type: 'boolean',
+    negate: true,
+    description: 'Disable auto-download of embedded Tor'
   },
 
   // Evasion options
@@ -576,7 +601,8 @@ Options:
     'Server': ['host', 'port', 'ssl', 'sslCert', 'sslKey', 'token', 'requireAuth'],
     'Browser': ['width', 'height', 'homePage', 'maxTabs', 'downloadPath'],
     'Headless': ['headless', 'disableGpu', 'noSandbox', 'virtualDisplay', 'headlessPreset'],
-    'Proxy & Network': ['proxy', 'proxyBypass', 'tor', 'throttle', 'blockAds', 'blockTrackers'],
+    'Proxy & Network': ['proxy', 'proxyBypass', 'throttle', 'blockAds', 'blockTrackers'],
+    'Tor': ['tor', 'embeddedTor', 'systemTor', 'torAutoDownload', 'noTorAutoDownload'],
     'Evasion': ['noEvasion', 'userAgent', 'randomizeFingerprint', 'timezone', 'geolocation', 'noHumanize'],
     'Logging': ['logLevel', 'logFile', 'quiet', 'verbose', 'trace'],
     'Profiles': ['profile', 'profilePath'],
@@ -608,10 +634,18 @@ Options:
   help += `
 Examples:
   ${programName} --headless --port 9000
-  ${programName} --proxy socks5://localhost:9050 --tor
+  ${programName} --tor                                  # Use embedded Tor (default)
+  ${programName} --tor --system-tor                     # Use system-installed Tor
+  ${programName} --tor --no-tor-auto-download           # Disable auto-download
+  ${programName} --proxy socks5://localhost:9050
   ${programName} --config config.yaml
   ${programName} --headless --disable-gpu --no-sandbox  # Docker mode
-  ${programName} https://example.com  # Open URL on startup
+  ${programName} https://example.com                    # Open URL on startup
+
+Tor Configuration:
+  By default, the browser uses embedded Tor which is auto-downloaded on first use.
+  Use --system-tor to use a locally installed Tor daemon instead.
+  See docs/SYSTEM-TOR-INSTALLATION.md for system Tor installation instructions.
 
 Environment Variables:
   BASSET_* environment variables can also be used for configuration.

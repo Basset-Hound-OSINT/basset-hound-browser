@@ -34,6 +34,7 @@ const { WindowManager, WindowState } = require('./windows/manager');
 const { WindowPool, PoolEntryState } = require('./windows/pool');
 const { getUpdateManager, UPDATE_STATUS } = require('./updater/manager');
 const CertificateGenerator = require('./utils/cert-generator');
+const { ensureEmbeddedTor, checkTorAvailability, TorAutoSetup } = require('./utils/tor-auto-setup');
 
 // ==========================================
 // Configuration System
@@ -2625,6 +2626,63 @@ app.whenReady().then(async () => {
   // Initialize recovery system
   initializeRecoveryPaths();
   setupGlobalErrorHandlers();
+
+  // ==========================================
+  // First-run Tor Download
+  // ==========================================
+  // Check if embedded Tor needs to be downloaded on first use
+  // Default to embedded Tor with auto-download enabled
+  const torConfig = appConfig.network?.tor || {};
+  if (torConfig.autoDownload !== false && torConfig.useEmbedded !== false) {
+    try {
+      const torAvailable = checkTorAvailability();
+      if (!torAvailable) {
+        console.log('[TorAutoSetup] Embedded Tor not found, initiating first-run download...');
+
+        // Create a TorAutoSetup instance with progress events
+        const torSetup = new TorAutoSetup();
+
+        // Log progress events
+        torSetup.on('progress', (progress) => {
+          console.log(`[TorAutoSetup] ${progress.message} (${progress.progress}%)`);
+        });
+
+        torSetup.on('error', (error) => {
+          console.error('[TorAutoSetup] Download failed:', error.message);
+        });
+
+        torSetup.on('complete', (result) => {
+          if (result.existing) {
+            console.log('[TorAutoSetup] Embedded Tor already available');
+          } else {
+            console.log('[TorAutoSetup] Tor setup complete:', result.version);
+          }
+        });
+
+        // Run the download in the background (non-blocking)
+        // Users can still use the browser while Tor downloads
+        ensureEmbeddedTor({ force: false, skipIfAvailable: true })
+          .then((result) => {
+            if (!result.existing) {
+              console.log('[TorAutoSetup] Tor bundle downloaded and configured successfully');
+              console.log(`[TorAutoSetup] Tor version: ${result.version}`);
+              console.log(`[TorAutoSetup] Bundle version: ${result.bundleVersion}`);
+            }
+            // Clean up temp files after successful download
+            torSetup.cleanup();
+          })
+          .catch((error) => {
+            console.error('[TorAutoSetup] Failed to setup embedded Tor:', error.message);
+            console.log('[TorAutoSetup] The browser will still work, but Tor features may be limited.');
+            console.log('[TorAutoSetup] You can manually run: node scripts/install/embedded-tor-setup.js');
+          });
+      } else {
+        console.log('[TorAutoSetup] Embedded Tor is available');
+      }
+    } catch (error) {
+      console.error('[TorAutoSetup] Error checking Tor availability:', error.message);
+    }
+  }
 
   // Check for unclean shutdown
   const hadUncleanShutdown = detectUncleanShutdown();

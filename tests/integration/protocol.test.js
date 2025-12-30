@@ -738,3 +738,14 @@ if (require.main === module) {
       process.exit(1);
     });
 }
+
+// Jest wrapper for integration tests
+// Skip in CI or when SKIP_INTEGRATION_TESTS is set
+const shouldSkip = process.env.CI === 'true' || process.env.SKIP_INTEGRATION_TESTS === 'true';
+
+describe('Protocol Integration Tests', () => {
+  (shouldSkip ? it.skip : it)('protocol integration tests require running test server', async () => {
+    const success = await runTests();
+    expect(success).toBe(true);
+  }, 120000);
+});

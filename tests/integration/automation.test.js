@@ -4,15 +4,28 @@
  */
 
 const path = require('path');
-const { _electron: electron } = require('@playwright/test');
 const WebSocket = require('ws');
+
+// Skip in CI or when SKIP_INTEGRATION_TESTS is set (requires Electron and Playwright)
+const shouldSkip = process.env.CI === 'true' || process.env.SKIP_INTEGRATION_TESTS === 'true';
+
+// Only require playwright/test when actually running tests
+let electron;
+if (!shouldSkip) {
+  try {
+    const playwright = require('@playwright/test');
+    electron = playwright._electron;
+  } catch (e) {
+    // Playwright not available, will skip tests
+  }
+}
 
 const APP_PATH = path.join(__dirname, '..', '..');
 const WS_URL = 'ws://localhost:8765';
 const TEST_PAGE_PATH = path.join(__dirname, '..', 'test-server.html');
 const TEST_PAGE_URL = `file://${TEST_PAGE_PATH}`;
 
-describe('Automation Integration Tests', () => {
+(shouldSkip ? describe.skip : describe)('Automation Integration Tests', () => {
   let electronApp;
   let window;
   let wsClient;

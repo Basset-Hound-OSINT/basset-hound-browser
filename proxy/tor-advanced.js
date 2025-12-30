@@ -1,7 +1,49 @@
 /**
- * Basset Hound Browser - Advanced Tor Manager Module
+ * @fileoverview Basset Hound Browser - Advanced Tor Manager Module
+ *
  * Comprehensive Tor integration with process management, circuit control,
- * bridge support, pluggable transports, and stream isolation
+ * bridge support, pluggable transports, and stream isolation.
+ *
+ * This module provides a full-featured Tor management solution including:
+ * - Automatic Tor process lifecycle management (start, stop, restart)
+ * - Control port communication and authentication
+ * - Circuit management and identity switching
+ * - Exit/entry node country selection
+ * - Bridge and pluggable transport support (obfs4, meek, snowflake)
+ * - Stream isolation for enhanced privacy
+ * - Onion service (hidden service) creation and management
+ * - Bandwidth monitoring and statistics
+ *
+ * @module proxy/tor-advanced
+ * @requires child_process
+ * @requires fs
+ * @requires path
+ * @requires os
+ * @requires net
+ * @requires events
+ * @requires https
+ * @requires http
+ *
+ * @example
+ * // Basic usage with embedded Tor
+ * const { AdvancedTorManager } = require('./proxy/tor-advanced');
+ * const torManager = new AdvancedTorManager({ autoStart: true });
+ * await torManager.start();
+ *
+ * // Request a new identity
+ * await torManager.newIdentity();
+ *
+ * // Set exit country
+ * await torManager.setExitCountries(['US', 'DE']);
+ *
+ * @example
+ * // Connect to existing Tor instance
+ * const { AdvancedTorManager } = require('./proxy/tor-advanced');
+ * const torManager = new AdvancedTorManager();
+ * await torManager.connectExisting({
+ *   socksPort: 9050,
+ *   controlPort: 9051
+ * });
  */
 
 const { spawn, execSync } = require('child_process');
@@ -14,7 +56,14 @@ const https = require('https');
 const http = require('http');
 
 /**
- * Tor connection states
+ * Tor connection states enumeration.
+ * @const {Object.<string, string>}
+ * @property {string} STOPPED - Tor is not running
+ * @property {string} STARTING - Tor process is starting
+ * @property {string} BOOTSTRAPPING - Tor is connecting to the network
+ * @property {string} CONNECTED - Tor is fully connected and ready
+ * @property {string} ERROR - Tor encountered an error
+ * @property {string} STOPPING - Tor is shutting down
  */
 const TOR_STATES = {
   STOPPED: 'stopped',
@@ -26,7 +75,13 @@ const TOR_STATES = {
 };
 
 /**
- * Pluggable transport types
+ * Pluggable transport types for censorship circumvention.
+ * @const {Object.<string, string>}
+ * @property {string} NONE - Direct Tor connection without transport
+ * @property {string} OBFS4 - Obfuscated protocol, most common and effective
+ * @property {string} MEEK - Domain fronting via cloud providers
+ * @property {string} SNOWFLAKE - WebRTC-based peer-to-peer circumvention
+ * @property {string} WEBTUNNEL - HTTPS-based tunneling
  */
 const TRANSPORT_TYPES = {
   NONE: 'none',
@@ -37,7 +92,13 @@ const TRANSPORT_TYPES = {
 };
 
 /**
- * Stream isolation modes
+ * Stream isolation modes for enhanced privacy.
+ * Controls how Tor circuits are isolated for different browsing contexts.
+ * @const {Object.<string, string>}
+ * @property {string} NONE - No isolation, all traffic uses same circuit
+ * @property {string} PER_TAB - Each browser tab gets its own circuit
+ * @property {string} PER_DOMAIN - Each domain gets its own circuit
+ * @property {string} PER_SESSION - Each browsing session gets its own circuit
  */
 const ISOLATION_MODES = {
   NONE: 'none',
@@ -47,7 +108,20 @@ const ISOLATION_MODES = {
 };
 
 /**
- * Default Tor configuration
+ * Default Tor configuration values.
+ * @const {Object}
+ * @property {string} socksHost - Default SOCKS proxy host
+ * @property {number} socksPort - Default SOCKS proxy port
+ * @property {string} controlHost - Default control port host
+ * @property {number} controlPort - Default control port
+ * @property {number} dnsPort - Default DNS port
+ * @property {number} connectionTimeout - Connection timeout in milliseconds
+ * @property {number} circuitTimeout - Circuit operation timeout in milliseconds
+ * @property {number} bootstrapTimeout - Bootstrap timeout in milliseconds
+ * @property {string|null} dataDirectory - Tor data directory path
+ * @property {boolean} autoStart - Whether to start Tor automatically
+ * @property {boolean} killOnExit - Whether to kill Tor on process exit
+ * @property {boolean|null} embeddedMode - Use embedded Tor binary
  */
 const TOR_DEFAULTS = {
   socksHost: '127.0.0.1',
@@ -65,7 +139,14 @@ const TOR_DEFAULTS = {
 };
 
 /**
- * Embedded Tor paths (relative to project root)
+ * Embedded Tor binary paths relative to project root.
+ * Used when running with bundled Tor binaries.
+ * @const {Object}
+ * @property {string} torBinary - Path to Tor binary (Unix)
+ * @property {string} torBinaryWin - Path to Tor binary (Windows)
+ * @property {string} libDir - Path to Tor libraries directory
+ * @property {string} geoip - Path to GeoIP database
+ * @property {string} geoip6 - Path to GeoIPv6 database
  */
 const EMBEDDED_PATHS = {
   torBinary: path.join(__dirname, '..', 'bin', 'tor', 'tor', 'tor'),
@@ -76,7 +157,9 @@ const EMBEDDED_PATHS = {
 };
 
 /**
- * Country codes for Tor exit/entry node selection
+ * Country codes for Tor exit/entry node selection.
+ * Maps ISO 3166-1 alpha-2 codes to Tor format.
+ * @const {Object.<string, string>}
  */
 const COUNTRY_CODES = {
   US: '{us}', DE: '{de}', NL: '{nl}', FR: '{fr}', GB: '{gb}',
@@ -88,8 +171,12 @@ const COUNTRY_CODES = {
 };
 
 /**
- * Built-in obfs4 bridges (from Tor Browser bundle)
- * These are public bridges maintained by the Tor Project
+ * Built-in bridge configurations from Tor Browser bundle.
+ * These are public bridges maintained by the Tor Project.
+ * @const {Object.<string, string[]>}
+ * @property {string[]} obfs4 - Obfs4 bridge lines
+ * @property {string[]} meek - Meek bridge lines
+ * @property {string[]} snowflake - Snowflake bridge lines
  */
 const BUILTIN_BRIDGES = {
   obfs4: [
@@ -106,10 +193,67 @@ const BUILTIN_BRIDGES = {
 };
 
 /**
- * AdvancedTorManager class
- * Comprehensive Tor management with all advanced features
+ * Advanced Tor Manager for comprehensive Tor network control.
+ *
+ * Provides complete lifecycle management of Tor including process control,
+ * circuit management, identity switching, bridge support, and onion services.
+ *
+ * @class AdvancedTorManager
+ * @extends EventEmitter
+ *
+ * @fires AdvancedTorManager#stateChange - When Tor state changes
+ * @fires AdvancedTorManager#connected - When Tor successfully connects
+ * @fires AdvancedTorManager#disconnected - When Tor disconnects
+ * @fires AdvancedTorManager#bootstrap - During bootstrap progress updates
+ * @fires AdvancedTorManager#newIdentity - When a new identity is established
+ * @fires AdvancedTorManager#onionService - When onion service is created/removed
+ * @fires AdvancedTorManager#onionLocation - When Onion-Location header is detected
+ *
+ * @example
+ * // Create manager with default settings (auto-detects embedded Tor)
+ * const manager = new AdvancedTorManager();
+ *
+ * @example
+ * // Create manager with custom configuration
+ * const manager = new AdvancedTorManager({
+ *   socksPort: 9150,
+ *   controlPort: 9151,
+ *   embeddedMode: true,
+ *   autoStart: false
+ * });
+ *
+ * @example
+ * // Listen for events
+ * manager.on('stateChange', ({ state }) => {
+ *   console.log('Tor state:', state);
+ * });
+ * manager.on('bootstrap', ({ progress, phase }) => {
+ *   console.log(`Bootstrap: ${progress}% - ${phase}`);
+ * });
  */
 class AdvancedTorManager extends EventEmitter {
+  /**
+   * Create an AdvancedTorManager instance.
+   *
+   * @constructor
+   * @param {Object} [options={}] - Configuration options
+   * @param {string} [options.socksHost='127.0.0.1'] - SOCKS proxy host
+   * @param {number} [options.socksPort=9050] - SOCKS proxy port
+   * @param {string} [options.controlHost='127.0.0.1'] - Tor control port host
+   * @param {number} [options.controlPort=9051] - Tor control port
+   * @param {number} [options.dnsPort=9053] - DNS port for Tor DNS resolution
+   * @param {string} [options.controlPassword=null] - Control port password (if not using cookie auth)
+   * @param {number} [options.connectionTimeout=30000] - Connection timeout in ms
+   * @param {number} [options.circuitTimeout=60000] - Circuit operation timeout in ms
+   * @param {number} [options.bootstrapTimeout=120000] - Bootstrap timeout in ms
+   * @param {boolean} [options.autoStart=true] - Auto-start Tor on instantiation
+   * @param {boolean} [options.killOnExit=true] - Kill Tor process when Node exits
+   * @param {string} [options.torBinaryPath] - Path to Tor binary (auto-detected if not provided)
+   * @param {boolean} [options.embeddedMode] - Use embedded Tor (auto-detected if not provided)
+   * @param {string} [options.dataDirectory] - Tor data directory (platform-specific default)
+   * @param {string} [options.geoipPath] - Path to GeoIP database
+   * @param {string} [options.geoip6Path] - Path to GeoIPv6 database
+   */
   constructor(options = {}) {
     super();
 
@@ -273,8 +417,17 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Check if embedded Tor binary is available
-   * @returns {boolean} True if embedded Tor is available
+   * Check if the embedded Tor binary is available on the system.
+   *
+   * @method isEmbeddedAvailable
+   * @returns {boolean} True if the embedded Tor binary exists and is accessible
+   *
+   * @example
+   * if (manager.isEmbeddedAvailable()) {
+   *   console.log('Using embedded Tor');
+   * } else {
+   *   console.log('Using system Tor');
+   * }
    */
   isEmbeddedAvailable() {
     const platform = os.platform();
@@ -286,8 +439,19 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get embedded Tor paths information
-   * @returns {Object} Embedded paths and availability status
+   * Get detailed information about embedded Tor binary paths and availability.
+   *
+   * @method getEmbeddedInfo
+   * @returns {Object} Embedded Tor information
+   * @returns {boolean} returns.available - Whether embedded Tor is available
+   * @returns {boolean} returns.embeddedMode - Whether embedded mode is currently enabled
+   * @returns {Object} returns.paths - Paths to embedded Tor components
+   * @returns {Object} returns.exists - Existence status of each component
+   *
+   * @example
+   * const info = manager.getEmbeddedInfo();
+   * console.log('Embedded available:', info.available);
+   * console.log('Binary path:', info.paths.binary);
    */
   getEmbeddedInfo() {
     const platform = os.platform();
@@ -520,8 +684,29 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Start Tor daemon
+   * Start the Tor daemon.
+   *
+   * Spawns a new Tor process with the current configuration, waits for
+   * bootstrap to complete, and establishes the control port connection.
+   *
+   * @method start
+   * @async
    * @returns {Promise<Object>} Start result
+   * @returns {boolean} returns.success - Whether Tor started successfully
+   * @returns {string} [returns.message] - Success message
+   * @returns {number} [returns.pid] - Tor process ID if successful
+   * @returns {string} [returns.error] - Error message if failed
+   * @returns {string} [returns.hint] - Helpful hint for resolving errors
+   * @returns {number} [returns.bootstrapProgress] - Bootstrap progress if timed out
+   * @throws {Error} Does not throw, errors returned in result object
+   *
+   * @example
+   * const result = await manager.start();
+   * if (result.success) {
+   *   console.log('Tor started with PID:', result.pid);
+   * } else {
+   *   console.error('Failed to start Tor:', result.error);
+   * }
    */
   async start() {
     if (this.state !== TOR_STATES.STOPPED && this.state !== TOR_STATES.ERROR) {
@@ -657,8 +842,20 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Stop Tor daemon
+   * Stop the Tor daemon gracefully.
+   *
+   * Sends SIGTERM to the Tor process and waits for it to exit.
+   * Falls back to SIGKILL after 10 seconds if graceful shutdown fails.
+   *
+   * @method stop
+   * @async
    * @returns {Promise<Object>} Stop result
+   * @returns {boolean} returns.success - Whether Tor stopped successfully
+   * @returns {string} returns.message - Status message
+   *
+   * @example
+   * const result = await manager.stop();
+   * console.log(result.message); // 'Tor stopped'
    */
   async stop() {
     if (this.state === TOR_STATES.STOPPED) {
@@ -714,8 +911,19 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Restart Tor daemon
-   * @returns {Promise<Object>} Restart result
+   * Restart the Tor daemon.
+   *
+   * Stops the current Tor process and starts a new one with the current configuration.
+   * Useful after configuration changes that require a full restart.
+   *
+   * @method restart
+   * @async
+   * @returns {Promise<Object>} Restart result (same format as start())
+   *
+   * @example
+   * // After changing bridge configuration
+   * manager.addBridge('obfs4 192.168.1.1:443 ...');
+   * await manager.restart();
    */
   async restart() {
     await this.stop();
@@ -750,8 +958,24 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Connect to Tor control port
+   * Connect to the Tor control port.
+   *
+   * Establishes a TCP connection to the Tor control port and authenticates.
+   * Uses cookie authentication by default, falls back to password if configured.
+   *
+   * @method connectControlPort
+   * @async
    * @returns {Promise<Object>} Connection result
+   * @returns {boolean} returns.success - Whether connection succeeded
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   * @returns {string} [returns.code] - Error code if applicable
+   *
+   * @example
+   * const result = await manager.connectControlPort();
+   * if (result.success) {
+   *   console.log('Connected to control port');
+   * }
    */
   async connectControlPort() {
     return new Promise((resolve) => {
@@ -859,9 +1083,26 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Send command to control port
-   * @param {string} command - Command to send
-   * @returns {Promise<string>} Response
+   * Send a command to the Tor control port.
+   *
+   * Low-level method for sending raw Tor control protocol commands.
+   * Automatically connects and authenticates if not already connected.
+   *
+   * @method sendCommand
+   * @async
+   * @param {string} command - Tor control protocol command to send
+   * @returns {Promise<string>} Raw response from Tor
+   * @throws {Error} If not authenticated or command times out
+   *
+   * @see {@link https://gitweb.torproject.org/torspec.git/tree/control-spec.txt|Tor Control Protocol Spec}
+   *
+   * @example
+   * // Get Tor version
+   * const response = await manager.sendCommand('GETINFO version');
+   *
+   * @example
+   * // Set configuration option
+   * await manager.sendCommand('SETCONF ExitNodes={us}');
    */
   async sendCommand(command) {
     return new Promise(async (resolve, reject) => {
@@ -911,8 +1152,29 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Request new Tor identity (new circuit)
-   * @returns {Promise<Object>} Result
+   * Request a new Tor identity by building a new circuit.
+   *
+   * Sends the NEWNYM signal to Tor, which clears the current circuit
+   * and builds a new one with different exit nodes. This effectively
+   * changes your visible IP address to websites.
+   *
+   * Note: Rate-limited by Tor to once every 10 seconds.
+   *
+   * @method newIdentity
+   * @async
+   * @returns {Promise<Object>} Identity change result
+   * @returns {boolean} returns.success - Whether identity change succeeded
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.exitIp] - New exit node IP address
+   * @returns {string} [returns.exitCountry] - New exit node country
+   * @returns {number} [returns.circuitChangeCount] - Total identity changes this session
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * const result = await manager.newIdentity();
+   * if (result.success) {
+   *   console.log(`New exit IP: ${result.exitIp} (${result.exitCountry})`);
+   * }
    */
   async newIdentity() {
     try {
@@ -960,8 +1222,26 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get current circuit information
-   * @returns {Promise<Object>} Circuit info
+   * Get information about all current Tor circuits.
+   *
+   * @method getCircuitInfo
+   * @async
+   * @returns {Promise<Object>} Circuit information
+   * @returns {boolean} returns.success - Whether query succeeded
+   * @returns {Array<Object>} [returns.circuits] - Array of circuit objects
+   * @returns {string} returns.circuits[].id - Circuit ID
+   * @returns {string} returns.circuits[].status - Circuit status (LAUNCHED, BUILT, etc.)
+   * @returns {Array<string>} returns.circuits[].path - Fingerprints of nodes in circuit
+   * @returns {string} returns.circuits[].purpose - Circuit purpose (GENERAL, HS_*, etc.)
+   * @returns {number} returns.circuits[].nodeCount - Number of nodes in circuit
+   * @returns {number} [returns.count] - Total number of circuits
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * const info = await manager.getCircuitInfo();
+   * info.circuits.forEach(circuit => {
+   *   console.log(`Circuit ${circuit.id}: ${circuit.status} (${circuit.nodeCount} hops)`);
+   * });
    */
   async getCircuitInfo() {
     try {
@@ -1012,9 +1292,33 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get detailed info about circuit path
-   * @param {string} circuitId - Circuit ID
+   * Get detailed path information for a specific circuit.
+   *
+   * Returns detailed information about each hop in the circuit including
+   * node nicknames, addresses, countries, and bandwidth.
+   *
+   * @method getCircuitPath
+   * @async
+   * @param {string} [circuitId=null] - Circuit ID to query. If null, uses first BUILT circuit.
    * @returns {Promise<Object>} Circuit path details
+   * @returns {boolean} returns.success - Whether query succeeded
+   * @returns {string} [returns.circuitId] - The circuit ID
+   * @returns {string} [returns.status] - Circuit status
+   * @returns {string} [returns.purpose] - Circuit purpose
+   * @returns {Array<Object>} [returns.path] - Array of node information
+   * @returns {number} returns.path[].hop - Hop number (1, 2, 3, ...)
+   * @returns {string} returns.path[].role - Node role (Guard, Middle, Exit)
+   * @returns {string} returns.path[].fingerprint - Node fingerprint
+   * @returns {string} returns.path[].nickname - Node nickname
+   * @returns {string} returns.path[].address - Node IP address
+   * @returns {string} returns.path[].country - Node country code
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * const path = await manager.getCircuitPath();
+   * path.path.forEach(node => {
+   *   console.log(`${node.hop}. ${node.role}: ${node.nickname} (${node.country})`);
+   * });
    */
   async getCircuitPath(circuitId = null) {
     try {
@@ -1111,9 +1415,18 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Close a specific circuit
-   * @param {string} circuitId - Circuit ID to close
+   * Close a specific Tor circuit.
+   *
+   * @method closeCircuit
+   * @async
+   * @param {string} circuitId - The circuit ID to close
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Whether circuit was closed
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * await manager.closeCircuit('15');
    */
   async closeCircuit(circuitId) {
     try {
@@ -1134,9 +1447,28 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Set preferred exit countries
-   * @param {string|string[]} countries - Country code(s)
+   * Set preferred exit node countries.
+   *
+   * Restricts Tor to only use exit nodes in the specified countries.
+   * Use with caution as this reduces anonymity.
+   *
+   * @method setExitCountries
+   * @async
+   * @param {string|string[]} countries - ISO 3166-1 alpha-2 country code(s)
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Whether setting was applied
+   * @returns {string[]} [returns.exitCountries] - List of applied countries
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   * @returns {string[]} [returns.validCodes] - List of valid country codes (on error)
+   *
+   * @example
+   * // Single country
+   * await manager.setExitCountries('US');
+   *
+   * @example
+   * // Multiple countries
+   * await manager.setExitCountries(['US', 'DE', 'NL']);
    */
   async setExitCountries(countries) {
     const countryList = Array.isArray(countries) ? countries : [countries];
@@ -1170,9 +1502,22 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Exclude countries from exit nodes
-   * @param {string|string[]} countries - Country code(s) to exclude
+   * Exclude specific countries from exit node selection.
+   *
+   * Tor will never use exit nodes in the specified countries.
+   *
+   * @method excludeExitCountries
+   * @async
+   * @param {string|string[]} countries - ISO 3166-1 alpha-2 country code(s) to exclude
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Whether setting was applied
+   * @returns {string[]} [returns.excludedCountries] - List of excluded countries
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * // Exclude specific countries
+   * await manager.excludeExitCountries(['CN', 'RU', 'IR']);
    */
   async excludeExitCountries(countries) {
     const countryList = Array.isArray(countries) ? countries : [countries];
@@ -1202,8 +1547,20 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Clear exit node restrictions
+   * Clear all exit node country restrictions.
+   *
+   * Removes any exit country preferences or exclusions, allowing Tor
+   * to freely choose exit nodes from any country.
+   *
+   * @method clearExitRestrictions
+   * @async
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Whether restrictions were cleared
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * await manager.clearExitRestrictions();
    */
   async clearExitRestrictions() {
     this.exitCountries = [];
@@ -1227,9 +1584,22 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Set preferred entry countries
-   * @param {string|string[]} countries - Country code(s)
+   * Set preferred entry (guard) node countries.
+   *
+   * Restricts Tor to only use guard nodes in the specified countries.
+   * Use with caution as this reduces anonymity.
+   *
+   * @method setEntryCountries
+   * @async
+   * @param {string|string[]} countries - ISO 3166-1 alpha-2 country code(s)
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Whether setting was applied
+   * @returns {string[]} [returns.entryCountries] - List of applied countries
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * await manager.setEntryCountries(['DE', 'CH']);
    */
   async setEntryCountries(countries) {
     const countryList = Array.isArray(countries) ? countries : [countries];
@@ -1267,9 +1637,29 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Enable bridges with optional transport
-   * @param {Object} options - Bridge options
-   * @returns {Promise<Object>} Result
+   * Enable bridge mode for censorship circumvention.
+   *
+   * Bridges help users in censored regions connect to Tor when
+   * direct connections are blocked. Supports various pluggable transports.
+   *
+   * @method enableBridges
+   * @async
+   * @param {Object} [options={}] - Bridge configuration options
+   * @param {string} [options.transport='obfs4'] - Transport type (obfs4, meek, snowflake)
+   * @param {string[]} [options.bridges=null] - Custom bridge lines (uses builtin if null)
+   * @param {boolean} [options.useBuiltin=true] - Use builtin bridges if no custom provided
+   * @returns {Promise<Object>} Result (from restart())
+   *
+   * @example
+   * // Use builtin obfs4 bridges
+   * await manager.enableBridges({ transport: 'obfs4' });
+   *
+   * @example
+   * // Use custom bridges
+   * await manager.enableBridges({
+   *   transport: 'obfs4',
+   *   bridges: ['obfs4 192.168.1.1:443 FINGERPRINT cert=CERT iat-mode=0']
+   * });
    */
   async enableBridges(options = {}) {
     const {
@@ -1298,9 +1688,21 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Add a custom bridge
-   * @param {string} bridge - Bridge line
+   * Add a custom bridge to the configuration.
+   *
+   * The bridge is added to the list but Tor must be restarted for it to take effect.
+   *
+   * @method addBridge
+   * @param {string} bridge - Full bridge line (e.g., 'obfs4 IP:PORT FINGERPRINT cert=...')
    * @returns {Object} Result
+   * @returns {boolean} returns.success - Whether bridge was added
+   * @returns {number} [returns.bridgeCount] - Total bridge count
+   * @returns {string} [returns.message] - Status message
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * manager.addBridge('obfs4 192.168.1.1:443 ABC123 cert=XYZ iat-mode=0');
+   * await manager.restart(); // Apply changes
    */
   addBridge(bridge) {
     if (!bridge || typeof bridge !== 'string') {
@@ -1316,8 +1718,14 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Disable bridges
-   * @returns {Promise<Object>} Result
+   * Disable bridge mode and return to direct Tor connections.
+   *
+   * @method disableBridges
+   * @async
+   * @returns {Promise<Object>} Result (from restart())
+   *
+   * @example
+   * await manager.disableBridges();
    */
   async disableBridges() {
     this.useBridges = false;
@@ -1328,9 +1736,19 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get available bridges from BridgeDB
-   * @param {string} transport - Transport type
+   * Fetch bridges from the Tor BridgeDB service.
+   *
+   * Note: This requires CAPTCHA solving in practice, so this method
+   * currently returns the builtin bridges instead.
+   *
+   * @method fetchBridgesFromBridgeDB
+   * @async
+   * @param {string} [transport='obfs4'] - Transport type to request
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Always false (not implemented)
+   * @returns {string} returns.error - Explanation
+   * @returns {string} returns.hint - Suggestion to get bridges manually
+   * @returns {string[]} returns.builtinBridges - Available builtin bridges
    */
   async fetchBridgesFromBridgeDB(transport = 'obfs4') {
     // Note: This requires CAPTCHA solving in practice
@@ -1348,9 +1766,22 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Set stream isolation mode
-   * @param {string} mode - Isolation mode
+   * Set the stream isolation mode for enhanced privacy.
+   *
+   * Stream isolation ensures that different browsing contexts use
+   * different Tor circuits, preventing correlation attacks.
+   *
+   * @method setIsolationMode
+   * @param {string} mode - Isolation mode (none, per_tab, per_domain, per_session)
    * @returns {Object} Result
+   * @returns {boolean} returns.success - Whether mode was set
+   * @returns {string} [returns.isolationMode] - The new isolation mode
+   * @returns {string} [returns.message] - Status message
+   * @returns {string} [returns.error] - Error message if invalid mode
+   *
+   * @example
+   * manager.setIsolationMode('per_tab');
+   * await manager.restart(); // Apply changes
    */
   setIsolationMode(mode) {
     if (!Object.values(ISOLATION_MODES).includes(mode)) {
@@ -1369,9 +1800,22 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get SOCKS port for isolation key
-   * @param {string} key - Isolation key (tab ID, domain, etc.)
-   * @returns {Object} Port info
+   * Get a SOCKS port for the given isolation key.
+   *
+   * Returns a dedicated SOCKS port for the isolation key (tab ID, domain, etc.)
+   * ensuring stream isolation between different browsing contexts.
+   *
+   * @method getIsolatedPort
+   * @param {string} key - Isolation key (tab ID, domain, session ID, etc.)
+   * @returns {Object} Port information
+   * @returns {boolean} returns.success - Always true
+   * @returns {number} returns.port - SOCKS port to use
+   * @returns {boolean} returns.isolated - Whether isolation is active
+   * @returns {string} [returns.key] - The isolation key if isolated
+   *
+   * @example
+   * const { port } = manager.getIsolatedPort('tab-123');
+   * // Configure proxy to use port
    */
   getIsolatedPort(key) {
     if (this.isolationMode === ISOLATION_MODES.NONE) {
@@ -1422,8 +1866,26 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Check current exit IP via Tor Project check service
-   * @returns {Promise<Object>} Exit IP info
+   * Check the current exit IP via the Tor Project check service.
+   *
+   * Makes an HTTPS request to check.torproject.org to verify the
+   * current exit node IP and confirm Tor connectivity.
+   *
+   * @method checkExitIp
+   * @async
+   * @returns {Promise<Object>} Exit IP information
+   * @returns {boolean} returns.success - Whether check succeeded
+   * @returns {string} [returns.ip] - Current exit node IP address
+   * @returns {boolean} [returns.isTor] - Whether connection is via Tor
+   * @returns {string} [returns.message] - Status message
+   * @returns {string} [returns.error] - Error message if failed
+   * @returns {string} [returns.hint] - Helpful hint on error
+   *
+   * @example
+   * const result = await manager.checkExitIp();
+   * if (result.isTor) {
+   *   console.log(`Exit IP: ${result.ip}`);
+   * }
    */
   async checkExitIp() {
     return new Promise((resolve) => {
@@ -1483,8 +1945,21 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Get bandwidth statistics
-   * @returns {Promise<Object>} Bandwidth stats
+   * Get current bandwidth usage statistics.
+   *
+   * @method getBandwidth
+   * @async
+   * @returns {Promise<Object>} Bandwidth statistics
+   * @returns {boolean} returns.success - Whether query succeeded
+   * @returns {number} [returns.bytesRead] - Total bytes read
+   * @returns {number} [returns.bytesWritten] - Total bytes written
+   * @returns {string} [returns.bytesReadFormatted] - Human-readable bytes read
+   * @returns {string} [returns.bytesWrittenFormatted] - Human-readable bytes written
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * const stats = await manager.getBandwidth();
+   * console.log(`Downloaded: ${stats.bytesReadFormatted}`);
    */
   async getBandwidth() {
     try {
@@ -1528,8 +2003,34 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Get comprehensive status
-   * @returns {Object} Full status
+   * Get comprehensive status information about the Tor manager.
+   *
+   * Returns complete state including connection status, configuration,
+   * exit node info, bridge settings, and session statistics.
+   *
+   * @method getStatus
+   * @returns {Object} Full status object
+   * @returns {string} returns.state - Current state (from TOR_STATES)
+   * @returns {boolean} returns.connected - Whether Tor is connected
+   * @returns {boolean} returns.processRunning - Whether Tor process is running
+   * @returns {number|null} returns.pid - Tor process ID
+   * @returns {number} returns.bootstrapProgress - Bootstrap progress (0-100)
+   * @returns {string} returns.bootstrapPhase - Current bootstrap phase
+   * @returns {boolean} returns.controlConnected - Whether control port is connected
+   * @returns {boolean} returns.authenticated - Whether authenticated with control port
+   * @returns {Object} returns.embedded - Embedded Tor status
+   * @returns {Object} returns.socks - SOCKS proxy configuration
+   * @returns {Object} returns.control - Control port configuration
+   * @returns {Object} returns.exitNode - Exit node information
+   * @returns {Object} returns.bridges - Bridge configuration
+   * @returns {Object} returns.isolation - Stream isolation status
+   * @returns {Object} returns.circuits - Circuit statistics
+   * @returns {Object} returns.stats - Session statistics
+   *
+   * @example
+   * const status = manager.getStatus();
+   * console.log(`State: ${status.state}`);
+   * console.log(`Exit IP: ${status.exitNode.ip}`);
    */
   getStatus() {
     return {
@@ -1587,8 +2088,18 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Check if Tor is currently running/connected
-   * @returns {boolean} True if Tor is running (connected or bootstrapping with active process)
+   * Check if Tor is currently running and usable.
+   *
+   * Returns true if Tor is fully connected or if it's still bootstrapping
+   * but has an active process (which means it's on its way to connecting).
+   *
+   * @method isRunning
+   * @returns {boolean} True if Tor is running or bootstrapping
+   *
+   * @example
+   * if (manager.isRunning()) {
+   *   console.log('Tor is ready');
+   * }
    */
   isRunning() {
     return this.state === TOR_STATES.CONNECTED ||
@@ -1596,9 +2107,23 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get proxy configuration for Electron
-   * @param {string} isolationKey - Optional isolation key
-   * @returns {Object} Proxy config
+   * Get proxy configuration object for Electron.
+   *
+   * Returns a proxy configuration object that can be used with Electron's
+   * session.setProxy() or other HTTP clients.
+   *
+   * @method getProxyConfig
+   * @param {string} [isolationKey=null] - Optional isolation key for stream isolation
+   * @returns {Object} Proxy configuration object
+   * @returns {string} returns.host - Proxy host
+   * @returns {number} returns.port - Proxy port
+   * @returns {string} returns.type - Proxy type ('socks5')
+   *
+   * @example
+   * const config = manager.getProxyConfig();
+   * await session.defaultSession.setProxy({
+   *   proxyRules: `socks5://${config.host}:${config.port}`
+   * });
    */
   getProxyConfig(isolationKey = null) {
     const port = isolationKey
@@ -1613,9 +2138,18 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get proxy rules for Electron
-   * @param {string} isolationKey - Optional isolation key
-   * @returns {string} Proxy rules
+   * Get proxy rules string for Electron.
+   *
+   * Returns a proxy rules string suitable for Electron's session.setProxy().
+   *
+   * @method getProxyRules
+   * @param {string} [isolationKey=null] - Optional isolation key for stream isolation
+   * @returns {string} Proxy rules string (e.g., 'socks5://127.0.0.1:9050')
+   *
+   * @example
+   * await session.defaultSession.setProxy({
+   *   proxyRules: manager.getProxyRules()
+   * });
    */
   getProxyRules(isolationKey = null) {
     const port = isolationKey
@@ -1626,9 +2160,31 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Configure manager
-   * @param {Object} config - Configuration options
-   * @returns {Object} Result
+   * Update manager configuration.
+   *
+   * Allows changing configuration options at runtime. Note that most
+   * changes require a restart of Tor to take effect.
+   *
+   * @method configure
+   * @param {Object} config - Configuration options to update
+   * @param {string} [config.socksHost] - SOCKS proxy host
+   * @param {number} [config.socksPort] - SOCKS proxy port
+   * @param {string} [config.controlHost] - Control port host
+   * @param {number} [config.controlPort] - Control port
+   * @param {string} [config.controlPassword] - Control port password
+   * @param {number} [config.connectionTimeout] - Connection timeout in ms
+   * @param {number} [config.circuitTimeout] - Circuit timeout in ms
+   * @param {number} [config.bootstrapTimeout] - Bootstrap timeout in ms
+   * @param {string} [config.dataDirectory] - Tor data directory
+   * @param {string} [config.torBinaryPath] - Path to Tor binary
+   * @param {boolean} [config.embeddedMode] - Use embedded Tor
+   * @param {string} [config.geoipPath] - Path to GeoIP database
+   * @param {string} [config.geoip6Path] - Path to GeoIPv6 database
+   * @returns {Object} Result with updated configuration
+   *
+   * @example
+   * manager.configure({ socksPort: 9150 });
+   * await manager.restart();
    */
   configure(config) {
     if (config.socksHost) this.socksHost = config.socksHost;
@@ -1661,8 +2217,22 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get available country codes
-   * @returns {Object} Country codes
+   * Get all available country codes for node selection.
+   *
+   * Returns a list of valid country codes and their descriptions
+   * that can be used with setExitCountries() and setEntryCountries().
+   *
+   * @method getCountryCodes
+   * @returns {Object} Country code information
+   * @returns {boolean} returns.success - Always true
+   * @returns {string[]} returns.countries - Array of country codes
+   * @returns {Object.<string, string>} returns.descriptions - Code to name mapping
+   *
+   * @example
+   * const { countries, descriptions } = manager.getCountryCodes();
+   * countries.forEach(code => {
+   *   console.log(`${code}: ${descriptions[code]}`);
+   * });
    */
   getCountryCodes() {
     return {
@@ -1682,8 +2252,21 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Get available transports
-   * @returns {Object} Transport types
+   * Get available pluggable transport types.
+   *
+   * Returns a list of supported transport types for bridge connections.
+   *
+   * @method getTransportTypes
+   * @returns {Object} Transport type information
+   * @returns {boolean} returns.success - Always true
+   * @returns {string[]} returns.transports - Array of transport types
+   * @returns {Object.<string, string>} returns.descriptions - Type to description mapping
+   *
+   * @example
+   * const { transports, descriptions } = manager.getTransportTypes();
+   * transports.forEach(type => {
+   *   console.log(`${type}: ${descriptions[type]}`);
+   * });
    */
   getTransportTypes() {
     return {
@@ -1704,9 +2287,36 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Create a hidden service (onion service)
-   * @param {Object} options - Service options
-   * @returns {Promise<Object>} Service info
+   * Create a new onion service (hidden service).
+   *
+   * Creates an ephemeral onion service that routes traffic from the .onion
+   * address to a local server. The service is removed when Tor stops.
+   *
+   * @method createOnionService
+   * @async
+   * @param {Object} [options={}] - Service configuration
+   * @param {number} [options.port=80] - External port on the .onion address
+   * @param {number} [options.targetPort=8080] - Local port to forward to
+   * @param {string} [options.targetHost='127.0.0.1'] - Local host to forward to
+   * @param {number} [options.version=3] - Onion service version (3 recommended)
+   * @param {string} [options.keyType='NEW:ED25519-V3'] - Key type for v3 services
+   * @param {string[]} [options.flags=[]] - Optional flags (e.g., ['Detach'])
+   * @returns {Promise<Object>} Service information
+   * @returns {boolean} returns.success - Whether service was created
+   * @returns {string} [returns.address] - The .onion address
+   * @returns {string} [returns.serviceId] - Service ID (without .onion)
+   * @returns {number} [returns.port] - External port
+   * @returns {number} [returns.targetPort] - Target port
+   * @returns {string} [returns.privateKey] - Private key (save to restore service)
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * // Create a hidden service for a local web server
+   * const service = await manager.createOnionService({
+   *   port: 80,
+   *   targetPort: 3000
+   * });
+   * console.log(`Onion address: ${service.address}`);
    */
   async createOnionService(options = {}) {
     const {
@@ -1763,9 +2373,18 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Remove a hidden service
-   * @param {string} serviceId - Service ID (without .onion)
+   * Remove an existing onion service.
+   *
+   * @method removeOnionService
+   * @async
+   * @param {string} serviceId - Service ID (the part before .onion)
    * @returns {Promise<Object>} Result
+   * @returns {boolean} returns.success - Whether service was removed
+   * @returns {string} [returns.message] - Success message
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * await manager.removeOnionService('abc123xyz...');
    */
   async removeOnionService(serviceId) {
     try {
@@ -1794,8 +2413,21 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * List active onion services
-   * @returns {Promise<Object>} Active services
+   * List all active onion services.
+   *
+   * @method listOnionServices
+   * @async
+   * @returns {Promise<Object>} Services list
+   * @returns {boolean} returns.success - Whether query succeeded
+   * @returns {Array<Object>} [returns.services] - Array of service objects
+   * @returns {string} returns.services[].serviceId - Service ID
+   * @returns {string} returns.services[].address - Full .onion address
+   * @returns {number} [returns.count] - Number of active services
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * const { services } = await manager.listOnionServices();
+   * services.forEach(s => console.log(s.address));
    */
   async listOnionServices() {
     try {
@@ -1826,9 +2458,23 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Check if URL is an onion address
+   * Check if a URL is an onion address.
+   *
+   * @method isOnionUrl
    * @param {string} url - URL to check
    * @returns {Object} Check result
+   * @returns {boolean} returns.success - Whether URL was parsed successfully
+   * @returns {boolean} returns.isOnion - Whether URL is a .onion address
+   * @returns {boolean} [returns.isV3] - Whether it's a v3 onion address
+   * @returns {string} [returns.hostname] - The hostname from the URL
+   * @returns {number|null} [returns.version] - Onion version (2 or 3) or null
+   * @returns {string} [returns.error] - Error message if invalid URL
+   *
+   * @example
+   * const check = manager.isOnionUrl('http://example.onion/path');
+   * if (check.isOnion) {
+   *   console.log('This is an onion site');
+   * }
    */
   isOnionUrl(url) {
     try {
@@ -1853,9 +2499,30 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Handle Onion-Location header redirect
-   * @param {string} onionLocation - Onion-Location header value
-   * @returns {Object} Redirect info
+   * Handle an Onion-Location HTTP header.
+   *
+   * Websites can include an Onion-Location header to advertise their
+   * .onion equivalent. This method validates the header and returns
+   * information about whether a redirect should occur.
+   *
+   * @method handleOnionLocation
+   * @param {string} onionLocation - Value from the Onion-Location header
+   * @returns {Object} Redirect information
+   * @returns {boolean} returns.success - Whether header was valid
+   * @returns {boolean} [returns.shouldRedirect] - Whether to redirect
+   * @returns {string} [returns.onionUrl] - The .onion URL to redirect to
+   * @returns {number} [returns.version] - Onion version (2 or 3)
+   * @returns {string} [returns.error] - Error message if invalid
+   *
+   * @example
+   * // In a response interceptor
+   * const location = response.headers['onion-location'];
+   * if (location) {
+   *   const redirect = manager.handleOnionLocation(location);
+   *   if (redirect.shouldRedirect) {
+   *     navigate(redirect.onionUrl);
+   *   }
+   * }
    */
   handleOnionLocation(onionLocation) {
     if (!onionLocation) {
@@ -1940,9 +2607,33 @@ class AdvancedTorManager extends EventEmitter {
   // ==========================================
 
   /**
-   * Connect to existing Tor instance (external Tor)
-   * @param {Object} options - Connection options
+   * Connect to an existing external Tor instance.
+   *
+   * Instead of starting its own Tor process, this connects to a
+   * Tor instance that's already running (e.g., Tor Browser, system Tor).
+   *
+   * @method connectExisting
+   * @async
+   * @param {Object} [options={}] - Connection options
+   * @param {string} [options.socksHost='127.0.0.1'] - SOCKS proxy host
+   * @param {number} [options.socksPort=9050] - SOCKS proxy port
+   * @param {string} [options.controlHost='127.0.0.1'] - Control port host
+   * @param {number} [options.controlPort=9051] - Control port
+   * @param {string} [options.controlPassword] - Control port password
    * @returns {Promise<Object>} Connection result
+   * @returns {boolean} returns.success - Whether connection succeeded
+   * @returns {boolean} [returns.partial] - True if only SOCKS works (no control)
+   * @returns {string} [returns.message] - Status message
+   * @returns {string} [returns.exitIp] - Current exit IP (if detected)
+   * @returns {string} [returns.exitCountry] - Current exit country
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * // Connect to Tor Browser
+   * await manager.connectExisting({
+   *   socksPort: 9150,
+   *   controlPort: 9151
+   * });
    */
   async connectExisting(options = {}) {
     const {
@@ -2030,7 +2721,18 @@ class AdvancedTorManager extends EventEmitter {
   }
 
   /**
-   * Cleanup resources
+   * Clean up all resources and stop Tor.
+   *
+   * Stops the Tor process and removes all event listeners.
+   * Should be called when the application is shutting down.
+   *
+   * @method cleanup
+   * @async
+   * @returns {Promise<void>}
+   *
+   * @example
+   * // On app shutdown
+   * await manager.cleanup();
    */
   async cleanup() {
     await this.stop();

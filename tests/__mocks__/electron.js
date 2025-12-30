@@ -589,31 +589,33 @@ const screen = {
   removeAllListeners: jest.fn()
 };
 
-// NativeImage mock
+// NativeImage mock - create empty image factory first to avoid circular reference
+const createEmptyImage = () => ({
+  toPNG: jest.fn().mockReturnValue(Buffer.alloc(0)),
+  toJPEG: jest.fn().mockReturnValue(Buffer.alloc(0)),
+  toBitmap: jest.fn().mockReturnValue(Buffer.alloc(0)),
+  toDataURL: jest.fn().mockReturnValue(''),
+  getBitmap: jest.fn().mockReturnValue(Buffer.alloc(0)),
+  getNativeHandle: jest.fn().mockReturnValue(Buffer.alloc(0)),
+  isEmpty: jest.fn().mockReturnValue(true),
+  getSize: jest.fn().mockReturnValue({ width: 0, height: 0 }),
+  setTemplateImage: jest.fn(),
+  isTemplateImage: jest.fn().mockReturnValue(false),
+  crop: jest.fn().mockImplementation(function() { return this; }),
+  resize: jest.fn().mockImplementation(function() { return this; }),
+  getAspectRatio: jest.fn().mockReturnValue(1),
+  getScaleFactors: jest.fn().mockReturnValue([1]),
+  addRepresentation: jest.fn()
+});
+
 const nativeImage = {
-  createEmpty: jest.fn().mockReturnValue({
-    toPNG: jest.fn().mockReturnValue(Buffer.alloc(0)),
-    toJPEG: jest.fn().mockReturnValue(Buffer.alloc(0)),
-    toBitmap: jest.fn().mockReturnValue(Buffer.alloc(0)),
-    toDataURL: jest.fn().mockReturnValue(''),
-    getBitmap: jest.fn().mockReturnValue(Buffer.alloc(0)),
-    getNativeHandle: jest.fn().mockReturnValue(Buffer.alloc(0)),
-    isEmpty: jest.fn().mockReturnValue(true),
-    getSize: jest.fn().mockReturnValue({ width: 0, height: 0 }),
-    setTemplateImage: jest.fn(),
-    isTemplateImage: jest.fn().mockReturnValue(false),
-    crop: jest.fn().mockReturnValue(this),
-    resize: jest.fn().mockReturnValue(this),
-    getAspectRatio: jest.fn().mockReturnValue(1),
-    getScaleFactors: jest.fn().mockReturnValue([1]),
-    addRepresentation: jest.fn()
-  }),
-  createFromPath: jest.fn().mockReturnValue(nativeImage.createEmpty()),
-  createFromBitmap: jest.fn().mockReturnValue(nativeImage.createEmpty()),
-  createFromBuffer: jest.fn().mockReturnValue(nativeImage.createEmpty()),
-  createFromDataURL: jest.fn().mockReturnValue(nativeImage.createEmpty()),
-  createFromNamedImage: jest.fn().mockReturnValue(nativeImage.createEmpty()),
-  createThumbnailFromPath: jest.fn().mockResolvedValue(nativeImage.createEmpty())
+  createEmpty: jest.fn().mockImplementation(createEmptyImage),
+  createFromPath: jest.fn().mockImplementation(createEmptyImage),
+  createFromBitmap: jest.fn().mockImplementation(createEmptyImage),
+  createFromBuffer: jest.fn().mockImplementation(createEmptyImage),
+  createFromDataURL: jest.fn().mockImplementation(createEmptyImage),
+  createFromNamedImage: jest.fn().mockImplementation(createEmptyImage),
+  createThumbnailFromPath: jest.fn().mockImplementation(() => Promise.resolve(createEmptyImage()))
 };
 
 // WebContents mock (static methods)

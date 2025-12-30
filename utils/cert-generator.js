@@ -1,5 +1,5 @@
 /**
- * Basset Hound Browser - Production SSL Certificate Generator
+ * @fileoverview Basset Hound Browser - Production SSL Certificate Generator
  *
  * Automatically generates self-signed SSL certificates for the WebSocket server
  * when running in standalone/production mode. Certificates are stored locally
@@ -7,21 +7,38 @@
  *
  * Features:
  * - Automatic certificate generation on first run
- * - Certificate renewal when expired
- * - Multiple generation methods: OpenSSL (preferred), node-forge, or Node.js crypto
+ * - Certificate renewal when expired (< 30 days remaining)
+ * - Multiple generation methods with automatic fallback
  * - Configurable certificate storage location
  * - Support for both development and production environments
  *
  * Generation Methods (in order of preference):
- * 1. OpenSSL - Creates fully compliant X.509 certificates
+ * 1. OpenSSL - Creates fully compliant X.509 certificates (most reliable)
  * 2. node-forge - Pure JavaScript X.509 certificate generation
  * 3. Node.js crypto - Fallback with simplified certificate structure
  *
- * Usage:
- *   const CertGenerator = require('./utils/cert-generator');
- *   const certGen = new CertGenerator();
- *   const certs = await certGen.ensureCertificates();
- *   // Use certs.certPath, certs.keyPath, certs.caPath
+ * @module utils/cert-generator
+ * @requires fs
+ * @requires path
+ * @requires crypto
+ * @requires child_process
+ *
+ * @example
+ * // Basic usage
+ * const CertificateGenerator = require('./utils/cert-generator');
+ * const certGen = new CertificateGenerator();
+ * const certs = await certGen.ensureCertificates();
+ * // Use certs.certPath, certs.keyPath, certs.caPath
+ *
+ * @example
+ * // Custom configuration
+ * const certGen = new CertificateGenerator({
+ *   certsDir: '/path/to/certs',
+ *   validityDays: 730,
+ *   keySize: 4096,
+ *   organization: 'My App',
+ *   commonName: 'myapp.local'
+ * });
  */
 
 const fs = require('fs');
@@ -29,7 +46,52 @@ const path = require('path');
 const crypto = require('crypto');
 const { execSync } = require('child_process');
 
+/**
+ * SSL Certificate Generator for self-signed certificates.
+ *
+ * Provides automatic generation and management of self-signed SSL certificates
+ * for secure WebSocket and HTTPS connections. Supports multiple certificate
+ * generation backends with automatic fallback.
+ *
+ * @class CertificateGenerator
+ *
+ * @example
+ * const certGen = new CertificateGenerator();
+ * const certs = await certGen.ensureCertificates();
+ * // Use with HTTPS/WSS server
+ * const server = https.createServer({
+ *   key: fs.readFileSync(certs.keyPath),
+ *   cert: fs.readFileSync(certs.certPath),
+ *   ca: fs.readFileSync(certs.caPath)
+ * }, app);
+ */
 class CertificateGenerator {
+  /**
+   * Create a CertificateGenerator instance.
+   *
+   * @constructor
+   * @param {Object} [options={}] - Configuration options
+   * @param {string} [options.certsDir] - Directory for storing certificates (auto-detected if not provided)
+   * @param {number} [options.validityDays=365] - Certificate validity in days
+   * @param {number} [options.keySize=2048] - RSA key size in bits (2048 or 4096 recommended)
+   * @param {string} [options.organization='Basset Hound Browser'] - Organization name for certificate
+   * @param {string} [options.commonName='localhost'] - Common name (CN) for certificate
+   * @param {Object} [options.logger=console] - Logger instance for output
+   *
+   * @example
+   * // Default configuration (auto-detects Electron environment)
+   * const certGen = new CertificateGenerator();
+   *
+   * @example
+   * // Custom configuration
+   * const certGen = new CertificateGenerator({
+   *   certsDir: '/var/lib/myapp/certs',
+   *   validityDays: 730,  // 2 years
+   *   keySize: 4096,
+   *   organization: 'My Company',
+   *   commonName: 'myapp.local'
+   * });
+   */
   constructor(options = {}) {
     // Determine base directory for certificate storage
     // In production: use userData directory
@@ -65,9 +127,27 @@ class CertificateGenerator {
   }
 
   /**
-   * Ensure certificates exist and are valid
-   * Generates new certificates if they don't exist or are expired
-   * @returns {Promise<Object>} Object with paths to certificate files
+   * Ensure certificates exist and are valid.
+   *
+   * This is the main entry point for certificate management. It checks
+   * if certificates exist, validates them, and generates new ones if needed.
+   * Certificates are regenerated if they don't exist, are invalid, or have
+   * less than 30 days of validity remaining.
+   *
+   * @method ensureCertificates
+   * @async
+   * @returns {Promise<Object>} Certificate paths object
+   * @returns {string} returns.certPath - Path to server certificate (cert.pem)
+   * @returns {string} returns.keyPath - Path to server private key (key.pem)
+   * @returns {string} returns.caPath - Path to CA certificate (ca.pem)
+   * @returns {string} returns.certsDir - Path to certificates directory
+   * @throws {Error} If certificate generation fails with all methods
+   *
+   * @example
+   * const certs = await certGen.ensureCertificates();
+   * console.log('Certificate path:', certs.certPath);
+   * console.log('Key path:', certs.keyPath);
+   * console.log('CA path:', certs.caPath);
    */
   async ensureCertificates() {
     try {
@@ -473,8 +553,30 @@ subjectAltName = @alt_names
   }
 
   /**
-   * Get certificate information
-   * @returns {Object} Certificate metadata
+   * Get information about existing certificates.
+   *
+   * Returns metadata about the current certificates including paths,
+   * creation time, and file sizes.
+   *
+   * @method getCertificateInfo
+   * @returns {Object|null} Certificate information or null if not found
+   * @returns {boolean} returns.exists - Whether certificates exist
+   * @returns {Object} returns.paths - Paths to certificate files
+   * @returns {string} returns.paths.certPath - Path to server certificate
+   * @returns {string} returns.paths.keyPath - Path to private key
+   * @returns {string} returns.paths.caPath - Path to CA certificate
+   * @returns {string} returns.paths.certsDir - Path to certificates directory
+   * @returns {Date} returns.createdAt - File creation time
+   * @returns {Date} returns.modifiedAt - File modification time
+   * @returns {number} returns.size - Certificate file size in bytes
+   *
+   * @example
+   * const info = certGen.getCertificateInfo();
+   * if (info) {
+   *   console.log('Certificates created:', info.createdAt);
+   * } else {
+   *   console.log('No certificates found');
+   * }
    */
   getCertificateInfo() {
     if (!this._certificatesExist()) {
@@ -498,8 +600,18 @@ subjectAltName = @alt_names
   }
 
   /**
-   * Delete all generated certificates
-   * @returns {boolean} Success status
+   * Delete all generated certificates.
+   *
+   * Removes all certificate files (CA key, CA cert, server key, server cert)
+   * from the certificates directory. Useful for forcing regeneration.
+   *
+   * @method deleteCertificates
+   * @returns {boolean} True if at least one file was deleted, false otherwise
+   *
+   * @example
+   * // Force certificate regeneration
+   * certGen.deleteCertificates();
+   * await certGen.ensureCertificates();
    */
   deleteCertificates() {
     try {

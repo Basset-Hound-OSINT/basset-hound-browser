@@ -652,9 +652,11 @@ External Client (Python, Node.js, etc.)
 |------|--------|-------------|
 | User-space installation | ✅ Done | No sudo/root required for embedded mode |
 | Minimal system impact | ✅ Done | All files in application directory |
-| First-run download | 📋 Planned | Download Tor on first use if not present |
+| First-run download | ✅ Done | tor-auto-setup.js downloads on first use if not present |
 | Bundle with release | 📋 Planned | Include Tor in electron-builder packages |
 | Platform auto-detection | ✅ Done | Downloads correct bundle for OS/arch |
+| CLI arguments for Tor modes | ✅ Done | --tor, --system-tor, --embedded-tor, --[no-]tor-auto-download |
+| System Tor documentation | ✅ Done | SYSTEM-TOR-INSTALLATION.md with cross-platform guides |
 
 ### 11.4 Usage Options
 
@@ -741,6 +743,8 @@ node scripts/install/embedded-tor-setup.js
 | 8.2.0 | 2024-12 | Phase 11 Embedded Tor - Portable Tor distribution (Tor Expert Bundle 15.0.3), embedded-tor-setup.js script, no-install user-space operation, pluggable transports (obfs4/meek/snowflake/conjure), GeoIP databases included |
 | 8.2.1 | 2024-12 | Test Suite Improvements - Fixed manager test flakiness (12 test files, 588 manager tests now passing), corrected mock configurations and API expectations, improved test pass rate from 75.1% to 82.5% (1097/1329 tests passing), added 23 embedded Tor tests, fixed URL history tracking bug in TabManager, verified embedded Tor bootstrap to 100% |
 | 8.2.2 | 2024-12-29 | Major Test Suite Overhaul - Comprehensive Electron mock rewrite (session, webContents, globalShortcut), fixed 43+ test failures, scenario tests converted to Jest format (94 tests), extension communication tests structured, fingerprint test fixes (47 tests), tor-advanced.js null reference fix. Test results: 27 suites passing, 1307 tests passing. Moved embedded Tor to production location (bin/tor/). |
+| 8.2.3 | 2024-12-29 | Test Infrastructure & Embedded Tor Verification - CI environment support (28 suites pass, 1313 tests), fixed nativeImage mock circular reference, scenario tests with proper skip conditions, cert-generator Jest mock hoisting fix, SSL connection race condition fix, Tor integration test flexibility. Embedded Tor verified: bootstrap 100%, circuit routing confirmed via check.torproject.org. |
+| 8.2.4 | 2024-12-29 | Embedded Tor CLI Integration - CLI arguments for Tor modes (--tor, --system-tor, --embedded-tor, --[no-]tor-auto-download), embedded Tor as default behavior, system Tor installation guide (SYSTEM-TOR-INSTALLATION.md), first-run auto-download via tor-auto-setup.js, updated default configuration. |
 
 ---
 
@@ -903,4 +907,4 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 ---
 
 *Last Updated: December 29, 2024*
-*Version: 8.2.2 - Major Test Suite Overhaul & Production Embedded Tor*
+*Version: 8.2.4 - Embedded Tor CLI Integration*

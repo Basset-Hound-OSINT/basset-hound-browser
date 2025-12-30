@@ -187,7 +187,11 @@ const networkDefaults = {
     enabled: false,
     socksPort: 9050,
     controlPort: 9051,
-    dataDirectory: null
+    dataDirectory: null,
+    // Embedded vs System Tor
+    useEmbedded: true,     // Default to embedded Tor when enabled
+    useSystem: false,       // Use system-installed Tor instead
+    autoDownload: true      // Auto-download embedded Tor if not present
   },
 
   // Proxy chain settings

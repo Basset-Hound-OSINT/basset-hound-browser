@@ -19,6 +19,7 @@ coverage/
 test-results/
 test-user-data*/
 *.log
+**/test-certs*/
 
 # IDE
 .vscode/
@@ -48,6 +49,10 @@ recordings/*.webm
 # Embedded Tor (development/testing)
 tor_tmp/
 bin/tor/
+
+# Local application data
+.bhb/
+bhb-data/
 
 # Python (for any scripts)
 __pycache__/
