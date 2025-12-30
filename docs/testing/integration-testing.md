@@ -114,6 +114,69 @@ Tests:
 - Server restart recovery
 - Error recovery state preservation
 
+### 7. Extension-Browser Integration Tests
+**Directory:** `tests/integration/extension-browser/`
+
+These tests verify end-to-end communication between the extension and browser components.
+
+**Note:** These tests are designed to run as standalone scripts and will skip when run through Jest. Use the dedicated npm scripts to run them.
+
+#### Communication Tests
+**File:** `tests/integration/extension-browser/communication.test.js`
+
+Tests WebSocket message passing between the Chrome extension and Electron browser:
+- Basic WebSocket connection
+- Message format validation
+- Bidirectional communication
+- Message ordering
+- Large message handling
+- Concurrent messages
+- Binary data handling
+- Special characters in messages
+- Connection state transitions
+- Heartbeat mechanism
+- Error response handling
+- Message broadcast
+
+Run with: `npm run test:integration:communication`
+
+#### Session Sharing Tests
+**File:** `tests/integration/extension-browser/session-sharing.test.js`
+
+Tests session and cookie synchronization:
+- Session creation and persistence
+- Session switching
+- Cookie isolation between sessions
+- Local storage isolation
+- Session export and import
+- Session deletion
+- Cookie domain matching
+- Storage clearing
+- Session-specific clearing
+- Cross-component session sync
+
+Run with: `npm run test:integration:session-sharing`
+
+#### Command Synchronization Tests
+**File:** `tests/integration/extension-browser/command-sync.test.js`
+
+Tests command synchronization across components:
+- Navigation command sync
+- Form fill command sync
+- Click command sync
+- Screenshot command sync
+- Script execution sync
+- Cookie command sync
+- Tab management sync
+- Session management sync
+- Wait for element sync
+- Scroll command sync
+- Page state sync
+- Recording command sync
+- Command response matching
+
+Run with: `npm run test:integration:command-sync`
+
 ## Prerequisites
 
 1. **Node.js** (v16 or higher)
@@ -172,6 +235,28 @@ node tests/integration/extension-communication/network-coordination.test.js
 # Run error handling tests
 node tests/integration/extension-communication/error-handling.test.js
 ```
+
+### Run Extension-Browser Integration Tests
+
+These tests require running as standalone scripts:
+
+```bash
+# Run communication tests
+npm run test:integration:communication
+
+# Run session sharing tests
+npm run test:integration:session-sharing
+
+# Run command synchronization tests
+npm run test:integration:command-sync
+
+# Or run directly with Node
+node tests/integration/extension-browser/communication.test.js
+node tests/integration/extension-browser/session-sharing.test.js
+node tests/integration/extension-browser/command-sync.test.js
+```
+
+**Important:** Extension-browser tests will automatically skip when run through Jest (e.g., `npm test`) because they require specific browser infrastructure. Always use the npm scripts or run them directly with Node.
 
 ### Using Jest
 

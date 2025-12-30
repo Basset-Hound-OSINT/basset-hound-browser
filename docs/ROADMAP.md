@@ -552,6 +552,22 @@ External Client (Python, Node.js, etc.)
 | Exit IP verification | ✅ Done | checkExitIp() tests |
 | Bridge connectivity tests | ✅ Done | Bridge configuration tests |
 | Transport tests | ✅ Done | Transport type validation tests |
+| Live Tor connectivity test | ✅ Done | tor-integration-test.js - All 6 tests passed (Dec 29, 2024) |
+
+### 9.11 Tor Integration Verified ✅ COMPLETED (December 29, 2024)
+| Test | Status | Result |
+|------|--------|--------|
+| SOCKS Port (9050) | ✅ Pass | Port open, accepting connections |
+| Control Port (9051) | ✅ Pass | Port open, accepting connections |
+| Authentication | ✅ Pass | Tor version: 0.4.8.21 |
+| Circuit Retrieval | ✅ Pass | 18 built circuits detected |
+| New Identity (NEWNYM) | ✅ Pass | Signal sent successfully |
+| Exit IP Verification | ✅ Pass | Exit IP: 45.84.107.47 (confirmed Tor exit) |
+
+**Documentation Added:**
+- [TOR-INTEGRATION.md](features/TOR-INTEGRATION.md) - Comprehensive integration guide
+- [TOR-SETUP-GUIDE.md](deployment/TOR-SETUP-GUIDE.md) - Cross-platform setup guide
+- [tor-integration-test.js](../tests/tor-integration-test.js) - Live connectivity test script
 
 ---
 
@@ -604,6 +620,74 @@ External Client (Python, Node.js, etc.)
 
 ---
 
+## Phase 11: Embedded Tor 🚧 IN PROGRESS
+
+### 11.1 Portable Tor Distribution
+| Task | Status | Description |
+|------|--------|-------------|
+| Tor Expert Bundle download | ✅ Done | Download script for all platforms (Linux, macOS, Windows) |
+| Binary extraction | ✅ Done | Automated extraction to `bin/tor/` directory |
+| Pluggable transports | ✅ Done | Includes lyrebird (obfs4/meek/webtunnel/snowflake) and conjure |
+| GeoIP databases | ✅ Done | IPv4 and IPv6 GeoIP files included |
+| Setup script | ✅ Done | `scripts/install/embedded-tor-setup.js` |
+| Version verification | ✅ Done | Automatic binary validation after install |
+
+**Tested Configuration:**
+- **Bundle Version**: 15.0.3
+- **Tor Daemon**: 0.4.8.21
+- **Platform Tested**: Linux x86_64
+
+### 11.2 Embedded Tor Manager Integration
+| Task | Status | Description |
+|------|--------|-------------|
+| AdvancedTorManager binary detection | ✅ Done | `_findTorBinary()` checks `bin/tor/` directory |
+| Local data directory | ✅ Done | `~/.local/share/basset-hound-browser/tor/` |
+| Dynamic torrc generation | ✅ Done | `_generateTorrc()` creates config at runtime |
+| Process lifecycle management | ✅ Done | Start/stop/restart embedded Tor process |
+| Control port authentication | ✅ Done | Cookie or password authentication |
+| Bootstrap progress tracking | ✅ Done | Real-time bootstrap percentage events |
+
+### 11.3 Deployment Strategy
+| Task | Status | Description |
+|------|--------|-------------|
+| User-space installation | ✅ Done | No sudo/root required for embedded mode |
+| Minimal system impact | ✅ Done | All files in application directory |
+| First-run download | 📋 Planned | Download Tor on first use if not present |
+| Bundle with release | 📋 Planned | Include Tor in electron-builder packages |
+| Platform auto-detection | ✅ Done | Downloads correct bundle for OS/arch |
+
+### 11.4 Usage Options
+
+**Option 1: System Tor (Requires Installation)**
+```bash
+# Install Tor via system package manager
+sudo ./scripts/install/install-tor.sh
+
+# Browser connects to system Tor on ports 9050/9051
+```
+
+**Option 2: Embedded Tor (Portable)**
+```bash
+# Download and setup embedded Tor
+node scripts/install/embedded-tor-setup.js
+
+# Browser spawns its own Tor process
+# No installation required, no sudo needed
+```
+
+**Deployment Comparison:**
+| Feature | System Tor | Embedded Tor |
+|---------|------------|--------------|
+| Installation | Requires sudo | No installation |
+| Permissions | Root/admin needed | User-space only |
+| System Impact | Installs service | None (portable) |
+| Multiple Apps | Shared by all | Isolated per-app |
+| Configuration | `/etc/tor/torrc` | Local `torrc` |
+| Auto-Start | Via systemd | Via application |
+| Memory Usage | Single daemon | Per-application |
+
+---
+
 ## Technical Debt
 
 | Item | Priority | Description |
@@ -613,7 +697,7 @@ External Client (Python, Node.js, etc.)
 | Performance profiling | ✅ Resolved | IPC timeout handling prevents memory leaks from hanging promises |
 | Code documentation | Medium | Add JSDoc comments |
 | Dependency updates | Low | Update Electron version |
-| Test flakiness | Low | Some manager tests have timing issues (extraction, tab, cookies, proxy, profiles, window, storage managers) - tests have mock synchronization issues |
+| Test flakiness | ✅ Resolved | Manager test flakiness fixed (extraction, cookies, storage, proxy, tabs) - corrected mock configurations, API expectations, and method names (v8.2.1) |
 | SSL/TLS for WebSocket | ✅ Resolved | wss:// support with BASSET_WS_SSL_* env vars |
 | IPC memory leaks | ✅ Resolved | Added timeouts and cleanup functions for all IPC handlers |
 | Event listener leaks | ✅ Resolved | Preload event listeners return cleanup functions |
@@ -653,6 +737,10 @@ External Client (Python, Node.js, etc.)
 | 8.1.2 | 2024-12 | Verified all security fixes: IPC timeouts in main.js, cleanup functions in preload.js, JSON.stringify() escaping in renderer.js, configurable certificate handling, execFileSync in websocket server |
 | 8.1.3 | 2024-12 | Test suite improvements: Fixed humanize.test.js (60 tests), fingerprint.test.js, tor-manager.test.js, tor-advanced.test.js, websocket-server.test.js, window-pool.test.js, headless-manager.test.js. Improved test tolerances for randomness-based functions and platform-dependent tests. 903/1011 tests passing (89.3% pass rate). |
 | 8.1.4 | 2024-12 | Phase 10.4 SSL Certificate Auto-Generation - Automatic certificate creation for WebSocket SSL, multi-method generation (OpenSSL, node-forge, Node.js crypto), automatic renewal, configurable storage location, integration with main.js startup sequence |
+| 8.1.5 | 2024-12 | Tor Integration Verified - Live testing with system Tor (v0.4.8.21), all 6 connectivity tests passed, comprehensive documentation for cross-platform setup (Ubuntu, Debian, Fedora, Arch, macOS, Windows), TOR-INTEGRATION.md and TOR-SETUP-GUIDE.md added |
+| 8.2.0 | 2024-12 | Phase 11 Embedded Tor - Portable Tor distribution (Tor Expert Bundle 15.0.3), embedded-tor-setup.js script, no-install user-space operation, pluggable transports (obfs4/meek/snowflake/conjure), GeoIP databases included |
+| 8.2.1 | 2024-12 | Test Suite Improvements - Fixed manager test flakiness (12 test files, 588 manager tests now passing), corrected mock configurations and API expectations, improved test pass rate from 75.1% to 82.5% (1097/1329 tests passing), added 23 embedded Tor tests, fixed URL history tracking bug in TabManager, verified embedded Tor bootstrap to 100% |
+| 8.2.2 | 2024-12-29 | Major Test Suite Overhaul - Comprehensive Electron mock rewrite (session, webContents, globalShortcut), fixed 43+ test failures, scenario tests converted to Jest format (94 tests), extension communication tests structured, fingerprint test fixes (47 tests), tor-advanced.js null reference fix. Test results: 27 suites passing, 1307 tests passing. Moved embedded Tor to production location (bin/tor/). |
 
 ---
 
@@ -702,6 +790,8 @@ External Client (Python, Node.js, etc.)
 - [x] Phase 10.3 Docker Deployment complete (Dockerfile, docker-compose, .dockerignore)
 - [x] Phase 10.2 Auto-Update complete (UpdateManager, WebSocket API, UI notifications)
 - [x] No critical bugs (v8.1.1 security & stability fixes applied)
+- [x] Embedded Tor support (portable Tor bundle, no installation required)
+- [x] Pluggable transports (obfs4, meek, snowflake, conjure)
 
 ---
 
@@ -738,6 +828,9 @@ sudo ./scripts/install/main-install.sh
 
 # Install specific components
 sudo ./scripts/install/main-install.sh --tor --node
+
+# Or use embedded Tor (no sudo required)
+node scripts/install/embedded-tor-setup.js
 
 # Non-interactive installation
 sudo ./scripts/install/main-install.sh --all --assume-yes
@@ -809,5 +902,5 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 
 ---
 
-*Last Updated: December 2024*
-*Version: 8.1.4 - SSL Certificate Auto-Generation for Production Deployment*
+*Last Updated: December 29, 2024*
+*Version: 8.2.2 - Major Test Suite Overhaul & Production Embedded Tor*

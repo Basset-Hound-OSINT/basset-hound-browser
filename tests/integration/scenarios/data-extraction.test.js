@@ -4,7 +4,6 @@
  * Tests content extraction functionality between extension and browser.
  */
 
-const assert = require('assert');
 const { TestServer } = require('../harness/test-server');
 const { MockExtension } = require('../harness/mock-extension');
 const { MockBrowser } = require('../harness/mock-browser');
@@ -51,30 +50,6 @@ const mockContent = {
  * Test utilities
  */
 const testUtils = {
-  async setup() {
-    server = new TestServer({ port: TEST_PORT });
-    setupExtractionHandlers();
-    await server.start();
-
-    extension = new MockExtension({ url: TEST_URL });
-    browser = new MockBrowser({ url: TEST_URL });
-
-    await extension.connect();
-    await browser.connect();
-  },
-
-  async teardown() {
-    if (extension && extension.isConnected) {
-      extension.disconnect();
-    }
-    if (browser && browser.isConnected) {
-      browser.disconnect();
-    }
-    if (server && server.isRunning) {
-      await server.stop();
-    }
-  },
-
   async delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -274,389 +249,257 @@ function setupExtractionHandlers() {
   });
 }
 
-/**
- * Test Suite: Full Page HTML Extraction
- */
-async function testFullPageHtmlExtraction() {
-  console.log('\n--- Test: Full Page HTML Extraction ---');
+describe('Data Extraction Test Scenarios', () => {
+  beforeAll(async () => {
+    server = new TestServer({ port: TEST_PORT });
+    setupExtractionHandlers();
+    await server.start();
 
-  const response = await extension.sendCommand('get_content', { type: 'html' });
+    extension = new MockExtension({ url: TEST_URL });
+    browser = new MockBrowser({ url: TEST_URL });
 
-  assert(response.success, 'HTML extraction should succeed');
-  assert(response.result.content.includes('<!DOCTYPE html>'), 'Should contain DOCTYPE');
-  assert(response.result.content.includes('<body>'), 'Should contain body tag');
-  console.log('  Full HTML content extracted');
-
-  console.log('PASSED: Full Page HTML Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Text Content Extraction
- */
-async function testTextContentExtraction() {
-  console.log('\n--- Test: Text Content Extraction ---');
-
-  const response = await extension.sendCommand('get_text', {});
-
-  assert(response.success, 'Text extraction should succeed');
-  assert(response.result.text.includes('Welcome'), 'Should contain title text');
-  assert(response.result.text.includes('Item 1'), 'Should contain list items');
-  console.log('  Text content extracted');
-
-  console.log('PASSED: Text Content Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Selector-Based Extraction
- */
-async function testSelectorBasedExtraction() {
-  console.log('\n--- Test: Selector-Based Extraction ---');
-
-  // Extract by ID
-  const idResponse = await extension.sendCommand('get_content', { selector: '#main-title' });
-  assert(idResponse.success, 'ID selector extraction should succeed');
-  assert(idResponse.result.content.includes('Welcome'), 'Should contain title');
-  console.log('  Extracted by ID selector');
-
-  // Extract by class
-  const classResponse = await extension.sendCommand('get_content', { selector: '.intro' });
-  assert(classResponse.success, 'Class selector extraction should succeed');
-  console.log('  Extracted by class selector');
-
-  // Extract nested content
-  const nestedResponse = await extension.sendCommand('get_content', { selector: '#content' });
-  assert(nestedResponse.success, 'Nested extraction should succeed');
-  assert(nestedResponse.result.content.includes('Item'), 'Should contain list items');
-  console.log('  Extracted nested content');
-
-  console.log('PASSED: Selector-Based Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Element Attribute Extraction
- */
-async function testElementAttributeExtraction() {
-  console.log('\n--- Test: Element Attribute Extraction ---');
-
-  // Get ID attribute
-  const idResponse = await extension.sendCommand('get_attribute', {
-    selector: '#main-title',
-    attribute: 'id'
-  });
-  assert(idResponse.success, 'ID attribute extraction should succeed');
-  assert(idResponse.result.value === 'main-title', 'ID should match');
-  console.log('  Extracted ID attribute');
-
-  // Get class attribute
-  const classResponse = await extension.sendCommand('get_attribute', {
-    selector: '.intro',
-    attribute: 'class'
-  });
-  assert(classResponse.success, 'Class attribute extraction should succeed');
-  assert(classResponse.result.value === 'intro', 'Class should match');
-  console.log('  Extracted class attribute');
-
-  // Get data attribute
-  const dataResponse = await extension.sendCommand('get_attribute', {
-    selector: '.items li:first-child',
-    attribute: 'data-id'
-  });
-  assert(dataResponse.success, 'Data attribute extraction should succeed');
-  assert(dataResponse.result.value === '1', 'Data attribute should match');
-  console.log('  Extracted data attribute');
-
-  console.log('PASSED: Element Attribute Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Multiple Elements Extraction
- */
-async function testMultipleElementsExtraction() {
-  console.log('\n--- Test: Multiple Elements Extraction ---');
-
-  // Extract list items
-  const listResponse = await extension.sendCommand('get_elements', {
-    selector: '.items li'
-  });
-  assert(listResponse.success, 'List extraction should succeed');
-  assert(listResponse.result.count === 3, 'Should find 3 items');
-  console.log('  Extracted 3 list items');
-
-  // Extract links
-  const linksResponse = await extension.sendCommand('get_elements', {
-    selector: 'a.link'
-  });
-  assert(linksResponse.success, 'Links extraction should succeed');
-  assert(linksResponse.result.count === 2, 'Should find 2 links');
-  console.log('  Extracted 2 links');
-
-  console.log('PASSED: Multiple Elements Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Table Data Extraction
- */
-async function testTableDataExtraction() {
-  console.log('\n--- Test: Table Data Extraction ---');
-
-  const response = await extension.sendCommand('extract_table', {
-    selector: '#data-table'
+    await extension.connect();
+    await browser.connect();
   });
 
-  assert(response.success, 'Table extraction should succeed');
-  assert(response.result.headers.length === 2, 'Should have 2 headers');
-  assert(response.result.rows.length === 2, 'Should have 2 data rows');
-  console.log('  Extracted table structure');
-
-  // Verify data
-  assert(response.result.data[0].Name === 'Row1', 'First row name should match');
-  assert(response.result.data[0].Value === 'Value1', 'First row value should match');
-  console.log('  Table data correctly formatted');
-
-  console.log('PASSED: Table Data Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Link Extraction
- */
-async function testLinkExtraction() {
-  console.log('\n--- Test: Link Extraction ---');
-
-  // Extract with absolute URLs
-  const absoluteResponse = await extension.sendCommand('extract_links', {
-    absolute: true
-  });
-  assert(absoluteResponse.success, 'Link extraction should succeed');
-  assert(absoluteResponse.result.count === 2, 'Should find 2 links');
-  assert(absoluteResponse.result.links[0].href.startsWith('https://'), 'Should be absolute URL');
-  console.log('  Extracted absolute URLs');
-
-  // Extract with relative URLs
-  const relativeResponse = await extension.sendCommand('extract_links', {
-    absolute: false
-  });
-  assert(relativeResponse.success, 'Relative link extraction should succeed');
-  assert(relativeResponse.result.links[0].href.startsWith('/'), 'Should be relative URL');
-  console.log('  Extracted relative URLs');
-
-  console.log('PASSED: Link Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Script-Based Extraction
- */
-async function testScriptBasedExtraction() {
-  console.log('\n--- Test: Script-Based Extraction ---');
-
-  // Extract title via script
-  const titleResponse = await extension.sendCommand('execute_script', {
-    script: 'return document.title'
-  });
-  assert(titleResponse.success, 'Title script should succeed');
-  assert(titleResponse.result.result === 'Test Page', 'Title should match');
-  console.log('  Extracted title via script');
-
-  // Extract multiple items via script
-  const itemsResponse = await extension.sendCommand('execute_script', {
-    script: 'return Array.from(document.querySelectorAll(".items li")).map(el => el.textContent)'
-  });
-  assert(itemsResponse.success, 'Items script should succeed');
-  assert(Array.isArray(itemsResponse.result.result), 'Should return array');
-  console.log('  Extracted items via script');
-
-  console.log('PASSED: Script-Based Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Structured Data Extraction
- */
-async function testStructuredDataExtraction() {
-  console.log('\n--- Test: Structured Data Extraction ---');
-
-  const response = await extension.sendCommand('extract_structured_data', {});
-
-  assert(response.success, 'Structured data extraction should succeed');
-  assert(response.result.jsonLd, 'Should have JSON-LD data');
-  assert(response.result.openGraph, 'Should have Open Graph data');
-  console.log('  Extracted JSON-LD and Open Graph data');
-
-  // Verify JSON-LD
-  assert(response.result.jsonLd[0]['@type'] === 'WebPage', 'JSON-LD type should match');
-  console.log('  JSON-LD data correctly formatted');
-
-  // Verify Open Graph
-  assert(response.result.openGraph.title === 'Test Page', 'OG title should match');
-  console.log('  Open Graph data correctly formatted');
-
-  console.log('PASSED: Structured Data Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Page State Extraction
- */
-async function testPageStateExtraction() {
-  console.log('\n--- Test: Page State Extraction ---');
-
-  const response = await extension.sendCommand('get_page_state', {});
-
-  assert(response.success, 'Page state extraction should succeed');
-  assert(response.result.url, 'Should have URL');
-  assert(response.result.title, 'Should have title');
-  assert(Array.isArray(response.result.links), 'Should have links array');
-  console.log('  Extracted page state');
-
-  // Verify links
-  assert(response.result.links.length === 2, 'Should have 2 links');
-  console.log('  Page state includes link data');
-
-  console.log('PASSED: Page State Extraction');
-  return true;
-}
-
-/**
- * Test Suite: JSON Data Extraction
- */
-async function testJsonDataExtraction() {
-  console.log('\n--- Test: JSON Data Extraction ---');
-
-  const response = await extension.sendCommand('execute_script', {
-    script: 'return JSON.parse(\'{"key": "value", "items": [1, 2, 3]}\')'
-  });
-
-  assert(response.success, 'JSON extraction should succeed');
-  assert(typeof response.result.result === 'object', 'Should return object');
-  assert(response.result.result.key === 'value', 'Key should match');
-  assert(Array.isArray(response.result.result.items), 'Items should be array');
-  console.log('  Extracted and parsed JSON data');
-
-  console.log('PASSED: JSON Data Extraction');
-  return true;
-}
-
-/**
- * Test Suite: Complete Extraction Flow
- */
-async function testCompleteExtractionFlow() {
-  console.log('\n--- Test: Complete Extraction Flow ---');
-
-  // 1. Get page state
-  const stateResponse = await extension.sendCommand('get_page_state', {});
-  assert(stateResponse.success, 'Get page state should succeed');
-  console.log('  Step 1: Got page state');
-
-  // 2. Extract specific content
-  const contentResponse = await extension.sendCommand('get_content', {
-    selector: '#content'
-  });
-  assert(contentResponse.success, 'Get content should succeed');
-  console.log('  Step 2: Extracted specific content');
-
-  // 3. Extract table data
-  const tableResponse = await extension.sendCommand('extract_table', {
-    selector: '#data-table'
-  });
-  assert(tableResponse.success, 'Extract table should succeed');
-  console.log('  Step 3: Extracted table data');
-
-  // 4. Extract all links
-  const linksResponse = await extension.sendCommand('extract_links', {});
-  assert(linksResponse.success, 'Extract links should succeed');
-  console.log('  Step 4: Extracted all links');
-
-  // 5. Run custom extraction script
-  const scriptResponse = await extension.sendCommand('execute_script', {
-    script: 'return { title: document.title, links: document.querySelectorAll("a").length }'
-  });
-  assert(scriptResponse.success, 'Script should succeed');
-  console.log('  Step 5: Ran custom extraction script');
-
-  console.log('PASSED: Complete Extraction Flow');
-  return true;
-}
-
-/**
- * Run all data extraction tests
- */
-async function runTests() {
-  console.log('='.repeat(60));
-  console.log('Data Extraction Test Scenarios');
-  console.log('='.repeat(60));
-
-  const results = {
-    passed: 0,
-    failed: 0,
-    tests: []
-  };
-
-  const tests = [
-    { name: 'Full Page HTML Extraction', fn: testFullPageHtmlExtraction },
-    { name: 'Text Content Extraction', fn: testTextContentExtraction },
-    { name: 'Selector-Based Extraction', fn: testSelectorBasedExtraction },
-    { name: 'Element Attribute Extraction', fn: testElementAttributeExtraction },
-    { name: 'Multiple Elements Extraction', fn: testMultipleElementsExtraction },
-    { name: 'Table Data Extraction', fn: testTableDataExtraction },
-    { name: 'Link Extraction', fn: testLinkExtraction },
-    { name: 'Script-Based Extraction', fn: testScriptBasedExtraction },
-    { name: 'Structured Data Extraction', fn: testStructuredDataExtraction },
-    { name: 'Page State Extraction', fn: testPageStateExtraction },
-    { name: 'JSON Data Extraction', fn: testJsonDataExtraction },
-    { name: 'Complete Extraction Flow', fn: testCompleteExtractionFlow }
-  ];
-
-  try {
-    await testUtils.setup();
-
-    for (const test of tests) {
-      try {
-        await test.fn();
-        results.passed++;
-        results.tests.push({ name: test.name, status: 'PASSED' });
-      } catch (error) {
-        results.failed++;
-        results.tests.push({ name: test.name, status: 'FAILED', error: error.message });
-        console.log(`FAILED: ${test.name} - ${error.message}`);
-      }
+  afterAll(async () => {
+    if (extension && extension.isConnected) {
+      extension.disconnect();
     }
-  } finally {
-    await testUtils.teardown();
-  }
+    if (browser && browser.isConnected) {
+      browser.disconnect();
+    }
+    if (server && server.isRunning) {
+      await server.stop();
+    }
+  });
 
-  // Print summary
-  console.log('\n' + '='.repeat(60));
-  console.log('Data Extraction Test Summary');
-  console.log('='.repeat(60));
-  console.log(`Passed: ${results.passed}`);
-  console.log(`Failed: ${results.failed}`);
-  console.log(`Total:  ${results.tests.length}`);
+  describe('Full Page HTML Extraction', () => {
+    test('should extract full HTML content', async () => {
+      const response = await extension.sendCommand('get_content', { type: 'html' });
 
-  if (results.failed > 0) {
-    console.log('\nFailed tests:');
-    results.tests
-      .filter(t => t.status === 'FAILED')
-      .forEach(t => console.log(`  - ${t.name}: ${t.error}`));
-  }
+      expect(response.success).toBe(true);
+      expect(response.result.content).toContain('<!DOCTYPE html>');
+      expect(response.result.content).toContain('<body>');
+    });
+  });
 
-  return results.failed === 0;
-}
+  describe('Text Content Extraction', () => {
+    test('should extract text content', async () => {
+      const response = await extension.sendCommand('get_text', {});
+
+      expect(response.success).toBe(true);
+      expect(response.result.text).toContain('Welcome');
+      expect(response.result.text).toContain('Item 1');
+    });
+  });
+
+  describe('Selector-Based Extraction', () => {
+    test('should extract by ID selector', async () => {
+      const idResponse = await extension.sendCommand('get_content', { selector: '#main-title' });
+      expect(idResponse.success).toBe(true);
+      expect(idResponse.result.content).toContain('Welcome');
+    });
+
+    test('should extract by class selector', async () => {
+      const classResponse = await extension.sendCommand('get_content', { selector: '.intro' });
+      expect(classResponse.success).toBe(true);
+    });
+
+    test('should extract nested content', async () => {
+      const nestedResponse = await extension.sendCommand('get_content', { selector: '#content' });
+      expect(nestedResponse.success).toBe(true);
+      expect(nestedResponse.result.content).toContain('Item');
+    });
+  });
+
+  describe('Element Attribute Extraction', () => {
+    test('should extract ID attribute', async () => {
+      const idResponse = await extension.sendCommand('get_attribute', {
+        selector: '#main-title',
+        attribute: 'id'
+      });
+      expect(idResponse.success).toBe(true);
+      expect(idResponse.result.value).toBe('main-title');
+    });
+
+    test('should extract class attribute', async () => {
+      const classResponse = await extension.sendCommand('get_attribute', {
+        selector: '.intro',
+        attribute: 'class'
+      });
+      expect(classResponse.success).toBe(true);
+      expect(classResponse.result.value).toBe('intro');
+    });
+
+    test('should extract data attribute', async () => {
+      const dataResponse = await extension.sendCommand('get_attribute', {
+        selector: '.items li:first-child',
+        attribute: 'data-id'
+      });
+      expect(dataResponse.success).toBe(true);
+      expect(dataResponse.result.value).toBe('1');
+    });
+  });
+
+  describe('Multiple Elements Extraction', () => {
+    test('should extract list items', async () => {
+      const listResponse = await extension.sendCommand('get_elements', {
+        selector: '.items li'
+      });
+      expect(listResponse.success).toBe(true);
+      expect(listResponse.result.count).toBe(3);
+    });
+
+    test('should extract links', async () => {
+      const linksResponse = await extension.sendCommand('get_elements', {
+        selector: 'a.link'
+      });
+      expect(linksResponse.success).toBe(true);
+      expect(linksResponse.result.count).toBe(2);
+    });
+  });
+
+  describe('Table Data Extraction', () => {
+    test('should extract table structure', async () => {
+      const response = await extension.sendCommand('extract_table', {
+        selector: '#data-table'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.result.headers.length).toBe(2);
+      expect(response.result.rows.length).toBe(2);
+    });
+
+    test('should format table data correctly', async () => {
+      const response = await extension.sendCommand('extract_table', {
+        selector: '#data-table'
+      });
+
+      expect(response.result.data[0].Name).toBe('Row1');
+      expect(response.result.data[0].Value).toBe('Value1');
+    });
+  });
+
+  describe('Link Extraction', () => {
+    test('should extract absolute URLs', async () => {
+      const absoluteResponse = await extension.sendCommand('extract_links', {
+        absolute: true
+      });
+      expect(absoluteResponse.success).toBe(true);
+      expect(absoluteResponse.result.count).toBe(2);
+      expect(absoluteResponse.result.links[0].href.startsWith('https://')).toBe(true);
+    });
+
+    test('should extract relative URLs', async () => {
+      const relativeResponse = await extension.sendCommand('extract_links', {
+        absolute: false
+      });
+      expect(relativeResponse.success).toBe(true);
+      expect(relativeResponse.result.links[0].href.startsWith('/')).toBe(true);
+    });
+  });
+
+  describe('Script-Based Extraction', () => {
+    test('should extract title via script', async () => {
+      const titleResponse = await extension.sendCommand('execute_script', {
+        script: 'return document.title'
+      });
+      expect(titleResponse.success).toBe(true);
+      expect(titleResponse.result.result).toBe('Test Page');
+    });
+
+    test('should extract multiple items via script', async () => {
+      const itemsResponse = await extension.sendCommand('execute_script', {
+        script: 'return Array.from(document.querySelectorAll(".items li")).map(el => el.textContent)'
+      });
+      expect(itemsResponse.success).toBe(true);
+      expect(Array.isArray(itemsResponse.result.result)).toBe(true);
+    });
+  });
+
+  describe('Structured Data Extraction', () => {
+    test('should extract JSON-LD and Open Graph data', async () => {
+      const response = await extension.sendCommand('extract_structured_data', {});
+
+      expect(response.success).toBe(true);
+      expect(response.result.jsonLd).toBeTruthy();
+      expect(response.result.openGraph).toBeTruthy();
+    });
+
+    test('should format JSON-LD data correctly', async () => {
+      const response = await extension.sendCommand('extract_structured_data', {});
+
+      expect(response.result.jsonLd[0]['@type']).toBe('WebPage');
+    });
+
+    test('should format Open Graph data correctly', async () => {
+      const response = await extension.sendCommand('extract_structured_data', {});
+
+      expect(response.result.openGraph.title).toBe('Test Page');
+    });
+  });
+
+  describe('Page State Extraction', () => {
+    test('should extract page state', async () => {
+      const response = await extension.sendCommand('get_page_state', {});
+
+      expect(response.success).toBe(true);
+      expect(response.result.url).toBeTruthy();
+      expect(response.result.title).toBeTruthy();
+      expect(Array.isArray(response.result.links)).toBe(true);
+    });
+
+    test('should include link data in page state', async () => {
+      const response = await extension.sendCommand('get_page_state', {});
+
+      expect(response.result.links.length).toBe(2);
+    });
+  });
+
+  describe('JSON Data Extraction', () => {
+    test('should extract and parse JSON data', async () => {
+      const response = await extension.sendCommand('execute_script', {
+        script: 'return JSON.parse(\'{"key": "value", "items": [1, 2, 3]}\')'
+      });
+
+      expect(response.success).toBe(true);
+      expect(typeof response.result.result).toBe('object');
+      expect(response.result.result.key).toBe('value');
+      expect(Array.isArray(response.result.result.items)).toBe(true);
+    });
+  });
+
+  describe('Complete Extraction Flow', () => {
+    test('should complete full extraction workflow', async () => {
+      // 1. Get page state
+      const stateResponse = await extension.sendCommand('get_page_state', {});
+      expect(stateResponse.success).toBe(true);
+
+      // 2. Extract specific content
+      const contentResponse = await extension.sendCommand('get_content', {
+        selector: '#content'
+      });
+      expect(contentResponse.success).toBe(true);
+
+      // 3. Extract table data
+      const tableResponse = await extension.sendCommand('extract_table', {
+        selector: '#data-table'
+      });
+      expect(tableResponse.success).toBe(true);
+
+      // 4. Extract all links
+      const linksResponse = await extension.sendCommand('extract_links', {});
+      expect(linksResponse.success).toBe(true);
+
+      // 5. Run custom extraction script
+      const scriptResponse = await extension.sendCommand('execute_script', {
+        script: 'return { title: document.title, links: document.querySelectorAll("a").length }'
+      });
+      expect(scriptResponse.success).toBe(true);
+    });
+  });
+});
 
 // Export for external use
-module.exports = { runTests, testUtils };
-
-// Run if called directly
-if (require.main === module) {
-  runTests()
-    .then(success => process.exit(success ? 0 : 1))
-    .catch(error => {
-      console.error('Test runner error:', error);
-      process.exit(1);
-    });
-}
+module.exports = { testUtils };

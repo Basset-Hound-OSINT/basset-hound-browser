@@ -752,7 +752,8 @@ describe('HeadlessManager', () => {
     test('should include preset details', () => {
       const result = headlessManager.getPresets();
 
-      const minimalPreset = result.presets.find(p => p.name === 'minimal');
+      // Note: The preset name comes from the config object (e.g., 'Minimal' not 'minimal')
+      const minimalPreset = result.presets.find(p => p.name === 'Minimal');
       expect(minimalPreset).toBeDefined();
       expect(minimalPreset.description).toBeDefined();
       expect(minimalPreset.disableGpu).toBe(true);

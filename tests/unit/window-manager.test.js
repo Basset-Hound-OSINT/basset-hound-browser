@@ -258,11 +258,19 @@ describe('WindowManager', () => {
   let windowManager;
 
   beforeEach(() => {
-    windowManager = new WindowManager();
-    jest.clearAllMocks();
+    // Reset mock browser window functions with fresh implementations
+    mockBrowserWindow.loadFile = jest.fn().mockResolvedValue(undefined);
+    mockBrowserWindow.close = jest.fn();
+    mockBrowserWindow.destroy = jest.fn();
+    mockBrowserWindow.focus = jest.fn();
+    mockBrowserWindow.isDestroyed = jest.fn().mockReturnValue(false);
+    mockBrowserWindow.webContents.setUserAgent = jest.fn();
+    mockBrowserWindow.webContents.send = jest.fn();
+    mockBrowserWindow.webContents.on = jest.fn();
+    mockBrowserWindow.webContents.removeAllListeners = jest.fn();
+    mockBrowserWindow.on = jest.fn();
 
-    // Reset mock browser window
-    mockBrowserWindow.isDestroyed.mockReturnValue(false);
+    windowManager = new WindowManager();
   });
 
   afterEach(() => {

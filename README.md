@@ -251,7 +251,7 @@ sudo systemctl status tor
 curl --socks5 127.0.0.1:9050 https://check.torproject.org/api/ip
 ```
 
-See [docs/deployment/tor-deployment.md](docs/deployment/tor-deployment.md) for detailed Tor configuration.
+See [docs/deployment/TOR-SETUP-GUIDE.md](docs/deployment/TOR-SETUP-GUIDE.md) for detailed Tor setup on all platforms (Ubuntu, Debian, Fedora, Arch, macOS, Windows).
 
 ### Building for Distribution
 

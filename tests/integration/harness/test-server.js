@@ -252,8 +252,10 @@ class TestServer extends EventEmitter {
     }
 
     try {
-      const result = await handler(params);
-      return result;
+      const handlerResult = await handler(params);
+      // Return the handler result directly - don't wrap in 'result' property
+      // This maintains compatibility with the expected response format
+      return handlerResult;
     } catch (error) {
       return { success: false, error: error.message };
     }

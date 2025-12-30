@@ -229,12 +229,12 @@ describe('Fingerprint Evasion Module', () => {
 
     test('should contain navigator.platform override', () => {
       const script = getEvasionScript();
-      expect(script).toContain("navigator', 'platform'");
+      expect(script).toContain("navigator, 'platform'");
     });
 
     test('should contain navigator.languages override', () => {
       const script = getEvasionScript();
-      expect(script).toContain("navigator', 'languages'");
+      expect(script).toContain("navigator, 'languages'");
     });
 
     test('should contain plugins override', () => {
@@ -250,8 +250,8 @@ describe('Fingerprint Evasion Module', () => {
 
     test('should contain screen property overrides', () => {
       const script = getEvasionScript();
-      expect(script).toContain("screen', 'width'");
-      expect(script).toContain("screen', 'height'");
+      expect(script).toContain("screen, 'width'");
+      expect(script).toContain("screen, 'height'");
       expect(script).toContain('colorDepth');
     });
 
@@ -466,8 +466,11 @@ describe('Fingerprint Evasion Module', () => {
     test('script should properly escape strings', () => {
       for (let i = 0; i < 20; i++) {
         const script = getEvasionScript();
-        // Check for unescaped quotes that would break the script
-        expect(script).not.toMatch(/[^\\]'[^']*[^\\]'/g);
+        // Verify the script is syntactically valid JavaScript
+        // This ensures strings are properly escaped
+        expect(() => {
+          new Function(script);
+        }).not.toThrow();
       }
     });
   });

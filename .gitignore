@@ -45,6 +45,10 @@ recordings/*.webm
 *.tmp
 *.bak
 
+# Embedded Tor (development/testing)
+tor_tmp/
+bin/tor/
+
 # Python (for any scripts)
 __pycache__/
 *.py[cod]

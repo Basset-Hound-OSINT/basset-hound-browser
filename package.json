@@ -1,6 +1,6 @@
 {
   "name": "basset-hound-browser",
-  "version": "8.1.4",
+  "version": "8.2.1",
   "description": "Custom Electron-based browser for OSINT and automation tasks with bot detection evasion",
   "main": "main.js",
   "scripts": {

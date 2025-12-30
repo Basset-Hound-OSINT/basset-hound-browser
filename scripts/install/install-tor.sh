@@ -5,7 +5,15 @@
 # Installs Tor from the official Tor Project repository and configures it
 # with ControlPort enabled for programmatic access.
 #
-# Supported: Ubuntu/Debian, Fedora/RHEL/CentOS, macOS
+# OFFICIALLY SUPPORTED: Ubuntu 22.04 LTS (jammy)
+#
+# This script is tested and maintained for Ubuntu 22.04 LTS.
+# For other platforms, see: docs/deployment/TOR-SETUP-GUIDE.md
+#
+# The script may work on other Debian-based systems but is not officially
+# supported. For other operating systems (Fedora, Arch, macOS, Windows),
+# please refer to the cross-platform setup guide.
+#
 # Usage: Run with sudo - sudo ./install-tor.sh
 # =============================================================================
 

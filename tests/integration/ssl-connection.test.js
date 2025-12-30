@@ -157,25 +157,34 @@ function createMockSSLServer(options = {}) {
           }
         });
 
+        let resolved = false;
+
+        // Force close after 3 seconds
+        const forceCloseTimer = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            try {
+              httpsServer.closeAllConnections?.();
+            } catch (err) {
+              // Ignore
+            }
+            resolve();
+          }
+        }, 3000);
+
         // Close WebSocket server
         wss.close((err1) => {
           // Close HTTPS server
           httpsServer.close((err2) => {
-            // Force close any remaining connections
-            httpsServer.closeAllConnections?.();
-            resolve();
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(forceCloseTimer);
+              // Force close any remaining connections
+              httpsServer.closeAllConnections?.();
+              resolve();
+            }
           });
         });
-
-        // Force close after 3 seconds
-        setTimeout(() => {
-          try {
-            httpsServer.closeAllConnections?.();
-          } catch (err) {
-            // Ignore
-          }
-          resolve();
-        }, 3000);
       });
     },
     getUrl() {
@@ -193,41 +202,58 @@ function createMockWSServer(options = {}) {
   const port = options.port || TEST_PORT + 1;
   const host = options.host || TEST_HOST;
 
-  const wss = new WebSocket.Server({ port, host });
-
-  wss.on('connection', (ws) => {
-    ws.send(JSON.stringify({
-      type: 'status',
-      message: 'connected',
-      secure: false,
-      protocol: 'ws'
-    }));
-
-    ws.on('message', (data) => {
-      try {
-        const message = JSON.parse(data.toString());
-        ws.send(JSON.stringify({
-          id: message.id,
-          success: true,
-          command: message.command,
-          echo: message
-        }));
-      } catch (error) {
-        ws.send(JSON.stringify({
-          success: false,
-          error: error.message
-        }));
-      }
-    });
-  });
+  let wss = null;
 
   return {
-    wss,
+    get wss() { return wss; },
     start() {
-      return Promise.resolve({ host, port });
+      return new Promise((resolve, reject) => {
+        wss = new WebSocket.Server({ port, host });
+
+        // Register connection handler BEFORE the listening event
+        wss.on('connection', (ws) => {
+          ws.send(JSON.stringify({
+            type: 'status',
+            message: 'connected',
+            secure: false,
+            protocol: 'ws'
+          }));
+
+          ws.on('message', (data) => {
+            try {
+              const message = JSON.parse(data.toString());
+              ws.send(JSON.stringify({
+                id: message.id,
+                success: true,
+                command: message.command,
+                echo: message
+              }));
+            } catch (error) {
+              ws.send(JSON.stringify({
+                success: false,
+                error: error.message
+              }));
+            }
+          });
+        });
+
+        wss.on('listening', () => {
+          resolve({ host, port });
+        });
+
+        wss.on('error', (err) => {
+          console.warn('WS Server error:', err.message);
+          reject(err);
+        });
+      });
     },
     stop() {
       return new Promise((resolve) => {
+        if (!wss) {
+          resolve();
+          return;
+        }
+
         // Close all client connections first
         wss.clients.forEach((client) => {
           try {
@@ -237,14 +263,23 @@ function createMockWSServer(options = {}) {
           }
         });
 
-        wss.close((err) => {
-          resolve();
-        });
+        let resolved = false;
 
         // Force close after 2 seconds
-        setTimeout(() => {
-          resolve();
+        const forceCloseTimer = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve();
+          }
         }, 2000);
+
+        wss.close((err) => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(forceCloseTimer);
+            resolve();
+          }
+        });
       });
     },
     getUrl() {
@@ -336,15 +371,12 @@ describeSsl('SSL WebSocket Connection Tests', () => {
   });
 
   afterAll(async () => {
-    // Add timeout and proper cleanup
-    const timeout = new Promise((resolve) => setTimeout(resolve, 5000));
-
     try {
       if (sslServer) {
-        await Promise.race([sslServer.stop(), timeout]);
+        await sslServer.stop();
       }
       if (wsServer) {
-        await Promise.race([wsServer.stop(), timeout]);
+        await wsServer.stop();
       }
     } catch (error) {
       console.warn('Warning: Server cleanup error:', error.message);
@@ -512,27 +544,50 @@ describeSsl('SSL WebSocket Connection Tests', () => {
 
   describe('Fallback to WS When SSL Not Configured', () => {
     test('should connect via ws:// when SSL is not available', async () => {
-      const ws = await new Promise((resolve, reject) => {
-        const client = new WebSocket(wsServer.getUrl());
-        client.on('open', () => resolve(client));
-        client.on('error', reject);
-      });
+      // Check if wsServer exists and has a valid URL
+      if (!wsServer) {
+        throw new Error('wsServer is not initialized');
+      }
 
-      expect(ws.readyState).toBe(WebSocket.OPEN);
+      const url = wsServer.getUrl();
 
-      // Wait for connection message
-      const connectionMessage = await new Promise((resolve) => {
-        ws.once('message', (data) => {
-          resolve(JSON.parse(data.toString()));
+      const { ws, connectionMessage } = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection timeout after 5000ms'));
+        }, 5000);
+
+        const client = new WebSocket(url);
+        let messageReceived = false;
+
+        // Set up message handler BEFORE the connection opens
+        client.on('message', (data) => {
+          if (!messageReceived) {
+            messageReceived = true;
+            clearTimeout(timeout);
+            resolve({
+              ws: client,
+              connectionMessage: JSON.parse(data.toString())
+            });
+          }
+        });
+
+        client.on('open', () => {
+          // Connection opened, message handler is already set up
+        });
+
+        client.on('error', (error) => {
+          clearTimeout(timeout);
+          reject(error);
         });
       });
 
+      expect(ws.readyState).toBe(WebSocket.OPEN);
       expect(connectionMessage.secure).toBe(false);
       expect(connectionMessage.protocol).toBe('ws');
 
       ws.terminate();
       await new Promise(resolve => setTimeout(resolve, 100));
-    });
+    }, 15000); // 15 second timeout for the entire test
 
     test('should fallback to ws:// after wss:// connection failure', async () => {
       // Simulate connection fallback logic

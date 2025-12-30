@@ -5,7 +5,11 @@
 # Orchestrates the installation of all components needed for the Basset Hound
 # Browser. Detects the operating system and calls individual install scripts.
 #
-# Supported: Ubuntu/Debian, Fedora/RHEL/CentOS, macOS (partial)
+# OFFICIALLY SUPPORTED: Ubuntu 22.04 LTS (jammy)
+#
+# This script is tested and maintained for Ubuntu 22.04 LTS.
+# For other platforms, see: docs/deployment/TOR-SETUP-GUIDE.md
+#
 # Usage: sudo ./main-install.sh [OPTIONS]
 # =============================================================================
 

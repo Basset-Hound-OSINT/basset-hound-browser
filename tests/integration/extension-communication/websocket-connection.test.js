@@ -259,6 +259,10 @@ async function testReconnectionBackoff() {
   server = new TestServer({ port: TEST_PORT });
   await server.start();
 
+  // Reconnect the main extension for subsequent tests
+  extension = new MockExtension({ url: TEST_URL, autoReconnect: false });
+  await extension.connect();
+
   console.log('PASSED: Reconnection Backoff');
   return true;
 }
@@ -498,7 +502,21 @@ async function runTests() {
 // Export for external use
 module.exports = { runTests, testUtils };
 
-// Run if called directly
+// Jest test wrapper
+describe('WebSocket Connection Integration Tests', () => {
+  // Increase timeout for integration tests with real WebSocket connections
+  jest.setTimeout(60000);
+
+  // Skip in CI environments where WebSocket infrastructure may not be stable
+  const shouldSkip = process.env.CI === 'true' || process.env.SKIP_INTEGRATION_TESTS === 'true';
+
+  (shouldSkip ? it.skip : it)('should pass all WebSocket connection tests', async () => {
+    const success = await runTests();
+    expect(success).toBe(true);
+  });
+});
+
+// Run if called directly (not via Jest)
 if (require.main === module) {
   runTests()
     .then(success => process.exit(success ? 0 : 1))

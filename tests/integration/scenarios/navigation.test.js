@@ -4,7 +4,6 @@
  * Tests navigation commands and URL handling between extension and browser.
  */
 
-const assert = require('assert');
 const { TestServer } = require('../harness/test-server');
 const { MockExtension } = require('../harness/mock-extension');
 const { MockBrowser } = require('../harness/mock-browser');
@@ -32,38 +31,6 @@ const navigationState = {
  * Test utilities
  */
 const testUtils = {
-  async setup() {
-    // Reset navigation state
-    navigationState.history = [];
-    navigationState.currentUrl = 'about:blank';
-    navigationState.pageTitle = 'New Tab';
-    navigationState.loadingStates = [];
-    navigationState.redirects = [];
-    navigationState.errors = [];
-
-    server = new TestServer({ port: TEST_PORT });
-    setupNavigationHandlers();
-    await server.start();
-
-    extension = new MockExtension({ url: TEST_URL });
-    browser = new MockBrowser({ url: TEST_URL });
-
-    await extension.connect();
-    await browser.connect();
-  },
-
-  async teardown() {
-    if (extension && extension.isConnected) {
-      extension.disconnect();
-    }
-    if (browser && browser.isConnected) {
-      browser.disconnect();
-    }
-    if (server && server.isRunning) {
-      await server.stop();
-    }
-  },
-
   async delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -261,399 +228,290 @@ function setupNavigationHandlers() {
   });
 }
 
-/**
- * Test Suite: Basic Navigation
- */
-async function testBasicNavigation() {
-  console.log('\n--- Test: Basic Navigation ---');
+describe('Navigation Test Scenarios', () => {
+  beforeAll(async () => {
+    // Reset navigation state
+    navigationState.history = [];
+    navigationState.currentUrl = 'about:blank';
+    navigationState.pageTitle = 'New Tab';
+    navigationState.loadingStates = [];
+    navigationState.redirects = [];
+    navigationState.errors = [];
 
-  const url = 'https://example.com/page1';
-  const response = await extension.sendCommand('navigate', { url });
+    server = new TestServer({ port: TEST_PORT });
+    setupNavigationHandlers();
+    await server.start();
 
-  assert(response.success, 'Navigation should succeed');
-  assert(response.result.url === url, 'URL should match');
-  assert(response.result.loaded, 'Page should be loaded');
-  console.log('  Navigated to URL');
+    extension = new MockExtension({ url: TEST_URL });
+    browser = new MockBrowser({ url: TEST_URL });
 
-  // Verify current URL
-  const urlResponse = await extension.sendCommand('get_url', {});
-  assert(urlResponse.result.url === url, 'Current URL should match');
-  console.log('  Verified current URL');
-
-  console.log('PASSED: Basic Navigation');
-  return true;
-}
-
-/**
- * Test Suite: URL Validation
- */
-async function testUrlValidation() {
-  console.log('\n--- Test: URL Validation ---');
-
-  // Valid URL
-  const validResponse = await extension.sendCommand('navigate', {
-    url: 'https://example.com'
+    await extension.connect();
+    await browser.connect();
   });
-  assert(validResponse.success, 'Valid URL should succeed');
-  console.log('  Valid URL accepted');
 
-  // Invalid URL
-  const invalidResponse = await extension.sendCommand('navigate', {
-    url: 'not-a-valid-url'
-  });
-  assert(!invalidResponse.success, 'Invalid URL should fail');
-  assert(invalidResponse.result.error.includes('Invalid URL'), 'Should report URL error');
-  console.log('  Invalid URL rejected');
-
-  // Missing URL
-  const missingResponse = await extension.sendCommand('navigate', {});
-  assert(!missingResponse.success, 'Missing URL should fail');
-  console.log('  Missing URL rejected');
-
-  console.log('PASSED: URL Validation');
-  return true;
-}
-
-/**
- * Test Suite: Navigation History
- */
-async function testNavigationHistory() {
-  console.log('\n--- Test: Navigation History ---');
-
-  // Navigate to multiple pages
-  await extension.sendCommand('navigate', { url: 'https://example.com/page1' });
-  await extension.sendCommand('navigate', { url: 'https://example.com/page2' });
-  await extension.sendCommand('navigate', { url: 'https://example.com/page3' });
-  console.log('  Navigated to 3 pages');
-
-  // Check history
-  const historyResponse = await extension.sendCommand('get_history', {});
-  assert(historyResponse.success, 'Get history should succeed');
-  assert(historyResponse.result.history.length >= 3, 'Should have 3+ history entries');
-  console.log('  History contains navigated pages');
-
-  // Go back
-  const backResponse = await extension.sendCommand('go_back', {});
-  assert(backResponse.success, 'Go back should succeed');
-  assert(backResponse.result.url === 'https://example.com/page2', 'Should be on page2');
-  console.log('  Successfully navigated back');
-
-  console.log('PASSED: Navigation History');
-  return true;
-}
-
-/**
- * Test Suite: Page Reload
- */
-async function testPageReload() {
-  console.log('\n--- Test: Page Reload ---');
-
-  // Navigate first
-  await extension.sendCommand('navigate', { url: 'https://example.com/reload-test' });
-
-  // Normal reload
-  const reloadResponse = await extension.sendCommand('reload', { hard: false });
-  assert(reloadResponse.success, 'Normal reload should succeed');
-  assert(reloadResponse.result.reloaded, 'Page should be reloaded');
-  assert(!reloadResponse.result.hard, 'Should not be hard reload');
-  console.log('  Normal reload completed');
-
-  // Hard reload
-  const hardReloadResponse = await extension.sendCommand('reload', { hard: true });
-  assert(hardReloadResponse.success, 'Hard reload should succeed');
-  assert(hardReloadResponse.result.hard, 'Should be hard reload');
-  console.log('  Hard reload completed');
-
-  console.log('PASSED: Page Reload');
-  return true;
-}
-
-/**
- * Test Suite: Wait for Navigation
- */
-async function testWaitForNavigation() {
-  console.log('\n--- Test: Wait for Navigation ---');
-
-  // Navigate
-  await extension.sendCommand('navigate', { url: 'https://example.com/wait-test' });
-
-  // Wait for navigation (already complete)
-  const waitResponse = await extension.sendCommand('wait_for_navigation', {
-    expectedUrl: 'https://example.com/wait-test'
-  });
-  assert(waitResponse.success, 'Wait should succeed');
-  console.log('  Wait for navigation completed');
-
-  // Wait with wrong expected URL
-  const wrongUrlResponse = await extension.sendCommand('wait_for_navigation', {
-    expectedUrl: 'https://different.com'
-  });
-  assert(!wrongUrlResponse.success, 'Should fail with wrong URL');
-  console.log('  Correctly failed with wrong expected URL');
-
-  console.log('PASSED: Wait for Navigation');
-  return true;
-}
-
-/**
- * Test Suite: Page State
- */
-async function testPageState() {
-  console.log('\n--- Test: Page State ---');
-
-  await extension.sendCommand('navigate', { url: 'https://example.com/state-test' });
-
-  const stateResponse = await extension.sendCommand('get_page_state', {});
-  assert(stateResponse.success, 'Get page state should succeed');
-  assert(stateResponse.result.url, 'Should have URL');
-  assert(stateResponse.result.title, 'Should have title');
-  assert('isLoading' in stateResponse.result, 'Should have loading state');
-  assert(stateResponse.result.history, 'Should have history info');
-  console.log('  Retrieved page state');
-
-  assert(stateResponse.result.history.canGoBack, 'Should be able to go back');
-  console.log('  History state correct');
-
-  console.log('PASSED: Page State');
-  return true;
-}
-
-/**
- * Test Suite: Scroll Navigation
- */
-async function testScrollNavigation() {
-  console.log('\n--- Test: Scroll Navigation ---');
-
-  // Scroll by coordinates
-  const scrollResponse = await extension.sendCommand('scroll', { x: 0, y: 500 });
-  assert(scrollResponse.success, 'Scroll should succeed');
-  assert(scrollResponse.result.y === 500, 'Y position should match');
-  console.log('  Scrolled by coordinates');
-
-  // Scroll to element
-  const scrollToResponse = await extension.sendCommand('scroll_to_element', {
-    selector: '#footer',
-    block: 'end'
-  });
-  assert(scrollToResponse.success, 'Scroll to element should succeed');
-  assert(scrollToResponse.result.selector === '#footer', 'Selector should match');
-  console.log('  Scrolled to element');
-
-  // Get scroll position
-  const positionResponse = await extension.sendCommand('get_scroll_position', {});
-  assert(positionResponse.success, 'Get scroll position should succeed');
-  assert('x' in positionResponse.result, 'Should have x position');
-  assert('y' in positionResponse.result, 'Should have y position');
-  console.log('  Retrieved scroll position');
-
-  console.log('PASSED: Scroll Navigation');
-  return true;
-}
-
-/**
- * Test Suite: Sequential Navigation
- */
-async function testSequentialNavigation() {
-  console.log('\n--- Test: Sequential Navigation ---');
-
-  const urls = [
-    'https://example.com/seq1',
-    'https://example.com/seq2',
-    'https://example.com/seq3',
-    'https://example.com/seq4',
-    'https://example.com/seq5'
-  ];
-
-  for (const url of urls) {
-    const response = await extension.sendCommand('navigate', { url });
-    assert(response.success, `Navigation to ${url} should succeed`);
-  }
-  console.log('  Completed sequential navigation to 5 pages');
-
-  // Verify final URL
-  const finalUrl = await extension.sendCommand('get_url', {});
-  assert(finalUrl.result.url === urls[urls.length - 1], 'Final URL should match');
-  console.log('  Final URL is correct');
-
-  // Verify history length
-  const history = await extension.sendCommand('get_history', {});
-  assert(history.result.history.length >= urls.length, 'History should contain all URLs');
-  console.log('  History contains all navigated URLs');
-
-  console.log('PASSED: Sequential Navigation');
-  return true;
-}
-
-/**
- * Test Suite: Navigation with Query Parameters
- */
-async function testNavigationWithQueryParams() {
-  console.log('\n--- Test: Navigation with Query Parameters ---');
-
-  const url = 'https://example.com/search?q=test&page=1&sort=desc';
-  const response = await extension.sendCommand('navigate', { url });
-
-  assert(response.success, 'Navigation with query params should succeed');
-  assert(response.result.url === url, 'Full URL with params should be preserved');
-  console.log('  Navigated with query parameters');
-
-  // URL with special characters
-  const encodedUrl = 'https://example.com/search?q=hello%20world&filter=%3Ctest%3E';
-  const encodedResponse = await extension.sendCommand('navigate', { url: encodedUrl });
-  assert(encodedResponse.success, 'Navigation with encoded params should succeed');
-  console.log('  Navigated with encoded parameters');
-
-  console.log('PASSED: Navigation with Query Parameters');
-  return true;
-}
-
-/**
- * Test Suite: Navigation with Hash Fragments
- */
-async function testNavigationWithHashFragments() {
-  console.log('\n--- Test: Navigation with Hash Fragments ---');
-
-  const url = 'https://example.com/page#section1';
-  const response = await extension.sendCommand('navigate', { url });
-
-  assert(response.success, 'Navigation with hash should succeed');
-  assert(response.result.url === url, 'URL with hash should be preserved');
-  console.log('  Navigated with hash fragment');
-
-  // Navigate to different hash on same page
-  const url2 = 'https://example.com/page#section2';
-  const response2 = await extension.sendCommand('navigate', { url: url2 });
-  assert(response2.success, 'Navigation to different hash should succeed');
-  console.log('  Navigated to different hash fragment');
-
-  console.log('PASSED: Navigation with Hash Fragments');
-  return true;
-}
-
-/**
- * Test Suite: Complete Navigation Flow
- */
-async function testCompleteNavigationFlow() {
-  console.log('\n--- Test: Complete Navigation Flow ---');
-
-  // 1. Navigate to page
-  const navResponse = await extension.sendCommand('navigate', {
-    url: 'https://example.com/flow-test'
-  });
-  assert(navResponse.success, 'Navigation should succeed');
-  console.log('  Step 1: Navigated to page');
-
-  // 2. Wait for navigation
-  const waitResponse = await extension.sendCommand('wait_for_navigation', {
-    timeout: 5000
-  });
-  assert(waitResponse.success, 'Wait should succeed');
-  console.log('  Step 2: Waited for navigation');
-
-  // 3. Get page state
-  const stateResponse = await extension.sendCommand('get_page_state', {});
-  assert(stateResponse.success, 'Get state should succeed');
-  console.log('  Step 3: Got page state');
-
-  // 4. Scroll down
-  const scrollResponse = await extension.sendCommand('scroll', { y: 500 });
-  assert(scrollResponse.success, 'Scroll should succeed');
-  console.log('  Step 4: Scrolled down');
-
-  // 5. Navigate to another page
-  const nav2Response = await extension.sendCommand('navigate', {
-    url: 'https://example.com/flow-test-2'
-  });
-  assert(nav2Response.success, 'Second navigation should succeed');
-  console.log('  Step 5: Navigated to second page');
-
-  // 6. Go back
-  const backResponse = await extension.sendCommand('go_back', {});
-  assert(backResponse.success, 'Go back should succeed');
-  console.log('  Step 6: Went back');
-
-  // 7. Verify we're on original page
-  const finalUrl = await extension.sendCommand('get_url', {});
-  assert(finalUrl.result.url === 'https://example.com/flow-test', 'Should be back on original page');
-  console.log('  Step 7: Verified back on original page');
-
-  console.log('PASSED: Complete Navigation Flow');
-  return true;
-}
-
-/**
- * Run all navigation tests
- */
-async function runTests() {
-  console.log('='.repeat(60));
-  console.log('Navigation Test Scenarios');
-  console.log('='.repeat(60));
-
-  const results = {
-    passed: 0,
-    failed: 0,
-    tests: []
-  };
-
-  const tests = [
-    { name: 'Basic Navigation', fn: testBasicNavigation },
-    { name: 'URL Validation', fn: testUrlValidation },
-    { name: 'Navigation History', fn: testNavigationHistory },
-    { name: 'Page Reload', fn: testPageReload },
-    { name: 'Wait for Navigation', fn: testWaitForNavigation },
-    { name: 'Page State', fn: testPageState },
-    { name: 'Scroll Navigation', fn: testScrollNavigation },
-    { name: 'Sequential Navigation', fn: testSequentialNavigation },
-    { name: 'Navigation with Query Parameters', fn: testNavigationWithQueryParams },
-    { name: 'Navigation with Hash Fragments', fn: testNavigationWithHashFragments },
-    { name: 'Complete Navigation Flow', fn: testCompleteNavigationFlow }
-  ];
-
-  try {
-    await testUtils.setup();
-
-    for (const test of tests) {
-      try {
-        await test.fn();
-        results.passed++;
-        results.tests.push({ name: test.name, status: 'PASSED' });
-      } catch (error) {
-        results.failed++;
-        results.tests.push({ name: test.name, status: 'FAILED', error: error.message });
-        console.log(`FAILED: ${test.name} - ${error.message}`);
-      }
+  afterAll(async () => {
+    if (extension && extension.isConnected) {
+      extension.disconnect();
     }
-  } finally {
-    await testUtils.teardown();
-  }
+    if (browser && browser.isConnected) {
+      browser.disconnect();
+    }
+    if (server && server.isRunning) {
+      await server.stop();
+    }
+  });
 
-  // Print summary
-  console.log('\n' + '='.repeat(60));
-  console.log('Navigation Test Summary');
-  console.log('='.repeat(60));
-  console.log(`Passed: ${results.passed}`);
-  console.log(`Failed: ${results.failed}`);
-  console.log(`Total:  ${results.tests.length}`);
+  beforeEach(() => {
+    // Reset navigation state between tests
+    navigationState.history = [];
+    navigationState.currentUrl = 'about:blank';
+    navigationState.pageTitle = 'New Tab';
+    navigationState.loadingStates = [];
+    navigationState.redirects = [];
+    navigationState.errors = [];
+  });
 
-  if (results.failed > 0) {
-    console.log('\nFailed tests:');
-    results.tests
-      .filter(t => t.status === 'FAILED')
-      .forEach(t => console.log(`  - ${t.name}: ${t.error}`));
-  }
+  describe('Basic Navigation', () => {
+    test('should navigate to URL successfully', async () => {
+      const url = 'https://example.com/page1';
+      const response = await extension.sendCommand('navigate', { url });
 
-  return results.failed === 0;
-}
+      expect(response.success).toBe(true);
+      expect(response.result.url).toBe(url);
+      expect(response.result.loaded).toBe(true);
+    });
+
+    test('should verify current URL after navigation', async () => {
+      const url = 'https://example.com/page1';
+      await extension.sendCommand('navigate', { url });
+
+      const urlResponse = await extension.sendCommand('get_url', {});
+      expect(urlResponse.result.url).toBe(url);
+    });
+  });
+
+  describe('URL Validation', () => {
+    test('should accept valid URL', async () => {
+      const validResponse = await extension.sendCommand('navigate', {
+        url: 'https://example.com'
+      });
+      expect(validResponse.success).toBe(true);
+    });
+
+    test('should reject invalid URL', async () => {
+      const invalidResponse = await extension.sendCommand('navigate', {
+        url: 'not-a-valid-url'
+      });
+      expect(invalidResponse.success).toBe(false);
+      expect(invalidResponse.error).toContain('Invalid URL');
+    });
+
+    test('should reject missing URL', async () => {
+      const missingResponse = await extension.sendCommand('navigate', {});
+      expect(missingResponse.success).toBe(false);
+    });
+  });
+
+  describe('Navigation History', () => {
+    test('should track navigation history', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/page1' });
+      await extension.sendCommand('navigate', { url: 'https://example.com/page2' });
+      await extension.sendCommand('navigate', { url: 'https://example.com/page3' });
+
+      const historyResponse = await extension.sendCommand('get_history', {});
+      expect(historyResponse.success).toBe(true);
+      expect(historyResponse.result.history.length).toBeGreaterThanOrEqual(3);
+    });
+
+    test('should navigate back successfully', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/page1' });
+      await extension.sendCommand('navigate', { url: 'https://example.com/page2' });
+
+      const backResponse = await extension.sendCommand('go_back', {});
+      expect(backResponse.success).toBe(true);
+      expect(backResponse.result.url).toBe('https://example.com/page1');
+    });
+  });
+
+  describe('Page Reload', () => {
+    test('should perform normal reload', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/reload-test' });
+
+      const reloadResponse = await extension.sendCommand('reload', { hard: false });
+      expect(reloadResponse.success).toBe(true);
+      expect(reloadResponse.result.reloaded).toBe(true);
+      expect(reloadResponse.result.hard).toBe(false);
+    });
+
+    test('should perform hard reload', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/reload-test' });
+
+      const hardReloadResponse = await extension.sendCommand('reload', { hard: true });
+      expect(hardReloadResponse.success).toBe(true);
+      expect(hardReloadResponse.result.hard).toBe(true);
+    });
+  });
+
+  describe('Wait for Navigation', () => {
+    test('should wait for navigation with matching URL', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/wait-test' });
+
+      const waitResponse = await extension.sendCommand('wait_for_navigation', {
+        expectedUrl: 'https://example.com/wait-test'
+      });
+      expect(waitResponse.success).toBe(true);
+    });
+
+    test('should fail with wrong expected URL', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/wait-test' });
+
+      const wrongUrlResponse = await extension.sendCommand('wait_for_navigation', {
+        expectedUrl: 'https://different.com'
+      });
+      expect(wrongUrlResponse.success).toBe(false);
+    });
+  });
+
+  describe('Page State', () => {
+    test('should get page state', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/state-test' });
+
+      const stateResponse = await extension.sendCommand('get_page_state', {});
+      expect(stateResponse.success).toBe(true);
+      expect(stateResponse.result.url).toBeTruthy();
+      expect(stateResponse.result.title).toBeTruthy();
+      expect('isLoading' in stateResponse.result).toBe(true);
+      expect(stateResponse.result.history).toBeTruthy();
+    });
+
+    test('should report correct history state', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/page1' });
+      await extension.sendCommand('navigate', { url: 'https://example.com/state-test' });
+
+      const stateResponse = await extension.sendCommand('get_page_state', {});
+      expect(stateResponse.result.history.canGoBack).toBe(true);
+    });
+  });
+
+  describe('Scroll Navigation', () => {
+    test('should scroll by coordinates', async () => {
+      const scrollResponse = await extension.sendCommand('scroll', { x: 0, y: 500 });
+      expect(scrollResponse.success).toBe(true);
+      expect(scrollResponse.result.y).toBe(500);
+    });
+
+    test('should scroll to element', async () => {
+      const scrollToResponse = await extension.sendCommand('scroll_to_element', {
+        selector: '#footer',
+        block: 'end'
+      });
+      expect(scrollToResponse.success).toBe(true);
+      expect(scrollToResponse.result.selector).toBe('#footer');
+    });
+
+    test('should get scroll position', async () => {
+      const positionResponse = await extension.sendCommand('get_scroll_position', {});
+      expect(positionResponse.success).toBe(true);
+      expect('x' in positionResponse.result).toBe(true);
+      expect('y' in positionResponse.result).toBe(true);
+    });
+  });
+
+  describe('Sequential Navigation', () => {
+    test('should handle multiple sequential navigations', async () => {
+      const urls = [
+        'https://example.com/seq1',
+        'https://example.com/seq2',
+        'https://example.com/seq3',
+        'https://example.com/seq4',
+        'https://example.com/seq5'
+      ];
+
+      for (const url of urls) {
+        const response = await extension.sendCommand('navigate', { url });
+        expect(response.success).toBe(true);
+      }
+
+      const finalUrl = await extension.sendCommand('get_url', {});
+      expect(finalUrl.result.url).toBe(urls[urls.length - 1]);
+
+      const history = await extension.sendCommand('get_history', {});
+      expect(history.result.history.length).toBeGreaterThanOrEqual(urls.length);
+    });
+  });
+
+  describe('Navigation with Query Parameters', () => {
+    test('should preserve query parameters', async () => {
+      const url = 'https://example.com/search?q=test&page=1&sort=desc';
+      const response = await extension.sendCommand('navigate', { url });
+
+      expect(response.success).toBe(true);
+      expect(response.result.url).toBe(url);
+    });
+
+    test('should handle encoded parameters', async () => {
+      const encodedUrl = 'https://example.com/search?q=hello%20world&filter=%3Ctest%3E';
+      const encodedResponse = await extension.sendCommand('navigate', { url: encodedUrl });
+      expect(encodedResponse.success).toBe(true);
+    });
+  });
+
+  describe('Navigation with Hash Fragments', () => {
+    test('should preserve hash fragment', async () => {
+      const url = 'https://example.com/page#section1';
+      const response = await extension.sendCommand('navigate', { url });
+
+      expect(response.success).toBe(true);
+      expect(response.result.url).toBe(url);
+    });
+
+    test('should navigate to different hash fragment', async () => {
+      await extension.sendCommand('navigate', { url: 'https://example.com/page#section1' });
+
+      const url2 = 'https://example.com/page#section2';
+      const response2 = await extension.sendCommand('navigate', { url: url2 });
+      expect(response2.success).toBe(true);
+    });
+  });
+
+  describe('Complete Navigation Flow', () => {
+    test('should complete full navigation workflow', async () => {
+      // 1. Navigate to page
+      const navResponse = await extension.sendCommand('navigate', {
+        url: 'https://example.com/flow-test'
+      });
+      expect(navResponse.success).toBe(true);
+
+      // 2. Wait for navigation
+      const waitResponse = await extension.sendCommand('wait_for_navigation', {
+        timeout: 5000
+      });
+      expect(waitResponse.success).toBe(true);
+
+      // 3. Get page state
+      const stateResponse = await extension.sendCommand('get_page_state', {});
+      expect(stateResponse.success).toBe(true);
+
+      // 4. Scroll down
+      const scrollResponse = await extension.sendCommand('scroll', { y: 500 });
+      expect(scrollResponse.success).toBe(true);
+
+      // 5. Navigate to another page
+      const nav2Response = await extension.sendCommand('navigate', {
+        url: 'https://example.com/flow-test-2'
+      });
+      expect(nav2Response.success).toBe(true);
+
+      // 6. Go back
+      const backResponse = await extension.sendCommand('go_back', {});
+      expect(backResponse.success).toBe(true);
+
+      // 7. Verify we're on original page
+      const finalUrl = await extension.sendCommand('get_url', {});
+      expect(finalUrl.result.url).toBe('https://example.com/flow-test');
+    });
+  });
+});
 
 // Export for external use
-module.exports = { runTests, testUtils };
-
-// Run if called directly
-if (require.main === module) {
-  runTests()
-    .then(success => process.exit(success ? 0 : 1))
-    .catch(error => {
-      console.error('Test runner error:', error);
-      process.exit(1);
-    });
-}
+module.exports = { testUtils };

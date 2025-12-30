@@ -60,7 +60,19 @@ const TOR_DEFAULTS = {
   bootstrapTimeout: 120000,
   dataDirectory: null,  // Will be set based on platform
   autoStart: true,
-  killOnExit: true
+  killOnExit: true,
+  embeddedMode: null  // Will be auto-detected based on embedded binary availability
+};
+
+/**
+ * Embedded Tor paths (relative to project root)
+ */
+const EMBEDDED_PATHS = {
+  torBinary: path.join(__dirname, '..', 'bin', 'tor', 'tor', 'tor'),
+  torBinaryWin: path.join(__dirname, '..', 'bin', 'tor', 'tor', 'tor.exe'),
+  libDir: path.join(__dirname, '..', 'bin', 'tor', 'tor'),
+  geoip: path.join(__dirname, '..', 'bin', 'tor', 'data', 'geoip'),
+  geoip6: path.join(__dirname, '..', 'bin', 'tor', 'data', 'geoip6')
 };
 
 /**
@@ -119,6 +131,16 @@ class AdvancedTorManager extends EventEmitter {
     this.killOnExit = options.killOnExit !== undefined ? options.killOnExit : TOR_DEFAULTS.killOnExit;
     this.torProcess = null;
     this.torBinaryPath = options.torBinaryPath || this._findTorBinary();
+
+    // Embedded mode configuration
+    // Auto-detect if not explicitly set: use embedded if the embedded binary exists
+    this.embeddedMode = options.embeddedMode !== undefined
+      ? options.embeddedMode
+      : this.isEmbeddedAvailable();
+
+    // GeoIP paths for embedded mode
+    this.geoipPath = options.geoipPath || (this.embeddedMode ? EMBEDDED_PATHS.geoip : null);
+    this.geoip6Path = options.geoip6Path || (this.embeddedMode ? EMBEDDED_PATHS.geoip6 : null);
 
     // Data directory
     this.dataDirectory = options.dataDirectory || this._getDefaultDataDirectory();
@@ -186,10 +208,23 @@ class AdvancedTorManager extends EventEmitter {
 
   /**
    * Find Tor binary on the system
+   * Prioritizes embedded binary if available, then falls back to system Tor
    * @private
    */
   _findTorBinary() {
     const platform = os.platform();
+
+    // First, check for embedded binary (highest priority)
+    const embeddedPath = platform === 'win32'
+      ? EMBEDDED_PATHS.torBinaryWin
+      : EMBEDDED_PATHS.torBinary;
+
+    if (fs.existsSync(embeddedPath)) {
+      console.log('[TorAdvanced] Found embedded Tor binary:', embeddedPath);
+      return embeddedPath;
+    }
+
+    // Fall back to system paths
     const possiblePaths = [];
 
     if (platform === 'win32') {
@@ -235,6 +270,47 @@ class AdvancedTorManager extends EventEmitter {
     }
 
     return null;
+  }
+
+  /**
+   * Check if embedded Tor binary is available
+   * @returns {boolean} True if embedded Tor is available
+   */
+  isEmbeddedAvailable() {
+    const platform = os.platform();
+    const embeddedPath = platform === 'win32'
+      ? EMBEDDED_PATHS.torBinaryWin
+      : EMBEDDED_PATHS.torBinary;
+
+    return fs.existsSync(embeddedPath);
+  }
+
+  /**
+   * Get embedded Tor paths information
+   * @returns {Object} Embedded paths and availability status
+   */
+  getEmbeddedInfo() {
+    const platform = os.platform();
+    const embeddedPath = platform === 'win32'
+      ? EMBEDDED_PATHS.torBinaryWin
+      : EMBEDDED_PATHS.torBinary;
+
+    return {
+      available: this.isEmbeddedAvailable(),
+      embeddedMode: this.embeddedMode,
+      paths: {
+        binary: embeddedPath,
+        libDir: EMBEDDED_PATHS.libDir,
+        geoip: EMBEDDED_PATHS.geoip,
+        geoip6: EMBEDDED_PATHS.geoip6
+      },
+      exists: {
+        binary: fs.existsSync(embeddedPath),
+        libDir: fs.existsSync(EMBEDDED_PATHS.libDir),
+        geoip: fs.existsSync(EMBEDDED_PATHS.geoip),
+        geoip6: fs.existsSync(EMBEDDED_PATHS.geoip6)
+      }
+    };
   }
 
   /**
@@ -303,6 +379,14 @@ class AdvancedTorManager extends EventEmitter {
     lines.push(`ControlPort ${this.controlHost}:${this.controlPort}`);
     lines.push(`DNSPort ${this.dnsPort}`);
     lines.push(`DataDirectory ${this.dataDirectory}`);
+
+    // GeoIP files for embedded mode
+    if (this.geoipPath && fs.existsSync(this.geoipPath)) {
+      lines.push(`GeoIPFile ${this.geoipPath}`);
+    }
+    if (this.geoip6Path && fs.existsSync(this.geoip6Path)) {
+      lines.push(`GeoIPv6File ${this.geoip6Path}`);
+    }
 
     // Authentication
     if (this.controlPassword) {
@@ -462,12 +546,44 @@ class AdvancedTorManager extends EventEmitter {
       // Generate torrc
       const torrcPath = this._generateTorrc();
 
+      // Prepare spawn options
+      const spawnOptions = {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        detached: false
+      };
+
+      // Set LD_LIBRARY_PATH on Linux when using embedded Tor
+      // This ensures the embedded Tor can find its shared libraries
+      if (this.embeddedMode && os.platform() === 'linux') {
+        const libDir = EMBEDDED_PATHS.libDir;
+        if (fs.existsSync(libDir)) {
+          const currentLdPath = process.env.LD_LIBRARY_PATH || '';
+          const newLdPath = currentLdPath ? `${libDir}:${currentLdPath}` : libDir;
+          spawnOptions.env = {
+            ...process.env,
+            LD_LIBRARY_PATH: newLdPath
+          };
+          console.log('[TorAdvanced] Set LD_LIBRARY_PATH for embedded Tor:', libDir);
+        }
+      }
+
+      // Set DYLD_LIBRARY_PATH on macOS when using embedded Tor
+      if (this.embeddedMode && os.platform() === 'darwin') {
+        const libDir = EMBEDDED_PATHS.libDir;
+        if (fs.existsSync(libDir)) {
+          const currentDyldPath = process.env.DYLD_LIBRARY_PATH || '';
+          const newDyldPath = currentDyldPath ? `${libDir}:${currentDyldPath}` : libDir;
+          spawnOptions.env = {
+            ...process.env,
+            DYLD_LIBRARY_PATH: newDyldPath
+          };
+          console.log('[TorAdvanced] Set DYLD_LIBRARY_PATH for embedded Tor:', libDir);
+        }
+      }
+
       // Start Tor process
       return new Promise((resolve) => {
-        this.torProcess = spawn(this.torBinaryPath, ['-f', torrcPath], {
-          stdio: ['ignore', 'pipe', 'pipe'],
-          detached: false
-        });
+        this.torProcess = spawn(this.torBinaryPath, ['-f', torrcPath], spawnOptions);
 
         let bootstrapComplete = false;
         const bootstrapTimeout = setTimeout(() => {
@@ -729,7 +845,9 @@ class AdvancedTorManager extends EventEmitter {
       }
 
       setTimeout(() => {
-        this.controlSocket.removeListener('data', onData);
+        if (this.controlSocket) {
+          this.controlSocket.removeListener('data', onData);
+        }
         if (!this.isAuthenticated) {
           resolve({
             success: false,
@@ -1424,6 +1542,12 @@ class AdvancedTorManager extends EventEmitter {
       controlConnected: this.controlSocket && !this.controlSocket.destroyed,
       authenticated: this.isAuthenticated,
 
+      embedded: {
+        mode: this.embeddedMode,
+        available: this.isEmbeddedAvailable(),
+        geoipConfigured: !!(this.geoipPath && fs.existsSync(this.geoipPath))
+      },
+
       socks: {
         host: this.socksHost,
         port: this.socksPort
@@ -1517,6 +1641,9 @@ class AdvancedTorManager extends EventEmitter {
     if (config.bootstrapTimeout) this.bootstrapTimeout = config.bootstrapTimeout;
     if (config.dataDirectory) this.dataDirectory = config.dataDirectory;
     if (config.torBinaryPath) this.torBinaryPath = config.torBinaryPath;
+    if (config.embeddedMode !== undefined) this.embeddedMode = config.embeddedMode;
+    if (config.geoipPath) this.geoipPath = config.geoipPath;
+    if (config.geoip6Path) this.geoip6Path = config.geoip6Path;
 
     return {
       success: true,
@@ -1525,7 +1652,10 @@ class AdvancedTorManager extends EventEmitter {
         socksPort: this.socksPort,
         controlHost: this.controlHost,
         controlPort: this.controlPort,
-        dataDirectory: this.dataDirectory
+        dataDirectory: this.dataDirectory,
+        embeddedMode: this.embeddedMode,
+        geoipPath: this.geoipPath,
+        geoip6Path: this.geoip6Path
       }
     };
   }
@@ -1920,5 +2050,6 @@ module.exports = {
   ISOLATION_MODES,
   COUNTRY_CODES,
   BUILTIN_BRIDGES,
-  TOR_DEFAULTS
+  TOR_DEFAULTS,
+  EMBEDDED_PATHS
 };

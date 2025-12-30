@@ -437,17 +437,9 @@ class TabManager extends EventEmitter {
       return { success: false, error: 'Tab not found' };
     }
 
-    // Apply allowed updates
-    const allowedFields = ['url', 'title', 'loading', 'favicon', 'canGoBack', 'canGoForward', 'zoomLevel', 'muted', 'pinned'];
-
-    for (const field of allowedFields) {
-      if (updates[field] !== undefined) {
-        tab[field] = updates[field];
-      }
-    }
-
-    // Track navigation history
-    if (updates.url && updates.url !== tab.url) {
+    // Track navigation history BEFORE applying URL update
+    const oldUrl = tab.url;
+    if (updates.url && updates.url !== oldUrl) {
       // Add to tab's internal history
       if (tab.history.length === 0 || tab.history[tab.history.length - 1] !== updates.url) {
         // Truncate forward history if we're navigating from middle
@@ -467,6 +459,15 @@ class TabManager extends EventEmitter {
       // Update navigation capability
       tab.canGoBack = tab.historyIndex > 0;
       tab.canGoForward = tab.historyIndex < tab.history.length - 1;
+    }
+
+    // Apply allowed updates AFTER history tracking
+    const allowedFields = ['url', 'title', 'loading', 'favicon', 'canGoBack', 'canGoForward', 'zoomLevel', 'muted', 'pinned'];
+
+    for (const field of allowedFields) {
+      if (updates[field] !== undefined) {
+        tab[field] = updates[field];
+      }
     }
 
     const tabInfo = this.getTabInfo(tabId);

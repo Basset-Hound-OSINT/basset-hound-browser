@@ -93,15 +93,19 @@ describe('Proxy Manager Module', () => {
     });
 
     test('should validate port range', () => {
+      // Port 0 is falsy so it triggers "port is required" error
       const result1 = proxyManager.validateProxy({ host: 'proxy.example.com', port: 0 });
       expect(result1.valid).toBe(false);
-      expect(result1.errors).toContain('Proxy port must be a number between 1 and 65535');
+      expect(result1.errors).toContain('Proxy port is required');
 
+      // Invalid port ranges trigger the range error
       const result2 = proxyManager.validateProxy({ host: 'proxy.example.com', port: 70000 });
       expect(result2.valid).toBe(false);
+      expect(result2.errors).toContain('Proxy port must be a number between 1 and 65535');
 
       const result3 = proxyManager.validateProxy({ host: 'proxy.example.com', port: -1 });
       expect(result3.valid).toBe(false);
+      expect(result3.errors).toContain('Proxy port must be a number between 1 and 65535');
     });
 
     test('should accept valid port numbers', () => {

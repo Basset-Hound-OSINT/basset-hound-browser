@@ -4,7 +4,6 @@
  * Tests form automation flows between extension and browser.
  */
 
-const assert = require('assert');
 const { TestServer } = require('../harness/test-server');
 const { MockExtension } = require('../harness/mock-extension');
 const { MockBrowser } = require('../harness/mock-browser');
@@ -30,36 +29,6 @@ const formState = {
  * Test utilities
  */
 const testUtils = {
-  async setup() {
-    // Reset form state
-    formState.detectedForms = [];
-    formState.filledFields = [];
-    formState.validationErrors = [];
-    formState.submissions = [];
-
-    server = new TestServer({ port: TEST_PORT });
-    setupFormHandlers();
-    await server.start();
-
-    extension = new MockExtension({ url: TEST_URL });
-    browser = new MockBrowser({ url: TEST_URL });
-
-    await extension.connect();
-    await browser.connect();
-  },
-
-  async teardown() {
-    if (extension && extension.isConnected) {
-      extension.disconnect();
-    }
-    if (browser && browser.isConnected) {
-      browser.disconnect();
-    }
-    if (server && server.isRunning) {
-      await server.stop();
-    }
-  },
-
   async delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -220,420 +189,344 @@ function setupFormHandlers() {
   });
 }
 
-/**
- * Test Suite: Form Detection
- */
-async function testFormDetection() {
-  console.log('\n--- Test: Form Detection ---');
+describe('Form Filling Test Scenarios', () => {
+  beforeAll(async () => {
+    // Reset form state
+    formState.detectedForms = [];
+    formState.filledFields = [];
+    formState.validationErrors = [];
+    formState.submissions = [];
 
-  const response = await extension.sendCommand('detect_forms', {});
+    server = new TestServer({ port: TEST_PORT });
+    setupFormHandlers();
+    await server.start();
 
-  assert(response.success, 'Form detection should succeed');
-  assert(response.result.forms.length === 2, 'Should detect 2 forms');
+    extension = new MockExtension({ url: TEST_URL });
+    browser = new MockBrowser({ url: TEST_URL });
 
-  const loginForm = response.result.forms.find(f => f.id === 'login-form');
-  assert(loginForm, 'Should find login form');
-  assert(loginForm.fields.length === 3, 'Login form should have 3 fields');
-  console.log('  Detected login form with fields');
-
-  const contactForm = response.result.forms.find(f => f.id === 'contact-form');
-  assert(contactForm, 'Should find contact form');
-  console.log('  Detected contact form');
-
-  console.log('PASSED: Form Detection');
-  return true;
-}
-
-/**
- * Test Suite: Basic Form Filling
- */
-async function testBasicFormFilling() {
-  console.log('\n--- Test: Basic Form Filling ---');
-
-  const fields = {
-    '#username': 'testuser',
-    '#password': 'testpass123',
-    '#email': 'test@example.com'
-  };
-
-  const response = await extension.sendCommand('fill_form', { fields, submit: false });
-
-  assert(response.success, 'Form filling should succeed');
-  assert(response.result.filled.length === 3, 'All fields should be filled');
-  assert(!response.result.submitted, 'Form should not be submitted');
-  console.log('  Filled 3 fields successfully');
-
-  // Verify fields were tracked
-  assert(formState.filledFields.length >= 3, 'Fields should be tracked');
-  console.log('  Field fills tracked in state');
-
-  console.log('PASSED: Basic Form Filling');
-  return true;
-}
-
-/**
- * Test Suite: Form Fill with Submit
- */
-async function testFormFillWithSubmit() {
-  console.log('\n--- Test: Form Fill with Submit ---');
-
-  const initialSubmissions = formState.submissions.length;
-
-  const fields = {
-    '#login-username': 'admin',
-    '#login-password': 'admin123'
-  };
-
-  const response = await extension.sendCommand('fill_form', { fields, submit: true });
-
-  assert(response.success, 'Form filling should succeed');
-  assert(response.result.submitted, 'Form should be submitted');
-  console.log('  Form filled and submitted');
-
-  assert(formState.submissions.length > initialSubmissions, 'Submission should be recorded');
-  console.log('  Submission recorded in state');
-
-  console.log('PASSED: Form Fill with Submit');
-  return true;
-}
-
-/**
- * Test Suite: Auto-Fill with Template Data
- */
-async function testAutoFillWithTemplate() {
-  console.log('\n--- Test: Auto-Fill with Template Data ---');
-
-  const templateData = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '555-123-4567',
-    address: '123 Main St',
-    city: 'Anytown',
-    state: 'CA',
-    zip: '12345'
-  };
-
-  const response = await extension.sendCommand('auto_fill_form', {
-    formSelector: '#registration-form',
-    data: templateData,
-    options: { humanLike: true }
+    await extension.connect();
+    await browser.connect();
   });
 
-  assert(response.success, 'Auto-fill should succeed');
-  assert(response.result.filledCount === Object.keys(templateData).length, 'All template fields should be filled');
-  console.log(`  Auto-filled ${response.result.filledCount} fields`);
-
-  console.log('PASSED: Auto-Fill with Template Data');
-  return true;
-}
-
-/**
- * Test Suite: Select Dropdown Filling
- */
-async function testSelectFilling() {
-  console.log('\n--- Test: Select Dropdown Filling ---');
-
-  // Fill by value
-  const byValue = await extension.sendCommand('fill_select', {
-    selector: '#country',
-    value: 'US'
-  });
-  assert(byValue.success, 'Select by value should succeed');
-  assert(byValue.result.selectedValue === 'US', 'Value should match');
-  console.log('  Selected by value');
-
-  // Fill by text
-  const byText = await extension.sendCommand('fill_select', {
-    selector: '#state',
-    value: 'California',
-    options: { byText: true }
-  });
-  assert(byText.success, 'Select by text should succeed');
-  console.log('  Selected by text');
-
-  console.log('PASSED: Select Dropdown Filling');
-  return true;
-}
-
-/**
- * Test Suite: Checkbox and Radio Filling
- */
-async function testCheckboxRadioFilling() {
-  console.log('\n--- Test: Checkbox and Radio Filling ---');
-
-  // Check a checkbox
-  const checkResponse = await extension.sendCommand('fill_checkbox', {
-    selector: '#terms-agree',
-    checked: true
-  });
-  assert(checkResponse.success, 'Checkbox fill should succeed');
-  assert(checkResponse.result.checked === true, 'Checkbox should be checked');
-  console.log('  Checked checkbox');
-
-  // Uncheck a checkbox
-  const uncheckResponse = await extension.sendCommand('fill_checkbox', {
-    selector: '#newsletter',
-    checked: false
-  });
-  assert(uncheckResponse.success, 'Checkbox uncheck should succeed');
-  console.log('  Unchecked checkbox');
-
-  // Select a radio option
-  const radioResponse = await extension.sendCommand('fill_radio', {
-    name: 'payment-method',
-    value: 'credit-card'
-  });
-  assert(radioResponse.success, 'Radio fill should succeed');
-  assert(radioResponse.result.selectedValue === 'credit-card', 'Radio value should match');
-  console.log('  Selected radio option');
-
-  console.log('PASSED: Checkbox and Radio Filling');
-  return true;
-}
-
-/**
- * Test Suite: Date Input Filling
- */
-async function testDateFilling() {
-  console.log('\n--- Test: Date Input Filling ---');
-
-  const date = '2024-01-15';
-  const response = await extension.sendCommand('fill_date', {
-    selector: '#birthdate',
-    date
-  });
-
-  assert(response.success, 'Date fill should succeed');
-  assert(response.result.date === date, 'Date should match');
-  console.log('  Filled date input');
-
-  // Verify date was tracked
-  const dateField = formState.filledFields.find(f => f.type === 'date');
-  assert(dateField, 'Date field should be tracked');
-  assert(dateField.date === date, 'Tracked date should match');
-  console.log('  Date fill tracked in state');
-
-  console.log('PASSED: Date Input Filling');
-  return true;
-}
-
-/**
- * Test Suite: Form Submission
- */
-async function testFormSubmission() {
-  console.log('\n--- Test: Form Submission ---');
-
-  const initialSubmissions = formState.submissions.length;
-
-  // Submit by clicking button
-  const clickSubmit = await extension.sendCommand('submit_form', {
-    formSelector: '#login-form',
-    options: { clickSubmit: true, waitForNavigation: true }
-  });
-  assert(clickSubmit.success, 'Click submit should succeed');
-  assert(clickSubmit.result.submitted, 'Form should be submitted');
-  console.log('  Submitted by clicking button');
-
-  // Submit programmatically
-  const programSubmit = await extension.sendCommand('submit_form', {
-    formSelector: '#contact-form',
-    options: { clickSubmit: false }
-  });
-  assert(programSubmit.success, 'Programmatic submit should succeed');
-  console.log('  Submitted programmatically');
-
-  assert(formState.submissions.length === initialSubmissions + 2, 'Both submissions should be tracked');
-
-  console.log('PASSED: Form Submission');
-  return true;
-}
-
-/**
- * Test Suite: Form Validation
- */
-async function testFormValidation() {
-  console.log('\n--- Test: Form Validation ---');
-
-  // Check validation with no errors
-  const validResponse = await extension.sendCommand('get_form_validation', {
-    formSelector: '#login-form'
-  });
-  assert(validResponse.success, 'Get validation should succeed');
-  assert(validResponse.result.isValid, 'Form should be valid');
-  console.log('  Form validation passed');
-
-  // Add validation errors and check again
-  formState.validationErrors.push({
-    field: 'email',
-    message: 'Invalid email format'
-  });
-
-  const invalidResponse = await extension.sendCommand('get_form_validation', {
-    formSelector: '#contact-form'
-  });
-  assert(invalidResponse.success, 'Get validation should succeed');
-  assert(!invalidResponse.result.isValid, 'Form should be invalid');
-  assert(invalidResponse.result.errors.length > 0, 'Should have errors');
-  console.log('  Form validation detected errors');
-
-  // Reset for other tests
-  formState.validationErrors = [];
-
-  console.log('PASSED: Form Validation');
-  return true;
-}
-
-/**
- * Test Suite: Multi-Step Form Navigation
- */
-async function testMultiStepFormNavigation() {
-  console.log('\n--- Test: Multi-Step Form Navigation ---');
-
-  // Get multi-step info
-  const infoResponse = await extension.sendCommand('get_multi_step_info', {
-    formSelector: '#multi-step-form'
-  });
-  assert(infoResponse.success, 'Get multi-step info should succeed');
-  assert(infoResponse.result.isMultiStep, 'Should be multi-step form');
-  assert(infoResponse.result.totalSteps === 3, 'Should have 3 steps');
-  console.log('  Detected multi-step form with 3 steps');
-
-  // Navigate next
-  const nextResponse = await extension.sendCommand('navigate_multi_step', {
-    formSelector: '#multi-step-form',
-    direction: 'next'
-  });
-  assert(nextResponse.success, 'Navigate next should succeed');
-  assert(nextResponse.result.currentStep === 2, 'Should be on step 2');
-  console.log('  Navigated to next step');
-
-  // Navigate previous
-  const prevResponse = await extension.sendCommand('navigate_multi_step', {
-    formSelector: '#multi-step-form',
-    direction: 'prev'
-  });
-  assert(prevResponse.success, 'Navigate prev should succeed');
-  console.log('  Navigated to previous step');
-
-  console.log('PASSED: Multi-Step Form Navigation');
-  return true;
-}
-
-/**
- * Test Suite: Complete Form Flow
- */
-async function testCompleteFormFlow() {
-  console.log('\n--- Test: Complete Form Flow ---');
-
-  // 1. Detect forms
-  const detectResponse = await extension.sendCommand('detect_forms', {});
-  assert(detectResponse.success, 'Detect forms should succeed');
-  console.log('  Step 1: Detected forms');
-
-  // 2. Auto-fill form
-  const fillResponse = await extension.sendCommand('auto_fill_form', {
-    formSelector: '#login-form',
-    data: {
-      username: 'flowtest',
-      password: 'flowpass123'
+  afterAll(async () => {
+    if (extension && extension.isConnected) {
+      extension.disconnect();
+    }
+    if (browser && browser.isConnected) {
+      browser.disconnect();
+    }
+    if (server && server.isRunning) {
+      await server.stop();
     }
   });
-  assert(fillResponse.success, 'Auto-fill should succeed');
-  console.log('  Step 2: Auto-filled form');
 
-  // 3. Check validation
-  const validateResponse = await extension.sendCommand('get_form_validation', {
-    formSelector: '#login-form'
+  beforeEach(() => {
+    // Reset form state between tests
+    formState.detectedForms = [];
+    formState.filledFields = [];
+    formState.validationErrors = [];
+    formState.submissions = [];
   });
-  assert(validateResponse.success, 'Validation should succeed');
-  console.log('  Step 3: Validated form');
 
-  // 4. Submit form
-  const submitResponse = await extension.sendCommand('submit_form', {
-    formSelector: '#login-form',
-    options: { clickSubmit: true }
+  describe('Form Detection', () => {
+    test('should detect forms on page', async () => {
+      const response = await extension.sendCommand('detect_forms', {});
+
+      expect(response.success).toBe(true);
+      expect(response.result.forms.length).toBe(2);
+    });
+
+    test('should find login form with fields', async () => {
+      const response = await extension.sendCommand('detect_forms', {});
+
+      const loginForm = response.result.forms.find(f => f.id === 'login-form');
+      expect(loginForm).toBeTruthy();
+      expect(loginForm.fields.length).toBe(3);
+    });
+
+    test('should find contact form', async () => {
+      const response = await extension.sendCommand('detect_forms', {});
+
+      const contactForm = response.result.forms.find(f => f.id === 'contact-form');
+      expect(contactForm).toBeTruthy();
+    });
   });
-  assert(submitResponse.success, 'Submit should succeed');
-  console.log('  Step 4: Submitted form');
 
-  console.log('PASSED: Complete Form Flow');
-  return true;
-}
+  describe('Basic Form Filling', () => {
+    test('should fill form fields', async () => {
+      const fields = {
+        '#username': 'testuser',
+        '#password': 'testpass123',
+        '#email': 'test@example.com'
+      };
 
-/**
- * Run all form filling tests
- */
-async function runTests() {
-  console.log('='.repeat(60));
-  console.log('Form Filling Test Scenarios');
-  console.log('='.repeat(60));
+      const response = await extension.sendCommand('fill_form', { fields, submit: false });
 
-  const results = {
-    passed: 0,
-    failed: 0,
-    tests: []
-  };
+      expect(response.success).toBe(true);
+      expect(response.result.filled.length).toBe(3);
+      expect(response.result.submitted).toBe(false);
+    });
 
-  const tests = [
-    { name: 'Form Detection', fn: testFormDetection },
-    { name: 'Basic Form Filling', fn: testBasicFormFilling },
-    { name: 'Form Fill with Submit', fn: testFormFillWithSubmit },
-    { name: 'Auto-Fill with Template Data', fn: testAutoFillWithTemplate },
-    { name: 'Select Dropdown Filling', fn: testSelectFilling },
-    { name: 'Checkbox and Radio Filling', fn: testCheckboxRadioFilling },
-    { name: 'Date Input Filling', fn: testDateFilling },
-    { name: 'Form Submission', fn: testFormSubmission },
-    { name: 'Form Validation', fn: testFormValidation },
-    { name: 'Multi-Step Form Navigation', fn: testMultiStepFormNavigation },
-    { name: 'Complete Form Flow', fn: testCompleteFormFlow }
-  ];
+    test('should track filled fields in state', async () => {
+      const fields = {
+        '#username': 'testuser',
+        '#password': 'testpass123',
+        '#email': 'test@example.com'
+      };
 
-  try {
-    await testUtils.setup();
+      await extension.sendCommand('fill_form', { fields, submit: false });
+      expect(formState.filledFields.length).toBeGreaterThanOrEqual(3);
+    });
+  });
 
-    for (const test of tests) {
-      try {
-        await test.fn();
-        results.passed++;
-        results.tests.push({ name: test.name, status: 'PASSED' });
-      } catch (error) {
-        results.failed++;
-        results.tests.push({ name: test.name, status: 'FAILED', error: error.message });
-        console.log(`FAILED: ${test.name} - ${error.message}`);
-      }
-    }
-  } finally {
-    await testUtils.teardown();
-  }
+  describe('Form Fill with Submit', () => {
+    test('should fill and submit form', async () => {
+      const initialSubmissions = formState.submissions.length;
 
-  // Print summary
-  console.log('\n' + '='.repeat(60));
-  console.log('Form Filling Test Summary');
-  console.log('='.repeat(60));
-  console.log(`Passed: ${results.passed}`);
-  console.log(`Failed: ${results.failed}`);
-  console.log(`Total:  ${results.tests.length}`);
+      const fields = {
+        '#login-username': 'admin',
+        '#login-password': 'admin123'
+      };
 
-  if (results.failed > 0) {
-    console.log('\nFailed tests:');
-    results.tests
-      .filter(t => t.status === 'FAILED')
-      .forEach(t => console.log(`  - ${t.name}: ${t.error}`));
-  }
+      const response = await extension.sendCommand('fill_form', { fields, submit: true });
 
-  return results.failed === 0;
-}
+      expect(response.success).toBe(true);
+      expect(response.result.submitted).toBe(true);
+    });
+
+    test('should record submission in state', async () => {
+      const initialSubmissions = formState.submissions.length;
+
+      const fields = {
+        '#login-username': 'admin',
+        '#login-password': 'admin123'
+      };
+
+      await extension.sendCommand('fill_form', { fields, submit: true });
+      expect(formState.submissions.length).toBeGreaterThan(initialSubmissions);
+    });
+  });
+
+  describe('Auto-Fill with Template Data', () => {
+    test('should auto-fill form with template data', async () => {
+      const templateData = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '555-123-4567',
+        address: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345'
+      };
+
+      const response = await extension.sendCommand('auto_fill_form', {
+        formSelector: '#registration-form',
+        data: templateData,
+        options: { humanLike: true }
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.result.filledCount).toBe(Object.keys(templateData).length);
+    });
+  });
+
+  describe('Select Dropdown Filling', () => {
+    test('should fill select by value', async () => {
+      const byValue = await extension.sendCommand('fill_select', {
+        selector: '#country',
+        value: 'US'
+      });
+      expect(byValue.success).toBe(true);
+      expect(byValue.result.selectedValue).toBe('US');
+    });
+
+    test('should fill select by text', async () => {
+      const byText = await extension.sendCommand('fill_select', {
+        selector: '#state',
+        value: 'California',
+        options: { byText: true }
+      });
+      expect(byText.success).toBe(true);
+    });
+  });
+
+  describe('Checkbox and Radio Filling', () => {
+    test('should check a checkbox', async () => {
+      const checkResponse = await extension.sendCommand('fill_checkbox', {
+        selector: '#terms-agree',
+        checked: true
+      });
+      expect(checkResponse.success).toBe(true);
+      expect(checkResponse.result.checked).toBe(true);
+    });
+
+    test('should uncheck a checkbox', async () => {
+      const uncheckResponse = await extension.sendCommand('fill_checkbox', {
+        selector: '#newsletter',
+        checked: false
+      });
+      expect(uncheckResponse.success).toBe(true);
+    });
+
+    test('should select a radio option', async () => {
+      const radioResponse = await extension.sendCommand('fill_radio', {
+        name: 'payment-method',
+        value: 'credit-card'
+      });
+      expect(radioResponse.success).toBe(true);
+      expect(radioResponse.result.selectedValue).toBe('credit-card');
+    });
+  });
+
+  describe('Date Input Filling', () => {
+    test('should fill date input', async () => {
+      const date = '2024-01-15';
+      const response = await extension.sendCommand('fill_date', {
+        selector: '#birthdate',
+        date
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.result.date).toBe(date);
+    });
+
+    test('should track date field in state', async () => {
+      const date = '2024-01-15';
+      await extension.sendCommand('fill_date', {
+        selector: '#birthdate',
+        date
+      });
+
+      const dateField = formState.filledFields.find(f => f.type === 'date');
+      expect(dateField).toBeTruthy();
+      expect(dateField.date).toBe(date);
+    });
+  });
+
+  describe('Form Submission', () => {
+    test('should submit by clicking button', async () => {
+      const initialSubmissions = formState.submissions.length;
+
+      const clickSubmit = await extension.sendCommand('submit_form', {
+        formSelector: '#login-form',
+        options: { clickSubmit: true, waitForNavigation: true }
+      });
+      expect(clickSubmit.success).toBe(true);
+      expect(clickSubmit.result.submitted).toBe(true);
+    });
+
+    test('should submit programmatically', async () => {
+      const programSubmit = await extension.sendCommand('submit_form', {
+        formSelector: '#contact-form',
+        options: { clickSubmit: false }
+      });
+      expect(programSubmit.success).toBe(true);
+    });
+
+    test('should track both submissions', async () => {
+      const initialSubmissions = formState.submissions.length;
+
+      await extension.sendCommand('submit_form', {
+        formSelector: '#login-form',
+        options: { clickSubmit: true }
+      });
+      await extension.sendCommand('submit_form', {
+        formSelector: '#contact-form',
+        options: { clickSubmit: false }
+      });
+
+      expect(formState.submissions.length).toBe(initialSubmissions + 2);
+    });
+  });
+
+  describe('Form Validation', () => {
+    test('should report valid form', async () => {
+      const validResponse = await extension.sendCommand('get_form_validation', {
+        formSelector: '#login-form'
+      });
+      expect(validResponse.success).toBe(true);
+      expect(validResponse.result.isValid).toBe(true);
+    });
+
+    test('should detect validation errors', async () => {
+      // Add validation errors
+      formState.validationErrors.push({
+        field: 'email',
+        message: 'Invalid email format'
+      });
+
+      const invalidResponse = await extension.sendCommand('get_form_validation', {
+        formSelector: '#contact-form'
+      });
+      expect(invalidResponse.success).toBe(true);
+      expect(invalidResponse.result.isValid).toBe(false);
+      expect(invalidResponse.result.errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Multi-Step Form Navigation', () => {
+    test('should detect multi-step form', async () => {
+      const infoResponse = await extension.sendCommand('get_multi_step_info', {
+        formSelector: '#multi-step-form'
+      });
+      expect(infoResponse.success).toBe(true);
+      expect(infoResponse.result.isMultiStep).toBe(true);
+      expect(infoResponse.result.totalSteps).toBe(3);
+    });
+
+    test('should navigate to next step', async () => {
+      const nextResponse = await extension.sendCommand('navigate_multi_step', {
+        formSelector: '#multi-step-form',
+        direction: 'next'
+      });
+      expect(nextResponse.success).toBe(true);
+      expect(nextResponse.result.currentStep).toBe(2);
+    });
+
+    test('should navigate to previous step', async () => {
+      const prevResponse = await extension.sendCommand('navigate_multi_step', {
+        formSelector: '#multi-step-form',
+        direction: 'prev'
+      });
+      expect(prevResponse.success).toBe(true);
+    });
+  });
+
+  describe('Complete Form Flow', () => {
+    test('should complete full form workflow', async () => {
+      // Reset validation errors
+      formState.validationErrors = [];
+
+      // 1. Detect forms
+      const detectResponse = await extension.sendCommand('detect_forms', {});
+      expect(detectResponse.success).toBe(true);
+
+      // 2. Auto-fill form
+      const fillResponse = await extension.sendCommand('auto_fill_form', {
+        formSelector: '#login-form',
+        data: {
+          username: 'flowtest',
+          password: 'flowpass123'
+        }
+      });
+      expect(fillResponse.success).toBe(true);
+
+      // 3. Check validation
+      const validateResponse = await extension.sendCommand('get_form_validation', {
+        formSelector: '#login-form'
+      });
+      expect(validateResponse.success).toBe(true);
+
+      // 4. Submit form
+      const submitResponse = await extension.sendCommand('submit_form', {
+        formSelector: '#login-form',
+        options: { clickSubmit: true }
+      });
+      expect(submitResponse.success).toBe(true);
+    });
+  });
+});
 
 // Export for external use
-module.exports = { runTests, testUtils };
-
-// Run if called directly
-if (require.main === module) {
-  runTests()
-    .then(success => process.exit(success ? 0 : 1))
-    .catch(error => {
-      console.error('Test runner error:', error);
-      process.exit(1);
-    });
-}
+module.exports = { testUtils };

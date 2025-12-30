@@ -4,7 +4,11 @@
 # =============================================================================
 # Installs Node.js via nvm (Node Version Manager) for better version control.
 #
-# Supported: Ubuntu/Debian, Fedora/RHEL/CentOS, macOS
+# OFFICIALLY SUPPORTED: Ubuntu 22.04 LTS (jammy)
+#
+# This script is tested and maintained for Ubuntu 22.04 LTS.
+# It may work on other systems but is not officially supported.
+#
 # Usage: Run with sudo - sudo ./install-node.sh
 #        Or for current user only: ./install-node.sh --user
 # =============================================================================

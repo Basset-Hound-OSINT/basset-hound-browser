@@ -3,12 +3,19 @@
  *
  * Tests that sessions and cookies are correctly shared and synchronized
  * between the extension and browser components.
+ *
+ * Note: These tests require a running browser infrastructure and are designed to run
+ * as standalone scripts. Use `npm run test:integration:session-sharing` to run them.
  */
 
 const assert = require('assert');
 const { TestServer } = require('../harness/test-server');
 const { MockExtension } = require('../harness/mock-extension');
 const { MockBrowser } = require('../harness/mock-browser');
+
+// Check if running under Jest
+const isJest = typeof jest !== 'undefined';
+const shouldSkip = isJest || process.env.SKIP_BROWSER_TESTS === 'true';
 
 // Test configuration
 const TEST_PORT = 8768;
@@ -730,8 +737,18 @@ async function runTests() {
 // Export for external use
 module.exports = { runTests, testUtils };
 
-// Run if called directly
-if (require.main === module) {
+// Jest test wrapper
+if (isJest) {
+  describe('Session/Cookie Sharing Tests', () => {
+    test.skip('These tests require browser infrastructure - run with: npm run test:integration:session-sharing', () => {
+      // Skip when run through Jest
+      // Use the npm script to run these tests as standalone scripts
+    });
+  });
+}
+
+// Run if called directly (not through Jest)
+if (require.main === module && !shouldSkip) {
   runTests()
     .then(success => process.exit(success ? 0 : 1))
     .catch(error => {

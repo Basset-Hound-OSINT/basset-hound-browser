@@ -98,8 +98,8 @@ describe('ExtractionManager', () => {
       const result = manager.extractForms(html);
 
       expect(result.success).toBe(true);
-      expect(result.data.forms).toBeDefined();
-      expect(result.data.forms.length).toBeGreaterThan(0);
+      expect(result.data).toBeDefined();
+      expect(result.data.length).toBeGreaterThan(0);
     });
   });
 
@@ -113,7 +113,8 @@ describe('ExtractionManager', () => {
       const result = manager.extractImages(html, 'https://example.com');
 
       expect(result.success).toBe(true);
-      expect(result.data.images).toBeDefined();
+      expect(result.data).toBeDefined();
+      expect(result.data.length).toBeGreaterThan(0);
     });
 
     test('should handle lazy-loaded images', () => {
@@ -139,7 +140,9 @@ describe('ExtractionManager', () => {
       const result = manager.extractScripts(html, 'https://example.com');
 
       expect(result.success).toBe(true);
-      expect(result.data.scripts).toBeDefined();
+      expect(result.data).toBeDefined();
+      expect(result.data.external).toBeDefined();
+      expect(result.data.external.length).toBeGreaterThan(0);
     });
 
     test('should detect common libraries', () => {
@@ -188,10 +191,10 @@ describe('ExtractionManager', () => {
       const result = manager.extractAll(html, 'https://example.com');
 
       expect(result.success).toBe(true);
-      expect(result.data.metadata).toBeDefined();
-      expect(result.data.links).toBeDefined();
-      expect(result.data.forms).toBeDefined();
-      expect(result.data.images).toBeDefined();
+      expect(result.metadata).toBeDefined();
+      expect(result.links).toBeDefined();
+      expect(result.forms).toBeDefined();
+      expect(result.images).toBeDefined();
     });
   });
 
