@@ -48,6 +48,27 @@ const {
   BaseParser
 } = require('./parsers');
 
+const {
+  DataTypeDetector,
+  createDetector,
+  DETECTION_PATTERNS,
+  VALIDATORS
+} = require('./data-type-detector');
+
+const {
+  IngestionProcessor,
+  createIngestionProcessor,
+  INGESTION_MODES,
+  DEFAULT_CONFIG
+} = require('./ingestion-processor');
+
+const {
+  ImageMetadataExtractor,
+  createImageExtractor,
+  DEFAULT_OPTIONS: IMAGE_EXTRACTOR_OPTIONS,
+  IMAGE_ORPHAN_MAPPINGS
+} = require('./image-metadata-extractor');
+
 module.exports = {
   // Main manager
   ExtractionManager,
@@ -59,6 +80,24 @@ module.exports = {
   MicrodataParser,
   RdfaParser,
   BaseParser,
+
+  // Data type detection (Phase 13)
+  DataTypeDetector,
+  createDetector,
+  DETECTION_PATTERNS,
+  VALIDATORS,
+
+  // Ingestion processing (Phase 13)
+  IngestionProcessor,
+  createIngestionProcessor,
+  INGESTION_MODES,
+  DEFAULT_CONFIG,
+
+  // Image metadata extraction (Phase 14)
+  ImageMetadataExtractor,
+  createImageExtractor,
+  IMAGE_EXTRACTOR_OPTIONS,
+  IMAGE_ORPHAN_MAPPINGS,
 
   // Factory function for convenience
   createExtractor: () => new ExtractionManager()

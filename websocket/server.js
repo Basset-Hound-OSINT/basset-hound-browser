@@ -7584,6 +7584,22 @@ class WebSocketServer {
     };
 
     // ==========================================
+    // Data Ingestion Commands (Phase 13)
+    // ==========================================
+
+    // Import and register ingestion commands
+    const { registerIngestionCommands } = require('./commands/ingestion-commands');
+    registerIngestionCommands(this, this.mainWindow);
+
+    // ==========================================
+    // Image Metadata Commands (Phase 14)
+    // ==========================================
+
+    // Import and register image metadata commands
+    const { registerImageCommands } = require('./commands/image-commands');
+    registerImageCommands(this, this.mainWindow);
+
+    // ==========================================
     // Auto-Update Commands
     // ==========================================
 

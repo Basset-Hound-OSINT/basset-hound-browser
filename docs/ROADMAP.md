@@ -745,6 +745,8 @@ node scripts/install/embedded-tor-setup.js
 | 8.2.2 | 2024-12-29 | Major Test Suite Overhaul - Comprehensive Electron mock rewrite (session, webContents, globalShortcut), fixed 43+ test failures, scenario tests converted to Jest format (94 tests), extension communication tests structured, fingerprint test fixes (47 tests), tor-advanced.js null reference fix. Test results: 27 suites passing, 1307 tests passing. Moved embedded Tor to production location (bin/tor/). |
 | 8.2.3 | 2024-12-29 | Test Infrastructure & Embedded Tor Verification - CI environment support (28 suites pass, 1313 tests), fixed nativeImage mock circular reference, scenario tests with proper skip conditions, cert-generator Jest mock hoisting fix, SSL connection race condition fix, Tor integration test flexibility. Embedded Tor verified: bootstrap 100%, circuit routing confirmed via check.torproject.org. |
 | 8.2.4 | 2024-12-29 | Embedded Tor CLI Integration - CLI arguments for Tor modes (--tor, --system-tor, --embedded-tor, --[no-]tor-auto-download), embedded Tor as default behavior, system Tor installation guide (SYSTEM-TOR-INSTALLATION.md), first-run auto-download via tor-auto-setup.js, updated default configuration. |
+| 8.3.0 | 2026-01-05 | Phase 13 Web Content Data Ingestion - DataTypeDetector (25+ patterns), IngestionProcessor (5 modes), 14 WebSocket commands, Python client mixin (15 methods), Node.js client methods (18 added), comprehensive tests (130+ test cases). |
+| 8.4.0 | 2026-01-05 | Phase 14 Advanced Image Ingestion - ImageMetadataExtractor (EXIF/IPTC/XMP/GPS), 10 WebSocket commands, OCR via tesseract.js, perceptual hashing, image similarity comparison, basset-hound orphan data generation. |
 
 ---
 
@@ -796,6 +798,16 @@ node scripts/install/embedded-tor-setup.js
 - [x] No critical bugs (v8.1.1 security & stability fixes applied)
 - [x] Embedded Tor support (portable Tor bundle, no installation required)
 - [x] Pluggable transports (obfs4, meek, snowflake, conjure)
+- [x] Phase 13.1 Data Type Detection implemented (25+ patterns)
+- [x] Phase 13.2 Ingestion Modes implemented (5 modes)
+- [x] Phase 13.4 WebSocket Commands implemented (14 commands)
+- [x] Phase 13.5 basset-hound Integration (orphan data mapping, provenance, deduplication)
+- [x] Python client ingestion mixin (15 methods)
+- [x] Node.js client ingestion methods (18 methods)
+- [x] Phase 14 Image Metadata Extractor (EXIF/IPTC/XMP/GPS)
+- [x] Phase 14 WebSocket Commands (10 image commands)
+- [x] OCR text extraction from images
+- [x] Perceptual hashing for image similarity
 
 ---
 
@@ -900,11 +912,438 @@ npm test -- tests/unit/fingerprint.test.js  # Specific test file
 
 ---
 
+## Phase 12: OSINT Agent Integration - 📋 PLANNED
+
+### 12.1 OSINT Data Extraction Commands
+
+| Task | Status | Description |
+|------|--------|-------------|
+| `extract_osint_data` command | 📋 Planned | Extract emails, phones, crypto from page |
+| Pattern library | 📋 Planned | Comprehensive regex for OSINT data types |
+| Context extraction | 📋 Planned | Capture surrounding text |
+| Structured data extraction | 📋 Planned | JSON-LD, Schema.org parsing |
+
+### 12.2 Evidence Capture
+
+| Task | Status | Description |
+|------|--------|-------------|
+| `capture_evidence` command | 📋 Planned | Screenshot + HTML + metadata bundle |
+| Evidence storage format | 📋 Planned | Standard evidence package structure |
+| Timestamp verification | 📋 Planned | Cryptographic timestamp for evidence |
+
+### 12.3 basset-hound Integration
+
+| Task | Status | Description |
+|------|--------|-------------|
+| `store_to_basset` command | 📋 Planned | Direct storage to basset-hound API |
+| Provenance tracking | 📋 Planned | Include source URL, date, browser info |
+| Verification before store | 📋 Planned | Verify data before sending |
+
+### 12.4 Investigation Workflow Support
+
+| Task | Status | Description |
+|------|--------|-------------|
+| `investigate_links` command | 📋 Planned | Follow and investigate linked pages |
+| Depth control | 📋 Planned | Configurable crawl depth |
+| Pattern filtering | 📋 Planned | Only follow matching URLs |
+| Rate limiting | 📋 Planned | Polite crawling |
+
+**Purpose:** Enable OSINT agents to use basset-hound-browser for automated investigations with results stored in basset-hound.
+
+**New Files:**
+- `websocket/commands/osint-commands.js` - OSINT extraction commands
+- `websocket/commands/evidence-commands.js` - Evidence capture commands
+- `clients/python/basset_hound_browser/osint.py` - Python OSINT mixin
+- `clients/nodejs/osint.js` - Node.js OSINT mixin
+- `tests/integration/osint-workflow.test.js` - Integration tests
+
+See [INTEGRATION-RESEARCH-2026-01-04.md](docs/findings/INTEGRATION-RESEARCH-2026-01-04.md) for details.
+
+---
+
+## Phase 13: Web Content Data Ingestion - 🚧 IN PROGRESS
+
+> **Goal:** Automatically detect, extract, and ingest various data types from web content into the basset-hound OSINT platform with configurable supervision modes.
+
+### 13.1 Data Type Detection Engine
+
+| Task | Status | Description |
+|------|--------|-------------|
+| DataTypeDetector class | ✅ Done | Core engine for detecting data types in web content (`extraction/data-type-detector.js`) |
+| Phone number detection | ✅ Done | US, UK, and E.164 international formats with validation |
+| Email detection | ✅ Done | RFC 5322 patterns with validation |
+| Image extraction | 📋 Planned | URLs, base64, dimensions, alt text, EXIF metadata |
+| Address detection | 📋 Planned | US/international address patterns with geocoding |
+| Cryptocurrency detection | ✅ Done | BTC, ETH, XMR, LTC wallet address formats with validation |
+| Social media handles | ✅ Done | Twitter, LinkedIn, GitHub, Instagram, Facebook, TikTok, YouTube |
+| Date/time detection | ✅ Done | ISO 8601 format detection |
+| Price/currency detection | ✅ Done | USD, EUR, GBP, JPY currency amounts |
+| URL/link extraction | ✅ Done | Full URL extraction with validation |
+| Personal name detection | 📋 Planned | NLP-based name recognition |
+| Company/org detection | 📋 Planned | Business entity recognition |
+| Document references | 📋 Planned | PDF, DOC, file links detection |
+| Structured data parsing | 📋 Planned | JSON-LD, Microdata, RDFa extraction |
+| IP address detection | ✅ Done | IPv4 address detection with validation |
+| Domain detection | ✅ Done | Domain name detection with TLD validation |
+| MAC address detection | ✅ Done | Standard MAC address format |
+| SSN detection | ✅ Done | US Social Security Number format (with warnings) |
+| Credit card detection | ✅ Done | Visa, MasterCard, AmEx, Discover formats |
+
+### 13.2 Ingestion Modes
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Automatic mode | ✅ Done | Fully unsupervised - ingest all detected data (`INGESTION_MODES.AUTOMATIC`) |
+| Selective mode | ✅ Done | User picks which detected items to ingest (`INGESTION_MODES.SELECTIVE`) |
+| Type-filtered mode | ✅ Done | User specifies which data types to auto-ingest (`INGESTION_MODES.TYPE_FILTERED`) |
+| Confirmation mode | ✅ Done | Review detected data before each ingestion (`INGESTION_MODES.CONFIRMATION`) |
+| Learning mode | 📋 Planned | Track user choices to improve suggestions |
+| Batch mode | ✅ Done | Process multiple pages with consistent settings (`INGESTION_MODES.BATCH`) |
+
+### 13.3 User Interface Components
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Ingestion sidebar panel | 📋 Planned | Real-time display of detected data on page |
+| Data type toggles | 📋 Planned | Enable/disable detection per data type |
+| Highlight overlay | 📋 Planned | Visual highlighting of detected items on page |
+| Quick-select interface | 📋 Planned | Click-to-select items for ingestion |
+| Ingestion queue view | 📋 Planned | Pending items awaiting user action |
+| Ingestion history | 📋 Planned | Log of all ingested data with source URLs |
+| Settings panel | 📋 Planned | Configure default modes and preferences |
+
+### 13.4 WebSocket Commands
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `detect_data_types` | ✅ Done | Scan page and return detected data with types |
+| `configure_ingestion` | ✅ Done | Set ingestion mode and type filters |
+| `ingest_selected` | ✅ Done | Ingest user-selected items |
+| `ingest_all` | ✅ Done | Ingest all detected items (auto mode) |
+| `get_detection_config` | ✅ Done | Get current detection configuration |
+| `set_detection_patterns` | ✅ Done | Add/remove custom patterns for detection |
+| `get_ingestion_history` | ✅ Done | Retrieve ingestion log |
+| `export_detections` | ✅ Done | Export detected data to file/JSON |
+| `get_ingestion_queue` | ✅ Done | Get pending items in queue |
+| `clear_ingestion_queue` | ✅ Done | Clear all queued items |
+| `get_ingestion_stats` | ✅ Done | Get detection and ingestion statistics |
+| `get_detection_types` | ✅ Done | Get available detection types |
+| `set_ingestion_mode` | ✅ Done | Change the ingestion mode |
+| `process_page_for_ingestion` | ✅ Done | Process arbitrary HTML content |
+
+### 13.5 basset-hound Integration
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Orphan data mapping | ✅ Done | Map detected types to basset-hound IdentifierTypes |
+| Entity creation | 📋 Planned | Auto-create entities from rich data (Person, Org) |
+| Relationship inference | 📋 Planned | Detect relationships from page context |
+| Provenance tracking | ✅ Done | Full source URL, timestamp, extraction context |
+| Batch API calls | 📋 Planned | Efficient bulk ingestion to basset-hound |
+| Deduplication | ✅ Done | Local cache-based deduplication with TTL |
+| Confidence scoring | ✅ Done | Score reliability of detected data based on validation |
+
+### 13.6 Detection Patterns Library
+
+```javascript
+// Data type patterns (to be implemented in extraction/patterns.js)
+const DETECTION_PATTERNS = {
+  phone: {
+    patterns: [
+      /(?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/g,  // US
+      /(?:\+?44[-.\s]?)?(?:\(?0\)?[-.\s]?)?[0-9]{4}[-.\s]?[0-9]{6}/g,   // UK
+      /\+[1-9]\d{1,14}/g,  // E.164 international
+    ],
+    validator: 'libphonenumber',
+    orphanType: 'phone'
+  },
+  email: {
+    patterns: [/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g],
+    validator: 'rfc5322',
+    orphanType: 'email'
+  },
+  crypto_btc: {
+    patterns: [/\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}\b/g],
+    validator: 'btc-address',
+    orphanType: 'crypto_address'
+  },
+  crypto_eth: {
+    patterns: [/\b0x[a-fA-F0-9]{40}\b/g],
+    validator: 'eth-address',
+    orphanType: 'crypto_address'
+  },
+  social_twitter: {
+    patterns: [/@[a-zA-Z0-9_]{1,15}\b/g, /twitter\.com\/([a-zA-Z0-9_]{1,15})/g],
+    orphanType: 'social_media'
+  },
+  social_instagram: {
+    patterns: [/instagram\.com\/([a-zA-Z0-9_.]{1,30})/g],
+    orphanType: 'social_media'
+  },
+  url: {
+    patterns: [/https?:\/\/[^\s<>"{}|\\^`\[\]]+/g],
+    orphanType: 'url'
+  },
+  ip_address: {
+    patterns: [/\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g],
+    orphanType: 'ip_address'
+  },
+  domain: {
+    patterns: [/\b[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}\b/g],
+    orphanType: 'domain'
+  }
+};
+```
+
+### 13.7 Ingestion Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    WEB PAGE LOADED                               │
+└────────────────────────┬────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────────┐
+│              DATA TYPE DETECTION ENGINE                          │
+│                                                                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │  Phone   │  │  Email   │  │  Image   │  │  Crypto  │  ...   │
+│  │ Detector │  │ Detector │  │ Detector │  │ Detector │       │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘       │
+│       │             │             │             │               │
+│       └─────────────┴─────────────┴─────────────┘               │
+│                         │                                        │
+│                         ▼                                        │
+│              ┌─────────────────────┐                            │
+│              │   Detected Items    │                            │
+│              │   with Confidence   │                            │
+│              └──────────┬──────────┘                            │
+└─────────────────────────┼───────────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          │               │               │
+          ▼               ▼               ▼
+    ┌──────────┐   ┌──────────┐   ┌──────────┐
+    │ AUTOMATIC│   │ SELECTIVE│   │   TYPE   │
+    │   MODE   │   │   MODE   │   │ FILTERED │
+    └────┬─────┘   └────┬─────┘   └────┬─────┘
+         │              │              │
+         │         User Selection      │
+         │              │              │
+         └──────────────┴──────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   INGESTION PROCESSOR                            │
+│                                                                  │
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐    │
+│  │  Validation    │→ │ Deduplication  │→ │ Normalization  │    │
+│  └────────────────┘  └────────────────┘  └────────────────┘    │
+│                                                │                 │
+│                                                ▼                 │
+│                                  ┌────────────────────────┐     │
+│                                  │  Provenance Attachment │     │
+│                                  │  - Source URL          │     │
+│                                  │  - Timestamp           │     │
+│                                  │  - Context snippet     │     │
+│                                  │  - Confidence score    │     │
+│                                  └────────────┬───────────┘     │
+└───────────────────────────────────────────────┼─────────────────┘
+                                                │
+                                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    basset-hound API                              │
+│                                                                  │
+│  ┌─────────────────┐    ┌─────────────────┐                    │
+│  │  Create Orphan  │    │  Create Entity  │                    │
+│  │  (identifiers)  │    │  (rich objects) │                    │
+│  └─────────────────┘    └─────────────────┘                    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 13.8 Implementation Files
+
+**Completed Files:**
+- `extraction/data-type-detector.js` ✅ - Core detection engine (25+ patterns, validation, confidence scoring)
+- `extraction/ingestion-processor.js` ✅ - Ingestion workflow (5 modes, queue, history, statistics)
+- `websocket/commands/ingestion-commands.js` ✅ - WebSocket API (14 commands)
+- `clients/python/basset_hound/ingestion.py` ✅ - Python mixin (15 methods)
+- `clients/nodejs/src/client.js` ✅ - Node.js client methods (18 methods added)
+- `tests/unit/data-type-detector.test.js` ✅ - Detection tests (50+ test cases)
+- `tests/unit/ingestion-processor.test.js` ✅ - Ingestion tests (60+ test cases)
+- `tests/integration/ingestion-workflow.test.js` ✅ - E2E tests (20+ scenarios)
+
+**Planned Files:**
+- `renderer/components/ingestion-panel.js` - UI sidebar
+- `renderer/components/highlight-overlay.js` - Visual highlighting
+
+### 13.9 Configuration Schema
+
+```yaml
+# config/ingestion.yaml
+ingestion:
+  default_mode: selective  # automatic | selective | type_filtered | confirmation
+
+  enabled_types:
+    - email
+    - phone
+    - crypto_btc
+    - crypto_eth
+    - social_media
+    - url
+    - ip_address
+    - domain
+    - image
+    - address
+
+  auto_ingest_types:  # For type_filtered mode
+    - email
+    - phone
+
+  confidence_threshold: 0.7  # Minimum confidence to show/ingest
+
+  deduplication:
+    enabled: true
+    check_basset_hound: true  # Query existing orphans
+    local_cache_ttl: 3600     # Seconds to cache known values
+
+  rate_limiting:
+    enabled: true
+    max_items_per_page: 100
+    min_delay_between_ingests: 500  # ms
+
+  ui:
+    highlight_detected: true
+    highlight_color: "#ffff00"
+    show_confidence_scores: true
+    sidebar_position: "right"
+```
+
+### 13.10 API Response Format
+
+```json
+// Response from detect_data_types command
+{
+  "success": true,
+  "page_url": "https://example.com/contact",
+  "detected_at": "2026-01-05T10:30:00Z",
+  "total_items": 15,
+  "items": [
+    {
+      "id": "det_001",
+      "type": "email",
+      "value": "contact@example.com",
+      "confidence": 0.95,
+      "context": "...reach us at contact@example.com for inquiries...",
+      "position": { "start": 245, "end": 267 },
+      "element_xpath": "/html/body/div[2]/p[3]",
+      "orphan_type": "email",
+      "suggested_tags": ["contact", "business"]
+    },
+    {
+      "id": "det_002",
+      "type": "phone",
+      "value": "+1-555-123-4567",
+      "confidence": 0.92,
+      "context": "Call us: +1-555-123-4567",
+      "normalized": "+15551234567",
+      "country_code": "US",
+      "orphan_type": "phone"
+    },
+    {
+      "id": "det_003",
+      "type": "image",
+      "value": "https://example.com/team/john-doe.jpg",
+      "confidence": 1.0,
+      "alt_text": "John Doe - CEO",
+      "dimensions": { "width": 400, "height": 400 },
+      "file_type": "image/jpeg",
+      "orphan_type": "url",
+      "metadata": {
+        "exif": { "camera": "iPhone 14", "date": "2025-12-01" }
+      }
+    }
+  ],
+  "summary": {
+    "by_type": {
+      "email": 3,
+      "phone": 2,
+      "image": 8,
+      "social_media": 2
+    }
+  }
+}
+```
+
+---
+
+## Phase 14: Advanced Image Ingestion - 🚧 IN PROGRESS
+
+> **Goal:** Specialized image extraction and analysis for OSINT investigations.
+
+### 14.1 Image Extraction
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Inline image extraction | ✅ Done | Extract `<img>` src, srcset, data-src via `extract_page_images` |
+| Background image extraction | ✅ Done | CSS background-image URLs |
+| Canvas snapshot | 📋 Planned | Capture canvas element contents |
+| SVG extraction | 📋 Planned | Inline and external SVG files |
+| Favicon extraction | 📋 Planned | Site icons and touch icons |
+| Open Graph images | 📋 Planned | og:image meta tags |
+| Lazy-loaded images | ✅ Done | Detect and handle data-src, data-lazy-src |
+
+### 14.2 Image Metadata
+
+| Task | Status | Description |
+|------|--------|-------------|
+| EXIF extraction | ✅ Done | Camera, GPS, date, settings via `exifr` library |
+| IPTC extraction | ✅ Done | Caption, keywords, copyright via `exifreader` |
+| XMP extraction | ✅ Done | Adobe metadata via `exifreader` |
+| Dimensions and format | ✅ Done | Width, height, file type via `sharp`/`jimp` |
+| Image hash (pHash) | ✅ Done | Perceptual hash for similarity |
+| Reverse image lookup | 📋 Planned | Find similar images online |
+
+### 14.3 Image Analysis
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Face detection | 📋 Planned | Detect faces with `face-api.js` (models required) |
+| Text extraction (OCR) | ✅ Done | Extract text via `tesseract.js` |
+| Object detection | 📋 Planned | Identify objects in images |
+| Logo detection | 📋 Planned | Identify company logos |
+| Screenshot detection | 📋 Planned | Identify screenshots vs photos |
+
+### 14.4 WebSocket Commands
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `extract_image_metadata` | ✅ Done | Full metadata extraction from image |
+| `extract_image_gps` | ✅ Done | GPS coordinates from image |
+| `extract_image_text` | ✅ Done | OCR text extraction |
+| `generate_image_hash` | ✅ Done | Perceptual hash generation |
+| `compare_images` | ✅ Done | Image similarity comparison |
+| `extract_page_images` | ✅ Done | Extract all images from page with metadata |
+| `get_image_osint_data` | ✅ Done | basset-hound orphan data generation |
+| `configure_image_extractor` | ✅ Done | Configure extractor options |
+| `get_image_extractor_stats` | ✅ Done | Get extractor statistics |
+| `cleanup_image_extractor` | ✅ Done | Clean up resources |
+
+### 14.5 Implementation Files
+
+**Completed Files:**
+- `extraction/image-metadata-extractor.js` ✅ - Core extraction engine
+- `websocket/commands/image-commands.js` ✅ - WebSocket API (10 commands)
+- `tests/unit/image-metadata-extractor.test.js` ✅ - Unit tests (40+ test cases)
+
+---
+
 ## Contributing
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 
 ---
 
-*Last Updated: December 29, 2024*
-*Version: 8.2.4 - Embedded Tor CLI Integration*
+*Last Updated: January 5, 2026*
+*Version: 8.4.0 - Advanced Image Ingestion*
+*Next Steps: Phase 13.3 - UI Components, Phase 14 Remaining - Face Detection, Object Detection*

@@ -635,6 +635,210 @@ class BassetHoundClient extends EventEmitter {
   randomizeFingerprint() {
     return this.sendCommand('randomize_fingerprint');
   }
+
+  // ==================== Data Ingestion (Phase 13) ====================
+
+  /**
+   * Detect data types in the current page
+   * @param {Object} options - Detection options
+   * @param {string[]} [options.types] - Specific types to detect
+   * @param {number} [options.confidenceThreshold] - Min confidence (0-1)
+   * @param {string} [options.html] - HTML content to scan
+   * @param {string} [options.url] - URL for context
+   * @returns {Promise<Object>} Detection results
+   */
+  detectDataTypes(options = {}) {
+    const params = {};
+    if (options.types) params.types = options.types;
+    if (options.confidenceThreshold !== undefined) {
+      params.confidence_threshold = options.confidenceThreshold;
+    }
+    if (options.html) params.html = options.html;
+    if (options.url) params.url = options.url;
+    return this.sendCommand('detect_data_types', params);
+  }
+
+  /**
+   * Get available detection types
+   * @returns {Promise<Object>} Available types
+   */
+  getDetectionTypes() {
+    return this.sendCommand('get_detection_types');
+  }
+
+  /**
+   * Configure ingestion settings
+   * @param {Object} config - Configuration options
+   * @param {string} [config.mode] - Ingestion mode
+   * @param {string[]} [config.enabledTypes] - Types to enable
+   * @param {string[]} [config.autoIngestTypes] - Types to auto-ingest
+   * @param {number} [config.confidenceThreshold] - Min confidence
+   * @param {Object} [config.deduplication] - Deduplication settings
+   * @param {Object} [config.rateLimiting] - Rate limiting settings
+   * @param {Object} [config.provenance] - Provenance settings
+   * @returns {Promise<Object>} Updated configuration
+   */
+  configureIngestion(config = {}) {
+    const params = {};
+    if (config.mode) params.mode = config.mode;
+    if (config.enabledTypes) params.enabled_types = config.enabledTypes;
+    if (config.autoIngestTypes) params.auto_ingest_types = config.autoIngestTypes;
+    if (config.confidenceThreshold !== undefined) {
+      params.confidence_threshold = config.confidenceThreshold;
+    }
+    if (config.deduplication) params.deduplication = config.deduplication;
+    if (config.rateLimiting) params.rate_limiting = config.rateLimiting;
+    if (config.provenance) params.provenance = config.provenance;
+    return this.sendCommand('configure_ingestion', params);
+  }
+
+  /**
+   * Get current ingestion configuration
+   * @returns {Promise<Object>} Current config
+   */
+  getIngestionConfig() {
+    return this.sendCommand('get_ingestion_config');
+  }
+
+  /**
+   * Set ingestion mode
+   * @param {string} mode - 'automatic'|'selective'|'type_filtered'|'confirmation'|'batch'
+   * @returns {Promise<Object>} Confirmation
+   */
+  setIngestionMode(mode) {
+    return this.sendCommand('set_ingestion_mode', { mode });
+  }
+
+  /**
+   * Process page for ingestion
+   * @param {Object} options - Processing options
+   * @param {string} [options.html] - HTML content
+   * @param {string} [options.url] - URL for context
+   * @returns {Promise<Object>} Processing results
+   */
+  processPageForIngestion(options = {}) {
+    const params = {};
+    if (options.html) params.html = options.html;
+    if (options.url) params.url = options.url;
+    return this.sendCommand('process_page_for_ingestion', params);
+  }
+
+  /**
+   * Get items in ingestion queue
+   * @returns {Promise<Object>} Queue contents
+   */
+  getIngestionQueue() {
+    return this.sendCommand('get_ingestion_queue');
+  }
+
+  /**
+   * Ingest selected items from queue
+   * @param {string[]} itemIds - Item IDs to ingest
+   * @returns {Promise<Object>} Ingestion results
+   */
+  ingestSelected(itemIds) {
+    return this.sendCommand('ingest_selected', { item_ids: itemIds });
+  }
+
+  /**
+   * Ingest all items in queue
+   * @returns {Promise<Object>} Ingestion results
+   */
+  ingestAll() {
+    return this.sendCommand('ingest_all');
+  }
+
+  /**
+   * Clear ingestion queue
+   * @returns {Promise<Object>} Confirmation
+   */
+  clearIngestionQueue() {
+    return this.sendCommand('clear_ingestion_queue');
+  }
+
+  /**
+   * Remove items from queue
+   * @param {string[]} itemIds - Item IDs to remove
+   * @returns {Promise<Object>} Updated queue info
+   */
+  removeFromIngestionQueue(itemIds) {
+    return this.sendCommand('remove_from_ingestion_queue', { item_ids: itemIds });
+  }
+
+  /**
+   * Get ingestion history
+   * @param {number} [limit=100] - Max items to return
+   * @returns {Promise<Object>} History entries
+   */
+  getIngestionHistory(limit = 100) {
+    return this.sendCommand('get_ingestion_history', { limit });
+  }
+
+  /**
+   * Get ingestion statistics
+   * @returns {Promise<Object>} Statistics
+   */
+  getIngestionStats() {
+    return this.sendCommand('get_ingestion_stats');
+  }
+
+  /**
+   * Reset ingestion statistics
+   * @returns {Promise<Object>} Confirmation
+   */
+  resetIngestionStats() {
+    return this.sendCommand('reset_ingestion_stats');
+  }
+
+  /**
+   * Export detected data to JSON
+   * @param {Object} options - Export options
+   * @param {Object[]} [options.items] - Specific items to export
+   * @param {boolean} [options.asString] - Return as JSON string
+   * @returns {Promise<Object>} Exported data
+   */
+  exportDetections(options = {}) {
+    const params = {};
+    if (options.items) params.items = options.items;
+    if (options.asString) params.as_string = options.asString;
+    return this.sendCommand('export_detections', params);
+  }
+
+  /**
+   * Add custom detection pattern
+   * @param {string} key - Unique pattern identifier
+   * @param {Object} config - Pattern configuration
+   * @param {string[]} config.patterns - Regex patterns
+   * @param {string} [config.name] - Human-readable name
+   * @param {string} [config.orphanType] - basset-hound type
+   * @param {string} [config.validator] - Validator name
+   * @param {number} [config.contextChars] - Context characters
+   * @param {number} [config.priority] - Detection priority
+   * @param {Object} [config.metadata] - Additional metadata
+   * @returns {Promise<Object>} Confirmation
+   */
+  addDetectionPattern(key, config) {
+    const params = {
+      key,
+      patterns: config.patterns,
+      orphan_type: config.orphanType || 'other',
+      context_chars: config.contextChars || 50,
+      priority: config.priority || 99
+    };
+    if (config.name) params.name = config.name;
+    if (config.validator) params.validator = config.validator;
+    if (config.metadata) params.metadata = config.metadata;
+    return this.sendCommand('add_detection_pattern', params);
+  }
+
+  /**
+   * Remove detection pattern
+   * @param {string} key - Pattern key to remove
+   * @returns {Promise<Object>} Confirmation
+   */
+  removeDetectionPattern(key) {
+    return this.sendCommand('remove_detection_pattern', { key });
+  }
 }
 
 module.exports = { BassetHoundClient };
