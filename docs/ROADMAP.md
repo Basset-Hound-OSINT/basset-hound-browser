@@ -747,6 +747,11 @@ node scripts/install/embedded-tor-setup.js
 | 8.2.4 | 2024-12-29 | Embedded Tor CLI Integration - CLI arguments for Tor modes (--tor, --system-tor, --embedded-tor, --[no-]tor-auto-download), embedded Tor as default behavior, system Tor installation guide (SYSTEM-TOR-INSTALLATION.md), first-run auto-download via tor-auto-setup.js, updated default configuration. |
 | 8.3.0 | 2026-01-05 | Phase 13 Web Content Data Ingestion - DataTypeDetector (25+ patterns), IngestionProcessor (5 modes), 14 WebSocket commands, Python client mixin (15 methods), Node.js client methods (18 added), comprehensive tests (130+ test cases). |
 | 8.4.0 | 2026-01-05 | Phase 14 Advanced Image Ingestion - ImageMetadataExtractor (EXIF/IPTC/XMP/GPS), 10 WebSocket commands, OCR via tesseract.js, perceptual hashing, image similarity comparison, basset-hound orphan data generation. |
+| 9.0.0 | 2026-01-08 | Phase 15 MCP Server Complete - FastMCP server with 46 MCP tools for AI agent integration, BrowserConnection WebSocket client, MCP resources, comprehensive unit tests. Research completed for Phase 17 bot detection evasion. |
+| 9.1.0 | 2026-01-08 | Phase 16 Sock Puppet Integration - SockPuppetIntegration class (600+ lines), 17 WebSocket commands, 10 MCP tools, basset-hound API integration, session/activity tracking, fingerprint consistency validation, comprehensive tests (70+ cases). |
+| 9.2.0 | 2026-01-08 | Phase 17 Enhanced Bot Detection Evasion - FingerprintProfile (platform-consistent fingerprints), BehavioralAI (Fitts's Law mouse, biometric typing), HoneypotDetector, RateLimitAdapter, 24 WebSocket commands, 11 MCP tools (67 total). |
+| 9.3.0 | 2026-01-08 | Phase 18 Evidence Collection Workflow - Evidence/EvidencePackage/EvidenceCollector classes, SHA-256 chain of custody, court-ready export, 22 WebSocket commands, 10 MCP tools (76 total), comprehensive tests. |
+| 9.4.0 | 2026-01-08 | Phase 12 OSINT Agent Integration - InvestigationManager class, 13 OSINT patterns, investigation workflow (queue, depth, patterns), basset-hound orphan export, 18 WebSocket commands, 12 MCP tools (88 total). |
 
 ---
 
@@ -808,6 +813,38 @@ node scripts/install/embedded-tor-setup.js
 - [x] Phase 14 WebSocket Commands (10 image commands)
 - [x] OCR text extraction from images
 - [x] Perceptual hashing for image similarity
+- [x] Phase 15 MCP Server implemented (46 tools)
+- [x] FastMCP server for AI agent integration
+- [x] MCP resources (browser://status, browser://current-page)
+- [x] Phase 17 bot detection evasion research complete
+- [x] Phase 16 Sock Puppet Integration complete
+- [x] SockPuppetIntegration class with basset-hound API
+- [x] 17 sock puppet WebSocket commands
+- [x] 10 sock puppet MCP tools (56 total)
+- [x] Activity tracking and session management
+- [x] Fingerprint consistency validation
+- [x] Phase 17 Enhanced Bot Detection Evasion complete
+- [x] FingerprintProfile for platform-consistent fingerprints
+- [x] BehavioralAI with Fitts's Law mouse movement
+- [x] TypingAI with biometric patterns
+- [x] HoneypotDetector with 8+ indicators
+- [x] RateLimitAdapter with exponential backoff
+- [x] 24 evasion WebSocket commands
+- [x] 11 evasion MCP tools (67 total)
+- [x] Phase 18 Evidence Collection Workflow complete
+- [x] Evidence/EvidencePackage/EvidenceCollector classes
+- [x] SHA-256 hash for all evidence
+- [x] Chain of custody tracking
+- [x] Court-ready export with certification
+- [x] 22 evidence WebSocket commands
+- [x] 10 evidence MCP tools (76 total)
+- [x] Phase 12 OSINT Agent Integration complete
+- [x] InvestigationManager for workflow management
+- [x] 13 OSINT data patterns with validation
+- [x] Investigation queue with depth/pattern control
+- [x] basset-hound orphan format export
+- [x] 18 OSINT WebSocket commands
+- [x] 12 OSINT MCP tools (88 total)
 
 ---
 
@@ -912,52 +949,129 @@ npm test -- tests/unit/fingerprint.test.js  # Specific test file
 
 ---
 
-## Phase 12: OSINT Agent Integration - 📋 PLANNED
+## Phase 12: OSINT Agent Integration - ✅ COMPLETED
 
-### 12.1 OSINT Data Extraction Commands
+**Goal:** Enable OSINT agents to use basset-hound-browser for automated investigations with results stored in basset-hound.
 
-| Task | Status | Description |
-|------|--------|-------------|
-| `extract_osint_data` command | 📋 Planned | Extract emails, phones, crypto from page |
-| Pattern library | 📋 Planned | Comprehensive regex for OSINT data types |
-| Context extraction | 📋 Planned | Capture surrounding text |
-| Structured data extraction | 📋 Planned | JSON-LD, Schema.org parsing |
-
-### 12.2 Evidence Capture
+### 12.1 OSINT Data Extraction
 
 | Task | Status | Description |
 |------|--------|-------------|
-| `capture_evidence` command | 📋 Planned | Screenshot + HTML + metadata bundle |
-| Evidence storage format | 📋 Planned | Standard evidence package structure |
-| Timestamp verification | 📋 Planned | Cryptographic timestamp for evidence |
+| `extract_osint_data` command | ✅ Done | Extract 13+ data types from pages |
+| OSINT_PATTERNS library | ✅ Done | Email, phone, crypto, social, IP, domain, onion |
+| Context extraction | ✅ Done | 50-char surrounding text for each finding |
+| Confidence scoring | ✅ Done | Validator-based confidence scores |
+| Sensitive data marking | ✅ Done | SSN, credit card flagged as sensitive |
+| Orphan type mapping | ✅ Done | Maps to basset-hound identifier types |
 
-### 12.3 basset-hound Integration
-
-| Task | Status | Description |
-|------|--------|-------------|
-| `store_to_basset` command | 📋 Planned | Direct storage to basset-hound API |
-| Provenance tracking | 📋 Planned | Include source URL, date, browser info |
-| Verification before store | 📋 Planned | Verify data before sending |
-
-### 12.4 Investigation Workflow Support
+### 12.2 Investigation Management
 
 | Task | Status | Description |
 |------|--------|-------------|
-| `investigate_links` command | 📋 Planned | Follow and investigate linked pages |
-| Depth control | 📋 Planned | Configurable crawl depth |
-| Pattern filtering | 📋 Planned | Only follow matching URLs |
-| Rate limiting | 📋 Planned | Polite crawling |
+| InvestigationManager class | ✅ Done | Full investigation lifecycle management |
+| `create_investigation` command | ✅ Done | Create with config (depth, patterns, etc.) |
+| `get_investigation` command | ✅ Done | Get investigation by ID |
+| `list_investigations` command | ✅ Done | List all investigations |
+| `set_active_investigation` | ✅ Done | Switch active investigation |
+| `complete_investigation` | ✅ Done | Mark complete with stats |
+| `export_investigation` | ✅ Done | Export all data and metadata |
 
-**Purpose:** Enable OSINT agents to use basset-hound-browser for automated investigations with results stored in basset-hound.
+### 12.3 Investigation Workflow
 
-**New Files:**
-- `websocket/commands/osint-commands.js` - OSINT extraction commands
-- `websocket/commands/evidence-commands.js` - Evidence capture commands
-- `clients/python/basset_hound_browser/osint.py` - Python OSINT mixin
-- `clients/nodejs/osint.js` - Node.js OSINT mixin
-- `tests/integration/osint-workflow.test.js` - Integration tests
+| Task | Status | Description |
+|------|--------|-------------|
+| `investigate_page` command | ✅ Done | Full page OSINT + evidence + links |
+| `investigate_links` command | ✅ Done | Queue links matching patterns |
+| `queue_investigation_url` | ✅ Done | Add URL to queue with depth |
+| `get_next_investigation_url` | ✅ Done | Get next URL from queue |
+| `get_investigation_queue` | ✅ Done | View queued URLs |
+| Depth control | ✅ Done | Configurable maxDepth (default 2) |
+| Pattern filtering | ✅ Done | Include/exclude URL patterns |
+| Rate limiting config | ✅ Done | Configurable delayMs between requests |
 
-See [INTEGRATION-RESEARCH-2026-01-04.md](docs/findings/INTEGRATION-RESEARCH-2026-01-04.md) for details.
+### 12.4 Evidence Integration
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Evidence capture integration | ✅ Done | Uses Phase 18 evidence system |
+| Screenshot with provenance | ✅ Done | Automatic evidence capture |
+| Finding provenance | ✅ Done | Source URL, timestamp, investigation ID |
+
+### 12.5 basset-hound Integration
+
+| Task | Status | Description |
+|------|--------|-------------|
+| `prepare_for_basset_hound` | ✅ Done | Convert findings to orphan format |
+| Provenance generation | ✅ Done | Full capture context included |
+| Sensitive data filtering | ✅ Done | Exclude SSN/CC by default |
+| Investigation tagging | ✅ Done | Tags for investigation ID, type |
+
+### 12.6 WebSocket Commands
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `create_investigation` | ✅ Done | Create new investigation |
+| `get_investigation` | ✅ Done | Get by ID |
+| `list_investigations` | ✅ Done | List all |
+| `set_active_investigation` | ✅ Done | Set active |
+| `complete_investigation` | ✅ Done | Complete and get stats |
+| `export_investigation` | ✅ Done | Full export |
+| `extract_osint_data` | ✅ Done | Extract from current page |
+| `get_osint_data_types` | ✅ Done | Get available types |
+| `investigate_page` | ✅ Done | Full page investigation |
+| `investigate_links` | ✅ Done | Queue page links |
+| `queue_investigation_url` | ✅ Done | Add to queue |
+| `get_next_investigation_url` | ✅ Done | Get next URL |
+| `get_investigation_queue` | ✅ Done | View queue |
+| `get_investigation_findings` | ✅ Done | Get findings |
+| `get_findings_summary` | ✅ Done | Summary by type |
+| `prepare_for_basset_hound` | ✅ Done | Export for API |
+
+**Total: 18 WebSocket commands**
+
+### 12.7 MCP Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_create_investigation` | ✅ Done | Create investigation |
+| `browser_extract_osint_data` | ✅ Done | Extract data |
+| `browser_investigate_page` | ✅ Done | Full page investigation |
+| `browser_investigate_links` | ✅ Done | Queue links |
+| `browser_get_next_investigation_url` | ✅ Done | Get next URL |
+| `browser_get_investigation_findings` | ✅ Done | Get findings |
+| `browser_get_findings_summary` | ✅ Done | Summary |
+| `browser_prepare_for_basset_hound` | ✅ Done | Prepare orphans |
+| `browser_complete_investigation` | ✅ Done | Complete |
+| `browser_export_investigation` | ✅ Done | Export |
+| `browser_list_investigations` | ✅ Done | List all |
+| `browser_get_osint_data_types` | ✅ Done | Get types |
+
+**Total: 12 MCP tools (88 total)**
+
+### 12.8 OSINT Patterns Supported
+
+| Pattern Type | Format | basset-hound Type |
+|--------------|--------|-------------------|
+| email | RFC 5322 | EMAIL |
+| phone | US/International | PHONE |
+| crypto_btc | Bitcoin address | CRYPTO_ADDRESS (BTC) |
+| crypto_eth | Ethereum address | CRYPTO_ADDRESS (ETH) |
+| crypto_xmr | Monero address | CRYPTO_ADDRESS (XMR) |
+| social_twitter | @handle | SOCIAL_MEDIA (twitter) |
+| social_linkedin | linkedin.com/in/* | SOCIAL_MEDIA (linkedin) |
+| social_github | github.com/* | SOCIAL_MEDIA (github) |
+| ip_address | IPv4 | IP_ADDRESS |
+| domain | Common TLDs | DOMAIN |
+| onion | .onion addresses | DOMAIN (onion) |
+| ssn | US SSN format | SSN (sensitive) |
+| credit_card | Visa/MC/Amex | CREDIT_CARD (sensitive) |
+
+### 12.9 Files Created
+
+- `websocket/commands/osint-commands.js` - OSINT commands (700+ lines)
+- `tests/unit/osint-commands.test.js` - Tests (150+ test cases)
+
+See [INTEGRATION-RESEARCH-2026-01-04.md](docs/findings/INTEGRATION-RESEARCH-2026-01-04.md) for design details.
 
 ---
 
@@ -1338,12 +1452,537 @@ ingestion:
 
 ---
 
+## Strategic Vision: Multi-Project Intelligence Platform Integration
+
+### Evolution and Pivot Potential
+
+**basset-hound-browser** started as an OSINT-focused automation browser but is evolving toward **general-purpose browser automation** - similar to how basset-hound evolved from OSINT-specific to a general entity backbone.
+
+**Potential future applications beyond OSINT:**
+- General web automation and testing
+- Research data collection
+- Automated form submissions
+- Web scraping with anti-detection
+- Any task requiring programmatic browser control with evasion
+
+### Project Scope Definition
+
+**basset-hound-browser Core Mission:** Full-control Electron browser with anti-detection - the **power-user** browser automation option.
+
+| In Scope | Out of Scope |
+|----------|--------------|
+| Full browser automation (navigate, click, fill, extract) | Entity storage (→ basset-hound) |
+| Advanced bot detection evasion (TLS, behavioral AI) | OSINT data detection patterns (shared with extension) |
+| Profile/identity isolation | AI agent logic (→ palletai) |
+| Proxy and Tor integration | Graph analysis |
+| WebSocket API for external control | Quick-start simplicity (→ autofill-extension) |
+| Content extraction and screenshots | |
+| Deep customization, boutique configurations | |
+
+### Relationship with autofill-extension
+
+**basset-hound-browser** and **autofill-extension** provide **similar functionality** but serve different user needs and are developed in parallel:
+
+| Aspect | basset-hound-browser (This Project) | autofill-extension |
+|--------|-------------------------------------|-------------------|
+| **Deployment** | Standalone Electron app | Chrome Web Store install |
+| **Target user** | Power users, deep customization | Quick-start users |
+| **Customization** | Fully open-source, unlimited control | Limited by Chrome APIs |
+| **Control** | Full control over TLS, profiles, everything | Subject to Chrome restrictions |
+| **Use case** | Boutique configs, advanced automation | Get up and running immediately |
+| **Bot evasion** | Advanced (TLS/JA3, behavioral AI, full profile isolation) | Basic (UA rotation, typing sim) |
+
+**Why two projects?**
+1. Chrome extensions can't control TLS fingerprints, full process isolation
+2. Power users need capabilities Chrome's security model prevents
+3. Different features need independent iteration timelines
+4. Some operations require fully isolated browser instances (sock puppets)
+
+Both expose similar MCP tools to AI agents (palletai), allowing agents to choose based on operation requirements.
+
+### Integration Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        AI AGENT LAYER (palletai)                     │
+│         OSINT Agent • Knowledge Base • Multi-Agent Coordination      │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+                    MCP Protocol + WebSocket
+                               │
+┌──────────────────────────────┼───────────────────────────────────────┐
+│                              ▼                                        │
+│  ┌────────────────────────────────────────────────────────────────┐  │
+│  │                  basset-hound-browser                           │  │
+│  │                                                                 │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │  │
+│  │  │  WebSocket  │  │  Fingerprint│  │    Content Extraction   │ │  │
+│  │  │  434 cmds   │  │  Evasion    │  │    + Image Analysis     │ │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────────────────┘ │  │
+│  │                                                                 │  │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │  │
+│  │  │   Profile   │  │  Human-like │  │      Proxy / Tor        │ │  │
+│  │  │  Isolation  │  │  Behavior   │  │      Integration        │ │  │
+│  │  └─────────────┘  └─────────────┘  └─────────────────────────┘ │  │
+│  └────────────────────────────────────────────────────────────────┘  │
+│                              │                                        │
+└──────────────────────────────┼────────────────────────────────────────┘
+                               │
+                    REST API + WebSocket
+                               │
+                               ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                         basset-hound                                  │
+│              Entity Storage • Graph Analysis • MCP Server             │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Phase 15: MCP Server for AI Agent Integration - ✅ COMPLETED
+
+**Goal:** Expose browser automation capabilities via MCP protocol for AI agents (palletai).
+
+### 15.1 Core MCP Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_navigate` | ✅ Done | Navigate to URL with wait options |
+| `browser_click` | ✅ Done | Click element with human-like behavior |
+| `browser_fill` | ✅ Done | Fill form field with typing simulation |
+| `browser_screenshot` | ✅ Done | Capture page screenshot |
+| `browser_get_page_state` | ✅ Done | Get comprehensive page state |
+| `browser_extract_content` | ✅ Done | Extract content (text, HTML, links, images) |
+| `browser_execute_script` | ✅ Done | Execute custom JavaScript |
+
+### 15.2 Advanced MCP Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_fill_form_with_entity` | 📋 Planned | Fill form from basset-hound entity |
+| `browser_fill_form_with_sock_puppet` | 📋 Planned | Fill with sock puppet credentials |
+| `browser_detect_login_form` | 📋 Planned | Detect and analyze login forms |
+| `browser_switch_profile` | ✅ Done | Switch to different browser profile |
+| `browser_set_proxy` | ✅ Done | Configure proxy settings |
+| `browser_new_identity` | ✅ Done | Get new Tor identity (`browser_tor_new_identity`) |
+
+### 15.3 Additional MCP Tools Implemented
+
+| Tool Category | Tools | Count |
+|--------------|-------|-------|
+| Navigation | navigate, back, forward, refresh, get_url, get_title | 6 |
+| Interaction | click, fill, type, press_key, hover, scroll, select, clear | 8 |
+| Content | get_content, get_html, get_page_state, extract_links, extract_forms, extract_images, extract_metadata, detect_technologies | 8 |
+| Screenshots | screenshot, screenshot_element, screenshot_full_page | 3 |
+| OSINT/Ingestion | detect_data_types, configure_ingestion, ingest_selected, ingest_all, extract_image_metadata, extract_image_text | 6 |
+| Profile | switch_profile, create_profile, list_profiles, delete_profile | 4 |
+| Proxy/Tor | set_proxy, clear_proxy, tor_start, tor_stop, tor_new_identity, tor_get_circuit | 6 |
+| Advanced | execute_script, wait_for_element, wait_for_navigation, get_cookies, set_cookies | 5 |
+
+**Total: 46 MCP tools**
+
+### 15.4 Implementation Tasks
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Create MCP server wrapper | ✅ Done | FastMCP server (`mcp/server.py`) |
+| Map WebSocket commands to MCP tools | ✅ Done | 46 tools mapped to WebSocket commands |
+| BrowserConnection class | ✅ Done | WebSocket client for browser communication |
+| MCP Resources | ✅ Done | `browser://status`, `browser://current-page` |
+| Add basset-hound integration | 📋 Planned | Entity lookup for form filling |
+| Document MCP tools | ✅ Done | Docstrings and type hints for all tools |
+| Unit tests | ✅ Done | `tests/unit/mcp-server.test.js` (400+ lines) |
+
+### 15.5 Configuration
+
+**For AI Agents (Claude Desktop, palletAI):**
+```json
+{
+  "mcpServers": {
+    "basset-hound-browser": {
+      "command": "python",
+      "args": ["-m", "basset_hound_browser.mcp.server"],
+      "env": {
+        "BASSET_WS_URL": "ws://localhost:8765"
+      }
+    }
+  }
+}
+```
+
+### 15.6 Files Created
+
+- `mcp/server.py` - FastMCP server (700+ lines, 46 tools)
+- `mcp/requirements.txt` - Dependencies (fastmcp, websockets, aiohttp)
+- `mcp/__init__.py` - Module exports
+- `tests/unit/mcp-server.test.js` - Unit tests
+
+**Research Reference:** Based on [MCP Specification 2025-11-25](https://modelcontextprotocol.io/specification/2025-11-25) and [FastMCP 2.0](https://gofastmcp.com).
+
+---
+
+## Phase 16: Sock Puppet Profile Integration - ✅ COMPLETED
+
+**Goal:** Enable browser profiles tied to basset-hound sock puppet identities.
+
+### 16.1 Profile-Identity Linking
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Fetch sock puppet from basset-hound | ✅ Done | SockPuppetIntegration.fetchSockPuppet() |
+| Create profile from sock puppet | ✅ Done | SockPuppetIntegration.createProfileFromSockPuppet() |
+| Sync fingerprint to identity | ✅ Done | SockPuppetIntegration.syncFingerprintFromSockPuppet() |
+| Link existing profile | ✅ Done | SockPuppetIntegration.linkProfileToSockPuppet() |
+| Unlink profile | ✅ Done | SockPuppetIntegration.unlinkProfile() |
+| Validate fingerprint consistency | ✅ Done | SockPuppetIntegration.validateFingerprintConsistency() |
+
+### 16.2 Credential Management
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Fetch credentials from basset-hound | ✅ Done | SockPuppetIntegration.getCredentials() |
+| Fill form with sock puppet credentials | ✅ Done | SockPuppetIntegration.fillFormWithCredentials() |
+| Human-like typing simulation | ✅ Done | Uses existing humanize.js behaviors |
+| Credential field mapping | ✅ Done | 10 standard fields (username, email, password, phone, etc.) |
+
+### 16.3 Session Management
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Start session tracking | ✅ Done | SockPuppetIntegration.startSession() |
+| End session with summary | ✅ Done | SockPuppetIntegration.endSession() |
+| Session metadata | ✅ Done | Custom metadata per session |
+| Multi-profile sessions | ✅ Done | Each profile can have active session |
+
+### 16.4 Activity Tracking
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Log activities | ✅ Done | SockPuppetIntegration.logActivity() |
+| Page visit recording | ✅ Done | recordPageVisit() helper |
+| Screenshot recording | ✅ Done | recordScreenshot() helper |
+| Data extraction recording | ✅ Done | recordDataExtraction() helper |
+| Activity log retrieval | ✅ Done | getActivityLog() with filtering |
+| Sync to basset-hound | ✅ Done | syncActivitiesToBassetHound() |
+
+### 16.5 WebSocket Commands
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `list_sock_puppets` | ✅ Done | List all sock puppets from basset-hound |
+| `get_sock_puppet` | ✅ Done | Get sock puppet details |
+| `link_profile_to_sock_puppet` | ✅ Done | Link browser profile to identity |
+| `unlink_profile_from_sock_puppet` | ✅ Done | Remove profile link |
+| `create_profile_from_sock_puppet` | ✅ Done | Create new profile from identity |
+| `get_linked_sock_puppet` | ✅ Done | Get sock puppet for a profile |
+| `get_sock_puppet_credentials` | ✅ Done | Fetch credentials |
+| `fill_form_with_sock_puppet` | ✅ Done | Auto-fill form with credentials |
+| `start_sock_puppet_session` | ✅ Done | Start activity tracking |
+| `end_sock_puppet_session` | ✅ Done | End session and sync |
+| `log_sock_puppet_activity` | ✅ Done | Manual activity logging |
+| `get_sock_puppet_activity_log` | ✅ Done | Retrieve activities |
+| `sync_fingerprint_from_sock_puppet` | ✅ Done | Sync fingerprint config |
+| `validate_sock_puppet_fingerprint` | ✅ Done | Check consistency |
+| `get_sock_puppet_stats` | ✅ Done | Usage statistics |
+| `get_sock_puppet_credential_fields` | ✅ Done | Available field names |
+| `get_sock_puppet_activity_types` | ✅ Done | Activity type constants |
+
+**Total: 17 WebSocket commands**
+
+### 16.6 MCP Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_list_sock_puppets` | ✅ Done | List identities for AI agents |
+| `browser_get_sock_puppet` | ✅ Done | Get identity details |
+| `browser_link_profile_to_sock_puppet` | ✅ Done | Link profile |
+| `browser_create_profile_from_sock_puppet` | ✅ Done | Create profile from identity |
+| `browser_fill_form_with_sock_puppet` | ✅ Done | Auto-fill with credentials |
+| `browser_start_sock_puppet_session` | ✅ Done | Start session tracking |
+| `browser_end_sock_puppet_session` | ✅ Done | End session |
+| `browser_get_sock_puppet_activity_log` | ✅ Done | Get activities |
+| `browser_validate_sock_puppet_fingerprint` | ✅ Done | Validate consistency |
+| `browser_get_sock_puppet_stats` | ✅ Done | Usage stats |
+
+**Total: 10 MCP tools (56 total MCP tools)**
+
+### 16.7 Files Created
+
+- `profiles/sock-puppet-integration.js` - Core integration class (600+ lines)
+- `websocket/commands/sock-puppet-commands.js` - WebSocket API (17 commands)
+- `tests/unit/sock-puppet-integration.test.js` - Unit tests (70+ test cases)
+- Updated `mcp/server.py` - Added 10 sock puppet MCP tools
+
+### 16.8 Integration Points
+
+- basset-hound API: `GET /api/v1/entities/{id}` - Fetch sock puppet
+- basset-hound API: `GET /api/v1/entities?type=SOCK_PUPPET` - List sock puppets
+- basset-hound API: `POST /api/v1/entities/{id}/credentials` - Get credentials
+- basset-hound API: `POST /api/v1/entities/{id}/activity` - Sync activities
+
+---
+
+## Phase 17: Enhanced Bot Detection Evasion - ✅ COMPLETED
+
+**Goal:** Advanced evasion techniques for sophisticated bot detection systems.
+
+### 17.1 TLS/JA3 Fingerprinting
+
+| Task | Status | Description |
+|------|--------|-------------|
+| JA3 fingerprint research | ✅ Done | Research completed - proxy approach recommended |
+| JA4 fingerprint support | 📋 Deferred | Requires proxy-based TLS interception |
+| Client hello randomization | 📋 Deferred | Electron TLS is distinctive - use proxy |
+
+**Note:** TLS fingerprinting requires proxy-based approach since Electron's TLS stack is distinctive. Recommend using TLS proxy (e.g., `curl_cffi`, `tls-client`) for JA3 spoofing.
+
+### 17.2 Fingerprint Profile Consistency
+
+| Task | Status | Description |
+|------|--------|-------------|
+| FingerprintProfile class | ✅ Done | Platform-consistent fingerprint generation |
+| FingerprintProfileManager | ✅ Done | Profile storage and management |
+| Platform-specific configs | ✅ Done | Windows, macOS, Linux configurations |
+| WebGL vendor/renderer matching | ✅ Done | Consistent GPU fingerprints |
+| Screen/timezone/locale matching | ✅ Done | Region-appropriate settings |
+| Chrome version management | ✅ Done | Realistic UA versions |
+| Injection script generation | ✅ Done | Complete fingerprint override script |
+
+### 17.3 Behavioral AI
+
+| Task | Status | Description |
+|------|--------|-------------|
+| BehavioralProfile class | ✅ Done | Session-consistent behavioral characteristics |
+| MouseMovementAI | ✅ Done | Fitts's Law + minimum-jerk trajectory |
+| Physiological tremor | ✅ Done | 8-12 Hz tremor simulation |
+| Micro-corrections | ✅ Done | Near-target correction patterns |
+| Overshoot behavior | ✅ Done | Realistic overshoot and correction |
+| TypingAI | ✅ Done | Biometric typing patterns |
+| Hand alternation speedup | ✅ Done | Faster for hand switches |
+| Common digraph detection | ✅ Done | 30 common letter pairs |
+| Typing errors/corrections | ✅ Done | Natural typo simulation |
+| Fatigue simulation | ✅ Done | Session-based slowdown |
+
+### 17.4 Detection Avoidance
+
+| Task | Status | Description |
+|------|--------|-------------|
+| HoneypotDetector class | ✅ Done | 8+ honeypot indicators |
+| Hidden field detection | ✅ Done | display:none, visibility:hidden, etc. |
+| Suspicious name detection | ✅ Done | honeypot, trap, confirm_email, etc. |
+| Zero-dimension detection | ✅ Done | 0x0 and 1x1 pixel fields |
+| Off-screen detection | ✅ Done | Position < -1000px |
+| RateLimitAdapter class | ✅ Done | Adaptive rate limiting |
+| Exponential backoff | ✅ Done | Configurable with jitter |
+| Retry-After support | ✅ Done | Respects HTTP header |
+| CAPTCHA handling | 📋 Planned | Integration with solving services |
+| Ban recovery | 📋 Planned | Automatic identity rotation |
+
+### 17.5 WebSocket Commands
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `create_fingerprint_profile` | ✅ Done | Create consistent fingerprint |
+| `create_regional_fingerprint` | ✅ Done | Profile for specific region |
+| `get_fingerprint_profile` | ✅ Done | Get profile by ID |
+| `list_fingerprint_profiles` | ✅ Done | List all profiles |
+| `set_active_fingerprint` | ✅ Done | Set active profile |
+| `get_active_fingerprint` | ✅ Done | Get active profile |
+| `apply_fingerprint` | ✅ Done | Inject fingerprint to page |
+| `delete_fingerprint_profile` | ✅ Done | Remove profile |
+| `get_fingerprint_options` | ✅ Done | Available platforms/timezones |
+| `create_behavioral_profile` | ✅ Done | Create behavioral session |
+| `generate_mouse_path` | ✅ Done | Human-like mouse movement |
+| `generate_scroll_behavior` | ✅ Done | Natural scrolling |
+| `generate_typing_events` | ✅ Done | Biometric typing |
+| `get_behavioral_profile` | ✅ Done | Get session profile |
+| `list_behavioral_sessions` | ✅ Done | List all sessions |
+| `check_honeypot` | ✅ Done | Check single element |
+| `filter_honeypots` | ✅ Done | Filter form fields |
+| `get_rate_limit_state` | ✅ Done | Get adapter state |
+| `record_request_success` | ✅ Done | Record successful request |
+| `record_rate_limit` | ✅ Done | Record rate limit hit |
+| `is_rate_limited` | ✅ Done | Check status code |
+| `reset_rate_limit` | ✅ Done | Reset adapter |
+| `list_rate_limit_adapters` | ✅ Done | List all adapters |
+
+**Total: 24 WebSocket commands**
+
+### 17.6 MCP Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_create_fingerprint_profile` | ✅ Done | Create consistent fingerprint |
+| `browser_create_regional_fingerprint` | ✅ Done | Profile for region |
+| `browser_list_fingerprint_profiles` | ✅ Done | List profiles |
+| `browser_apply_fingerprint` | ✅ Done | Apply to page |
+| `browser_get_fingerprint_options` | ✅ Done | Get options |
+| `browser_create_behavioral_profile` | ✅ Done | Create session |
+| `browser_generate_mouse_path` | ✅ Done | Human-like mouse |
+| `browser_generate_typing_events` | ✅ Done | Biometric typing |
+| `browser_check_honeypot` | ✅ Done | Check element |
+| `browser_get_rate_limit_delay` | ✅ Done | Get delay |
+| `browser_record_rate_limit` | ✅ Done | Record limit hit |
+
+**Total: 11 MCP tools (67 total)**
+
+### 17.7 Files Created
+
+- `evasion/fingerprint-profile.js` - Profile-based fingerprint system (700+ lines)
+- `evasion/behavioral-ai.js` - Physics-based behavior simulation (800+ lines)
+- `websocket/commands/evasion-commands.js` - WebSocket API (24 commands)
+- `tests/unit/fingerprint-profile.test.js` - Fingerprint tests (200+ test cases)
+- `tests/unit/behavioral-ai.test.js` - Behavioral tests (150+ test cases)
+
+**Research Reference:** Based on [browser fingerprinting evasion research](https://github.com/nickspodd/browser-fingerprinting) and [GeeTest analysis](https://www.geetest.com/en/article/how-to-defeat-botbrowser-in-2025).
+
+---
+
+## Phase 18: Evidence Collection Workflow - ✅ COMPLETED
+
+**Goal:** Streamlined evidence capture for law enforcement investigations.
+
+### 18.1 Evidence Core Classes
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Evidence class | ✅ Done | Individual evidence item with SHA-256 hash |
+| EvidencePackage class | ✅ Done | Collection of related evidence |
+| EvidenceCollector class | ✅ Done | High-level evidence capture API |
+| EVIDENCE_TYPES constants | ✅ Done | 8 evidence types (screenshot, archive, HAR, etc.) |
+| ARCHIVE_FORMATS constants | ✅ Done | MHTML, HTML, WARC, PDF formats |
+
+### 18.2 Evidence Capture
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Screenshot capture | ✅ Done | captureScreenshot() with hash |
+| Page archiving | ✅ Done | capturePageArchive() - MHTML/HTML/WARC/PDF |
+| Network HAR capture | ✅ Done | captureNetworkHAR() with entry count |
+| DOM snapshot | ✅ Done | captureDOMSnapshot() |
+| Console logs | ✅ Done | captureConsoleLogs() |
+| Cookie capture | ✅ Done | captureCookies() |
+| Local storage capture | ✅ Done | captureLocalStorage() |
+| Bundle capture | ✅ Done | captureBundle() - multiple types at once |
+| Annotated screenshots | ✅ Done | Annotations in metadata |
+
+### 18.3 Chain of Custody
+
+| Task | Status | Description |
+|------|--------|-------------|
+| SHA-256 hash generation | ✅ Done | Every evidence item hashed |
+| Timestamp every action | ✅ Done | capturedAt timestamp |
+| Custody chain tracking | ✅ Done | custodyChain array per evidence |
+| User/agent identification | ✅ Done | capturedBy field |
+| Hash verification | ✅ Done | verifyIntegrity() method |
+| Package sealing | ✅ Done | seal() - no modifications allowed |
+| Package verification | ✅ Done | verifyPackage() with hash check |
+| Export for court | ✅ Done | exportForCourt() with certification |
+
+### 18.4 WebSocket Commands
+
+| Command | Status | Description |
+|---------|--------|-------------|
+| `create_evidence_package` | ✅ Done | Create new package |
+| `get_evidence_package` | ✅ Done | Get package by ID |
+| `list_evidence_packages` | ✅ Done | List all packages |
+| `set_active_evidence_package` | ✅ Done | Set active package |
+| `add_package_annotation` | ✅ Done | Add annotation |
+| `seal_evidence_package` | ✅ Done | Seal package |
+| `verify_evidence_package` | ✅ Done | Verify integrity |
+| `capture_screenshot_evidence` | ✅ Done | Capture screenshot |
+| `capture_page_archive_evidence` | ✅ Done | Capture archive |
+| `capture_har_evidence` | ✅ Done | Capture HAR |
+| `capture_dom_evidence` | ✅ Done | Capture DOM |
+| `capture_console_evidence` | ✅ Done | Capture console logs |
+| `capture_cookies_evidence` | ✅ Done | Capture cookies |
+| `capture_storage_evidence` | ✅ Done | Capture localStorage |
+| `get_evidence` | ✅ Done | Get evidence by ID |
+| `get_evidence_summary` | ✅ Done | Get summary without data |
+| `verify_evidence` | ✅ Done | Verify single evidence |
+| `export_for_court` | ✅ Done | Court-ready export |
+| `export_evidence_package` | ✅ Done | JSON export |
+| `get_evidence_stats` | ✅ Done | Collector statistics |
+| `get_evidence_types` | ✅ Done | Available types |
+
+**Total: 22 WebSocket commands**
+
+### 18.5 MCP Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_create_evidence_package` | ✅ Done | Create package |
+| `browser_capture_screenshot_evidence` | ✅ Done | Screenshot with hash |
+| `browser_capture_page_archive_evidence` | ✅ Done | Archive capture |
+| `browser_capture_har_evidence` | ✅ Done | HAR capture |
+| `browser_seal_evidence_package` | ✅ Done | Seal package |
+| `browser_verify_evidence_package` | ✅ Done | Verify integrity |
+| `browser_export_evidence_for_court` | ✅ Done | Court export |
+| `browser_list_evidence_packages` | ✅ Done | List packages |
+| `browser_get_evidence_stats` | ✅ Done | Get stats |
+| `browser_add_evidence_annotation` | ✅ Done | Add annotation |
+
+**Total: 10 MCP tools (76 total)**
+
+### 18.6 Court Export Format
+
+```json
+{
+  "packageInfo": {
+    "id": "pkg_...",
+    "name": "Investigation Evidence",
+    "caseNumber": "CASE-2026-001",
+    "sealed": true,
+    "sealedAt": "2026-01-08T...",
+    "sealedBy": "investigator"
+  },
+  "verification": {
+    "status": "VERIFIED",
+    "packageHash": "sha256:...",
+    "allEvidenceIntact": true
+  },
+  "evidence": [...],
+  "annotations": [...],
+  "certificationStatement": "I hereby certify..."
+}
+```
+
+### 18.7 Files Created
+
+- `evidence/evidence-collector.js` - Core evidence system (600+ lines)
+- `websocket/commands/evidence-commands.js` - WebSocket API (22 commands)
+- `tests/unit/evidence-collector.test.js` - Evidence tests (100+ test cases)
+
+### 18.8 Integration
+
+| Task | Status | Description |
+|------|--------|-------------|
+| Investigation ID tracking | ✅ Done | investigationId field |
+| Case number tracking | ✅ Done | caseNumber field |
+| Tag support | ✅ Done | tags array |
+| basset-hound storage | 📋 Planned | Store evidence with entity |
+| Provenance tracking | ✅ Done | Full capture context in metadata |
+
+**Industry Reference:** Based on [Axon Evidence](https://www.axon.com/resources/digital-evidence-management-guide) standards.
+
+---
+
+## Documentation References
+
+See basset-hound's [VISION-RESEARCH-2026-01-08.md](/home/devel/basset-hound/docs/findings/VISION-RESEARCH-2026-01-08.md) for:
+- Sock puppet management best practices
+- Evidence chain of custody standards
+- MCP integration patterns
+- Multi-project architecture
+
+---
+
 ## Contributing
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for contribution guidelines.
 
 ---
 
-*Last Updated: January 5, 2026*
-*Version: 8.4.0 - Advanced Image Ingestion*
-*Next Steps: Phase 13.3 - UI Components, Phase 14 Remaining - Face Detection, Object Detection*
+*Last Updated: January 8, 2026*
+*Version: 9.4.0 - OSINT Agent Integration Complete*
+*88 MCP Tools | Phases 12, 15-18 Complete | Full AI Agent & Investigation Workflow Support*
