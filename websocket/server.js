@@ -7623,6 +7623,18 @@ class WebSocketServer {
     const { registerMultiPageCommands } = require('./commands/multi-page-commands');
     registerMultiPageCommands(this, this.mainWindow);
 
+    // Register evidence chain of custody commands (Phase 29)
+    const { registerEvidenceChainCommands } = require('./commands/evidence-chain-commands');
+    registerEvidenceChainCommands(this, this.mainWindow);
+
+    // Register geolocation/location simulation commands (Phase 30)
+    const { registerLocationCommands } = require('./commands/location-commands');
+    registerLocationCommands(this, this.mainWindow);
+
+    // Register data extraction template commands (Phase 31)
+    const { registerExtractionCommands } = require('./commands/extraction-commands');
+    registerExtractionCommands(this, this.mainWindow);
+
     // ==========================================
     // Auto-Update Commands
     // ==========================================

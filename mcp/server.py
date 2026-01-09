@@ -3821,6 +3821,844 @@ if mcp:
         return await browser.send_command("list_monitored_pages")
 
 
+    # ==========================================
+    # Phase 29: Evidence Chain of Custody Tools
+    # ==========================================
+
+    @mcp.tool
+    async def browser_init_evidence_chain(
+        base_path: Optional[str] = None,
+        auto_verify: bool = True,
+        auto_seal: bool = False,
+        timestamp_server: Optional[str] = None,
+        enable_blockchain: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Initialize forensic evidence chain of custody system.
+
+        Initializes the evidence manager with RFC 3161 timestamping, SHA-256
+        hashing, and SWGDE-compliant reporting for forensic investigations.
+
+        Args:
+            base_path: Base directory for evidence vault
+            auto_verify: Automatically verify evidence integrity
+            auto_seal: Automatically seal collected evidence
+            timestamp_server: RFC 3161 timestamp server URL
+            enable_blockchain: Enable blockchain anchoring
+
+        Returns:
+            Initialization status and configuration
+        """
+        browser = get_browser()
+        params = {
+            "autoVerify": auto_verify,
+            "autoSeal": auto_seal,
+            "enableBlockchain": enable_blockchain
+        }
+        if base_path:
+            params["basePath"] = base_path
+        if timestamp_server:
+            params["timestampServer"] = timestamp_server
+
+        return await browser.send_command("init_evidence_chain", **params)
+
+
+    @mcp.tool
+    async def browser_create_investigation(
+        name: str,
+        description: Optional[str] = None,
+        investigator: Optional[str] = None,
+        case_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new forensic investigation.
+
+        Initializes a new investigation with metadata for organizing and
+        tracking evidence collection throughout a case.
+
+        Args:
+            name: Investigation name
+            description: Detailed description of the investigation
+            investigator: Name of the investigator
+            case_id: Associated case identifier
+            metadata: Additional investigation metadata
+
+        Returns:
+            Investigation details with unique ID
+        """
+        browser = get_browser()
+        params = {"name": name}
+        if description:
+            params["description"] = description
+        if investigator:
+            params["investigator"] = investigator
+        if case_id:
+            params["caseId"] = case_id
+        if metadata:
+            params["metadata"] = metadata
+
+        return await browser.send_command("create_investigation", **params)
+
+
+    @mcp.tool
+    async def browser_collect_evidence_chain(
+        evidence_type: str,
+        data: Any,
+        metadata: Optional[Dict[str, Any]] = None,
+        actor: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        case_id: Optional[str] = None,
+        investigation_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Collect evidence with full chain of custody.
+
+        Collects digital evidence with cryptographic hashing, timestamping,
+        and complete audit trail. Evidence types include screenshots,
+        HTML source, network logs, cookies, storage, and more.
+
+        Args:
+            evidence_type: Type of evidence (screenshot, html_source, network_log, etc.)
+            data: Evidence data to collect
+            metadata: Additional metadata about the evidence
+            actor: Person/system collecting the evidence
+            tags: Tags for categorization
+            case_id: Associated case ID
+            investigation_id: Associated investigation ID
+
+        Returns:
+            Collected evidence with hash and custody chain
+        """
+        browser = get_browser()
+        params = {
+            "type": evidence_type,
+            "data": data
+        }
+        if metadata:
+            params["metadata"] = metadata
+        if actor:
+            params["actor"] = actor
+        if tags:
+            params["tags"] = tags
+        if case_id:
+            params["caseId"] = case_id
+        if investigation_id:
+            params["investigationId"] = investigation_id
+
+        return await browser.send_command("collect_evidence_chain", **params)
+
+
+    @mcp.tool
+    async def browser_verify_evidence_chain(evidence_id: str) -> Dict[str, Any]:
+        """
+        Verify evidence integrity using cryptographic hash.
+
+        Performs SHA-256 hash verification to ensure evidence has not
+        been tampered with since collection. Updates custody chain.
+
+        Args:
+            evidence_id: Evidence ID to verify
+
+        Returns:
+            Verification result and updated evidence
+        """
+        browser = get_browser()
+        return await browser.send_command("verify_evidence_chain", evidenceId=evidence_id)
+
+
+    @mcp.tool
+    async def browser_seal_evidence_chain(
+        evidence_id: str,
+        actor: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Seal evidence to make it immutable.
+
+        Seals evidence preventing any further modifications. This is
+        typically done before presenting evidence in court or formal
+        proceedings. Records seal event in custody chain.
+
+        Args:
+            evidence_id: Evidence ID to seal
+            actor: Person/system sealing the evidence
+
+        Returns:
+            Sealed evidence with seal timestamp
+        """
+        browser = get_browser()
+        params = {"evidenceId": evidence_id}
+        if actor:
+            params["actor"] = actor
+
+        return await browser.send_command("seal_evidence_chain", **params)
+
+
+    @mcp.tool
+    async def browser_create_evidence_package(
+        name: str,
+        description: Optional[str] = None,
+        case_id: Optional[str] = None,
+        investigation_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        actor: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Create an evidence package for grouping related evidence.
+
+        Creates a package to organize and bundle related evidence items
+        together for a specific investigation or case.
+
+        Args:
+            name: Package name
+            description: Package description
+            case_id: Associated case ID
+            investigation_id: Associated investigation ID
+            metadata: Additional package metadata
+            actor: Person/system creating the package
+
+        Returns:
+            Package details with unique ID
+        """
+        browser = get_browser()
+        params = {"name": name}
+        if description:
+            params["description"] = description
+        if case_id:
+            params["caseId"] = case_id
+        if investigation_id:
+            params["investigationId"] = investigation_id
+        if metadata:
+            params["metadata"] = metadata
+        if actor:
+            params["actor"] = actor
+
+        return await browser.send_command("create_evidence_package", **params)
+
+
+    @mcp.tool
+    async def browser_add_to_evidence_package(
+        package_id: str,
+        evidence_id: str
+    ) -> Dict[str, Any]:
+        """
+        Add evidence item to an existing package.
+
+        Adds an evidence item to a package. Package must not be sealed.
+        Records the addition in the audit trail.
+
+        Args:
+            package_id: Package ID
+            evidence_id: Evidence ID to add
+
+        Returns:
+            Updated package with new item
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "add_to_evidence_package",
+            packageId=package_id,
+            evidenceId=evidence_id
+        )
+
+
+    @mcp.tool
+    async def browser_seal_evidence_package(
+        package_id: str,
+        actor: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Seal an evidence package to make it immutable.
+
+        Seals the package and all contained evidence items. No further
+        evidence can be added after sealing. Calculates package hash.
+
+        Args:
+            package_id: Package ID to seal
+            actor: Person/system sealing the package
+
+        Returns:
+            Sealed package with package hash
+        """
+        browser = get_browser()
+        params = {"packageId": package_id}
+        if actor:
+            params["actor"] = actor
+
+        return await browser.send_command("seal_evidence_package", **params)
+
+
+    @mcp.tool
+    async def browser_export_evidence_package(
+        package_id: str,
+        format: str = "json",
+        include_audit: bool = True,
+        persist: bool = True,
+        actor: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Export evidence package for court or archival.
+
+        Exports package in specified format. Supports JSON for machine
+        processing and SWGDE-compliant forensic reports for court
+        presentation. Includes full chain of custody.
+
+        Args:
+            package_id: Package ID to export
+            format: Export format (json or swgde-report)
+            include_audit: Include audit trail in export
+            persist: Save export to disk
+            actor: Person/system exporting the package
+
+        Returns:
+            Export data and file path if persisted
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "export_evidence_package",
+            packageId=package_id,
+            format=format,
+            includeAudit=include_audit,
+            persist=persist,
+            actor=actor
+        )
+
+
+    @mcp.tool
+    async def browser_list_evidence_chain(
+        evidence_type: Optional[str] = None,
+        investigation_id: Optional[str] = None,
+        case_id: Optional[str] = None,
+        sealed: Optional[bool] = None,
+        verified: Optional[bool] = None
+    ) -> Dict[str, Any]:
+        """
+        List collected evidence with optional filtering.
+
+        Returns all evidence items matching the specified filters.
+        Useful for reviewing evidence collection status.
+
+        Args:
+            evidence_type: Filter by evidence type
+            investigation_id: Filter by investigation
+            case_id: Filter by case
+            sealed: Filter by seal status
+            verified: Filter by verification status
+
+        Returns:
+            List of evidence items with metadata
+        """
+        browser = get_browser()
+        params = {}
+        if evidence_type:
+            params["type"] = evidence_type
+        if investigation_id:
+            params["investigationId"] = investigation_id
+        if case_id:
+            params["caseId"] = case_id
+        if sealed is not None:
+            params["sealed"] = sealed
+        if verified is not None:
+            params["verified"] = verified
+
+        return await browser.send_command("list_evidence_chain", **params)
+
+
+    @mcp.tool
+    async def browser_get_evidence_chain_stats() -> Dict[str, Any]:
+        """
+        Get evidence collection statistics.
+
+        Returns comprehensive statistics about evidence collection
+        including total evidence, packages, verifications, and failures.
+
+        Returns:
+            Statistics about evidence collection system
+        """
+        browser = get_browser()
+        return await browser.send_command("get_evidence_chain_stats")
+
+
+    @mcp.tool
+    async def browser_export_chain_audit_log(
+        investigation_id: Optional[str] = None,
+        actor: Optional[str] = None,
+        action: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Export complete audit trail for investigation.
+
+        Exports the full chain of custody audit log with all actions
+        performed on evidence. Critical for demonstrating proper
+        evidence handling procedures in court.
+
+        Args:
+            investigation_id: Filter by investigation
+            actor: Filter by actor/person
+            action: Filter by action type
+
+        Returns:
+            Audit log export with file path and entry count
+        """
+        browser = get_browser()
+        params = {}
+        if investigation_id:
+            params["investigationId"] = investigation_id
+        if actor:
+            params["actor"] = actor
+        if action:
+            params["action"] = action
+
+        return await browser.send_command("export_chain_audit_log", **params)
+
+
+    # ==========================================
+    # Phase 30: Geolocation/Location Simulation Tools
+    # ==========================================
+
+    @mcp.tool
+    async def browser_set_geolocation(
+        latitude: float,
+        longitude: float,
+        accuracy: float = 50.0,
+        altitude: Optional[float] = None,
+        altitude_accuracy: Optional[float] = None
+    ) -> Dict[str, Any]:
+        """
+        Set GPS coordinates for geolocation spoofing.
+
+        Overrides the HTML5 Geolocation API to return specified coordinates.
+        Useful for testing location-based features or simulating different
+        geographic locations for OSINT operations.
+
+        Args:
+            latitude: Latitude coordinate (-90 to 90)
+            longitude: Longitude coordinate (-180 to 180)
+            accuracy: Position accuracy in meters (default: 50)
+            altitude: Altitude in meters (optional)
+            altitude_accuracy: Altitude accuracy in meters (optional)
+
+        Returns:
+            Set coordinates with accuracy information
+        """
+        browser = get_browser()
+        params = {
+            "latitude": latitude,
+            "longitude": longitude,
+            "accuracy": accuracy
+        }
+        if altitude is not None:
+            params["altitude"] = altitude
+        if altitude_accuracy is not None:
+            params["altitudeAccuracy"] = altitude_accuracy
+
+        return await browser.send_command("set_geolocation", **params)
+
+
+    @mcp.tool
+    async def browser_set_location_profile(profile: str) -> Dict[str, Any]:
+        """
+        Set location using pre-configured profile.
+
+        Applies a complete location profile including coordinates, timezone,
+        and locale. Profiles include major cities worldwide with realistic
+        settings for each location.
+
+        Available profiles:
+        - US: us-new-york, us-los-angeles, us-chicago, us-miami
+        - Europe: uk-london, france-paris, germany-berlin, spain-madrid, italy-rome, netherlands-amsterdam
+        - Asia: japan-tokyo, china-beijing, china-shanghai, singapore, india-mumbai
+        - Other: australia-sydney, brazil-sao-paulo, canada-toronto, russia-moscow, uae-dubai
+
+        Args:
+            profile: Profile identifier (e.g., 'us-new-york', 'uk-london')
+
+        Returns:
+            Applied location profile with all settings
+        """
+        browser = get_browser()
+        return await browser.send_command("set_location_profile", profile=profile)
+
+
+    @mcp.tool
+    async def browser_set_timezone(timezone: str) -> Dict[str, Any]:
+        """
+        Set browser timezone.
+
+        Overrides the browser's timezone to simulate different time zones.
+        Affects Date.getTimezoneOffset() and other time-related functions.
+
+        Common timezones:
+        - America/New_York, America/Chicago, America/Los_Angeles
+        - Europe/London, Europe/Paris, Europe/Berlin
+        - Asia/Tokyo, Asia/Shanghai, Asia/Singapore
+
+        Args:
+            timezone: IANA timezone identifier
+
+        Returns:
+            Set timezone information
+        """
+        browser = get_browser()
+        return await browser.send_command("set_timezone", timezone=timezone)
+
+
+    @mcp.tool
+    async def browser_set_locale(
+        locale: str,
+        languages: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """
+        Set browser locale and language preferences.
+
+        Overrides navigator.language and navigator.languages to simulate
+        different language/region settings.
+
+        Args:
+            locale: Locale identifier (e.g., 'en-US', 'fr-FR', 'ja-JP')
+            languages: Language preference array (auto-generated if not provided)
+
+        Returns:
+            Set locale and languages
+        """
+        browser = get_browser()
+        params = {"locale": locale}
+        if languages:
+            params["languages"] = languages
+
+        return await browser.send_command("set_locale", **params)
+
+
+    @mcp.tool
+    async def browser_enable_location_spoofing() -> Dict[str, Any]:
+        """
+        Enable location spoofing.
+
+        Activates geolocation, timezone, and locale overrides. Must be called
+        to apply location settings after they are configured.
+
+        Returns:
+            Spoofing enabled status
+        """
+        browser = get_browser()
+        return await browser.send_command("enable_location_spoofing")
+
+
+    @mcp.tool
+    async def browser_get_location_status() -> Dict[str, Any]:
+        """
+        Get current location spoofing status.
+
+        Returns the current location settings including coordinates, timezone,
+        locale, and whether spoofing is enabled.
+
+        Returns:
+            Current location status and settings
+        """
+        browser = get_browser()
+        return await browser.send_command("get_location_status")
+
+
+    @mcp.tool
+    async def browser_match_location_to_proxy(
+        country: str,
+        city: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Auto-configure location to match proxy location.
+
+        Automatically sets geolocation, timezone, and locale to match the
+        specified proxy country and optionally city. Integrates with Phase 24
+        proxy pool for consistent location matching.
+
+        Args:
+            country: Country code (e.g., 'US', 'GB', 'JP')
+            city: Optional city name for more specific matching
+
+        Returns:
+            Applied location profile matching proxy
+        """
+        browser = get_browser()
+        params = {"country": country}
+        if city:
+            params["city"] = city
+
+        return await browser.send_command("match_location_to_proxy", **params)
+
+
+    @mcp.tool
+    async def browser_reset_location() -> Dict[str, Any]:
+        """
+        Reset location to browser defaults.
+
+        Removes all location overrides and disables spoofing, returning
+        the browser to its natural location detection.
+
+        Returns:
+            Reset confirmation
+        """
+        browser = get_browser()
+        return await browser.send_command("reset_location")
+
+
+    # ==========================================
+    # Phase 31: Data Extraction Templates Tools
+    # ==========================================
+
+    @mcp.tool
+    async def browser_create_extraction_template(
+        name: str,
+        fields: Dict[str, Any],
+        platform: Optional[str] = None,
+        extraction_type: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Create custom data extraction template.
+
+        Creates a reusable template for extracting structured data from web pages.
+        Templates use CSS selectors, XPath, or regex patterns to extract specific
+        fields like names, emails, prices, etc.
+
+        Field configuration:
+        - selector: CSS selector for the element
+        - selectors: Array of selectors to try
+        - attribute: Element attribute to extract (textContent, href, src, etc.)
+        - required: Whether field is required
+        - multiple: Extract array of matching elements
+        - transform: Value transformation (extractNumber, toLowerCase, etc.)
+
+        Args:
+            name: Template name
+            fields: Field definitions with selectors and extraction rules
+            platform: Platform identifier (linkedin, twitter, github, etc.)
+            extraction_type: Type of extraction (profile, article, product, etc.)
+            metadata: Additional template metadata
+
+        Returns:
+            Created template with unique ID
+        """
+        browser = get_browser()
+        params = {
+            "name": name,
+            "fields": fields
+        }
+        if platform:
+            params["platform"] = platform
+        if extraction_type:
+            params["type"] = extraction_type
+        if metadata:
+            params["metadata"] = metadata
+
+        return await browser.send_command("create_extraction_template", **params)
+
+
+    @mcp.tool
+    async def browser_extract_with_template(template_id: str) -> Dict[str, Any]:
+        """
+        Extract data from current page using template.
+
+        Applies an extraction template to the current page and returns
+        structured data according to the template's field definitions.
+
+        Args:
+            template_id: Template ID or built-in template name
+
+        Returns:
+            Extracted data with field values and any errors
+        """
+        browser = get_browser()
+        return await browser.send_command("extract_with_template", templateId=template_id)
+
+
+    @mcp.tool
+    async def browser_list_extraction_templates(
+        platform: Optional[str] = None,
+        extraction_type: Optional[str] = None,
+        builtin: Optional[bool] = None
+    ) -> Dict[str, Any]:
+        """
+        List available extraction templates.
+
+        Returns all templates matching the specified filters. Includes both
+        built-in templates for popular platforms and custom user templates.
+
+        Built-in templates available:
+        - LinkedIn: linkedin-profile, linkedin-company
+        - Twitter: twitter-profile, twitter-tweet
+        - Facebook: facebook-profile
+        - GitHub: github-profile, github-repository
+        - Generic: article-generic
+
+        Args:
+            platform: Filter by platform (linkedin, twitter, github, etc.)
+            extraction_type: Filter by type (profile, article, product, etc.)
+            builtin: Filter by built-in status (true=only built-in, false=only custom)
+
+        Returns:
+            List of templates with metadata
+        """
+        browser = get_browser()
+        params = {}
+        if platform:
+            params["platform"] = platform
+        if extraction_type:
+            params["type"] = extraction_type
+        if builtin is not None:
+            params["builtin"] = builtin
+
+        return await browser.send_command("list_extraction_templates", **params)
+
+
+    @mcp.tool
+    async def browser_get_extraction_template(template_id: str) -> Dict[str, Any]:
+        """
+        Get extraction template details.
+
+        Returns the complete template definition including all field
+        configurations and metadata.
+
+        Args:
+            template_id: Template ID
+
+        Returns:
+            Complete template definition
+        """
+        browser = get_browser()
+        return await browser.send_command("get_extraction_template", templateId=template_id)
+
+
+    @mcp.tool
+    async def browser_update_extraction_template(
+        template_id: str,
+        updates: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Update extraction template.
+
+        Updates template fields, metadata, or configuration. Cannot update
+        built-in templates - clone them first to create a custom version.
+
+        Args:
+            template_id: Template ID to update
+            updates: Updated fields and configuration
+
+        Returns:
+            Updated template
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "update_extraction_template",
+            templateId=template_id,
+            updates=updates
+        )
+
+
+    @mcp.tool
+    async def browser_delete_extraction_template(template_id: str) -> Dict[str, Any]:
+        """
+        Delete extraction template.
+
+        Removes a custom extraction template. Cannot delete built-in templates.
+
+        Args:
+            template_id: Template ID to delete
+
+        Returns:
+            Deletion confirmation
+        """
+        browser = get_browser()
+        return await browser.send_command("delete_extraction_template", templateId=template_id)
+
+
+    @mcp.tool
+    async def browser_validate_extraction_template(template_id: str) -> Dict[str, Any]:
+        """
+        Validate extraction template.
+
+        Checks template structure and field definitions for correctness.
+        Validates that all required fields have proper selectors and
+        configuration.
+
+        Args:
+            template_id: Template ID to validate
+
+        Returns:
+            Validation result with any errors
+        """
+        browser = get_browser()
+        return await browser.send_command("validate_extraction_template", templateId=template_id)
+
+
+    @mcp.tool
+    async def browser_extract_bulk(
+        template_id: str,
+        container_selector: str
+    ) -> Dict[str, Any]:
+        """
+        Extract multiple items using template.
+
+        Performs bulk extraction of multiple items from a page using the same
+        template. Useful for extracting lists of products, profiles, articles,
+        search results, etc.
+
+        Args:
+            template_id: Template to use for extraction
+            container_selector: CSS selector for container elements (each contains one item)
+
+        Returns:
+            Array of extracted items with count
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "extract_bulk",
+            templateId=template_id,
+            containerSelector=container_selector
+        )
+
+
+    @mcp.tool
+    async def browser_get_extraction_stats() -> Dict[str, Any]:
+        """
+        Get extraction template statistics.
+
+        Returns statistics about template usage including total templates,
+        extractions performed, fields extracted, and extraction history.
+
+        Returns:
+            Template usage statistics
+        """
+        browser = get_browser()
+        return await browser.send_command("get_extraction_stats")
+
+
+    @mcp.tool
+    async def browser_clone_extraction_template(
+        template_id: str,
+        new_name: str
+    ) -> Dict[str, Any]:
+        """
+        Clone extraction template.
+
+        Creates a copy of an existing template with a new name. Useful for
+        creating custom versions of built-in templates or duplicating
+        templates for modification.
+
+        Args:
+            template_id: Template to clone
+            new_name: Name for the cloned template
+
+        Returns:
+            Cloned template with new ID
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "clone_extraction_template",
+            templateId=template_id,
+            newName=new_name
+        )
+
+
 # ==================== Main Entry Point ====================
 
 def main():
