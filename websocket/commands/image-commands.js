@@ -161,8 +161,7 @@ function registerImageCommands(server, mainWindow) {
           confidence: result.analysis.ocr.confidence,
           language: result.analysis.ocr.language,
           words: result.analysis.ocr.words,
-          lines: result.analysis.ocr.lines,
-          osintData: result.osintData.filter(d => d.source === 'ocr')
+          lines: result.analysis.ocr.lines
         };
       } else {
         return {
@@ -388,7 +387,6 @@ function registerImageCommands(server, mainWindow) {
               return {
                 ...img,
                 metadata: metadata.metadata,
-                osintData: metadata.osintData,
                 warnings: metadata.warnings
               };
             } catch (error) {
@@ -415,51 +413,6 @@ function registerImageCommands(server, mainWindow) {
         totalFound: imageUrls.length,
         totalProcessed: filteredImages.length,
         images: filteredImages
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  };
-
-  /**
-   * Get OSINT data from an image for basset-hound integration
-   *
-   * @command get_image_osint_data
-   * @param {string} params.imageUrl - URL or file path of the image
-   * @param {string} [params.sourceUrl] - URL where the image was found
-   * @returns {Object} OSINT data formatted for basset-hound orphan creation
-   */
-  commandHandlers.get_image_osint_data = async (params) => {
-    const { imageUrl, sourceUrl } = params;
-
-    if (!imageUrl) {
-      return {
-        success: false,
-        error: 'imageUrl is required'
-      };
-    }
-
-    try {
-      const extractor = getExtractor();
-      const result = await extractor.extract(imageUrl, {
-        extractExif: true,
-        extractIptc: true,
-        extractXmp: true,
-        extractGps: true,
-        generateHash: true
-      });
-
-      const orphanData = extractor.generateOrphanData(result, sourceUrl || imageUrl);
-
-      return {
-        success: true,
-        osintData: result.osintData,
-        orphanData,
-        metadata: result.metadata,
-        hash: result.analysis.perceptualHash
       };
     } catch (error) {
       return {
@@ -525,6 +478,78 @@ function registerImageCommands(server, mainWindow) {
         success: true,
         message: 'Image extractor resources cleaned up'
       };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Capture canvas elements from the current page
+   *
+   * @command capture_canvas_elements
+   * @param {Object} [params.options] - Capture options
+   * @param {string} [params.options.selector] - CSS selector for specific canvas
+   * @param {string} [params.options.format='png'] - Output format ('png' or 'jpeg')
+   * @param {number} [params.options.quality=0.92] - JPEG quality (0-1)
+   * @returns {Object} Canvas capture results
+   */
+  commandHandlers.capture_canvas_elements = async (params, webContents) => {
+    const options = params?.options || {};
+
+    try {
+      const extractor = getExtractor();
+      const result = await extractor.captureCanvasElements(webContents, options);
+
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Extract SVG elements from the current page
+   *
+   * @command extract_svg_elements
+   * @param {Object} [params.options] - Extraction options
+   * @param {boolean} [params.options.includeInline=true] - Include inline SVG
+   * @param {boolean} [params.options.includeExternal=true] - Include external SVG
+   * @param {boolean} [params.options.preserveStyles=true] - Preserve computed styles
+   * @returns {Object} SVG extraction results
+   */
+  commandHandlers.extract_svg_elements = async (params, webContents) => {
+    const options = params?.options || {};
+
+    try {
+      const extractor = getExtractor();
+      const result = await extractor.extractSVGElements(webContents, options);
+
+      return result;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Extract favicon and Open Graph images from the current page
+   *
+   * @command extract_favicon_og_images
+   * @returns {Object} Favicon and OG image extraction results
+   */
+  commandHandlers.extract_favicon_og_images = async (params, webContents) => {
+    try {
+      const extractor = getExtractor();
+      const result = await extractor.extractFaviconAndOGImages(webContents);
+
+      return result;
     } catch (error) {
       return {
         success: false,

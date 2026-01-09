@@ -264,7 +264,6 @@ Core extraction engine with lazy-loaded library support.
 | `generate_image_hash` | Perceptual hash |
 | `compare_images` | Image similarity |
 | `extract_page_images` | All images from page |
-| `get_image_osint_data` | basset-hound orphan data |
 | `configure_image_extractor` | Configure options |
 | `get_image_extractor_stats` | Get statistics |
 | `cleanup_image_extractor` | Clean up resources |

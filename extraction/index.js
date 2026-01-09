@@ -1,11 +1,17 @@
 /**
  * Basset Hound Browser - Content Extraction Module
  *
- * Provides comprehensive content extraction capabilities for HTML pages.
- * Supports extraction of metadata, links, forms, images, scripts, stylesheets,
- * and structured data (JSON-LD, Microdata, RDFa).
+ * Provides raw content extraction capabilities for HTML pages and forensic
+ * metadata extraction from images. This module focuses on extracting content
+ * without interpretation or ingestion processing.
  *
- * Usage:
+ * Core Components:
+ *   - ExtractionManager: Extracts raw content from HTML pages including
+ *     metadata, links, forms, images, scripts, stylesheets, and structured data
+ *   - ImageMetadataExtractor: Extracts forensic metadata from images including
+ *     EXIF, IPTC, XMP data and performs orphan analysis
+ *
+ * Usage - HTML Extraction:
  *   const { ExtractionManager } = require('./extraction');
  *   const extractor = new ExtractionManager();
  *
@@ -15,7 +21,12 @@
  *   // Extract all content types at once
  *   const allData = extractor.extractAll(html, 'https://example.com');
  *
- * Available Methods:
+ * Usage - Image Metadata:
+ *   const { ImageMetadataExtractor } = require('./extraction');
+ *   const imageExtractor = new ImageMetadataExtractor();
+ *   const metadata = await imageExtractor.extractMetadata(imageBuffer);
+ *
+ * ExtractionManager Methods:
  *   - extractMetadata(html, url) - Extract OG tags, meta tags, Twitter cards
  *   - extractLinks(html, baseUrl) - Extract categorized links
  *   - extractForms(html) - Extract form fields and structure
@@ -49,20 +60,6 @@ const {
 } = require('./parsers');
 
 const {
-  DataTypeDetector,
-  createDetector,
-  DETECTION_PATTERNS,
-  VALIDATORS
-} = require('./data-type-detector');
-
-const {
-  IngestionProcessor,
-  createIngestionProcessor,
-  INGESTION_MODES,
-  DEFAULT_CONFIG
-} = require('./ingestion-processor');
-
-const {
   ImageMetadataExtractor,
   createImageExtractor,
   DEFAULT_OPTIONS: IMAGE_EXTRACTOR_OPTIONS,
@@ -70,7 +67,7 @@ const {
 } = require('./image-metadata-extractor');
 
 module.exports = {
-  // Main manager
+  // Main extraction manager
   ExtractionManager,
 
   // Individual parsers
@@ -81,19 +78,7 @@ module.exports = {
   RdfaParser,
   BaseParser,
 
-  // Data type detection (Phase 13)
-  DataTypeDetector,
-  createDetector,
-  DETECTION_PATTERNS,
-  VALIDATORS,
-
-  // Ingestion processing (Phase 13)
-  IngestionProcessor,
-  createIngestionProcessor,
-  INGESTION_MODES,
-  DEFAULT_CONFIG,
-
-  // Image metadata extraction (Phase 14)
+  // Image metadata extraction (forensic data)
   ImageMetadataExtractor,
   createImageExtractor,
   IMAGE_EXTRACTOR_OPTIONS,

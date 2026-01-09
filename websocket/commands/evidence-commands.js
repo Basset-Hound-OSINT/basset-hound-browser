@@ -1,18 +1,21 @@
 /**
  * Evidence Collection WebSocket Commands
  *
- * Phase 18: WebSocket API for evidence collection workflow
+ * Phase 18: WebSocket API for evidence collection workflow (Simplified)
  *
  * Provides commands for:
- * - Evidence package management
- * - Screenshot/archive capture
+ * - Individual evidence capture (screenshot, archive, HAR, DOM, console, cookies, storage)
+ * - SHA-256 hash generation
  * - Chain of custody documentation
- * - Court-ready export
+ *
+ * Removed:
+ * - Evidence package management
+ * - Package sealing and court export
+ * - Investigation organization
  */
 
 const {
   Evidence,
-  EvidencePackage,
   EvidenceCollector,
   EVIDENCE_TYPES,
   ARCHIVE_FORMATS,
@@ -32,16 +35,8 @@ function initializeEvidenceCollector(config = {}) {
   evidenceCollector = new EvidenceCollector(config);
 
   // Set up event handlers
-  evidenceCollector.on('packageCreated', (summary) => {
-    console.log(`[Evidence] Package created: ${summary.id}`);
-  });
-
   evidenceCollector.on('evidenceCaptured', (summary) => {
     console.log(`[Evidence] Evidence captured: ${summary.id} (${summary.type})`);
-  });
-
-  evidenceCollector.on('packageSealed', (data) => {
-    console.log(`[Evidence] Package sealed: ${data.packageId} (hash: ${data.hash.substring(0, 16)}...)`);
   });
 
   return evidenceCollector;
@@ -68,259 +63,6 @@ function registerEvidenceCommands(commandHandlers, captureFunction) {
   if (!evidenceCollector) {
     initializeEvidenceCollector();
   }
-
-  // ==========================================
-  // PACKAGE MANAGEMENT COMMANDS
-  // ==========================================
-
-  /**
-   * Create new evidence package
-   *
-   * Command: create_evidence_package
-   * Params:
-   *   - name: string
-   *   - description: string (optional)
-   *   - investigationId: string (optional)
-   *   - caseNumber: string (optional)
-   *   - tags: string[] (optional)
-   */
-  commandHandlers.create_evidence_package = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.createPackage({
-        name: params.name || 'Evidence Package',
-        description: params.description,
-        investigationId: params.investigationId,
-        caseNumber: params.caseNumber,
-        tags: params.tags,
-        createdBy: params.createdBy || 'user',
-      });
-
-      return {
-        success: true,
-        packageId: pkg.id,
-        package: pkg.getSummary(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Get evidence package by ID
-   *
-   * Command: get_evidence_package
-   * Params:
-   *   - packageId: string
-   */
-  commandHandlers.get_evidence_package = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.getPackage(params.packageId);
-
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${params.packageId} not found`,
-        };
-      }
-
-      return {
-        success: true,
-        package: pkg.getSummary(),
-        evidenceIds: Array.from(pkg.evidence.keys()),
-        annotations: pkg.annotations,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * List all evidence packages
-   *
-   * Command: list_evidence_packages
-   */
-  commandHandlers.list_evidence_packages = async () => {
-    try {
-      const collector = getEvidenceCollector();
-      const packages = collector.listPackages();
-
-      return {
-        success: true,
-        packages,
-        count: packages.length,
-        activePackageId: collector.activePackageId,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Set active evidence package
-   *
-   * Command: set_active_evidence_package
-   * Params:
-   *   - packageId: string
-   */
-  commandHandlers.set_active_evidence_package = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.setActivePackage(params.packageId);
-
-      return {
-        success: true,
-        packageId: params.packageId,
-        package: pkg.getSummary(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Add annotation to package
-   *
-   * Command: add_package_annotation
-   * Params:
-   *   - packageId: string (optional, uses active)
-   *   - text: string
-   *   - author: string
-   *   - evidenceIds: string[] (optional)
-   */
-  commandHandlers.add_package_annotation = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const packageId = params.packageId || collector.activePackageId;
-
-      if (!packageId) {
-        return {
-          success: false,
-          error: 'No package specified and no active package',
-        };
-      }
-
-      const pkg = collector.getPackage(packageId);
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${packageId} not found`,
-        };
-      }
-
-      pkg.addAnnotation(params.text, params.author || 'user', params.evidenceIds || []);
-
-      return {
-        success: true,
-        packageId,
-        annotationCount: pkg.annotations.length,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Seal evidence package
-   *
-   * Command: seal_evidence_package
-   * Params:
-   *   - packageId: string (optional, uses active)
-   *   - sealedBy: string
-   */
-  commandHandlers.seal_evidence_package = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const packageId = params.packageId || collector.activePackageId;
-
-      if (!packageId) {
-        return {
-          success: false,
-          error: 'No package specified and no active package',
-        };
-      }
-
-      if (packageId === collector.activePackageId) {
-        const hash = collector.sealActivePackage(params.sealedBy || 'user');
-        return {
-          success: true,
-          packageId,
-          packageHash: hash,
-          sealed: true,
-        };
-      }
-
-      const pkg = collector.getPackage(packageId);
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${packageId} not found`,
-        };
-      }
-
-      const hash = pkg.seal(params.sealedBy || 'user');
-      return {
-        success: true,
-        packageId,
-        packageHash: hash,
-        sealed: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Verify package integrity
-   *
-   * Command: verify_evidence_package
-   * Params:
-   *   - packageId: string
-   */
-  commandHandlers.verify_evidence_package = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.getPackage(params.packageId);
-
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${params.packageId} not found`,
-        };
-      }
-
-      const verification = pkg.verifyPackage();
-      return {
-        success: true,
-        packageId: params.packageId,
-        verification,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
 
   // ==========================================
   // EVIDENCE CAPTURE COMMANDS
@@ -555,210 +297,8 @@ function registerEvidenceCommands(commandHandlers, captureFunction) {
   };
 
   // ==========================================
-  // EVIDENCE RETRIEVAL COMMANDS
-  // ==========================================
-
-  /**
-   * Get evidence by ID
-   *
-   * Command: get_evidence
-   * Params:
-   *   - packageId: string
-   *   - evidenceId: string
-   */
-  commandHandlers.get_evidence = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.getPackage(params.packageId);
-
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${params.packageId} not found`,
-        };
-      }
-
-      const evidence = pkg.getEvidence(params.evidenceId);
-      if (!evidence) {
-        return {
-          success: false,
-          error: `Evidence ${params.evidenceId} not found in package`,
-        };
-      }
-
-      return {
-        success: true,
-        evidence: evidence.toJSON(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Get evidence summary (without data)
-   *
-   * Command: get_evidence_summary
-   * Params:
-   *   - packageId: string
-   *   - evidenceId: string
-   */
-  commandHandlers.get_evidence_summary = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.getPackage(params.packageId);
-
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${params.packageId} not found`,
-        };
-      }
-
-      const evidence = pkg.getEvidence(params.evidenceId);
-      if (!evidence) {
-        return {
-          success: false,
-          error: `Evidence ${params.evidenceId} not found in package`,
-        };
-      }
-
-      return {
-        success: true,
-        summary: evidence.getSummary(),
-        custodyChain: evidence.custodyChain,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Verify evidence integrity
-   *
-   * Command: verify_evidence
-   * Params:
-   *   - packageId: string
-   *   - evidenceId: string
-   */
-  commandHandlers.verify_evidence = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const pkg = collector.getPackage(params.packageId);
-
-      if (!pkg) {
-        return {
-          success: false,
-          error: `Package ${params.packageId} not found`,
-        };
-      }
-
-      const evidence = pkg.getEvidence(params.evidenceId);
-      if (!evidence) {
-        return {
-          success: false,
-          error: `Evidence ${params.evidenceId} not found in package`,
-        };
-      }
-
-      return {
-        success: true,
-        evidenceId: params.evidenceId,
-        integrityValid: evidence.verifyIntegrity(),
-        contentHash: evidence.contentHash,
-        hashAlgorithm: evidence.hashAlgorithm,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  // ==========================================
-  // EXPORT COMMANDS
-  // ==========================================
-
-  /**
-   * Export package for court
-   *
-   * Command: export_for_court
-   * Params:
-   *   - packageId: string
-   */
-  commandHandlers.export_for_court = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const exportData = collector.exportPackage(params.packageId, 'court');
-
-      return {
-        success: true,
-        packageId: params.packageId,
-        export: exportData,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  /**
-   * Export package as JSON
-   *
-   * Command: export_evidence_package
-   * Params:
-   *   - packageId: string
-   */
-  commandHandlers.export_evidence_package = async (params) => {
-    try {
-      const collector = getEvidenceCollector();
-      const exportData = collector.exportPackage(params.packageId, 'json');
-
-      return {
-        success: true,
-        packageId: params.packageId,
-        export: exportData,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
-
-  // ==========================================
   // UTILITY COMMANDS
   // ==========================================
-
-  /**
-   * Get evidence collector statistics
-   *
-   * Command: get_evidence_stats
-   */
-  commandHandlers.get_evidence_stats = async () => {
-    try {
-      const collector = getEvidenceCollector();
-      return {
-        success: true,
-        stats: collector.getStats(),
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-      };
-    }
-  };
 
   /**
    * Get available evidence types
@@ -773,7 +313,7 @@ function registerEvidenceCommands(commandHandlers, captureFunction) {
     };
   };
 
-  console.log('[Evidence] 22 evidence commands registered');
+  console.log('[Evidence] 8 evidence commands registered');
 }
 
 module.exports = {

@@ -1,15 +1,20 @@
 /**
  * Evidence Collector Module
  *
- * Phase 18: Evidence Collection Workflow
+ * Phase 18: Evidence Collection Workflow (Simplified)
  *
  * Provides:
+ * - Individual evidence capture with SHA-256 hashing
  * - Annotated screenshot capture
  * - Page archiving (MHTML/HTML)
  * - Network HAR capture
  * - Hash generation for integrity
  * - Chain of custody documentation
- * - Evidence packaging for legal proceedings
+ *
+ * Removed:
+ * - Evidence packaging for investigations
+ * - Package sealing and court export
+ * - Investigation organization
  */
 
 const crypto = require('crypto');
@@ -133,233 +138,9 @@ class Evidence {
 }
 
 /**
- * EvidencePackage class
- *
- * Container for related evidence items
- */
-class EvidencePackage {
-  constructor(options = {}) {
-    this.id = `pkg_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-    this.name = options.name || 'Evidence Package';
-    this.description = options.description || '';
-    this.investigationId = options.investigationId || null;
-    this.caseNumber = options.caseNumber || null;
-
-    this.createdAt = new Date().toISOString();
-    this.createdBy = options.createdBy || 'system';
-
-    this.evidence = new Map();
-    this.annotations = [];
-    this.tags = options.tags || [];
-
-    // Package integrity
-    this.sealed = false;
-    this.sealedAt = null;
-    this.packageHash = null;
-  }
-
-  /**
-   * Add evidence to package
-   */
-  addEvidence(evidence) {
-    if (this.sealed) {
-      throw new Error('Cannot modify sealed evidence package');
-    }
-
-    this.evidence.set(evidence.id, evidence);
-    evidence.addCustodyEntry('added_to_package', this.createdBy, `Package: ${this.id}`);
-
-    return evidence.id;
-  }
-
-  /**
-   * Get evidence by ID
-   */
-  getEvidence(evidenceId) {
-    return this.evidence.get(evidenceId);
-  }
-
-  /**
-   * Add annotation to package
-   */
-  addAnnotation(text, author, evidenceIds = []) {
-    if (this.sealed) {
-      throw new Error('Cannot modify sealed evidence package');
-    }
-
-    this.annotations.push({
-      id: `ann_${Date.now()}`,
-      text,
-      author,
-      evidenceIds,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  /**
-   * Seal the package (no more modifications)
-   */
-  seal(sealedBy) {
-    if (this.sealed) {
-      throw new Error('Package already sealed');
-    }
-
-    // Verify all evidence integrity
-    for (const evidence of this.evidence.values()) {
-      if (!evidence.verifyIntegrity()) {
-        throw new Error(`Evidence ${evidence.id} failed integrity check`);
-      }
-    }
-
-    // Calculate package hash
-    const packageContent = {
-      id: this.id,
-      name: this.name,
-      evidence: Array.from(this.evidence.values()).map(e => e.toJSON()),
-      annotations: this.annotations,
-    };
-
-    this.packageHash = crypto
-      .createHash('sha256')
-      .update(JSON.stringify(packageContent))
-      .digest('hex');
-
-    this.sealed = true;
-    this.sealedAt = new Date().toISOString();
-    this.sealedBy = sealedBy;
-
-    // Add seal entry to all evidence
-    for (const evidence of this.evidence.values()) {
-      evidence.addCustodyEntry('package_sealed', sealedBy, `Package hash: ${this.packageHash}`);
-    }
-
-    return this.packageHash;
-  }
-
-  /**
-   * Verify package integrity
-   */
-  verifyPackage() {
-    if (!this.sealed) {
-      return { valid: false, reason: 'Package not sealed' };
-    }
-
-    // Verify each evidence item
-    for (const evidence of this.evidence.values()) {
-      if (!evidence.verifyIntegrity()) {
-        return {
-          valid: false,
-          reason: `Evidence ${evidence.id} failed integrity check`,
-        };
-      }
-    }
-
-    // Verify package hash
-    const packageContent = {
-      id: this.id,
-      name: this.name,
-      evidence: Array.from(this.evidence.values()).map(e => e.toJSON()),
-      annotations: this.annotations,
-    };
-
-    const currentHash = crypto
-      .createHash('sha256')
-      .update(JSON.stringify(packageContent))
-      .digest('hex');
-
-    if (currentHash !== this.packageHash) {
-      return { valid: false, reason: 'Package hash mismatch' };
-    }
-
-    return { valid: true, packageHash: this.packageHash };
-  }
-
-  /**
-   * Get package summary
-   */
-  getSummary() {
-    return {
-      id: this.id,
-      name: this.name,
-      description: this.description,
-      investigationId: this.investigationId,
-      caseNumber: this.caseNumber,
-      createdAt: this.createdAt,
-      createdBy: this.createdBy,
-      evidenceCount: this.evidence.size,
-      annotationCount: this.annotations.length,
-      tags: this.tags,
-      sealed: this.sealed,
-      sealedAt: this.sealedAt,
-      packageHash: this.packageHash,
-    };
-  }
-
-  /**
-   * Export for legal proceedings
-   */
-  exportForCourt() {
-    if (!this.sealed) {
-      throw new Error('Package must be sealed before court export');
-    }
-
-    const verification = this.verifyPackage();
-    if (!verification.valid) {
-      throw new Error(`Package verification failed: ${verification.reason}`);
-    }
-
-    return {
-      packageInfo: this.getSummary(),
-      verification: {
-        status: 'VERIFIED',
-        verifiedAt: new Date().toISOString(),
-        packageHash: this.packageHash,
-        hashAlgorithm: 'sha256',
-      },
-      evidence: Array.from(this.evidence.values()).map(e => ({
-        summary: e.getSummary(),
-        custodyChain: e.custodyChain,
-      })),
-      annotations: this.annotations,
-      certificationStatement: this._generateCertification(),
-    };
-  }
-
-  /**
-   * Generate certification statement
-   */
-  _generateCertification() {
-    return `
-EVIDENCE PACKAGE CERTIFICATION
-
-Package ID: ${this.id}
-Package Name: ${this.name}
-Case Number: ${this.caseNumber || 'N/A'}
-Investigation ID: ${this.investigationId || 'N/A'}
-
-Created: ${this.createdAt}
-Created By: ${this.createdBy}
-Sealed: ${this.sealedAt}
-Sealed By: ${this.sealedBy}
-
-Evidence Items: ${this.evidence.size}
-Annotations: ${this.annotations.length}
-
-Package Hash (SHA-256): ${this.packageHash}
-
-This evidence package has been cryptographically sealed and verified.
-All contained evidence items maintain chain of custody documentation.
-Hash values can be independently verified to confirm data integrity.
-
-The integrity of this package was verified at: ${new Date().toISOString()}
-    `.trim();
-  }
-}
-
-/**
  * EvidenceCollector class
  *
- * Main class for capturing and managing evidence
+ * Simplified class for capturing individual evidence items
  */
 class EvidenceCollector extends EventEmitter {
   constructor(options = {}) {
@@ -368,43 +149,6 @@ class EvidenceCollector extends EventEmitter {
     this.storageDir = options.storageDir || './evidence';
     this.defaultFormat = options.defaultFormat || ARCHIVE_FORMATS.MHTML;
     this.autoCapture = options.autoCapture || false;
-
-    this.packages = new Map();
-    this.activePackageId = null;
-  }
-
-  /**
-   * Create a new evidence package
-   */
-  createPackage(options = {}) {
-    const pkg = new EvidencePackage(options);
-    this.packages.set(pkg.id, pkg);
-
-    if (!this.activePackageId) {
-      this.activePackageId = pkg.id;
-    }
-
-    this.emit('packageCreated', pkg.getSummary());
-    return pkg;
-  }
-
-  /**
-   * Get active package
-   */
-  getActivePackage() {
-    if (!this.activePackageId) return null;
-    return this.packages.get(this.activePackageId);
-  }
-
-  /**
-   * Set active package
-   */
-  setActivePackage(packageId) {
-    if (!this.packages.has(packageId)) {
-      throw new Error(`Package ${packageId} not found`);
-    }
-    this.activePackageId = packageId;
-    return this.packages.get(packageId);
   }
 
   /**
@@ -425,11 +169,6 @@ class EvidenceCollector extends EventEmitter {
       ...metadata,
     });
 
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
-
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
   }
@@ -440,6 +179,7 @@ class EvidenceCollector extends EventEmitter {
    * @param {string} content - Page content (HTML/MHTML)
    * @param {string} format - Archive format
    * @param {Object} metadata - Page metadata
+   * @returns {Evidence} Created evidence object
    */
   capturePageArchive(content, format, metadata = {}) {
     const evidence = new Evidence(EVIDENCE_TYPES.PAGE_ARCHIVE, content, {
@@ -451,11 +191,6 @@ class EvidenceCollector extends EventEmitter {
       ...metadata,
     });
 
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
-
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
   }
@@ -465,6 +200,7 @@ class EvidenceCollector extends EventEmitter {
    *
    * @param {Object} harData - HAR format data
    * @param {Object} metadata - Capture metadata
+   * @returns {Evidence} Created evidence object
    */
   captureNetworkHAR(harData, metadata = {}) {
     const evidence = new Evidence(EVIDENCE_TYPES.NETWORK_HAR, harData, {
@@ -475,17 +211,16 @@ class EvidenceCollector extends EventEmitter {
       ...metadata,
     });
 
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
-
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
   }
 
   /**
    * Capture DOM snapshot
+   *
+   * @param {string} domContent - DOM content
+   * @param {Object} metadata - Capture metadata
+   * @returns {Evidence} Created evidence object
    */
   captureDOMSnapshot(domContent, metadata = {}) {
     const evidence = new Evidence(EVIDENCE_TYPES.DOM_SNAPSHOT, domContent, {
@@ -495,17 +230,16 @@ class EvidenceCollector extends EventEmitter {
       ...metadata,
     });
 
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
-
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
   }
 
   /**
    * Capture console logs
+   *
+   * @param {Array} logs - Console log entries
+   * @param {Object} metadata - Capture metadata
+   * @returns {Evidence} Created evidence object
    */
   captureConsoleLogs(logs, metadata = {}) {
     const evidence = new Evidence(EVIDENCE_TYPES.CONSOLE_LOG, logs, {
@@ -515,17 +249,16 @@ class EvidenceCollector extends EventEmitter {
       ...metadata,
     });
 
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
-
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
   }
 
   /**
    * Capture cookies
+   *
+   * @param {Array} cookies - Cookie data
+   * @param {Object} metadata - Capture metadata
+   * @returns {Evidence} Created evidence object
    */
   captureCookies(cookies, metadata = {}) {
     const evidence = new Evidence(EVIDENCE_TYPES.COOKIES, cookies, {
@@ -535,17 +268,16 @@ class EvidenceCollector extends EventEmitter {
       ...metadata,
     });
 
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
-
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
   }
 
   /**
    * Capture local storage
+   *
+   * @param {Object} storageData - Local storage data
+   * @param {Object} metadata - Capture metadata
+   * @returns {Evidence} Created evidence object
    */
   captureLocalStorage(storageData, metadata = {}) {
     const evidence = new Evidence(EVIDENCE_TYPES.LOCAL_STORAGE, storageData, {
@@ -554,11 +286,6 @@ class EvidenceCollector extends EventEmitter {
       capturedBy: metadata.capturedBy || 'system',
       ...metadata,
     });
-
-    const pkg = this.getActivePackage();
-    if (pkg) {
-      pkg.addEvidence(evidence);
-    }
 
     this.emit('evidenceCaptured', evidence.getSummary());
     return evidence;
@@ -569,6 +296,7 @@ class EvidenceCollector extends EventEmitter {
    *
    * @param {Object} captureOptions - What to capture
    * @param {Object} pageInfo - Page information
+   * @param {Function} captureFunction - Function to capture page content
    * @returns {Array} Array of captured evidence
    */
   async captureBundle(captureOptions, pageInfo, captureFunction) {
@@ -640,80 +368,10 @@ class EvidenceCollector extends EventEmitter {
 
     return captured;
   }
-
-  /**
-   * Seal the active package
-   */
-  sealActivePackage(sealedBy) {
-    const pkg = this.getActivePackage();
-    if (!pkg) {
-      throw new Error('No active package');
-    }
-
-    const hash = pkg.seal(sealedBy);
-    this.emit('packageSealed', { packageId: pkg.id, hash });
-
-    return hash;
-  }
-
-  /**
-   * Get package by ID
-   */
-  getPackage(packageId) {
-    return this.packages.get(packageId);
-  }
-
-  /**
-   * List all packages
-   */
-  listPackages() {
-    return Array.from(this.packages.values()).map(p => p.getSummary());
-  }
-
-  /**
-   * Export package
-   */
-  exportPackage(packageId, format = 'json') {
-    const pkg = this.packages.get(packageId);
-    if (!pkg) {
-      throw new Error(`Package ${packageId} not found`);
-    }
-
-    if (format === 'court') {
-      return pkg.exportForCourt();
-    }
-
-    return {
-      package: pkg.getSummary(),
-      evidence: Array.from(pkg.evidence.values()).map(e => e.toJSON()),
-      annotations: pkg.annotations,
-    };
-  }
-
-  /**
-   * Get statistics
-   */
-  getStats() {
-    let totalEvidence = 0;
-    let sealedPackages = 0;
-
-    for (const pkg of this.packages.values()) {
-      totalEvidence += pkg.evidence.size;
-      if (pkg.sealed) sealedPackages++;
-    }
-
-    return {
-      totalPackages: this.packages.size,
-      sealedPackages,
-      totalEvidence,
-      activePackageId: this.activePackageId,
-    };
-  }
 }
 
 module.exports = {
   Evidence,
-  EvidencePackage,
   EvidenceCollector,
   EVIDENCE_TYPES,
   ARCHIVE_FORMATS,

@@ -481,6 +481,328 @@ describe('ImageMetadataExtractor', () => {
   });
 });
 
+describe('Canvas Capture', () => {
+  describe('captureCanvasElements', () => {
+    test('should require webContents parameter', async () => {
+      await expect(extractor.captureCanvasElements(null)).rejects.toThrow('webContents is required');
+    });
+
+    test('should handle mock webContents with no canvas elements', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue([])
+      };
+
+      const result = await extractor.captureCanvasElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalCanvases).toBe(0);
+      expect(result.canvases).toEqual([]);
+    });
+
+    test('should process canvas data correctly', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue([
+          {
+            index: 0,
+            id: 'myCanvas',
+            className: 'chart-canvas',
+            width: 800,
+            height: 600,
+            displayWidth: 800,
+            displayHeight: 600,
+            contextType: '2d',
+            dataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA',
+            format: 'png',
+            quality: 0.92
+          }
+        ])
+      };
+
+      const result = await extractor.captureCanvasElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalCanvases).toBe(1);
+      expect(result.canvases[0].id).toBe('myCanvas');
+      expect(result.canvases[0].contextType).toBe('2d');
+      expect(result.canvases[0].base64Data).toBeTruthy();
+    });
+
+    test('should handle canvas capture errors', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue([
+          {
+            index: 0,
+            error: 'Canvas is tainted'
+          }
+        ])
+      };
+
+      const result = await extractor.captureCanvasElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.canvases[0].error).toBe('Canvas is tainted');
+    });
+  });
+});
+
+describe('SVG Extraction', () => {
+  describe('extractSVGElements', () => {
+    test('should require webContents parameter', async () => {
+      await expect(extractor.extractSVGElements(null)).rejects.toThrow('webContents is required');
+    });
+
+    test('should handle mock webContents with no SVG elements', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue({
+          inline: [],
+          external: []
+        })
+      };
+
+      const result = await extractor.extractSVGElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalInline).toBe(0);
+      expect(result.totalExternal).toBe(0);
+    });
+
+    test('should extract inline SVG elements', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue({
+          inline: [
+            {
+              index: 0,
+              id: 'logo',
+              className: 'icon',
+              width: 100,
+              height: 100,
+              viewBox: '0 0 100 100',
+              xmlns: 'http://www.w3.org/2000/svg',
+              svgContent: '<svg>...</svg>',
+              elementCount: 5,
+              hasTitle: true,
+              hasDesc: false,
+              title: 'Company Logo',
+              description: null
+            }
+          ],
+          external: []
+        })
+      };
+
+      const result = await extractor.extractSVGElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalInline).toBe(1);
+      expect(result.inline[0].id).toBe('logo');
+      expect(result.inline[0].title).toBe('Company Logo');
+    });
+
+    test('should extract external SVG references', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue({
+          inline: [],
+          external: [
+            {
+              type: 'img',
+              src: 'https://example.com/icon.svg',
+              alt: 'Icon',
+              width: 24,
+              height: 24,
+              loading: 'lazy'
+            },
+            {
+              type: 'background',
+              src: 'https://example.com/bg.svg',
+              element: 'div',
+              id: 'hero'
+            }
+          ]
+        })
+      };
+
+      const result = await extractor.extractSVGElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalExternal).toBe(2);
+      expect(result.external[0].type).toBe('img');
+      expect(result.external[1].type).toBe('background');
+    });
+
+    test('should deduplicate external SVG references', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn().mockResolvedValue({
+          inline: [],
+          external: [
+            { type: 'img', src: 'https://example.com/icon.svg' },
+            { type: 'background', src: 'https://example.com/icon.svg' },
+            { type: 'img', src: 'https://example.com/other.svg' }
+          ]
+        })
+      };
+
+      const result = await extractor.extractSVGElements(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalExternal).toBe(2); // Deduplicated
+    });
+  });
+});
+
+describe('Favicon and Open Graph Images', () => {
+  describe('extractFaviconAndOGImages', () => {
+    test('should require webContents parameter', async () => {
+      await expect(extractor.extractFaviconAndOGImages(null)).rejects.toThrow('webContents is required');
+    });
+
+    test('should extract favicons', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn()
+          .mockResolvedValueOnce({
+            favicons: [
+              {
+                rel: 'icon',
+                href: 'https://example.com/favicon.ico',
+                type: 'image/x-icon',
+                sizes: '16x16',
+                width: 16,
+                height: 16
+              },
+              {
+                rel: 'icon',
+                href: 'https://example.com/favicon-32x32.png',
+                type: 'image/png',
+                sizes: '32x32',
+                width: 32,
+                height: 32
+              }
+            ],
+            openGraph: [],
+            twitter: [],
+            apple: [],
+            msApplication: []
+          })
+          .mockResolvedValueOnce('https://example.com')
+      };
+
+      const result = await extractor.extractFaviconAndOGImages(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalFavicons).toBe(2);
+      expect(result.favicons[0].sizes).toBe('16x16');
+      expect(result.favicons[1].sizes).toBe('32x32');
+    });
+
+    test('should extract Open Graph images', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn()
+          .mockResolvedValueOnce({
+            favicons: [],
+            openGraph: [
+              {
+                url: 'https://example.com/og-image.jpg',
+                type: 'og:image',
+                secureUrl: 'https://example.com/og-image.jpg',
+                mimeType: 'image/jpeg',
+                width: 1200,
+                height: 630,
+                alt: 'Preview image'
+              }
+            ],
+            twitter: [],
+            apple: [],
+            msApplication: []
+          })
+          .mockResolvedValueOnce('https://example.com')
+      };
+
+      const result = await extractor.extractFaviconAndOGImages(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalOpenGraph).toBe(1);
+      expect(result.openGraph[0].width).toBe(1200);
+      expect(result.openGraph[0].height).toBe(630);
+      expect(result.openGraph[0].alt).toBe('Preview image');
+    });
+
+    test('should extract Twitter Card images', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn()
+          .mockResolvedValueOnce({
+            favicons: [],
+            openGraph: [],
+            twitter: [
+              {
+                url: 'https://example.com/twitter-card.jpg',
+                type: 'twitter:image',
+                alt: 'Twitter preview',
+                width: 1200,
+                height: 600
+              }
+            ],
+            apple: [],
+            msApplication: []
+          })
+          .mockResolvedValueOnce('https://example.com')
+      };
+
+      const result = await extractor.extractFaviconAndOGImages(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalTwitter).toBe(1);
+      expect(result.twitter[0].url).toBe('https://example.com/twitter-card.jpg');
+    });
+
+    test('should extract Apple touch icons', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn()
+          .mockResolvedValueOnce({
+            favicons: [],
+            openGraph: [],
+            twitter: [],
+            apple: [
+              {
+                rel: 'apple-touch-icon',
+                href: 'https://example.com/apple-touch-icon.png',
+                sizes: '180x180',
+                width: 180,
+                height: 180
+              }
+            ],
+            msApplication: []
+          })
+          .mockResolvedValueOnce('https://example.com')
+      };
+
+      const result = await extractor.extractFaviconAndOGImages(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.totalApple).toBe(1);
+      expect(result.apple[0].sizes).toBe('180x180');
+    });
+
+    test('should include manifest URL if present', async () => {
+      const mockWebContents = {
+        executeJavaScript: jest.fn()
+          .mockResolvedValueOnce({
+            favicons: [],
+            openGraph: [],
+            twitter: [],
+            apple: [],
+            msApplication: [],
+            manifestUrl: 'https://example.com/manifest.json'
+          })
+          .mockResolvedValueOnce('https://example.com')
+      };
+
+      const result = await extractor.extractFaviconAndOGImages(mockWebContents);
+
+      expect(result.success).toBe(true);
+      expect(result.manifestUrl).toBe('https://example.com/manifest.json');
+    });
+  });
+});
+
 describe('Image Commands Integration', () => {
   // Mock tests for WebSocket commands
 
@@ -505,10 +827,14 @@ describe('Image Commands Integration', () => {
       expect(mockServer.commandHandlers.generate_image_hash).toBeDefined();
       expect(mockServer.commandHandlers.compare_images).toBeDefined();
       expect(mockServer.commandHandlers.extract_page_images).toBeDefined();
-      expect(mockServer.commandHandlers.get_image_osint_data).toBeDefined();
       expect(mockServer.commandHandlers.configure_image_extractor).toBeDefined();
       expect(mockServer.commandHandlers.get_image_extractor_stats).toBeDefined();
       expect(mockServer.commandHandlers.cleanup_image_extractor).toBeDefined();
+
+      // New commands
+      expect(mockServer.commandHandlers.capture_canvas_elements).toBeDefined();
+      expect(mockServer.commandHandlers.extract_svg_elements).toBeDefined();
+      expect(mockServer.commandHandlers.extract_favicon_og_images).toBeDefined();
     });
   });
 
