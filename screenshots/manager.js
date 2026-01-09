@@ -7,6 +7,7 @@
 const { ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 /**
  * Screenshot format configurations
@@ -15,6 +16,47 @@ const FORMAT_CONFIG = {
   png: { mimeType: 'image/png', extension: '.png', quality: 1.0 },
   jpeg: { mimeType: 'image/jpeg', extension: '.jpg', quality: 0.92 },
   webp: { mimeType: 'image/webp', extension: '.webp', quality: 0.92 }
+};
+
+/**
+ * Screenshot quality presets for different use cases
+ */
+const QUALITY_PRESETS = {
+  forensic: {
+    format: 'png',
+    quality: 1.0,
+    compression: 0,
+    description: 'Lossless quality for forensic documentation'
+  },
+  web: {
+    format: 'webp',
+    quality: 0.85,
+    compression: 6,
+    description: 'Balanced quality and file size for web use'
+  },
+  thumbnail: {
+    format: 'jpeg',
+    quality: 0.6,
+    compression: 8,
+    description: 'Compressed for thumbnail previews'
+  },
+  archival: {
+    format: 'png',
+    quality: 1.0,
+    compression: 9,
+    description: 'Maximum compression with lossless quality'
+  }
+};
+
+/**
+ * PII detection patterns for automatic blurring
+ */
+const PII_PATTERNS = {
+  email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+  phone: /(\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g,
+  ssn: /\d{3}-\d{2}-\d{4}/g,
+  creditCard: /\d{4}[-\s]?\d{4}[-\s]?\d{4}[-\s]?\d{4}/g,
+  ipAddress: /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g
 };
 
 /**
@@ -40,40 +82,31 @@ class ScreenshotManager {
    * Setup IPC listeners for screenshot responses
    */
   setupIPCListeners() {
-    ipcMain.on('screenshot-full-page-response', (event, data) => {
-      const { requestId, ...result } = data;
-      const resolver = this.pendingRequests.get(requestId);
-      if (resolver) {
-        resolver(result);
-        this.pendingRequests.delete(requestId);
-      }
-    });
+    const responseChannels = [
+      'screenshot-full-page-response',
+      'screenshot-element-response',
+      'screenshot-area-response',
+      'screenshot-viewport-response',
+      'compare-screenshots-response',
+      'stitch-screenshots-response',
+      'ocr-screenshot-response',
+      'screenshot-with-highlights-response',
+      'screenshot-with-blur-response',
+      'calculate-similarity-response',
+      'screenshot-element-with-context-response',
+      'screenshot-scrolling-response',
+      'annotate-screenshot-response'
+    ];
 
-    ipcMain.on('screenshot-element-response', (event, data) => {
-      const { requestId, ...result } = data;
-      const resolver = this.pendingRequests.get(requestId);
-      if (resolver) {
-        resolver(result);
-        this.pendingRequests.delete(requestId);
-      }
-    });
-
-    ipcMain.on('screenshot-area-response', (event, data) => {
-      const { requestId, ...result } = data;
-      const resolver = this.pendingRequests.get(requestId);
-      if (resolver) {
-        resolver(result);
-        this.pendingRequests.delete(requestId);
-      }
-    });
-
-    ipcMain.on('screenshot-viewport-response', (event, data) => {
-      const { requestId, ...result } = data;
-      const resolver = this.pendingRequests.get(requestId);
-      if (resolver) {
-        resolver(result);
-        this.pendingRequests.delete(requestId);
-      }
+    responseChannels.forEach(channel => {
+      ipcMain.on(channel, (event, data) => {
+        const { requestId, ...result } = data;
+        const resolver = this.pendingRequests.get(requestId);
+        if (resolver) {
+          resolver(result);
+          this.pendingRequests.delete(requestId);
+        }
+      });
     });
   }
 
@@ -310,6 +343,423 @@ class ScreenshotManager {
   }
 
   /**
+   * Compare two screenshots (visual diff)
+   * @param {string} imageData1 - First image base64 data
+   * @param {string} imageData2 - Second image base64 data
+   * @param {Object} options - Comparison options
+   * @returns {Promise<Object>} Comparison result with diff image
+   */
+  async compareScreenshots(imageData1, imageData2, options = {}) {
+    const {
+      threshold = 0.1, // Sensitivity threshold (0-1)
+      highlightColor = '#FF0000',
+      outputFormat = 'png'
+    } = options;
+
+    if (!imageData1 || !imageData2) {
+      return { success: false, error: 'Both imageData1 and imageData2 are required' };
+    }
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('compare-screenshots', {
+        requestId,
+        imageData1,
+        imageData2,
+        threshold,
+        highlightColor,
+        outputFormat
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Screenshot comparison timeout' });
+        }
+      }, 60000);
+    });
+  }
+
+  /**
+   * Stitch multiple screenshots into one image
+   * @param {Array<string>} imageDatas - Array of base64 image data
+   * @param {Object} options - Stitching options
+   * @returns {Promise<Object>} Stitched screenshot result
+   */
+  async stitchScreenshots(imageDatas, options = {}) {
+    const {
+      direction = 'vertical', // 'vertical' or 'horizontal'
+      gap = 0,
+      backgroundColor = '#FFFFFF',
+      format = 'png',
+      quality = 1.0
+    } = options;
+
+    if (!Array.isArray(imageDatas) || imageDatas.length === 0) {
+      return { success: false, error: 'imageDatas array with at least one image is required' };
+    }
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('stitch-screenshots', {
+        requestId,
+        imageDatas,
+        direction,
+        gap,
+        backgroundColor,
+        format,
+        quality
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Screenshot stitching timeout' });
+        }
+      }, 60000);
+    });
+  }
+
+  /**
+   * Extract text from screenshot using OCR
+   * @param {string} imageData - Base64 encoded image data
+   * @param {Object} options - OCR options
+   * @returns {Promise<Object>} OCR result with text and coordinates
+   */
+  async extractTextFromScreenshot(imageData, options = {}) {
+    const {
+      language = 'eng',
+      overlay = false, // If true, returns image with text overlays
+      highlightMatches = null // Optional text to highlight
+    } = options;
+
+    if (!imageData) {
+      return { success: false, error: 'imageData is required' };
+    }
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('ocr-screenshot', {
+        requestId,
+        imageData,
+        language,
+        overlay,
+        highlightMatches
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'OCR processing timeout' });
+        }
+      }, 90000);
+    });
+  }
+
+  /**
+   * Capture screenshot with element highlighting
+   * @param {Array<string>} selectors - CSS selectors to highlight
+   * @param {Object} options - Screenshot and highlight options
+   * @returns {Promise<Object>} Screenshot with highlighted elements
+   */
+  async captureWithHighlights(selectors, options = {}) {
+    const {
+      format = 'png',
+      quality = FORMAT_CONFIG[format]?.quality || 1.0,
+      fullPage = false,
+      highlightColor = '#FFFF00',
+      highlightOpacity = 0.3,
+      highlightBorder = true,
+      borderColor = '#FF0000',
+      borderWidth = 2
+    } = options;
+
+    if (!Array.isArray(selectors) || selectors.length === 0) {
+      return { success: false, error: 'selectors array is required' };
+    }
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('screenshot-with-highlights', {
+        requestId,
+        selectors,
+        format,
+        quality,
+        fullPage,
+        highlightColor,
+        highlightOpacity,
+        highlightBorder,
+        borderColor,
+        borderWidth
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Screenshot with highlights timeout' });
+        }
+      }, 30000);
+    });
+  }
+
+  /**
+   * Capture screenshot with automatic PII blurring
+   * @param {Object} options - Screenshot and blur options
+   * @returns {Promise<Object>} Screenshot with sensitive data blurred
+   */
+  async captureWithBlur(options = {}) {
+    const {
+      format = 'png',
+      quality = FORMAT_CONFIG[format]?.quality || 1.0,
+      fullPage = false,
+      blurPatterns = Object.keys(PII_PATTERNS),
+      customSelectors = [], // Additional elements to blur
+      blurIntensity = 10,
+      detectText = true // Use OCR to detect PII
+    } = options;
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('screenshot-with-blur', {
+        requestId,
+        format,
+        quality,
+        fullPage,
+        blurPatterns,
+        customSelectors,
+        blurIntensity,
+        detectText
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Screenshot with blur timeout' });
+        }
+      }, 60000);
+    });
+  }
+
+  /**
+   * Enrich screenshot metadata
+   * @param {string} imageData - Base64 encoded image data
+   * @param {Object} metadata - Additional metadata to attach
+   * @returns {Promise<Object>} Screenshot with enriched metadata
+   */
+  async enrichMetadata(imageData, metadata = {}) {
+    if (!imageData) {
+      return { success: false, error: 'imageData is required' };
+    }
+
+    try {
+      // Extract base64 data
+      const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+
+      // Generate hash for integrity
+      const hash = crypto.createHash('sha256').update(buffer).digest('hex');
+
+      // Collect comprehensive metadata
+      const enrichedMetadata = {
+        timestamp: new Date().toISOString(),
+        hash: hash,
+        size: buffer.length,
+        format: imageData.match(/^data:image\/(\w+);/)?.[1] || 'unknown',
+        captureInfo: {
+          userAgent: this.mainWindow.webContents.getUserAgent(),
+          url: this.mainWindow.webContents.getURL(),
+          title: this.mainWindow.webContents.getTitle(),
+          ...metadata
+        }
+      };
+
+      return {
+        success: true,
+        imageData,
+        metadata: enrichedMetadata,
+        hash
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Calculate similarity between two screenshots
+   * @param {string} imageData1 - First image base64 data
+   * @param {string} imageData2 - Second image base64 data
+   * @param {Object} options - Comparison options
+   * @returns {Promise<Object>} Similarity score and details
+   */
+  async calculateSimilarity(imageData1, imageData2, options = {}) {
+    const {
+      method = 'perceptual' // 'perceptual', 'pixel', 'structural'
+    } = options;
+
+    if (!imageData1 || !imageData2) {
+      return { success: false, error: 'Both imageData1 and imageData2 are required' };
+    }
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('calculate-similarity', {
+        requestId,
+        imageData1,
+        imageData2,
+        method
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Similarity calculation timeout' });
+        }
+      }, 60000);
+    });
+  }
+
+  /**
+   * Capture element screenshot with surrounding context
+   * @param {string} selector - CSS selector of target element
+   * @param {Object} options - Screenshot options
+   * @returns {Promise<Object>} Screenshot with element and context
+   */
+  async captureElementWithContext(selector, options = {}) {
+    const {
+      format = 'png',
+      quality = FORMAT_CONFIG[format]?.quality || 1.0,
+      contextPadding = 50, // Pixels of context around element
+      highlightElement = true,
+      highlightColor = '#FF0000',
+      includeLabel = true,
+      labelText = null
+    } = options;
+
+    if (!selector) {
+      return { success: false, error: 'selector is required' };
+    }
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('screenshot-element-with-context', {
+        requestId,
+        selector,
+        format,
+        quality,
+        contextPadding,
+        highlightElement,
+        highlightColor,
+        includeLabel,
+        labelText
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Element context screenshot timeout' });
+        }
+      }, 30000);
+    });
+  }
+
+  /**
+   * Capture scrolling screenshot (alternative to full page)
+   * @param {Object} options - Scrolling screenshot options
+   * @returns {Promise<Object>} Scrolling screenshot result
+   */
+  async captureScrolling(options = {}) {
+    const {
+      format = 'png',
+      quality = FORMAT_CONFIG[format]?.quality || 1.0,
+      scrollDelay = 100,
+      scrollStep = 500, // Pixels to scroll per step
+      maxHeight = 32000,
+      includeProgressMarkers = false
+    } = options;
+
+    const requestId = this.generateRequestId();
+
+    return new Promise((resolve) => {
+      this.pendingRequests.set(requestId, resolve);
+      this.mainWindow.webContents.send('screenshot-scrolling', {
+        requestId,
+        format,
+        quality,
+        scrollDelay,
+        scrollStep,
+        maxHeight,
+        includeProgressMarkers
+      });
+
+      setTimeout(() => {
+        if (this.pendingRequests.has(requestId)) {
+          this.pendingRequests.delete(requestId);
+          resolve({ success: false, error: 'Scrolling screenshot timeout' });
+        }
+      }, 120000);
+    });
+  }
+
+  /**
+   * Configure screenshot quality preset
+   * @param {string} preset - Preset name ('forensic', 'web', 'thumbnail', 'archival')
+   * @returns {Object} Configured quality settings
+   */
+  configureQuality(preset) {
+    if (!QUALITY_PRESETS[preset]) {
+      return {
+        success: false,
+        error: `Unknown preset: ${preset}. Available presets: ${Object.keys(QUALITY_PRESETS).join(', ')}`
+      };
+    }
+
+    return {
+      success: true,
+      preset: preset,
+      config: QUALITY_PRESETS[preset]
+    };
+  }
+
+  /**
+   * Get quality presets
+   * @returns {Object} Available quality presets
+   */
+  getQualityPresets() {
+    return {
+      success: true,
+      presets: QUALITY_PRESETS
+    };
+  }
+
+  /**
+   * Get PII detection patterns
+   * @returns {Object} Available PII patterns
+   */
+  getPIIPatterns() {
+    return {
+      success: true,
+      patterns: Object.keys(PII_PATTERNS)
+    };
+  }
+
+  /**
    * Cleanup pending requests
    */
   cleanup() {
@@ -433,6 +883,8 @@ function applyAnnotationDefaults(annotation) {
 module.exports = {
   ScreenshotManager,
   FORMAT_CONFIG,
+  QUALITY_PRESETS,
+  PII_PATTERNS,
   ANNOTATION_TYPES,
   validateAnnotation,
   applyAnnotationDefaults

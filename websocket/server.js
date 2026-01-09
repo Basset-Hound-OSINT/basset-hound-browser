@@ -7591,6 +7591,34 @@ class WebSocketServer {
     const { registerImageCommands } = require('./commands/image-commands');
     registerImageCommands(this, this.mainWindow);
 
+    // Register screenshot commands (Phase 21)
+    const { registerScreenshotCommands } = require('./commands/screenshot-commands');
+    registerScreenshotCommands(this, this.mainWindow);
+
+    // Register network forensics commands (Phase 19)
+    const { registerNetworkForensicsCommands } = require('./commands/network-forensics-commands');
+    registerNetworkForensicsCommands(this.commandHandlers);
+
+    // Register page monitoring commands (Phase 25)
+    const { registerMonitoringCommands } = require('./commands/monitoring-commands');
+    registerMonitoringCommands(this, this.mainWindow);
+
+    // Register smart form filling commands (Phase 22)
+    const { registerFormCommands } = require('./commands/form-commands');
+    registerFormCommands(this, this.mainWindow);
+
+    // Register profile template commands (Phase 23)
+    const { registerProfileTemplateCommands } = require('./commands/profile-template-commands');
+    registerProfileTemplateCommands(this, this.mainWindow);
+
+    // Register proxy pool commands (Phase 24)
+    const { registerProxyPoolCommands } = require('./commands/proxy-pool-commands');
+    registerProxyPoolCommands(this, this.mainWindow);
+
+    // Register advanced cookie management commands (Phase 27)
+    const { registerCookieCommands } = require('./commands/cookie-commands');
+    registerCookieCommands(this, this.mainWindow);
+
     // ==========================================
     // Auto-Update Commands
     // ==========================================
@@ -7779,6 +7807,12 @@ class WebSocketServer {
         return { success: false, error: error.message };
       }
     };
+
+    // ==========================================
+    // INTERACTION RECORDING COMMANDS (Phase 20)
+    // ==========================================
+    const { registerRecordingCommands } = require('./commands/recording-commands');
+    registerRecordingCommands(this.commandHandlers);
   }
 
   /**
