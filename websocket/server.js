@@ -7619,6 +7619,10 @@ class WebSocketServer {
     const { registerCookieCommands } = require('./commands/cookie-commands');
     registerCookieCommands(this, this.mainWindow);
 
+    // Register multi-page management commands (Phase 28)
+    const { registerMultiPageCommands } = require('./commands/multi-page-commands');
+    registerMultiPageCommands(this, this.mainWindow);
+
     // ==========================================
     // Auto-Update Commands
     // ==========================================

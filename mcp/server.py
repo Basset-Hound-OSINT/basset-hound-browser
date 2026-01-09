@@ -3128,6 +3128,341 @@ if mcp:
         return await browser.send_command("get_cookie_manager_stats")
 
 
+    # ==================== Multi-Page Management (Phase 28) ====================
+
+    @mcp.tool
+    async def browser_init_multi_page(
+        profile: str = "balanced",
+        max_concurrent_pages: Optional[int] = None,
+        max_concurrent_navigations: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Initialize multi-page manager for concurrent browsing.
+
+        Enables concurrent page management with intelligent rate limiting,
+        resource monitoring, and safe concurrent navigation.
+
+        Args:
+            profile: Configuration profile - 'stealth' (2 pages, max security),
+                    'balanced' (5 pages, moderate), 'aggressive' (10 pages, fast),
+                    or 'single' (1 page, traditional)
+            max_concurrent_pages: Override max concurrent pages
+            max_concurrent_navigations: Override max concurrent navigations
+
+        Returns:
+            Initialization status and configuration
+
+        Examples:
+            # Stealth mode for sensitive investigations
+            await browser_init_multi_page(profile="stealth")
+
+            # Balanced mode for general use
+            await browser_init_multi_page(profile="balanced")
+
+            # Custom configuration
+            await browser_init_multi_page(
+                profile="balanced",
+                max_concurrent_pages=3
+            )
+        """
+        browser = get_browser()
+        config = {}
+        if max_concurrent_pages is not None:
+            config["maxConcurrentPages"] = max_concurrent_pages
+        if max_concurrent_navigations is not None:
+            config["maxConcurrentNavigations"] = max_concurrent_navigations
+
+        return await browser.send_command(
+            "init_multi_page",
+            profile=profile,
+            config=config if config else None
+        )
+
+    @mcp.tool
+    async def browser_create_page(
+        partition: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a new browser page.
+
+        Creates a new isolated browser page with its own session.
+        Each page has independent cookies, storage, and can navigate independently.
+
+        Args:
+            partition: Session partition name (default: auto-generated)
+            metadata: Optional metadata to attach to page
+
+        Returns:
+            Page ID for future operations
+
+        Examples:
+            # Create basic page
+            result = await browser_create_page()
+            page_id = result["pageId"]
+
+            # Create page with metadata
+            await browser_create_page(
+                metadata={"purpose": "login", "site": "example.com"}
+            )
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "create_page",
+            partition=partition,
+            metadata=metadata
+        )
+
+    @mcp.tool
+    async def browser_navigate_page(
+        page_id: str,
+        url: str
+    ) -> Dict[str, Any]:
+        """
+        Navigate a specific page to a URL.
+
+        Navigates the specified page while respecting rate limits and
+        concurrency limits. May queue navigation if limits are exceeded.
+
+        Args:
+            page_id: Page ID from browser_create_page
+            url: URL to navigate to
+
+        Returns:
+            Navigation result
+
+        Examples:
+            # Navigate single page
+            await browser_navigate_page(page_id="page-1", url="https://example.com")
+
+            # Concurrent navigation
+            await browser_navigate_page(page_id="page-1", url="https://site1.com")
+            await browser_navigate_page(page_id="page-2", url="https://site2.com")
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "navigate_page",
+            pageId=page_id,
+            url=url
+        )
+
+    @mcp.tool
+    async def browser_navigate_pages_batch(
+        navigations: List[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """
+        Navigate multiple pages concurrently.
+
+        Efficiently navigate multiple pages in parallel while respecting
+        rate limits and resource constraints.
+
+        Args:
+            navigations: List of {pageId, url} dicts
+
+        Returns:
+            Batch navigation results with success/failure counts
+
+        Examples:
+            # Investigate multiple domains concurrently
+            await browser_navigate_pages_batch(navigations=[
+                {"pageId": "page-1", "url": "https://site1.com"},
+                {"pageId": "page-2", "url": "https://site2.com"},
+                {"pageId": "page-3", "url": "https://site3.com"}
+            ])
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "navigate_pages_batch",
+            navigations=navigations
+        )
+
+    @mcp.tool
+    async def browser_list_pages() -> Dict[str, Any]:
+        """
+        List all open pages.
+
+        Returns information about all open pages including URLs,
+        loading status, and metadata.
+
+        Returns:
+            List of pages with details
+
+        Examples:
+            result = await browser_list_pages()
+            for page in result["pages"]:
+                print(f"{page['pageId']}: {page['url']}")
+        """
+        browser = get_browser()
+        return await browser.send_command("list_pages")
+
+    @mcp.tool
+    async def browser_get_page_info(page_id: str) -> Dict[str, Any]:
+        """
+        Get detailed information about a specific page.
+
+        Args:
+            page_id: Page ID
+
+        Returns:
+            Page details including URL, title, loading status, navigation state
+
+        Examples:
+            info = await browser_get_page_info(page_id="page-1")
+            print(f"Title: {info['page']['title']}")
+            print(f"URL: {info['page']['url']}")
+        """
+        browser = get_browser()
+        return await browser.send_command("get_page_info", pageId=page_id)
+
+    @mcp.tool
+    async def browser_set_active_page(page_id: str) -> Dict[str, Any]:
+        """
+        Set the active (visible) page.
+
+        Makes the specified page visible in the browser window.
+        Only one page can be active at a time.
+
+        Args:
+            page_id: Page ID to make active
+
+        Returns:
+            Success status
+
+        Examples:
+            await browser_set_active_page(page_id="page-2")
+        """
+        browser = get_browser()
+        return await browser.send_command("set_active_page", pageId=page_id)
+
+    @mcp.tool
+    async def browser_execute_on_page(
+        page_id: str,
+        code: str
+    ) -> Dict[str, Any]:
+        """
+        Execute JavaScript on a specific page.
+
+        Runs JavaScript code in the context of the specified page
+        and returns the result.
+
+        Args:
+            page_id: Page ID
+            code: JavaScript code to execute
+
+        Returns:
+            Execution result
+
+        Examples:
+            # Get page title from specific page
+            result = await browser_execute_on_page(
+                page_id="page-1",
+                code="document.title"
+            )
+
+            # Extract data from multiple pages
+            page1_data = await browser_execute_on_page(
+                page_id="page-1",
+                code="document.querySelector('.price').textContent"
+            )
+            page2_data = await browser_execute_on_page(
+                page_id="page-2",
+                code="document.querySelector('.price').textContent"
+            )
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "execute_on_page",
+            pageId=page_id,
+            code=code
+        )
+
+    @mcp.tool
+    async def browser_get_page_screenshot(
+        page_id: str
+    ) -> Dict[str, Any]:
+        """
+        Capture screenshot of a specific page.
+
+        Takes a screenshot of the specified page without needing to
+        make it active.
+
+        Args:
+            page_id: Page ID
+
+        Returns:
+            Screenshot as base64-encoded image
+
+        Examples:
+            # Capture screenshots from all pages
+            pages = await browser_list_pages()
+            for page in pages["pages"]:
+                screenshot = await browser_get_page_screenshot(
+                    page_id=page["pageId"]
+                )
+        """
+        browser = get_browser()
+        return await browser.send_command(
+            "get_page_screenshot",
+            pageId=page_id
+        )
+
+    @mcp.tool
+    async def browser_destroy_page(page_id: str) -> Dict[str, Any]:
+        """
+        Close and destroy a page.
+
+        Closes the specified page and releases its resources.
+
+        Args:
+            page_id: Page ID to destroy
+
+        Returns:
+            Success status
+
+        Examples:
+            await browser_destroy_page(page_id="page-1")
+        """
+        browser = get_browser()
+        return await browser.send_command("destroy_page", pageId=page_id)
+
+    @mcp.tool
+    async def browser_close_all_pages() -> Dict[str, Any]:
+        """
+        Close all open pages.
+
+        Closes all pages and returns to single-page mode.
+
+        Returns:
+            Number of pages closed
+
+        Examples:
+            result = await browser_close_all_pages()
+            print(f"Closed {result['closed']} pages")
+        """
+        browser = get_browser()
+        return await browser.send_command("close_all_pages")
+
+    @mcp.tool
+    async def browser_get_multi_page_stats() -> Dict[str, Any]:
+        """
+        Get multi-page manager statistics.
+
+        Returns statistics about pages, navigations, rate limiting,
+        and resource usage.
+
+        Returns:
+            Comprehensive statistics
+
+        Examples:
+            stats = await browser_get_multi_page_stats()
+            print(f"Active pages: {stats['stats']['currentPages']}")
+            print(f"Navigations completed: {stats['stats']['navigationsCompleted']}")
+            print(f"Queue length: {stats['stats']['queuedNavigations']}")
+        """
+        browser = get_browser()
+        return await browser.send_command("get_multi_page_stats")
+
+
     # ==================== Page Monitoring & Change Detection ====================
 
     @mcp.tool
