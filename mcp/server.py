@@ -2197,354 +2197,29 @@ if mcp:
 
 
     # ==========================================
-    # PROXY POOL MANAGEMENT TOOLS (Phase 24)
     # ==========================================
-
-    @mcp.tool
-    async def browser_add_proxy_to_pool(
-        host: str,
-        port: int,
-        proxy_type: str = "http",
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        country: Optional[str] = None,
-        region: Optional[str] = None,
-        city: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        weight: int = 1,
-        max_requests_per_minute: Optional[int] = None
-    ) -> Dict[str, Any]:
-        """
-        Add a proxy to the intelligent proxy pool.
-
-        The proxy pool automatically manages proxy health, rotation, and failover.
-        Each proxy is monitored for availability, response time, and success rate.
-
-        Args:
-            host: Proxy hostname or IP address
-            port: Proxy port number
-            proxy_type: Type of proxy ('http', 'https', 'socks4', 'socks5')
-            username: Optional authentication username
-            password: Optional authentication password
-            country: Optional country code (e.g., 'US', 'UK', 'DE')
-            region: Optional region/state
-            city: Optional city
-            tags: Optional tags for categorization
-            weight: Weight for weighted rotation strategy (default: 1)
-            max_requests_per_minute: Optional rate limit per proxy
-
-        Returns:
-            Added proxy with generated ID and statistics
-        """
-        browser = get_browser()
-        params = {
-            "host": host,
-            "port": port,
-            "type": proxy_type
-        }
-        if username:
-            params["username"] = username
-        if password:
-            params["password"] = password
-        if country:
-            params["country"] = country
-        if region:
-            params["region"] = region
-        if city:
-            params["city"] = city
-        if tags:
-            params["tags"] = tags
-        if weight != 1:
-            params["weight"] = weight
-        if max_requests_per_minute:
-            params["maxRequestsPerMinute"] = max_requests_per_minute
-
-        return await browser.send_command("add_proxy_to_pool", **params)
-
-
-    @mcp.tool
-    async def browser_get_next_proxy(
-        strategy: Optional[str] = None,
-        country: Optional[str] = None,
-        region: Optional[str] = None,
-        city: Optional[str] = None,
-        proxy_type: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        min_success_rate: Optional[float] = None,
-        max_response_time: Optional[int] = None
-    ) -> Dict[str, Any]:
-        """
-        Get the next available proxy from the pool based on rotation strategy.
-
-        Uses intelligent rotation strategies and filters to select the best proxy.
-        Strategies: 'round-robin', 'random', 'least-used', 'fastest', 'weighted'.
-
-        Args:
-            strategy: Rotation strategy (optional, uses current strategy if not provided)
-            country: Filter by country code
-            region: Filter by region
-            city: Filter by city
-            proxy_type: Filter by proxy type
-            tags: Filter by tags
-            min_success_rate: Minimum success rate (0-1)
-            max_response_time: Maximum average response time in ms
-
-        Returns:
-            Selected proxy with URL and statistics
-        """
-        browser = get_browser()
-        params = {}
-        if strategy:
-            params["strategy"] = strategy
-        if country:
-            params["country"] = country
-        if region:
-            params["region"] = region
-        if city:
-            params["city"] = city
-        if proxy_type:
-            params["type"] = proxy_type
-        if tags:
-            params["tags"] = tags
-        if min_success_rate is not None:
-            params["minSuccessRate"] = min_success_rate
-        if max_response_time is not None:
-            params["maxResponseTime"] = max_response_time
-
-        return await browser.send_command("get_next_proxy", **params)
-
-
-    @mcp.tool
-    async def browser_set_proxy_rotation_strategy(strategy: str) -> Dict[str, Any]:
-        """
-        Set the proxy rotation strategy for the pool.
-
-        Available strategies:
-        - 'round-robin': Cycles through proxies in order (fair distribution)
-        - 'random': Selects random proxy (unpredictable pattern)
-        - 'least-used': Selects proxy with fewest total requests (load balancing)
-        - 'fastest': Selects proxy with lowest average response time (performance)
-        - 'weighted': Selects based on weight values (custom priority)
-
-        Args:
-            strategy: Rotation strategy name
-
-        Returns:
-            Updated strategy configuration
-        """
-        browser = get_browser()
-        return await browser.send_command("set_proxy_rotation_strategy", strategy=strategy)
-
-
-    @mcp.tool
-    async def browser_list_proxy_pool(
-        include_blacklisted: bool = True,
-        include_unhealthy: bool = True,
-        country: Optional[str] = None,
-        region: Optional[str] = None,
-        proxy_type: Optional[str] = None,
-        min_success_rate: Optional[float] = None
-    ) -> Dict[str, Any]:
-        """
-        List all proxies in the pool with their status and statistics.
-
-        Returns comprehensive information about all proxies including health status,
-        success rates, response times, and usage statistics.
-
-        Args:
-            include_blacklisted: Include blacklisted proxies (default: True)
-            include_unhealthy: Include unhealthy proxies (default: True)
-            country: Filter by country
-            region: Filter by region
-            proxy_type: Filter by proxy type
-            min_success_rate: Minimum success rate filter
-
-        Returns:
-            List of proxies with detailed statistics
-        """
-        browser = get_browser()
-        params = {
-            "includeBlacklisted": include_blacklisted,
-            "includeUnhealthy": include_unhealthy
-        }
-        if country:
-            params["country"] = country
-        if region:
-            params["region"] = region
-        if proxy_type:
-            params["type"] = proxy_type
-        if min_success_rate is not None:
-            params["minSuccessRate"] = min_success_rate
-
-        return await browser.send_command("list_proxy_pool", **params)
-
-
-    @mcp.tool
-    async def browser_test_proxy_health(proxy_id: str) -> Dict[str, Any]:
-        """
-        Test the health of a specific proxy.
-
-        Performs an HTTP request through the proxy to verify connectivity,
-        measures response time, and updates the proxy's health status.
-
-        Args:
-            proxy_id: Proxy identifier
-
-        Returns:
-            Health check result with success status and response time
-        """
-        browser = get_browser()
-        return await browser.send_command("test_proxy_health", proxyId=proxy_id)
-
-
-    @mcp.tool
-    async def browser_test_all_proxies_health() -> Dict[str, Any]:
-        """
-        Test the health of all proxies in the pool.
-
-        Performs health checks on all proxies in parallel to quickly assess
-        pool status. Updates health metrics for all proxies.
-
-        Returns:
-            Summary of health check results with success/failure counts
-        """
-        browser = get_browser()
-        return await browser.send_command("test_all_proxies_health")
-
-
-    @mcp.tool
-    async def browser_get_proxy_stats(proxy_id: str) -> Dict[str, Any]:
-        """
-        Get detailed statistics for a specific proxy.
-
-        Returns comprehensive metrics including success/failure counts,
-        response times, rate limiting status, and health information.
-
-        Args:
-            proxy_id: Proxy identifier
-
-        Returns:
-            Detailed proxy statistics and metrics
-        """
-        browser = get_browser()
-        return await browser.send_command("get_proxy_stats", proxyId=proxy_id)
-
-
-    @mcp.tool
-    async def browser_get_proxy_pool_stats() -> Dict[str, Any]:
-        """
-        Get overall statistics for the proxy pool.
-
-        Returns pool-wide metrics including total proxies, health distribution,
-        rotation strategy, success rates, and average response times.
-
-        Returns:
-            Comprehensive pool statistics
-        """
-        browser = get_browser()
-        return await browser.send_command("get_pool_stats")
-
-
-    @mcp.tool
-    async def browser_blacklist_proxy(
-        proxy_id: str,
-        duration_ms: int = 3600000,
-        reason: str = "Manual blacklist via MCP"
-    ) -> Dict[str, Any]:
-        """
-        Blacklist a proxy temporarily or permanently.
-
-        Blacklisted proxies are excluded from rotation until the blacklist
-        expires or the proxy is manually whitelisted.
-
-        Args:
-            proxy_id: Proxy identifier
-            duration_ms: Blacklist duration in milliseconds (default: 1 hour)
-            reason: Reason for blacklisting
-
-        Returns:
-            Updated proxy status
-        """
-        browser = get_browser()
-        return await browser.send_command(
-            "blacklist_proxy",
-            proxyId=proxy_id,
-            durationMs=duration_ms,
-            reason=reason
-        )
-
-
-    @mcp.tool
-    async def browser_whitelist_proxy(proxy_id: str) -> Dict[str, Any]:
-        """
-        Remove a proxy from the blacklist.
-
-        Restores a blacklisted proxy to degraded status, allowing it to be
-        used again after consecutive successful requests improve its status.
-
-        Args:
-            proxy_id: Proxy identifier
-
-        Returns:
-            Updated proxy status
-        """
-        browser = get_browser()
-        return await browser.send_command("whitelist_proxy", proxyId=proxy_id)
-
-
-    @mcp.tool
-    async def browser_get_proxies_by_country(country: str) -> Dict[str, Any]:
-        """
-        Get all available proxies for a specific country.
-
-        Useful for geo-targeting specific regions or accessing region-restricted
-        content. Only returns proxies that are currently available (not blacklisted
-        or unhealthy).
-
-        Args:
-            country: Two-letter country code (e.g., 'US', 'UK', 'DE', 'JP')
-
-        Returns:
-            List of available proxies in the specified country
-        """
-        browser = get_browser()
-        return await browser.send_command("get_proxies_by_country", country=country)
-
-
-    @mcp.tool
-    async def browser_configure_proxy_health_check(
-        enabled: Optional[bool] = None,
-        interval: Optional[int] = None,
-        url: Optional[str] = None,
-        timeout: Optional[int] = None
-    ) -> Dict[str, Any]:
-        """
-        Configure automatic health check settings for proxy pool.
-
-        Health checks run periodically to test proxy availability and
-        update health metrics automatically.
-
-        Args:
-            enabled: Enable or disable health checking
-            interval: Health check interval in milliseconds
-            url: URL to use for health checks (default: https://www.google.com)
-            timeout: Health check timeout in milliseconds
-
-        Returns:
-            Updated health check configuration
-        """
-        browser = get_browser()
-        params = {}
-        if enabled is not None:
-            params["enabled"] = enabled
-        if interval is not None:
-            params["interval"] = interval
-        if url is not None:
-            params["url"] = url
-        if timeout is not None:
-            params["timeout"] = timeout
-
-        return await browser.send_command("configure_health_check", **params)
+    # PROXY POOL MANAGEMENT - MIGRATED
+    # ==========================================
+    #
+    # NOTE: Proxy pool management tools have been migrated to basset-hound-networking.
+    #
+    # The following tools are no longer available in this package:
+    # - browser_add_proxy_to_pool
+    # - browser_get_next_proxy
+    # - browser_set_proxy_rotation_strategy
+    # - browser_list_proxy_pool
+    # - browser_test_proxy_health
+    # - browser_test_all_proxies_health
+    # - browser_get_proxy_stats
+    # - browser_get_proxy_pool_stats
+    # - browser_blacklist_proxy
+    # - browser_whitelist_proxy
+    # - browser_get_proxies_by_country
+    # - browser_configure_proxy_health_check
+    #
+    # For proxy pool management, use the basset-hound-networking MCP server.
+    # This browser supports single proxy configuration via browser_set_proxy.
+    #
 
 
     # ==================== Smart Form Filling (Phase 22) ====================
@@ -4359,31 +4034,12 @@ if mcp:
         return await browser.send_command("get_location_status")
 
 
-    @mcp.tool
-    async def browser_match_location_to_proxy(
-        country: str,
-        city: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Auto-configure location to match proxy location.
-
-        Automatically sets geolocation, timezone, and locale to match the
-        specified proxy country and optionally city. Integrates with Phase 24
-        proxy pool for consistent location matching.
-
-        Args:
-            country: Country code (e.g., 'US', 'GB', 'JP')
-            city: Optional city name for more specific matching
-
-        Returns:
-            Applied location profile matching proxy
-        """
-        browser = get_browser()
-        params = {"country": country}
-        if city:
-            params["city"] = city
-
-        return await browser.send_command("match_location_to_proxy", **params)
+    # NOTE: browser_match_location_to_proxy has been removed.
+    # This tool depended on the proxy pool infrastructure which has been
+    # migrated to basset-hound-networking.
+    #
+    # Alternative: Use browser_set_location_profile directly with a location name,
+    # then configure your proxy separately.
 
 
     @mcp.tool
@@ -4707,11 +4363,8 @@ def main():
     print("                          browser_analyze_all_cookies, browser_find_insecure_cookies,")
     print("                          browser_export_cookies, browser_import_cookies,")
     print("                          browser_get_cookie_history, browser_get_cookies_by_classification")
-    print("  Proxy Pool (13): browser_add_proxy_to_pool, browser_get_next_proxy,")
-    print("                   browser_set_proxy_rotation_strategy, browser_list_proxy_pool,")
-    print("                   browser_test_proxy_health, browser_get_proxy_stats,")
-    print("                   browser_blacklist_proxy, browser_whitelist_proxy,")
-    print("                   browser_get_proxies_by_country, browser_configure_proxy_health_check")
+    print("  Proxy Pool: MIGRATED to basset-hound-networking package")
+    print("              Use browser_set_proxy for single proxy configuration")
     print("  Page Monitoring (12): browser_start_monitoring_page, browser_stop_monitoring_page,")
     print("                        browser_pause_monitoring_page, browser_resume_monitoring_page,")
     print("                        browser_check_page_changes_now, browser_get_page_changes,")

@@ -5,7 +5,8 @@ const WebSocketServer = require('./websocket/server');
 const { getRandomViewport, getRealisticUserAgent, getEvasionScript, getEvasionScriptWithConfig } = require('./evasion/fingerprint');
 const { proxyManager } = require('./proxy/manager');
 const { torManager } = require('./proxy/tor');
-const { proxyChainManager } = require('./proxy/chain');
+// Proxy chain management has been migrated to basset-hound-networking
+// const { proxyChainManager } = require('./proxy/chain');
 const { userAgentManager } = require('./utils/user-agents');
 const SessionManager = require('./sessions/manager');
 const { TabManager } = require('./tabs/manager');

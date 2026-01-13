@@ -1,7 +1,7 @@
 # Basset Hound Browser - Product Roadmap
 
-**Last Updated:** January 9, 2026
-**Current Version:** 10.6.0
+**Last Updated:** January 13, 2026
+**Current Version:** 11.0.0
 **Status:** ✅ Feature Complete - Ready for Integration Testing
 
 ---
@@ -517,33 +517,34 @@ Available commands:
 
 ### Phase 24: Advanced Proxy Rotation
 
-**Status:** ✅ COMPLETED (January 9, 2026)
-**Goal:** Intelligent proxy pool management with health checking and rotation strategies.
+**Status:** 🚀 MIGRATED TO BASSET HOUND NETWORKING
 
-#### 24.1 Proxy Pool Features
+> **Migration Note:** As of v11.0.0, all proxy rotation and networking infrastructure has been migrated to the standalone `basset-hound-networking` package. This allows the browser to focus purely on browser automation while networking concerns are handled by a dedicated service. The browser can still use proxies via the standard proxy configuration commands, but pool management and rotation is now handled externally.
+
+#### 24.1 Proxy Pool Features (Migrated)
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Proxy health checking | ✅ Done | Automatic health monitoring |
-| Rotation strategies | ✅ Done | Round-robin, random, fastest, geo-based |
-| Geographic targeting | ✅ Done | Country-based proxy selection |
-| Automatic failover | ✅ Done | Switch on proxy failure |
-| Performance tracking | ✅ Done | Latency and success rate metrics |
-| Blacklist/whitelist | ✅ Done | Manual proxy management |
+| Proxy health checking | 🚀 Migrated | Automatic health monitoring |
+| Rotation strategies | 🚀 Migrated | Round-robin, random, fastest, geo-based |
+| Geographic targeting | 🚀 Migrated | Country-based proxy selection |
+| Automatic failover | 🚀 Migrated | Switch on proxy failure |
+| Performance tracking | 🚀 Migrated | Latency and success rate metrics |
+| Blacklist/whitelist | 🚀 Migrated | Manual proxy management |
 
-#### 24.2 WebSocket Commands (13 commands)
+#### 24.2 WebSocket Commands (Removed - Use basset-hound-networking)
 
-Available commands:
+Previously available commands (now in basset-hound-networking):
 - `add_proxy_to_pool`, `remove_proxy_from_pool`, `get_next_proxy`
 - `set_proxy_rotation_strategy`, `list_proxy_pool`, `get_proxy_stats`
 - `test_proxy_health`, `test_all_proxies_health`
 - `blacklist_proxy`, `whitelist_proxy`, `get_proxies_by_country`
 - `configure_health_check`, `clear_proxy_pool`
 
-**Implementation:**
-- `proxy/proxy-pool.js` - Proxy pool manager (~900 lines)
-- `websocket/commands/proxy-pool-commands.js` - WebSocket API (13 commands)
-- `tests/unit/proxy-pool.test.js` - Unit tests (65+ test cases)
+**Implementation:** Migrated to `basset-hound-networking` package
+- Previous: `proxy/proxy-pool.js` - Proxy pool manager (~900 lines)
+- Previous: `websocket/commands/proxy-pool-commands.js` - WebSocket API (13 commands)
+- Previous: `tests/unit/proxy-pool.test.js` - Unit tests (65+ test cases)
 
 ---
 
@@ -1053,7 +1054,19 @@ AI agent access to extraction:
 
 ### Recent Releases
 
-**v10.6.0** (Current - Feature Complete Release) ✅
+**v11.0.0** (Current - Scope Cleanup Release) ✅
+- **Scope Cleanup:** Removed networking infrastructure from browser
+- **Phase 24 Migration:** Advanced proxy rotation moved to `basset-hound-networking` package
+  - Proxy pool management now handled externally
+  - Browser focuses purely on browser automation
+  - Cleaner separation of concerns
+- **Breaking Changes:**
+  - Removed 13 proxy pool WebSocket commands
+  - Removed `proxy/proxy-pool.js` and related files
+  - Proxy configuration still available via standard commands
+- **Architecture:** Browser is now a pure automation tool without networking infrastructure
+
+**v10.6.0** (Feature Complete Release) ✅
 - **12 major phases implemented** (Phases 19-25, 27-31)
 - **Phase 29:** Evidence chain of custody (RFC 3161, ISO 27037, SWGDE compliant)
   - Cryptographic hashing (SHA-256)
@@ -1186,7 +1199,7 @@ See [ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md) for detailed history of Phase
 - Phase 28: Multi-Page Concurrent Browsing ✅
 - Phase 27: Advanced Cookie Management ✅
 - Phase 25: Page Monitoring ✅
-- Phase 24: Advanced Proxy Rotation ✅
+- Phase 24: Advanced Proxy Rotation 🚀 (Migrated to basset-hound-networking)
 - Phase 23: Browser Profile Templates ✅
 - Phase 22: Smart Form Filling ✅
 - Phase 21: Advanced Screenshots ✅
@@ -1203,6 +1216,6 @@ See [ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md) for detailed history of Phase
 
 ---
 
-*Last updated: January 9, 2026*
-*Version: 10.2.0*
+*Last updated: January 13, 2026*
+*Version: 11.0.0*
 *Status: Active Development - Browser Automation Tool*

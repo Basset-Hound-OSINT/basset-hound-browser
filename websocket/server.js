@@ -7611,9 +7611,9 @@ class WebSocketServer {
     const { registerProfileTemplateCommands } = require('./commands/profile-template-commands');
     registerProfileTemplateCommands(this, this.mainWindow);
 
-    // Register proxy pool commands (Phase 24)
-    const { registerProxyPoolCommands } = require('./commands/proxy-pool-commands');
-    registerProxyPoolCommands(this, this.mainWindow);
+    // Phase 24: Proxy Pool Commands - MIGRATED TO basset-hound-networking
+    // Proxy rotation and pool management has been moved to a separate package.
+    // Use basic proxy setting via proxy/manager.js instead.
 
     // Register advanced cookie management commands (Phase 27)
     const { registerCookieCommands } = require('./commands/cookie-commands');

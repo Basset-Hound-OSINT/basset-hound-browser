@@ -1,6 +1,6 @@
 # Basset Hound Browser - Project Scope Definition
 
-**Last Updated:** January 9, 2026
+**Last Updated:** January 13, 2026
 
 ---
 
@@ -58,24 +58,34 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - **Rate limiting:** Adaptive delays, exponential backoff
 - **TLS fingerprinting:** JA3/JA4 research and mitigation strategies
 
-### 5. Network Capabilities
-- **Proxy support:** HTTP, HTTPS, SOCKS4, SOCKS5
+### 5. Network Capabilities (Simplified)
+- **Single proxy support:** HTTP, HTTPS, SOCKS4, SOCKS5 (one proxy per session)
 - **Proxy authentication:** Username/password
-- **Proxy rotation:** Switch between multiple proxies
-- **Tor integration:** Connect via Tor, circuit management
-- **Exit node control:** Select countries, rebuild circuits
-- **Bridge support:** obfs4, meek, snowflake transports
-- **Stream isolation:** Per-tab, per-domain isolation
+- **Basic Tor integration:** Connect to existing Tor installation
+- **Tor new identity:** Request new circuit via existing Tor
 - **Onion services:** Navigate to .onion sites
 
-### 6. Profile & Identity Management
+> **Note:** Advanced networking infrastructure (proxy pools, rotation strategies, bridge configuration, exit node selection) has been moved to a separate project: **Basset Hound Networking**. This browser accepts a single proxy configuration; external tools manage proxy selection and rotation.
+
+### 6. Network Monitoring & Forensics (Browser-Level)
+- **DNS query capture:** Record all DNS lookups made by browser
+- **TLS certificate extraction:** Capture SSL certificates and chains
+- **WebSocket tracking:** Monitor WebSocket connections and messages
+- **HTTP header analysis:** Extract and analyze security headers
+- **HAR capture:** Complete HTTP archive recording
+- **Cookie provenance:** Track cookie origins and modifications
+- **Timeline generation:** Chronological network event log
+
+> **Distinction:** Network *monitoring* observes what the browser sees (passive). Network *infrastructure* modifies how traffic is routed (active). This browser does monitoring only.
+
+### 7. Profile & Identity Management
 - **Browser profiles:** Isolated sessions with separate cookies/storage
 - **Fingerprint profiles:** Consistent fingerprints per identity
 - **Profile switching:** Switch between multiple identities
 - **Credential filling:** Fill forms with provided credentials
 - **Session management:** Track when profiles are active
 
-### 7. Control Interfaces
+### 8. Control Interfaces
 - **WebSocket API:** Remote control via WebSocket (port 8765)
 - **MCP Server:** AI agent integration via Model Context Protocol
 - **Authentication:** Token-based auth for secure connections
@@ -85,21 +95,34 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 
 ## Out of Scope ❌
 
-### 1. Intelligence Analysis
+### 1. Networking Infrastructure (Moved to Basset Hound Networking)
+- ❌ **Proxy pool management:** Managing multiple proxies, health checking, failover
+- ❌ **Proxy rotation strategies:** Round-robin, random, fastest, geo-based selection
+- ❌ **Geographic proxy selection:** Selecting proxies by country/region
+- ❌ **Proxy health monitoring:** Checking if proxies are alive, tracking performance
+- ❌ **Proxy chaining:** Multi-hop proxy configurations
+- ❌ **VPN integration:** VPN tunnel management and configuration
+- ❌ **SSH tunnel management:** SSH-based proxy tunnels
+- ❌ **Tor advanced configuration:** Installing Tor, configuring bridges, exit node selection
+- ❌ **Network routing decisions:** Any logic that decides how traffic is routed
+
+> **Why out of scope:** These features modify network routing at infrastructure level. Browser automation should use a pre-configured proxy endpoint; external tools handle the infrastructure.
+
+### 2. Intelligence Analysis
 - ❌ **Pattern detection:** Detecting emails, phones, crypto addresses, social handles
 - ❌ **Data classification:** Deciding what data is "important" or "relevant"
 - ❌ **OSINT pattern matching:** Automated detection of intelligence indicators
 - ❌ **Confidence scoring:** Rating how "useful" extracted data is
 - ❌ **Relationship inference:** Detecting connections between data points
 
-### 2. Investigation Management
+### 3. Investigation Management
 - ❌ **Investigation workflows:** Managing investigation lifecycle, queuing URLs
 - ❌ **Case management:** Organizing evidence into cases/investigations
 - ❌ **Evidence packages:** Creating investigation bundles (just capture raw evidence)
 - ❌ **Investigation IDs:** Tracking which investigation evidence belongs to
 - ❌ **Workflow orchestration:** Deciding what pages to visit next
 
-### 3. Data Processing & Transformation
+### 4. Data Processing & Transformation
 - ❌ **Ingestion modes:** Deciding what to ingest (automatic/selective/filtered)
 - ❌ **Deduplication:** Tracking what's been seen before across sessions
 - ❌ **Normalization:** Converting data to standard formats
@@ -107,13 +130,13 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - ❌ **Orphan data generation:** Transforming data for external systems
 - ❌ **Provenance building:** Creating complex data lineage structures
 
-### 4. External System Integration
+### 5. External System Integration
 - ❌ **basset-hound API integration:** Fetching/pushing data to basset-hound
 - ❌ **Sock puppet management:** Managing fake personas in external database
 - ❌ **Activity syncing:** Pushing activity logs to external systems
 - ❌ **Credential fetching:** Pulling credentials from external APIs
 
-### 5. Analysis Tools
+### 6. Analysis Tools
 - ❌ **Blockchain analysis:** Analyzing crypto transactions
 - ❌ **Face detection:** Identifying faces in images
 - ❌ **Object detection:** Identifying objects in images
@@ -122,7 +145,7 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - ❌ **Sentiment analysis:** Analyzing text sentiment
 - ❌ **Entity extraction:** NLP-based name/org extraction
 
-### 6. Decision-Making
+### 7. Decision-Making
 - ❌ **What to extract:** Browser extracts everything, agent decides what to keep
 - ❌ **Where to navigate:** Agent tells browser where to go
 - ❌ **What to click:** Agent identifies targets, browser executes

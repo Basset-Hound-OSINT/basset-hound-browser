@@ -1,15 +1,19 @@
 /**
  * Basset Hound Browser - Proxy Manager Module
- * Handles proxy configuration, rotation, and authentication
+ * Handles single proxy configuration and authentication
  * Supports HTTP, HTTPS, SOCKS4, and SOCKS5 proxies
- * Integrates with Tor and Proxy Chain managers
+ * Integrates with Tor manager for basic Tor connection
+ *
+ * NOTE: Proxy pool management, rotation strategies, and chain functionality
+ * have been migrated to basset-hound-networking package.
  */
 
 const { session } = require('electron');
 
-// Lazy load Tor and Chain managers to avoid circular dependencies
+// Lazy load Tor manager to avoid circular dependencies
 let torManager = null;
-let proxyChainManager = null;
+// Proxy chain manager has been migrated to basset-hound-networking
+// let proxyChainManager = null;
 
 /**
  * Proxy types supported
@@ -49,18 +53,13 @@ function getTorManager() {
 }
 
 /**
- * Get ProxyChainManager instance (lazy load)
+ * Get ProxyChainManager instance (DEPRECATED)
+ * Proxy chain functionality has been migrated to basset-hound-networking.
+ * This function now returns null and logs a deprecation warning.
  */
 function getProxyChainManager() {
-  if (!proxyChainManager) {
-    try {
-      const chainModule = require('./chain');
-      proxyChainManager = chainModule.proxyChainManager;
-    } catch (error) {
-      console.error('[ProxyManager] Failed to load ProxyChainManager:', error.message);
-    }
-  }
-  return proxyChainManager;
+  console.warn('[ProxyManager] ProxyChainManager has been migrated to basset-hound-networking package');
+  return null;
 }
 
 /**
