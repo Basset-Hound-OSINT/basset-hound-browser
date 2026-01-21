@@ -53,6 +53,9 @@ function registerEvidenceChainCommands(server, mainWindow) {
         enableBlockchain: params.enableBlockchain
       });
 
+      // Wait for directory initialization to complete
+      await evidenceManager.ensureInitialized();
+
       // Setup event forwarding
       evidenceManager.on('investigation-created', (data) => {
         server.broadcast('evidence_chain_event', { type: 'investigation-created', ...data });

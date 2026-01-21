@@ -2,17 +2,22 @@
 
 **Last Updated:** January 21, 2026
 **Current Version:** 11.0.0
-**Status:** ✅ Feature Complete - Docker Deployment Tested
+**Status:** ✅ Feature Complete - Ready for Integration Testing
 
 ## Recent Updates
 
-### January 21, 2026 - Deployment Testing Complete
+### January 21, 2026 - Deployment Testing Complete ✅
 - ✅ Docker build and deployment validated
 - ✅ 9 deployment issues identified and fixed
-- ✅ WebSocket API verified working (navigate, cookies)
-- ⚠️ Some commands need headless webview configuration
-- 📄 See `docs/integration_readiness.md` for full status
-- 📄 See `docs/findings/DEPLOYMENT-FIXES-2026-01-21.md` for fixes
+- ✅ WebSocket API verified working (**91% pass rate** - 10/11 core commands)
+- ✅ All page-dependent commands work with proper timing (wait 2-4s after navigation)
+- ✅ Deployment scripts created: `scripts/deploy.sh` and `scripts/redeploy.sh`
+- 📄 See [integration_readiness.md](integration_readiness.md) for full status
+- 📄 See [findings/DEPLOYMENT-FIXES-2026-01-21.md](findings/DEPLOYMENT-FIXES-2026-01-21.md) for fixes
+- 📄 See [findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md](findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md) for timing requirements
+
+### Key Insight: Webview Timing
+Commands like `get_page_state`, `screenshot`, `get_content` require the page to load first. Wait 2-4 seconds after `navigate` or use `wait_for_element`. This is standard browser automation behavior (same as Puppeteer, Playwright, Selenium).
 
 ---
 
@@ -1200,32 +1205,75 @@ See [ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md) for detailed history of Phase
 
 ## Development Status
 
-### Active Work
-- Phase 26: Browser Extension Communication (deferred - not needed with MCP/API)
-- Integration testing for new features
-- Additional phase development as needed
+### Current Priorities (January 21, 2026)
 
-### Completed (January 9, 2026)
-- Phase 28: Multi-Page Concurrent Browsing ✅
-- Phase 27: Advanced Cookie Management ✅
-- Phase 25: Page Monitoring ✅
-- Phase 24: Advanced Proxy Rotation 🚀 (Migrated to basset-hound-networking)
-- Phase 23: Browser Profile Templates ✅
-- Phase 22: Smart Form Filling ✅
-- Phase 21: Advanced Screenshots ✅
-- Phase 20: Interaction Recording ✅
-- Phase 19: Network Forensics ✅
-- Phase 14: Image forensics ✅
-- Phase 17: Bot detection evasion ✅
-- Phases 1-11: Core browser automation (see archive) ✅
+#### Priority 1: Integration Testing with palletai 🔜
+The browser is ready for integration testing with AI agents.
+- Test MCP server connection with palletai agents
+- Validate evidence chain of custody workflow
+- Verify multi-page concurrent browsing for parallel investigations
+
+#### Priority 2: Chain of Custody Documentation 📋
+Clarify scope of chain of custody feature for external systems:
+- Everything the browser does should be recorded for forensic purposes
+- External systems (like palletai) consume this audit trail
+- Ensure all WebSocket commands log to the evidence chain when active
+
+#### Priority 3: Bot Detection Validation 🧪
+Test evasion capabilities on real platforms:
+- Cloudflare, DataDome, PerimeterX
+- Validate fingerprint consistency across sessions
+- Test behavioral AI mouse/typing patterns
+
+#### Priority 4: Performance Optimization ⚡
+- Test concurrent page management under load
+- Memory usage optimization for long-running sessions
+- Connection pooling for high-throughput scenarios
+
+### Completed Features (All Phases)
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1-11 | Core browser automation | ✅ Complete |
+| 14 | Forensic Image Capabilities | ✅ Complete |
+| 15 | MCP Server for AI Agents | ✅ Complete |
+| 17 | Bot Detection Evasion | ✅ Complete |
+| 18 | Evidence Collection | ✅ Complete |
+| 19 | Network Forensics | ✅ Complete |
+| 20 | Interaction Recording | ✅ Complete |
+| 21 | Advanced Screenshots | ✅ Complete |
+| 22 | Smart Form Filling | ✅ Complete |
+| 23 | Browser Profile Templates | ✅ Complete |
+| 24 | Advanced Proxy Rotation | 🚀 Migrated to basset-hound-networking |
+| 25 | Page Monitoring | ✅ Complete |
+| 26 | Browser Extension Communication | ⏸️ Deferred (not needed with MCP) |
+| 27 | Advanced Cookie Management | ✅ Complete |
+| 28 | Multi-Page Concurrent Browsing | ✅ Complete |
+| 29 | Evidence Chain of Custody | ✅ Complete |
+| 30 | Geolocation & Location Simulation | ✅ Complete |
+| 31 | Data Extraction Templates | ⏸️ Skipped (prefer raw HTML → LLM approach) |
+
+### Deployment Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Docker Build | ✅ Working | All 9 fixes applied |
+| Container Startup | ✅ Working | Xvfb + Electron headless |
+| WebSocket Server | ✅ Working | Port 8765 |
+| API Commands | ✅ 91% pass rate | Timing required for page commands |
+| MCP Server | ✅ Available | `mcp/server.py` |
+| Deployment Scripts | ✅ Created | `scripts/deploy.sh`, `scripts/redeploy.sh` |
 
 ### Documentation
 - **SCOPE.md:** Architectural boundaries and scope definition
 - **ROADMAP-ARCHIVE-V1.md:** Historical phases 1-11
 - **ROADMAP.md:** Current roadmap (this document)
+- **integration_readiness.md:** Current deployment and API status
+- **findings/DEPLOYMENT-FIXES-2026-01-21.md:** Deployment fixes applied
+- **findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md:** Timing requirements for page commands
 
 ---
 
-*Last updated: January 13, 2026*
+*Last updated: January 21, 2026*
 *Version: 11.0.0*
-*Status: Active Development - Browser Automation Tool*
+*Status: Ready for Integration Testing*

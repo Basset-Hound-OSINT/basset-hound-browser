@@ -281,7 +281,19 @@ class EvidenceManager extends EventEmitter {
       enableBlockchain: options.enableBlockchain || false
     };
 
-    this._ensureVaultDirectory();
+    // Track initialization
+    this._initialized = false;
+    this._initPromise = this._ensureVaultDirectory();
+  }
+
+  /**
+   * Wait for initialization to complete
+   */
+  async ensureInitialized() {
+    if (!this._initialized) {
+      await this._initPromise;
+    }
+    return this;
   }
 
   async _ensureVaultDirectory() {
@@ -291,8 +303,10 @@ class EvidenceManager extends EventEmitter {
       await fs.mkdir(path.join(this.basePath, 'packages'), { recursive: true });
       await fs.mkdir(path.join(this.basePath, 'reports'), { recursive: true });
       await fs.mkdir(path.join(this.basePath, 'audit'), { recursive: true });
+      this._initialized = true;
     } catch (error) {
       console.error('Failed to create evidence vault directory:', error);
+      throw error;
     }
   }
 

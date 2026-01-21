@@ -7611,6 +7611,12 @@ class WebSocketServer {
     const { registerProfileTemplateCommands } = require('./commands/profile-template-commands');
     registerProfileTemplateCommands(this, this.mainWindow);
 
+    // Register evasion commands (Phase 17)
+    const { registerEvasionCommands } = require('./commands/evasion-commands');
+    registerEvasionCommands(this.commandHandlers, (script) => {
+      return this.executeInRenderer(script);
+    });
+
     // Phase 24: Proxy Pool Commands - MIGRATED TO basset-hound-networking
     // Proxy rotation and pool management has been moved to a separate package.
     // Use basic proxy setting via proxy/manager.js instead.
