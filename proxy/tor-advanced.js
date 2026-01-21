@@ -739,8 +739,12 @@ class AdvancedTorManager extends EventEmitter {
 
       // Set LD_LIBRARY_PATH on Linux when using embedded Tor
       // This ensures the embedded Tor can find its shared libraries
-      if (this.embeddedMode && os.platform() === 'linux') {
+      // Re-check embedded mode at start time in case Tor was downloaded after construction
+      const isEmbedded = this.embeddedMode || this.isEmbeddedAvailable();
+      console.log('[TorAdvanced] Checking LD_LIBRARY_PATH: embeddedMode=', this.embeddedMode, 'isEmbeddedAvailable=', this.isEmbeddedAvailable(), 'platform=', os.platform());
+      if (isEmbedded && os.platform() === 'linux') {
         const libDir = EMBEDDED_PATHS.libDir;
+        console.log('[TorAdvanced] libDir check:', libDir, 'exists:', fs.existsSync(libDir));
         if (fs.existsSync(libDir)) {
           const currentLdPath = process.env.LD_LIBRARY_PATH || '';
           const newLdPath = currentLdPath ? `${libDir}:${currentLdPath}` : libDir;
@@ -753,7 +757,7 @@ class AdvancedTorManager extends EventEmitter {
       }
 
       // Set DYLD_LIBRARY_PATH on macOS when using embedded Tor
-      if (this.embeddedMode && os.platform() === 'darwin') {
+      if (isEmbedded && os.platform() === 'darwin') {
         const libDir = EMBEDDED_PATHS.libDir;
         if (fs.existsSync(libDir)) {
           const currentDyldPath = process.env.DYLD_LIBRARY_PATH || '';
@@ -1543,6 +1547,78 @@ class AdvancedTorManager extends EventEmitter {
       };
     } catch (error) {
       return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get detailed information about the current exit node.
+   *
+   * Returns comprehensive information about the current exit node including
+   * IP address, country, fingerprint, and circuit path details. This is the
+   * user-facing method to understand their current Tor exit point.
+   *
+   * @method getExitInfo
+   * @async
+   * @returns {Promise<Object>} Exit node information
+   * @returns {boolean} returns.success - Whether query succeeded
+   * @returns {string} [returns.exitIp] - Current exit node IP address
+   * @returns {string} [returns.exitCountry] - Current exit node country code
+   * @returns {string} [returns.exitFingerprint] - Exit node fingerprint
+   * @returns {string} [returns.exitNickname] - Exit node nickname
+   * @returns {Object} [returns.circuit] - Current circuit information
+   * @returns {string} returns.circuit.id - Circuit ID
+   * @returns {string} returns.circuit.status - Circuit status
+   * @returns {Array<Object>} returns.circuit.path - Circuit path nodes
+   * @returns {Object} [returns.restrictions] - Current exit restrictions
+   * @returns {string[]} returns.restrictions.allowedCountries - Allowed exit countries
+   * @returns {string[]} returns.restrictions.excludedCountries - Excluded exit countries
+   * @returns {string} [returns.error] - Error message if failed
+   *
+   * @example
+   * const info = await manager.getExitInfo();
+   * if (info.success) {
+   *   console.log(`Exit: ${info.exitIp} (${info.exitCountry})`);
+   *   console.log(`Node: ${info.exitNickname}`);
+   * }
+   */
+  async getExitInfo() {
+    try {
+      // First, update exit info via check service
+      await this._updateExitInfo();
+
+      // Get current circuit path for exit node details
+      const circuitPath = await this.getCircuitPath();
+
+      let exitNode = null;
+      if (circuitPath.success && circuitPath.path && circuitPath.path.length > 0) {
+        // Exit node is the last node in the path
+        exitNode = circuitPath.path[circuitPath.path.length - 1];
+      }
+
+      return {
+        success: true,
+        exitIp: this.currentExitIp,
+        exitCountry: this.currentExitCountry,
+        exitFingerprint: exitNode ? exitNode.fingerprint : null,
+        exitNickname: exitNode ? exitNode.nickname : null,
+        exitBandwidth: exitNode ? exitNode.bandwidth : null,
+        circuit: circuitPath.success ? {
+          id: circuitPath.circuitId,
+          status: circuitPath.status,
+          purpose: circuitPath.purpose,
+          path: circuitPath.path
+        } : null,
+        restrictions: {
+          allowedCountries: this.exitCountries,
+          excludedCountries: this.excludeCountries
+        },
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
     }
   }
 

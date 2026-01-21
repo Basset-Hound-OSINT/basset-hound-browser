@@ -115,6 +115,9 @@ class HeadlessManager extends EventEmitter {
     // WebSocket server reference for broadcasting
     this.wsServer = null;
 
+    // Last rendered frame for screenshot fallback in headless mode
+    this.lastRenderedFrame = null;
+
     console.log('[HeadlessManager] Initialized');
   }
 
@@ -509,6 +512,16 @@ class HeadlessManager extends EventEmitter {
     this.renderStats.framesRendered++;
     this.renderStats.lastFrameTime = now;
 
+    // Store the latest frame for screenshot fallback
+    // Only store if the image has actual content
+    if (image && !image.isEmpty()) {
+      this.lastRenderedFrame = {
+        image: image,
+        timestamp: now,
+        dirty: dirty
+      };
+    }
+
     // Track frame time history for averaging
     if (frameTime > 0) {
       this.renderStats.frameTimeHistory.push(frameTime);
@@ -528,6 +541,68 @@ class HeadlessManager extends EventEmitter {
       frameTime,
       frameNumber: this.renderStats.framesRendered
     });
+  }
+
+  /**
+   * Get the latest rendered frame (for screenshot fallback in headless mode)
+   * @returns {Object} Last rendered frame with image and metadata, or null
+   */
+  getLastRenderedFrame() {
+    if (!this.lastRenderedFrame) {
+      return null;
+    }
+
+    const age = Date.now() - this.lastRenderedFrame.timestamp;
+    return {
+      image: this.lastRenderedFrame.image,
+      timestamp: this.lastRenderedFrame.timestamp,
+      age: age,
+      stale: age > 5000 // Consider frame stale if older than 5 seconds
+    };
+  }
+
+  /**
+   * Capture screenshot using the last rendered frame (headless mode fallback)
+   * @returns {Object} Screenshot result
+   */
+  captureFromLastFrame() {
+    const frame = this.getLastRenderedFrame();
+
+    if (!frame) {
+      return {
+        success: false,
+        error: 'No rendered frame available - page may not have been painted yet'
+      };
+    }
+
+    if (frame.stale) {
+      console.warn('[HeadlessManager] Using stale frame for screenshot (age: ' + frame.age + 'ms)');
+    }
+
+    try {
+      const dataUrl = frame.image.toDataURL();
+
+      if (dataUrl.length < 100) {
+        return {
+          success: false,
+          error: 'Last rendered frame contains minimal data'
+        };
+      }
+
+      return {
+        success: true,
+        data: dataUrl,
+        captureMethod: 'offscreenFrame',
+        frameAge: frame.age,
+        stale: frame.stale,
+        note: 'Captured from offscreen rendering paint event'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Failed to convert frame to data URL: ${error.message}`
+      };
+    }
   }
 
   /**

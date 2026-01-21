@@ -584,6 +584,72 @@ function configureHeadlessMode() {
 // Configure headless mode before app is ready
 const isHeadlessMode = configureHeadlessMode();
 
+// ==========================================
+// Tor Mode Configuration
+// ==========================================
+
+/**
+ * Get Tor options from configuration
+ * @returns {Object} Tor options
+ */
+function getTorOptions() {
+  const args = process.argv;
+  return {
+    // Enable Tor mode via config, env var, or CLI flag
+    enabled: appConfig.tor?.enabled ||
+             process.env.TOR_MODE === '1' ||
+             process.env.TOR_MODE === 'true' ||
+             args.includes('--tor-mode'),
+    // SOCKS proxy host/port (defaults to standard Tor)
+    socksHost: appConfig.tor?.socksHost || process.env.TOR_SOCKS_HOST || '127.0.0.1',
+    socksPort: parseInt(appConfig.tor?.socksPort || process.env.TOR_SOCKS_PORT || '9050', 10),
+    // Disable DNS prefetching to prevent leaks
+    disableDnsPrefetch: appConfig.tor?.disableDnsPrefetch !== false
+  };
+}
+
+/**
+ * Configure Electron app for Tor routing
+ * Must be called before app.whenReady()
+ *
+ * This sets command-line flags that prevent DNS leaks and ensure
+ * all traffic (including DNS resolution) goes through the Tor SOCKS proxy.
+ * This is critical for .onion domain support.
+ */
+function configureTorMode() {
+  const torOpts = getTorOptions();
+
+  if (!torOpts.enabled) {
+    console.log('[Tor] Tor mode not enabled (use --tor-mode, TOR_MODE=1, or config.tor.enabled)');
+    return false;
+  }
+
+  console.log('[Tor] Configuring Tor mode...');
+
+  const proxyUrl = `socks5://${torOpts.socksHost}:${torOpts.socksPort}`;
+
+  // Set proxy server - this routes all traffic through Tor SOCKS proxy
+  app.commandLine.appendSwitch('proxy-server', proxyUrl);
+  console.log(`[Tor] Proxy server set: ${proxyUrl}`);
+
+  // Prevent local DNS resolution - critical for .onion domains
+  // The EXCLUDE clause allows resolving the proxy server itself
+  app.commandLine.appendSwitch('host-resolver-rules', `MAP * ~NOTFOUND , EXCLUDE ${torOpts.socksHost}`);
+  console.log('[Tor] Host resolver rules set (DNS via proxy)');
+
+  // Disable DNS prefetching to prevent DNS leaks
+  if (torOpts.disableDnsPrefetch) {
+    app.commandLine.appendSwitch('dns-prefetch-disable');
+    console.log('[Tor] DNS prefetching disabled');
+  }
+
+  console.log('[Tor] Tor mode configured - all traffic will route through Tor');
+  return true;
+}
+
+// Configure Tor mode before app is ready
+const isTorMode = configureTorMode();
+
 // Get viewport configuration from config or use random
 function getViewportConfig() {
   const browserConfig = appConfig.browser?.window || {};
@@ -733,12 +799,17 @@ async function createWindow() {
     }
   });
 
-  // Create initial tab if configured
-  if (tabsConfig.defaultTab !== false) {
-    // Use positional URL argument if provided, otherwise use home page
-    const startupUrl = configResult.positionalArgs?.[0] || tabsConfig.homePage || 'https://www.google.com';
-    tabManager.createTab({ url: startupUrl, active: true });
-  }
+  // Wait for renderer to be ready before creating the initial tab
+  // This fixes a race condition where tab-created IPC was sent before renderer was listening
+  mainWindow.webContents.once('did-finish-load', () => {
+    console.log('[Main] Renderer finished loading, creating initial tab');
+    // Create initial tab if configured
+    if (tabsConfig.defaultTab !== false) {
+      // Use positional URL argument if provided, otherwise use home page
+      const startupUrl = configResult.positionalArgs?.[0] || tabsConfig.homePage || 'https://www.google.com';
+      tabManager.createTab({ url: startupUrl, active: true });
+    }
+  });
 
   // Initialize Network Throttler with webContents for CDP access
   networkThrottler.initialize(mainWindow.webContents);

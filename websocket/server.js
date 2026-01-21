@@ -1065,11 +1065,69 @@ class WebSocketServer {
     this.commandHandlers.screenshot = async (params) => {
       const { format = 'png' } = params;
       try {
-        return await ipcWithTimeout(
+        // First try capturing from the webview via renderer process
+        const result = await ipcWithTimeout(
           this.mainWindow.webContents,
           'capture-screenshot',
           'screenshot-response'
         );
+
+        // If webview capture succeeded, return it
+        if (result.success) {
+          return result;
+        }
+
+        // If webview capture failed due to headless mode, try capturing from main window
+        // This captures the entire browser window including chrome, but works in headless mode
+        if (result.needsMainProcessCapture || result.error?.includes('headless')) {
+          console.log('[WebSocket] Webview screenshot failed, attempting main window capture');
+          try {
+            const image = await this.mainWindow.webContents.capturePage();
+            if (!image.isEmpty()) {
+              const dataUrl = image.toDataURL();
+              // Verify we got actual data
+              if (dataUrl.length >= 100) {
+                return {
+                  success: true,
+                  data: dataUrl,
+                  captureMethod: 'mainWindow',
+                  note: 'Captured from main window (includes browser chrome) due to headless mode'
+                };
+              }
+            }
+
+            // Main window capture also failed, try headless manager's offscreen frame
+            if (this.headlessManager && this.headlessManager.offscreenRenderingEnabled) {
+              console.log('[WebSocket] Main window capture failed, attempting offscreen frame capture');
+              const frameResult = this.headlessManager.captureFromLastFrame();
+              if (frameResult.success) {
+                return frameResult;
+              }
+              console.log('[WebSocket] Offscreen frame capture failed:', frameResult.error);
+            }
+
+            return {
+              success: false,
+              error: 'Screenshot capture failed: all capture methods returned empty images in headless mode. Try using screenshot_viewport command instead.'
+            };
+          } catch (mainWindowError) {
+            // Try headless manager's offscreen frame as last resort
+            if (this.headlessManager && this.headlessManager.offscreenRenderingEnabled) {
+              console.log('[WebSocket] Main window capture threw error, attempting offscreen frame capture');
+              const frameResult = this.headlessManager.captureFromLastFrame();
+              if (frameResult.success) {
+                return frameResult;
+              }
+            }
+            return {
+              success: false,
+              error: `Screenshot capture failed in headless mode: ${mainWindowError.message}`
+            };
+          }
+        }
+
+        // Return the original error from webview capture
+        return result;
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -2196,10 +2254,44 @@ class WebSocketServer {
       } = params;
 
       try {
-        const result = await this.screenshotManager.captureViewport({
+        let result = await this.screenshotManager.captureViewport({
           format,
           quality
         });
+
+        // If webview capture failed due to headless mode, try fallbacks
+        if (!result.success && (result.needsMainProcessCapture || result.error?.includes('headless') || result.error?.includes('empty'))) {
+          console.log('[WebSocket] Viewport screenshot failed, attempting main window capture');
+
+          // Try main window capture
+          try {
+            const image = await this.mainWindow.webContents.capturePage();
+            if (!image.isEmpty()) {
+              const dataUrl = image.toDataURL();
+              if (dataUrl.length >= 100) {
+                result = {
+                  success: true,
+                  data: dataUrl,
+                  captureMethod: 'mainWindow',
+                  width: image.getSize().width,
+                  height: image.getSize().height,
+                  note: 'Captured from main window (includes browser chrome) due to headless mode'
+                };
+              }
+            }
+          } catch (mainWindowError) {
+            console.log('[WebSocket] Main window capture failed:', mainWindowError.message);
+          }
+
+          // If still failed, try headless manager's offscreen frame
+          if (!result.success && this.headlessManager && this.headlessManager.offscreenRenderingEnabled) {
+            console.log('[WebSocket] Attempting offscreen frame capture');
+            const frameResult = this.headlessManager.captureFromLastFrame();
+            if (frameResult.success) {
+              result = frameResult;
+            }
+          }
+        }
 
         if (result.success && savePath) {
           const saveResult = await this.screenshotManager.saveToFile(result.data, savePath);
@@ -2583,6 +2675,73 @@ class WebSocketServer {
     };
 
     // ==========================================
+    // Dynamic Tor Routing Commands
+    // ==========================================
+    // These commands allow enabling/disabling Tor routing at runtime
+    // without requiring TOR_MODE at startup.
+    //
+    // tor_start/tor_stop control the Tor daemon
+    // tor_enable/tor_disable control whether traffic is routed through Tor
+    //
+    // Example workflow:
+    // 1. tor_start - Start the Tor daemon
+    // 2. tor_enable - Route browser traffic through Tor
+    // 3. ... (browse anonymously)
+    // 4. tor_disable - Stop routing (direct connection)
+    // 5. ... (browse directly)
+    // 6. tor_enable - Route through Tor again
+    // 7. tor_stop - Stop the daemon when done
+    // ==========================================
+
+    // Enable Tor routing - route all browser traffic through Tor SOCKS proxy
+    this.commandHandlers.tor_enable = async (params) => {
+      try {
+        const options = {};
+        if (params.socksHost) options.socksHost = params.socksHost;
+        if (params.socksPort) options.socksPort = parseInt(params.socksPort, 10);
+
+        const result = await proxyManager.enableTorRouting(options);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Disable Tor routing - return to direct connection (does NOT stop Tor daemon)
+    this.commandHandlers.tor_disable = async (params) => {
+      try {
+        const result = await proxyManager.disableTorRouting();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Toggle Tor routing state
+    this.commandHandlers.tor_toggle = async (params) => {
+      try {
+        const options = {};
+        if (params.socksHost) options.socksHost = params.socksHost;
+        if (params.socksPort) options.socksPort = parseInt(params.socksPort, 10);
+
+        const result = await proxyManager.toggleTorRouting(options);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get current Tor routing status
+    this.commandHandlers.get_tor_routing_status = async (params) => {
+      try {
+        const result = await proxyManager.getTorRoutingStatus();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // ==========================================
     // Advanced Tor Integration Commands
     // ==========================================
 
@@ -2795,6 +2954,36 @@ class WebSocketServer {
         }
 
         const result = await tor.newIdentity();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // New identity (user-friendly alias for tor_rebuild_circuit)
+    this.commandHandlers.tor_new_identity = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.newIdentity();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get detailed exit node information
+    this.commandHandlers.tor_get_exit_info = async (params) => {
+      try {
+        const tor = getAdvancedTorManager();
+        if (!tor) {
+          return { success: false, error: 'Advanced Tor manager not available' };
+        }
+
+        const result = await tor.getExitInfo();
         return result;
       } catch (error) {
         return { success: false, error: error.message };

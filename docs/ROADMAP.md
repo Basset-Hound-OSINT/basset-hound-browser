@@ -19,6 +19,19 @@
 ### Key Insight: Webview Timing
 Commands like `get_page_state`, `screenshot`, `get_content` require the page to load first. Wait 2-4 seconds after `navigate` or use `wait_for_element`. This is standard browser automation behavior (same as Puppeteer, Playwright, Selenium).
 
+### January 21, 2026 - Full Tor Integration Complete ✅
+- ✅ Tor Mode (`TOR_MODE=1` or `--tor-mode`) enables .onion site access
+- ✅ Embedded/portable Tor works in Docker containers
+- ✅ Successfully accessed DuckDuckGo .onion (375KB HTML retrieved)
+- ✅ Command-line flags prevent DNS leaks for .onion domains
+- ✅ **NEW:** System-level Tor in Docker (smaller image, faster startup)
+- ✅ **NEW:** Dynamic Tor toggle (`tor_enable`, `tor_disable`, `tor_toggle`)
+- ✅ **NEW:** Exit node configuration (`tor_get_exit_info`, `tor_set_exit_country`)
+- ✅ **NEW:** Fixed race condition - tab creation now waits for renderer
+- 📄 See [findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md](findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md) for full details
+- 📄 See [findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md](findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md)
+- 📄 See [findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md](findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md) for Docker setup options
+
 ---
 
 ## Overview
@@ -530,11 +543,105 @@ Available commands:
 
 ---
 
+### Tor Integration for Network Forensics
+
+**Status:** ✅ COMPLETE (January 21, 2026)
+**Goal:** Enable .onion site access and anonymous browsing for network forensics.
+
+> **Scope Clarification:** Generic proxy configuration is NOT user-accessible. Tor integration exists specifically for network forensics capabilities - accessing .onion sites and anonymous investigation.
+
+#### Tor Mode Configuration
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Tor Mode flag | ✅ Done | `TOR_MODE=1`, `--tor-mode`, or `config.tor.enabled` |
+| Embedded Tor | ✅ Done | Portable Tor Expert Bundle (v0.4.8.21) |
+| System Tor (Docker) | ✅ Done | Pre-installed Tor in Docker image (15MB vs 80MB) |
+| .onion access | ✅ Done | DNS resolution via Tor SOCKS proxy |
+| DNS leak prevention | ✅ Done | `--host-resolver-rules` command-line flag |
+| Tor bootstrap | ✅ Done | Start/stop Tor daemon via WebSocket commands |
+| New identity | ✅ Done | Request new Tor circuit for IP rotation |
+| Dynamic Tor toggle | ✅ Done | Enable/disable routing at runtime |
+| Exit node config | ✅ Done | Get exit info, set preferred countries |
+
+#### Dynamic Tor Routing Commands
+
+| Command | Description |
+|---------|-------------|
+| `tor_enable` | Route browser traffic through Tor SOCKS proxy |
+| `tor_disable` | Return to direct connection |
+| `tor_toggle` | Toggle current routing state |
+| `get_tor_routing_status` | Get current routing configuration |
+| `tor_get_exit_info` | Get current exit node IP, fingerprint, country |
+| `tor_set_exit_country` | Set preferred exit countries (e.g., `["US", "CA"]`) |
+
+> **Note:** Dynamic routing works for clearnet sites. For `.onion` access, use `TOR_MODE=1` at startup.
+
+#### Usage
+
+**Docker with System Tor (recommended for production):**
+```bash
+docker run -d -p 8765:8765 basset-hound-browser
+# System Tor starts automatically
+```
+
+**Docker with Tor Mode for .onion access:**
+```bash
+docker run -d -p 8765:8765 -e TOR_MODE=1 basset-hound-browser
+```
+
+**Start Tor daemon via WebSocket (if not using system Tor):**
+```json
+{"command": "tor_start", "mode": "embedded"}
+```
+
+**Enable Tor routing dynamically:**
+```json
+{"command": "tor_enable"}
+```
+
+**Navigate to .onion site:**
+```json
+{"command": "navigate", "url": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/"}
+```
+
+**Get exit node info:**
+```json
+{"command": "tor_get_exit_info"}
+// Response: {"success": true, "exitIp": "155.31.50.112", "country": "DE"}
+```
+
+#### Docker Deployment Options
+
+| Option | Size | Startup | Best For |
+|--------|------|---------|----------|
+| System Tor (default) | +15MB | Fast | Production, Docker containers |
+| Embedded Tor | +80MB | Slow (first run downloads) | Development, cross-platform |
+
+**To disable system Tor and use embedded:**
+```bash
+docker run -d -p 8765:8765 -e USE_SYSTEM_TOR=false basset-hound-browser
+```
+
+**Implementation:**
+- `main.js` - Tor Mode configuration (command-line switches), race condition fix
+- `proxy/manager.js` - Dynamic Tor routing methods
+- `proxy/tor-advanced.js` - Tor daemon management, exit node config
+- `utils/tor-auto-setup.js` - Embedded Tor download/setup
+- `Dockerfile` - System Tor installation
+- `docs/findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md` - Full implementation details
+- `docs/findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md` - Initial verification
+- `docs/findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md` - Docker options research
+
+---
+
 ### Phase 24: Advanced Proxy Rotation
 
 **Status:** 🚀 MIGRATED TO BASSET HOUND NETWORKING
 
 > **Migration Note:** As of v11.0.0, all proxy rotation and networking infrastructure has been migrated to the standalone `basset-hound-networking` package. This allows the browser to focus purely on browser automation while networking concerns are handled by a dedicated service. The browser can still use proxies via the standard proxy configuration commands, but pool management and rotation is now handled externally.
+
+> **Exception - Tor:** Basic Tor integration remains in this browser because it directly enables network forensics (.onion access). See "Tor Integration for Network Forensics" section above.
 
 #### 24.1 Proxy Pool Features (Migrated)
 

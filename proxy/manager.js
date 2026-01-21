@@ -83,6 +83,15 @@ class ProxyManager {
     this.proxyMode = PROXY_MODES.SINGLE;
     this.torConnected = false;
     this.chainEnabled = false;
+
+    // Dynamic Tor routing state (separate from daemon state)
+    // torConnected = daemon is running and we can communicate with it
+    // torRoutingEnabled = browser traffic is actively being routed through Tor
+    this.torRoutingEnabled = false;
+    this.torRoutingConfig = {
+      socksHost: '127.0.0.1',
+      socksPort: 9050
+    };
   }
 
   /**
@@ -165,6 +174,9 @@ class ProxyManager {
 
     // Format according to Electron's proxy rules format
     // http=proxy:port;https=proxy:port or socks5://proxy:port
+    // NOTE: Chromium's SOCKS5 implementation already resolves hostnames through
+    // the proxy server (not locally), which is required for .onion domains to work.
+    // Do NOT use socks5h:// - that's a curl convention, not supported by Chromium.
     if (type === 'socks5') {
       return `socks5://${host}:${port}`;
     } else if (type === 'socks4') {
@@ -201,6 +213,18 @@ class ProxyManager {
         proxyRules,
         proxyBypassRules: proxyConfig.bypassRules || '<local>'
       });
+
+      // Close all existing connections to ensure new requests use the new proxy
+      // This is important for Tor/.onion domain support - pooled connections
+      // would still use the old (direct) route if not closed
+      if (session.defaultSession.closeAllConnections) {
+        await session.defaultSession.closeAllConnections();
+        console.log('[ProxyManager] Closed existing connections for new proxy');
+      }
+
+      // Verify proxy configuration was applied
+      const resolvedProxy = await session.defaultSession.resolveProxy('https://check.torproject.org');
+      console.log(`[ProxyManager] Resolved proxy for check.torproject.org: ${resolvedProxy}`);
 
       // Store authentication credentials if provided
       if (proxyConfig.auth) {
@@ -768,6 +792,182 @@ class ProxyManager {
     }
 
     return await tor.getExitIp();
+  }
+
+  // ==========================================
+  // Dynamic Tor Routing Methods
+  // ==========================================
+  // These methods allow enabling/disabling Tor routing at runtime
+  // without requiring TOR_MODE at startup.
+  //
+  // IMPORTANT LIMITATION:
+  // When enabling Tor routing dynamically (without TOR_MODE at startup),
+  // .onion domains may NOT work properly. This is because:
+  // 1. Electron's --host-resolver-rules cannot be changed after app start
+  // 2. Without this flag, DNS resolution happens locally, not through Tor
+  // 3. Local DNS cannot resolve .onion domains
+  //
+  // For full .onion support, start the browser with TOR_MODE=1 or --tor-mode.
+  // Dynamic routing still works for:
+  // - Accessing clearnet sites through Tor for anonymity
+  // - Checking Tor exit IP
+  // - Changing Tor identity/circuit
+  // ==========================================
+
+  /**
+   * Enable Tor routing - route all browser traffic through Tor SOCKS proxy
+   * @param {Object} options - Configuration options
+   * @param {string} options.socksHost - Tor SOCKS host (default: 127.0.0.1)
+   * @param {number} options.socksPort - Tor SOCKS port (default: 9050)
+   * @returns {Promise<Object>} - Result of the operation
+   */
+  async enableTorRouting(options = {}) {
+    try {
+      const socksHost = options.socksHost || this.torRoutingConfig.socksHost;
+      const socksPort = options.socksPort || this.torRoutingConfig.socksPort;
+
+      // Update config
+      this.torRoutingConfig.socksHost = socksHost;
+      this.torRoutingConfig.socksPort = socksPort;
+
+      // Set the proxy to route through Tor
+      const proxyConfig = {
+        host: socksHost,
+        port: socksPort,
+        type: 'socks5'
+      };
+
+      const result = await this.setProxy(proxyConfig);
+
+      if (result.success) {
+        this.torRoutingEnabled = true;
+        this.proxyMode = PROXY_MODES.TOR;
+
+        console.log(`[ProxyManager] Tor routing enabled via ${socksHost}:${socksPort}`);
+
+        // Check if daemon is reachable (optional - routing can be enabled before daemon)
+        const tor = getTorManager();
+        let daemonStatus = 'unknown';
+        if (tor) {
+          const check = await tor.checkConnection();
+          daemonStatus = check.success ? 'reachable' : 'unreachable';
+        }
+
+        return {
+          success: true,
+          message: 'Tor routing enabled',
+          routing: {
+            enabled: true,
+            socksHost,
+            socksPort,
+            proxyRules: `socks5://${socksHost}:${socksPort}`
+          },
+          daemonStatus,
+          warning: 'Dynamic Tor routing may not support .onion domains. For full .onion support, restart with TOR_MODE=1'
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ProxyManager] Error enabling Tor routing:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Disable Tor routing - return to direct connection
+   * Note: This does NOT stop the Tor daemon, only stops routing through it
+   * @returns {Promise<Object>} - Result of the operation
+   */
+  async disableTorRouting() {
+    try {
+      // Clear proxy (direct connection)
+      const result = await this.clearProxy();
+
+      if (result.success) {
+        this.torRoutingEnabled = false;
+        // Keep torConnected as-is since the daemon might still be running
+
+        console.log('[ProxyManager] Tor routing disabled, using direct connection');
+
+        return {
+          success: true,
+          message: 'Tor routing disabled, using direct connection',
+          routing: {
+            enabled: false
+          },
+          note: 'Tor daemon may still be running. Use tor_stop to stop the daemon.'
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[ProxyManager] Error disabling Tor routing:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Toggle Tor routing state
+   * @param {Object} options - Options passed to enableTorRouting if enabling
+   * @returns {Promise<Object>} - Result of the operation
+   */
+  async toggleTorRouting(options = {}) {
+    if (this.torRoutingEnabled) {
+      return await this.disableTorRouting();
+    } else {
+      return await this.enableTorRouting(options);
+    }
+  }
+
+  /**
+   * Get current Tor routing status
+   * @returns {Promise<Object>} - Current routing status
+   */
+  async getTorRoutingStatus() {
+    const tor = getTorManager();
+
+    // Check if daemon is reachable
+    let daemonReachable = false;
+    let daemonLatency = null;
+    if (tor) {
+      const check = await tor.checkConnection();
+      daemonReachable = check.success;
+      daemonLatency = check.latency;
+    }
+
+    // Verify current proxy resolution
+    let currentProxyRules = 'direct://';
+    try {
+      currentProxyRules = await session.defaultSession.resolveProxy('https://check.torproject.org');
+    } catch (e) {
+      // Ignore errors
+    }
+
+    return {
+      success: true,
+      routing: {
+        enabled: this.torRoutingEnabled,
+        socksHost: this.torRoutingConfig.socksHost,
+        socksPort: this.torRoutingConfig.socksPort,
+        currentProxyRules
+      },
+      daemon: {
+        reachable: daemonReachable,
+        latency: daemonLatency,
+        connected: this.torConnected
+      },
+      onionSupport: {
+        available: false,  // Would need to check if TOR_MODE was enabled at startup
+        note: 'For .onion domain support, start browser with TOR_MODE=1 or --tor-mode flag'
+      }
+    };
   }
 
   // ==========================================

@@ -57,9 +57,64 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     procps \
     dbus \
+    # For Tor repository setup
+    apt-transport-https \
+    gpg \
+    netcat-openbsd \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# === TOR INSTALLATION ===
+# Install Tor from Debian repository (stable version for Bullseye)
+# Note: Tor Project's bullseye repo is no longer available, using Debian default
+# obfs4proxy is not available in Bullseye, but embedded Tor can be used as fallback for bridges
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    tor \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Configure Tor for container use
+RUN echo '# Basset Hound Browser - Docker Container Tor Configuration\n\
+\n\
+# SOCKS5 proxy for browser connections\n\
+SocksPort 127.0.0.1:9050\n\
+\n\
+# Control port for circuit management (TorManager integration)\n\
+ControlPort 127.0.0.1:9051\n\
+\n\
+# Data directory\n\
+DataDirectory /var/lib/tor\n\
+\n\
+# Use cookie authentication for control port\n\
+CookieAuthentication 1\n\
+CookieAuthFile /var/lib/tor/control_auth_cookie\n\
+CookieAuthFileGroupReadable 1\n\
+\n\
+# Restrict SOCKS connections to localhost only\n\
+SocksPolicy accept 127.0.0.1\n\
+SocksPolicy reject *\n\
+\n\
+# Safe logging\n\
+SafeLogging 1\n\
+\n\
+# Avoid excessive disk writes\n\
+AvoidDiskWrites 1\n\
+\n\
+# Circuit settings for predictable behavior\n\
+CircuitBuildTimeout 30\n\
+LearnCircuitBuildTimeout 0\n\
+MaxCircuitDirtiness 600\n\
+\n\
+# Log to stdout for Docker log aggregation\n\
+Log notice stdout\n\
+' > /etc/tor/torrc \
+    && chown debian-tor:debian-tor /etc/tor/torrc \
+    && chmod 644 /etc/tor/torrc \
+    && mkdir -p /var/lib/tor \
+    && chown -R debian-tor:debian-tor /var/lib/tor \
+    && chmod 700 /var/lib/tor
 
 # Create app directory
 WORKDIR /app
@@ -84,7 +139,9 @@ RUN mkdir -p /app/automation/saved \
     /app/blocking-data
 
 # Create non-root user for security
+# Add basset user to debian-tor group for control port cookie authentication access
 RUN groupadd -r basset && useradd -r -g basset basset \
+    && usermod -aG debian-tor basset \
     && chown -R basset:basset /app
 
 # Create directory for Xvfb lock files
@@ -93,13 +150,49 @@ RUN mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
 # Expose WebSocket port
 EXPOSE 8765
 
-# Create startup script
+# Create startup script with Tor startup before Electron
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
 # Add node_modules/.bin to PATH\n\
 export PATH="/app/node_modules/.bin:$PATH"\n\
 \n\
+# === START TOR DAEMON ===\n\
+# Start Tor if USE_SYSTEM_TOR is enabled (default: true)\n\
+if [ "${USE_SYSTEM_TOR:-true}" = "true" ]; then\n\
+    echo "Starting system Tor daemon as debian-tor user..."\n\
+    # Run Tor as debian-tor user (required for proper permissions)\n\
+    su -s /bin/bash debian-tor -c "tor -f /etc/tor/torrc" &\n\
+    TOR_PID=$!\n\
+    \n\
+    # Wait for Tor SOCKS proxy to be ready\n\
+    echo "Waiting for Tor to bootstrap..."\n\
+    TIMEOUT=60\n\
+    COUNTER=0\n\
+    while [ $COUNTER -lt $TIMEOUT ]; do\n\
+        if nc -z 127.0.0.1 9050 2>/dev/null; then\n\
+            echo "Tor SOCKS proxy is ready on 127.0.0.1:9050"\n\
+            break\n\
+        fi\n\
+        COUNTER=$((COUNTER+1))\n\
+        sleep 1\n\
+    done\n\
+    \n\
+    if [ $COUNTER -eq $TIMEOUT ]; then\n\
+        echo "WARNING: Tor failed to start within ${TIMEOUT}s, falling back to embedded Tor"\n\
+    else\n\
+        # Also verify control port is available\n\
+        if nc -z 127.0.0.1 9051 2>/dev/null; then\n\
+            echo "Tor control port is ready on 127.0.0.1:9051"\n\
+        else\n\
+            echo "WARNING: Tor control port not available"\n\
+        fi\n\
+    fi\n\
+else\n\
+    echo "USE_SYSTEM_TOR=false, skipping system Tor (will use embedded Tor)"\n\
+fi\n\
+\n\
+# === START XVFB ===\n\
 # Start Xvfb virtual display\n\
 echo "Starting Xvfb on display ${DISPLAY}..."\n\
 Xvfb ${DISPLAY} -screen 0 ${SCREEN_RESOLUTION:-1920x1080x24} -ac &\n\
@@ -116,6 +209,7 @@ fi\n\
 \n\
 echo "Xvfb started successfully"\n\
 \n\
+# === START ELECTRON ===\n\
 # Start the Electron browser in headless mode\n\
 echo "Starting Basset Hound Browser in headless mode..."\n\
 exec electron . --headless --disable-gpu --no-sandbox --virtual-display "$@"\n\

@@ -1,6 +1,6 @@
 # Basset Hound Browser - Project Scope Definition
 
-**Last Updated:** January 13, 2026
+**Last Updated:** January 21, 2026
 
 ---
 
@@ -58,14 +58,41 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - **Rate limiting:** Adaptive delays, exponential backoff
 - **TLS fingerprinting:** JA3/JA4 research and mitigation strategies
 
-### 5. Network Capabilities (Simplified)
-- **Single proxy support:** HTTP, HTTPS, SOCKS4, SOCKS5 (one proxy per session)
-- **Proxy authentication:** Username/password
-- **Basic Tor integration:** Connect to existing Tor installation
-- **Tor new identity:** Request new circuit via existing Tor
-- **Onion services:** Navigate to .onion sites
+### 5. Network Capabilities (Tor-Focused)
 
-> **Note:** Advanced networking infrastructure (proxy pools, rotation strategies, bridge configuration, exit node selection) has been moved to a separate project: **Basset Hound Networking**. This browser accepts a single proxy configuration; external tools manage proxy selection and rotation.
+> **Key Clarification:** Generic proxy configuration is NOT a user-configurable feature. The browser's proxy capabilities exist specifically for **Tor integration** to support network forensics and .onion site access.
+
+#### Tor Integration (IN SCOPE)
+- **Embedded/Portable Tor:** Start and manage embedded Tor daemon
+- **System-level Tor (Docker):** Connect to system Tor installation in containers
+- **Onion services:** Navigate to .onion sites via Tor SOCKS proxy
+- **Tor new identity:** Request new circuit for IP rotation
+- **Tor status/control:** Monitor bootstrap progress, get exit node info
+- **Tor configuration:** Exit country preferences, circuit management
+- **Tor on/off toggle:** Dynamically enable/disable Tor routing during automation
+  - `tor_enable` - Route traffic through Tor
+  - `tor_disable` - Return to direct connection
+  - `tor_toggle` - Toggle current state
+  - Note: .onion domains require `TOR_MODE=1` at startup for DNS resolution
+
+#### SOCKS Proxy for Tor (IN SCOPE)
+- **SOCKS5 proxy support:** For routing traffic through Tor (127.0.0.1:9050)
+- **Tor connectivity verification:** Test that Tor is functioning
+- **DNS resolution via Tor:** Prevent DNS leaks for .onion access
+
+#### Generic Proxy (OUT OF SCOPE)
+- ❌ **User-configurable HTTP/HTTPS proxies:** Not exposed to users
+- ❌ **Generic proxy rotation:** Not a browser feature
+- ❌ **Proxy pool management:** Belongs in basset-hound-networking
+
+> **Why this distinction matters:** Tor integration has a direct impact on **network forensics capabilities** - accessing .onion sites, anonymous browsing for investigations, and exit node rotation. Generic proxy support would be outside the browser's forensic focus.
+
+#### Docker Considerations
+- **Embedded Tor:** Works in Docker, downloads on first run (~80MB)
+- **System Tor:** Alternative for Docker - install Tor daemon in container (smaller, faster startup)
+- **No special permissions needed:** Browser connects to Tor SOCKS like any client
+
+> **Note:** Advanced networking infrastructure (proxy pools, rotation strategies, bridge configuration, exit node selection) has been moved to a separate project: **Basset Hound Networking**. This browser accepts a single proxy/Tor configuration; external tools manage complex routing.
 
 ### 6. Network Monitoring & Forensics (Browser-Level)
 - **DNS query capture:** Record all DNS lookups made by browser
@@ -103,10 +130,12 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - ❌ **Proxy chaining:** Multi-hop proxy configurations
 - ❌ **VPN integration:** VPN tunnel management and configuration
 - ❌ **SSH tunnel management:** SSH-based proxy tunnels
-- ❌ **Tor advanced configuration:** Installing Tor, configuring bridges, exit node selection
-- ❌ **Network routing decisions:** Any logic that decides how traffic is routed
+- ❌ **Tor bridge configuration:** Advanced bridge setup (obfs4, meek, etc.)
+- ❌ **Generic HTTP/HTTPS proxy UI:** User-configurable proxy settings for non-Tor use
 
 > **Why out of scope:** These features modify network routing at infrastructure level. Browser automation should use a pre-configured proxy endpoint; external tools handle the infrastructure.
+
+> **Exception - Tor:** Basic Tor integration IS in scope because it directly enables network forensics (accessing .onion sites, anonymous investigation). The browser can start/stop embedded Tor and route traffic through it, but advanced Tor configuration (bridges, guards) is out of scope.
 
 ### 2. Intelligence Analysis
 - ❌ **Pattern detection:** Detecting emails, phones, crypto addresses, social handles

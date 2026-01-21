@@ -397,9 +397,25 @@ ClientTransportPlugin conjure exec ${path.join(ptDir, conjure)} -registerURL htt
 
     // Test the binary
     try {
+      // Set LD_LIBRARY_PATH for Linux to find shared libraries
+      const libDir = path.join(this.torDir, 'tor');
+      const envOptions = {};
+      if (platform === 'linux') {
+        envOptions.env = {
+          ...process.env,
+          LD_LIBRARY_PATH: libDir + (process.env.LD_LIBRARY_PATH ? `:${process.env.LD_LIBRARY_PATH}` : '')
+        };
+      } else if (platform === 'darwin') {
+        envOptions.env = {
+          ...process.env,
+          DYLD_LIBRARY_PATH: libDir + (process.env.DYLD_LIBRARY_PATH ? `:${process.env.DYLD_LIBRARY_PATH}` : '')
+        };
+      }
+
       const output = execSync(`"${torBinary}" --version`, {
         encoding: 'utf8',
-        timeout: 10000
+        timeout: 10000,
+        ...envOptions
       });
 
       const versionMatch = output.match(/Tor version ([\d.]+)/);

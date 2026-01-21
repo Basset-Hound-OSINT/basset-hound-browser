@@ -262,6 +262,7 @@ Prevent correlation between different browsing sessions:
 | `tor_get_circuits` | List all circuits | - |
 | `tor_get_circuit_path` | Get current circuit path | - |
 | `tor_rebuild_circuit` | Get new identity (NEWNYM) | - |
+| `tor_new_identity` | Get new identity (alias) | - |
 | `tor_close_circuit` | Close specific circuit | `circuitId` |
 
 ### Node Selection
@@ -272,6 +273,7 @@ Prevent correlation between different browsing sessions:
 | `tor_set_entry_country` | Set entry countries | `countries` (array) |
 | `tor_exclude_countries` | Exclude countries | `countries` (array) |
 | `tor_clear_exit_restrictions` | Clear all restrictions | - |
+| `tor_get_exit_info` | Get current exit node details | - |
 | `tor_get_country_codes` | List available codes | - |
 
 ### Bridge Commands
