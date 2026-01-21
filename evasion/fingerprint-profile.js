@@ -182,6 +182,92 @@ const HARDWARE_CONFIGS = {
 };
 
 /**
+ * Canvas noise configuration
+ * Controls how canvas fingerprint randomization is applied
+ */
+const CANVAS_NOISE_CONFIGS = {
+  disabled: { enabled: false, intensity: 0 },
+  subtle: { enabled: true, intensity: 0.00005, affectedChannels: ['r', 'g', 'b'], maxPixelShift: 1 },
+  moderate: { enabled: true, intensity: 0.0001, affectedChannels: ['r', 'g', 'b'], maxPixelShift: 2 },
+  aggressive: { enabled: true, intensity: 0.0005, affectedChannels: ['r', 'g', 'b', 'a'], maxPixelShift: 3 },
+};
+
+/**
+ * WebGL noise configuration
+ * Controls WebGL parameter randomization
+ */
+const WEBGL_NOISE_CONFIGS = {
+  disabled: { enabled: false },
+  subtle: {
+    enabled: true,
+    randomizeExtensions: true,
+    extensionRemovalChance: 0.05,
+    parameterNoise: 0.01,
+    precisionNoise: true,
+  },
+  moderate: {
+    enabled: true,
+    randomizeExtensions: true,
+    extensionRemovalChance: 0.1,
+    parameterNoise: 0.02,
+    precisionNoise: true,
+  },
+  aggressive: {
+    enabled: true,
+    randomizeExtensions: true,
+    extensionRemovalChance: 0.2,
+    parameterNoise: 0.05,
+    precisionNoise: true,
+  },
+};
+
+/**
+ * Audio fingerprint noise configuration
+ * Controls AudioContext fingerprint randomization
+ */
+const AUDIO_NOISE_CONFIGS = {
+  disabled: { enabled: false, intensity: 0 },
+  subtle: { enabled: true, intensity: 0.00001, noiseType: 'white', affectOscillator: true },
+  moderate: { enabled: true, intensity: 0.00005, noiseType: 'white', affectOscillator: true },
+  aggressive: { enabled: true, intensity: 0.0001, noiseType: 'pink', affectOscillator: true },
+};
+
+/**
+ * Font evasion configuration
+ * Controls font enumeration evasion
+ */
+const FONT_EVASION_CONFIGS = {
+  disabled: { enabled: false },
+  subtle: {
+    enabled: true,
+    randomizeOrder: true,
+    removeCommonFonts: 0.05,
+    addDecoyFonts: 0,
+  },
+  moderate: {
+    enabled: true,
+    randomizeOrder: true,
+    removeCommonFonts: 0.1,
+    addDecoyFonts: 2,
+  },
+  aggressive: {
+    enabled: true,
+    randomizeOrder: true,
+    removeCommonFonts: 0.2,
+    addDecoyFonts: 5,
+  },
+};
+
+/**
+ * Common fonts across all platforms (for decoy purposes)
+ */
+const COMMON_DECOY_FONTS = [
+  'Roboto', 'Open Sans', 'Lato', 'Montserrat', 'Source Sans Pro',
+  'Raleway', 'PT Sans', 'Nunito', 'Ubuntu', 'Merriweather',
+  'Playfair Display', 'Oswald', 'Quicksand', 'Poppins', 'Work Sans',
+];
+
+/**
  * FingerprintProfile class
  *
  * Generates and manages internally consistent browser fingerprints
@@ -195,6 +281,10 @@ class FingerprintProfile {
    * @param {string} options.platform - Platform ('windows', 'macos', 'linux')
    * @param {string} options.timezone - IANA timezone name
    * @param {string} options.tier - Hardware tier ('low', 'medium', 'high', 'workstation')
+   * @param {string} options.canvasNoiseLevel - Canvas noise level ('disabled', 'subtle', 'moderate', 'aggressive')
+   * @param {string} options.webglNoiseLevel - WebGL noise level ('disabled', 'subtle', 'moderate', 'aggressive')
+   * @param {string} options.audioNoiseLevel - Audio noise level ('disabled', 'subtle', 'moderate', 'aggressive')
+   * @param {string} options.fontEvasionLevel - Font evasion level ('disabled', 'subtle', 'moderate', 'aggressive')
    */
   constructor(options = {}) {
     this.seed = options.seed || crypto.randomBytes(16).toString('hex');
@@ -211,6 +301,19 @@ class FingerprintProfile {
     // Determine hardware tier
     this.tier = options.tier || this._randomChoice(['low', 'medium', 'high', 'workstation'], [0.15, 0.5, 0.3, 0.05]);
     this.hardwareConfig = HARDWARE_CONFIGS[this.tier];
+
+    // Advanced evasion configurations
+    this.canvasNoiseLevel = options.canvasNoiseLevel || 'subtle';
+    this.canvasNoiseConfig = CANVAS_NOISE_CONFIGS[this.canvasNoiseLevel] || CANVAS_NOISE_CONFIGS.subtle;
+
+    this.webglNoiseLevel = options.webglNoiseLevel || 'subtle';
+    this.webglNoiseConfig = WEBGL_NOISE_CONFIGS[this.webglNoiseLevel] || WEBGL_NOISE_CONFIGS.subtle;
+
+    this.audioNoiseLevel = options.audioNoiseLevel || 'subtle';
+    this.audioNoiseConfig = AUDIO_NOISE_CONFIGS[this.audioNoiseLevel] || AUDIO_NOISE_CONFIGS.subtle;
+
+    this.fontEvasionLevel = options.fontEvasionLevel || 'subtle';
+    this.fontEvasionConfig = FONT_EVASION_CONFIGS[this.fontEvasionLevel] || FONT_EVASION_CONFIGS.subtle;
 
     // Generate consistent profile
     this._generateProfile();
@@ -333,20 +436,58 @@ class FingerprintProfile {
   }
 
   /**
-   * Generate platform-appropriate fonts
+   * Generate platform-appropriate fonts with optional evasion
    */
   _generateFonts() {
-    const platformFonts = this.platformConfig.fonts;
-    const numFonts = Math.floor(this.rng() * 5) + platformFonts.length - 5;
-    const fonts = [];
+    const platformFonts = [...this.platformConfig.fonts];
+    let fonts = [];
 
+    // Start with base fonts (random subset)
+    const numFonts = Math.floor(this.rng() * 5) + platformFonts.length - 5;
     for (let i = 0; i < Math.min(numFonts, platformFonts.length); i++) {
       if (this.rng() > 0.2) {
         fonts.push(platformFonts[i]);
       }
     }
 
+    // Apply font evasion if enabled
+    if (this.fontEvasionConfig.enabled) {
+      // Remove some common fonts based on configuration
+      if (this.fontEvasionConfig.removeCommonFonts > 0) {
+        fonts = fonts.filter(() => this.rng() > this.fontEvasionConfig.removeCommonFonts);
+      }
+
+      // Add decoy fonts
+      if (this.fontEvasionConfig.addDecoyFonts > 0) {
+        const availableDecoys = COMMON_DECOY_FONTS.filter(f => !fonts.includes(f));
+        const numDecoys = Math.min(this.fontEvasionConfig.addDecoyFonts, availableDecoys.length);
+        for (let i = 0; i < numDecoys; i++) {
+          const idx = Math.floor(this.rng() * availableDecoys.length);
+          fonts.push(availableDecoys.splice(idx, 1)[0]);
+        }
+      }
+
+      // Randomize font order
+      if (this.fontEvasionConfig.randomizeOrder) {
+        fonts = this._shuffleArray(fonts);
+      }
+    }
+
     return fonts;
+  }
+
+  /**
+   * Shuffle array using Fisher-Yates algorithm with seeded RNG
+   * @param {Array} array - Array to shuffle
+   * @returns {Array} Shuffled array
+   */
+  _shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(this.rng() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
 
   /**
@@ -398,6 +539,26 @@ class FingerprintProfile {
       cookieEnabled: this.cookieEnabled,
       pdfViewerEnabled: this.pdfViewerEnabled,
       webdriver: this.webdriver,
+
+      // Advanced evasion settings
+      evasion: {
+        canvas: {
+          level: this.canvasNoiseLevel,
+          config: this.canvasNoiseConfig,
+        },
+        webgl: {
+          level: this.webglNoiseLevel,
+          config: this.webglNoiseConfig,
+        },
+        audio: {
+          level: this.audioNoiseLevel,
+          config: this.audioNoiseConfig,
+        },
+        fonts: {
+          level: this.fontEvasionLevel,
+          config: this.fontEvasionConfig,
+        },
+      },
     };
   }
 
@@ -517,45 +678,257 @@ class FingerprintProfile {
           return config.timezoneOffset;
         };
 
-        // Override WebGL
+        // ==========================================
+        // ADVANCED WEBGL NOISE INJECTION
+        // ==========================================
+        const webglConfig = config.evasion.webgl.config;
+
+        // WebGL parameter noise for numeric values
+        function addWebGLNoise(value, noise) {
+          if (typeof value !== 'number' || !webglConfig.enabled) return value;
+          const variation = value * noise * (Math.random() - 0.5);
+          return Math.round(value + variation);
+        }
+
+        // Override WebGL getParameter with noise injection
         const originalGetParameter = WebGLRenderingContext.prototype.getParameter;
         WebGLRenderingContext.prototype.getParameter = function(param) {
+          // Vendor and renderer strings
           if (param === 37445) return config.webgl.vendor;
           if (param === 37446) return config.webgl.renderer;
-          return originalGetParameter.call(this, param);
+
+          const result = originalGetParameter.call(this, param);
+
+          // Apply noise to numeric WebGL parameters
+          if (webglConfig.enabled && webglConfig.parameterNoise > 0) {
+            // MAX_TEXTURE_SIZE, MAX_RENDERBUFFER_SIZE, etc.
+            if ([3379, 34024, 3386, 36347, 36348, 35661].includes(param)) {
+              return addWebGLNoise(result, webglConfig.parameterNoise);
+            }
+          }
+
+          return result;
         };
 
         const originalGetParameter2 = WebGL2RenderingContext.prototype.getParameter;
         WebGL2RenderingContext.prototype.getParameter = function(param) {
           if (param === 37445) return config.webgl.vendor;
           if (param === 37446) return config.webgl.renderer;
-          return originalGetParameter2.call(this, param);
-        };
 
-        // Canvas fingerprint noise
-        const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
-        HTMLCanvasElement.prototype.toDataURL = function(type, quality) {
-          const ctx = this.getContext('2d');
-          if (ctx) {
-            const imageData = ctx.getImageData(0, 0, this.width, this.height);
-            const data = imageData.data;
-            for (let i = 0; i < data.length; i += 4) {
-              data[i] = data[i] + (config.canvasNoise * 255 * (Math.random() - 0.5)) | 0;
+          const result = originalGetParameter2.call(this, param);
+
+          if (webglConfig.enabled && webglConfig.parameterNoise > 0) {
+            if ([3379, 34024, 3386, 36347, 36348, 35661].includes(param)) {
+              return addWebGLNoise(result, webglConfig.parameterNoise);
             }
-            ctx.putImageData(imageData, 0, 0);
           }
-          return originalToDataURL.call(this, type, quality);
-        };
 
-        // Audio fingerprint noise
-        const originalGetChannelData = AudioBuffer.prototype.getChannelData;
-        AudioBuffer.prototype.getChannelData = function(channel) {
-          const result = originalGetChannelData.call(this, channel);
-          for (let i = 0; i < result.length; i++) {
-            result[i] += config.audioNoise * (Math.random() - 0.5);
-          }
           return result;
         };
+
+        // Randomize WebGL extensions if enabled
+        if (webglConfig.enabled && webglConfig.randomizeExtensions) {
+          const originalGetSupportedExtensions = WebGLRenderingContext.prototype.getSupportedExtensions;
+          WebGLRenderingContext.prototype.getSupportedExtensions = function() {
+            const extensions = originalGetSupportedExtensions.call(this);
+            if (!extensions) return extensions;
+            // Randomly filter out some extensions
+            return extensions.filter(() => Math.random() > webglConfig.extensionRemovalChance);
+          };
+
+          const originalGetSupportedExtensions2 = WebGL2RenderingContext.prototype.getSupportedExtensions;
+          WebGL2RenderingContext.prototype.getSupportedExtensions = function() {
+            const extensions = originalGetSupportedExtensions2.call(this);
+            if (!extensions) return extensions;
+            return extensions.filter(() => Math.random() > webglConfig.extensionRemovalChance);
+          };
+        }
+
+        // Override shader precision if enabled
+        if (webglConfig.enabled && webglConfig.precisionNoise) {
+          const originalGetShaderPrecisionFormat = WebGLRenderingContext.prototype.getShaderPrecisionFormat;
+          WebGLRenderingContext.prototype.getShaderPrecisionFormat = function(shaderType, precisionType) {
+            const result = originalGetShaderPrecisionFormat.call(this, shaderType, precisionType);
+            if (result && Math.random() < 0.1) {
+              // Occasionally vary the precision slightly
+              return {
+                rangeMin: result.rangeMin,
+                rangeMax: result.rangeMax,
+                precision: Math.max(0, result.precision - Math.floor(Math.random() * 2)),
+              };
+            }
+            return result;
+          };
+        }
+
+        // ==========================================
+        // ADVANCED CANVAS NOISE INJECTION
+        // ==========================================
+        const canvasConfig = config.evasion.canvas.config;
+
+        if (canvasConfig.enabled) {
+          // Enhanced toDataURL with configurable noise
+          const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+          HTMLCanvasElement.prototype.toDataURL = function(type, quality) {
+            const ctx = this.getContext('2d');
+            if (ctx && this.width > 0 && this.height > 0) {
+              try {
+                const imageData = ctx.getImageData(0, 0, this.width, this.height);
+                const data = imageData.data;
+                const channels = canvasConfig.affectedChannels || ['r', 'g', 'b'];
+                const intensity = canvasConfig.intensity || 0.0001;
+                const maxShift = canvasConfig.maxPixelShift || 1;
+
+                for (let i = 0; i < data.length; i += 4) {
+                  const noise = () => Math.floor((Math.random() - 0.5) * maxShift * 2);
+
+                  if (channels.includes('r')) {
+                    data[i] = Math.max(0, Math.min(255, data[i] + noise()));
+                  }
+                  if (channels.includes('g')) {
+                    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise()));
+                  }
+                  if (channels.includes('b')) {
+                    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise()));
+                  }
+                  if (channels.includes('a')) {
+                    data[i + 3] = Math.max(0, Math.min(255, data[i + 3] + noise()));
+                  }
+                }
+                ctx.putImageData(imageData, 0, 0);
+              } catch (e) {
+                // Canvas may be tainted, skip noise injection
+              }
+            }
+            return originalToDataURL.call(this, type, quality);
+          };
+
+          // Also override toBlob for completeness
+          const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+          HTMLCanvasElement.prototype.toBlob = function(callback, type, quality) {
+            const ctx = this.getContext('2d');
+            if (ctx && this.width > 0 && this.height > 0) {
+              try {
+                const imageData = ctx.getImageData(0, 0, this.width, this.height);
+                const data = imageData.data;
+                const channels = canvasConfig.affectedChannels || ['r', 'g', 'b'];
+                const maxShift = canvasConfig.maxPixelShift || 1;
+
+                for (let i = 0; i < data.length; i += 4) {
+                  const noise = () => Math.floor((Math.random() - 0.5) * maxShift * 2);
+                  if (channels.includes('r')) data[i] = Math.max(0, Math.min(255, data[i] + noise()));
+                  if (channels.includes('g')) data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise()));
+                  if (channels.includes('b')) data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise()));
+                  if (channels.includes('a')) data[i + 3] = Math.max(0, Math.min(255, data[i + 3] + noise()));
+                }
+                ctx.putImageData(imageData, 0, 0);
+              } catch (e) {}
+            }
+            return originalToBlob.call(this, callback, type, quality);
+          };
+
+          // Override getImageData to add noise on read as well
+          const originalGetImageData = CanvasRenderingContext2D.prototype.getImageData;
+          CanvasRenderingContext2D.prototype.getImageData = function(sx, sy, sw, sh) {
+            const imageData = originalGetImageData.call(this, sx, sy, sw, sh);
+            const data = imageData.data;
+            const channels = canvasConfig.affectedChannels || ['r', 'g', 'b'];
+            const maxShift = canvasConfig.maxPixelShift || 1;
+
+            for (let i = 0; i < data.length; i += 4) {
+              const noise = () => Math.floor((Math.random() - 0.5) * maxShift * 2);
+              if (channels.includes('r')) data[i] = Math.max(0, Math.min(255, data[i] + noise()));
+              if (channels.includes('g')) data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise()));
+              if (channels.includes('b')) data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise()));
+              if (channels.includes('a')) data[i + 3] = Math.max(0, Math.min(255, data[i + 3] + noise()));
+            }
+            return imageData;
+          };
+        }
+
+        // ==========================================
+        // ADVANCED AUDIO FINGERPRINT NOISE
+        // ==========================================
+        const audioConfig = config.evasion.audio.config;
+
+        if (audioConfig.enabled) {
+          // Override AudioBuffer.getChannelData with configurable noise
+          const originalGetChannelData = AudioBuffer.prototype.getChannelData;
+          AudioBuffer.prototype.getChannelData = function(channel) {
+            const result = originalGetChannelData.call(this, channel);
+            const intensity = audioConfig.intensity || 0.00001;
+
+            for (let i = 0; i < result.length; i++) {
+              // White noise or pink noise based on config
+              if (audioConfig.noiseType === 'pink') {
+                // Pink noise has more low frequency content (1/f distribution)
+                const pink = (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+                result[i] += pink * intensity;
+              } else {
+                // White noise (uniform distribution)
+                result[i] += (Math.random() - 0.5) * intensity * 2;
+              }
+            }
+            return result;
+          };
+
+          // Override AnalyserNode.getFloatFrequencyData
+          if (audioConfig.affectOscillator && typeof AnalyserNode !== 'undefined') {
+            const originalGetFloatFrequencyData = AnalyserNode.prototype.getFloatFrequencyData;
+            AnalyserNode.prototype.getFloatFrequencyData = function(array) {
+              originalGetFloatFrequencyData.call(this, array);
+              const intensity = audioConfig.intensity || 0.00001;
+              for (let i = 0; i < array.length; i++) {
+                array[i] += (Math.random() - 0.5) * intensity * 100;
+              }
+            };
+
+            const originalGetByteFrequencyData = AnalyserNode.prototype.getByteFrequencyData;
+            AnalyserNode.prototype.getByteFrequencyData = function(array) {
+              originalGetByteFrequencyData.call(this, array);
+              const intensity = audioConfig.intensity || 0.00001;
+              for (let i = 0; i < array.length; i++) {
+                array[i] = Math.max(0, Math.min(255, array[i] + Math.floor((Math.random() - 0.5) * intensity * 1000)));
+              }
+            };
+          }
+
+          // Override OscillatorNode frequency if enabled
+          if (audioConfig.affectOscillator && typeof OscillatorNode !== 'undefined') {
+            const originalOscillatorStart = OscillatorNode.prototype.start;
+            OscillatorNode.prototype.start = function(when) {
+              // Add tiny frequency variation
+              if (this.frequency && this.frequency.value) {
+                const variation = this.frequency.value * audioConfig.intensity;
+                this.frequency.value += (Math.random() - 0.5) * variation;
+              }
+              return originalOscillatorStart.call(this, when);
+            };
+          }
+        }
+
+        // ==========================================
+        // FONT ENUMERATION EVASION
+        // ==========================================
+        // Override fonts property if available
+        if (config.fonts && config.fonts.length > 0) {
+          // The fonts are already randomized in the profile generation
+          // This just ensures the font list is properly exposed
+          try {
+            if (document.fonts && document.fonts.check) {
+              const originalCheck = document.fonts.check.bind(document.fonts);
+              document.fonts.check = function(font, text) {
+                // Only report fonts in our configured list
+                const fontFamily = font.split(' ').pop().replace(/['"]/g, '');
+                if (config.fonts.includes(fontFamily)) {
+                  return originalCheck(font, text);
+                }
+                // For fonts not in our list, randomly return false to vary fingerprint
+                return Math.random() > 0.8 ? originalCheck(font, text) : false;
+              };
+            }
+          } catch (e) {}
+        }
 
         // Override plugins
         Object.defineProperty(navigator, 'plugins', {
@@ -575,7 +948,11 @@ class FingerprintProfile {
           }
         });
 
-        console.log('[Fingerprint] Profile applied:', config.platformType, config.timezone);
+        console.log('[Fingerprint] Advanced profile applied:', config.platformType, config.timezone,
+          'Canvas:', config.evasion.canvas.level,
+          'WebGL:', config.evasion.webgl.level,
+          'Audio:', config.evasion.audio.level,
+          'Fonts:', config.evasion.fonts.level);
       })();
     `;
   }
@@ -597,6 +974,10 @@ class FingerprintProfile {
       platform: config.platformType,
       timezone: config.timezone || config.timezoneName,
       tier: config.tier,
+      canvasNoiseLevel: config.evasion?.canvas?.level,
+      webglNoiseLevel: config.evasion?.webgl?.level,
+      audioNoiseLevel: config.evasion?.audio?.level,
+      fontEvasionLevel: config.evasion?.fonts?.level,
     });
   }
 
@@ -723,4 +1104,9 @@ module.exports = {
   SCREEN_CONFIGS,
   TIMEZONE_CONFIGS,
   HARDWARE_CONFIGS,
+  CANVAS_NOISE_CONFIGS,
+  WEBGL_NOISE_CONFIGS,
+  AUDIO_NOISE_CONFIGS,
+  FONT_EVASION_CONFIGS,
+  COMMON_DECOY_FONTS,
 };

@@ -15,6 +15,10 @@ const {
   FingerprintProfileManager,
   PLATFORM_CONFIGS,
   TIMEZONE_CONFIGS,
+  CANVAS_NOISE_CONFIGS,
+  WEBGL_NOISE_CONFIGS,
+  AUDIO_NOISE_CONFIGS,
+  FONT_EVASION_CONFIGS,
 } = require('../../evasion/fingerprint-profile');
 
 const {
@@ -85,6 +89,10 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
    *   - timezone: string IANA timezone (optional)
    *   - tier: 'low' | 'medium' | 'high' | 'workstation' (optional)
    *   - seed: string (optional, for reproducibility)
+   *   - canvasNoiseLevel: 'disabled' | 'subtle' | 'moderate' | 'aggressive' (optional)
+   *   - webglNoiseLevel: 'disabled' | 'subtle' | 'moderate' | 'aggressive' (optional)
+   *   - audioNoiseLevel: 'disabled' | 'subtle' | 'moderate' | 'aggressive' (optional)
+   *   - fontEvasionLevel: 'disabled' | 'subtle' | 'moderate' | 'aggressive' (optional)
    */
   commandHandlers.create_fingerprint_profile = async (params) => {
     try {
@@ -94,6 +102,10 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         timezone: params.timezone,
         tier: params.tier,
         seed: params.seed,
+        canvasNoiseLevel: params.canvasNoiseLevel,
+        webglNoiseLevel: params.webglNoiseLevel,
+        audioNoiseLevel: params.audioNoiseLevel,
+        fontEvasionLevel: params.fontEvasionLevel,
       });
 
       return {
@@ -324,7 +336,408 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       platforms: Object.keys(PLATFORM_CONFIGS),
       timezones: Object.keys(TIMEZONE_CONFIGS),
       tiers: ['low', 'medium', 'high', 'workstation'],
+      evasionLevels: ['disabled', 'subtle', 'moderate', 'aggressive'],
     };
+  };
+
+  // ==========================================
+  // ADVANCED EVASION CONFIGURATION COMMANDS
+  // ==========================================
+
+  /**
+   * Configure canvas fingerprint noise
+   *
+   * Command: configure_canvas_noise
+   * Params:
+   *   - profileId: string (optional, uses active if not specified)
+   *   - level: 'disabled' | 'subtle' | 'moderate' | 'aggressive'
+   *   - customConfig: object (optional, for custom configuration)
+   *     - enabled: boolean
+   *     - intensity: number (0-0.001)
+   *     - affectedChannels: array of 'r', 'g', 'b', 'a'
+   *     - maxPixelShift: number (1-5)
+   */
+  commandHandlers.configure_canvas_noise = async (params) => {
+    try {
+      const profileId = params.profileId || fingerprintManager.activeProfileId;
+      if (!profileId) {
+        return {
+          success: false,
+          error: 'No profile specified and no active profile',
+        };
+      }
+
+      const profile = fingerprintManager.getProfile(profileId);
+      if (!profile) {
+        return {
+          success: false,
+          error: `Profile ${profileId} not found`,
+        };
+      }
+
+      // Update canvas noise configuration
+      if (params.level && CANVAS_NOISE_CONFIGS[params.level]) {
+        profile.canvasNoiseLevel = params.level;
+        profile.canvasNoiseConfig = { ...CANVAS_NOISE_CONFIGS[params.level] };
+      }
+
+      // Apply custom configuration overrides
+      if (params.customConfig) {
+        profile.canvasNoiseConfig = {
+          ...profile.canvasNoiseConfig,
+          ...params.customConfig,
+        };
+      }
+
+      return {
+        success: true,
+        profileId,
+        canvasNoise: {
+          level: profile.canvasNoiseLevel,
+          config: profile.canvasNoiseConfig,
+        },
+        availableLevels: Object.keys(CANVAS_NOISE_CONFIGS),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
+
+  /**
+   * Configure WebGL fingerprint noise
+   *
+   * Command: configure_webgl_noise
+   * Params:
+   *   - profileId: string (optional, uses active if not specified)
+   *   - level: 'disabled' | 'subtle' | 'moderate' | 'aggressive'
+   *   - customConfig: object (optional, for custom configuration)
+   *     - enabled: boolean
+   *     - randomizeExtensions: boolean
+   *     - extensionRemovalChance: number (0-0.5)
+   *     - parameterNoise: number (0-0.1)
+   *     - precisionNoise: boolean
+   */
+  commandHandlers.configure_webgl_noise = async (params) => {
+    try {
+      const profileId = params.profileId || fingerprintManager.activeProfileId;
+      if (!profileId) {
+        return {
+          success: false,
+          error: 'No profile specified and no active profile',
+        };
+      }
+
+      const profile = fingerprintManager.getProfile(profileId);
+      if (!profile) {
+        return {
+          success: false,
+          error: `Profile ${profileId} not found`,
+        };
+      }
+
+      // Update WebGL noise configuration
+      if (params.level && WEBGL_NOISE_CONFIGS[params.level]) {
+        profile.webglNoiseLevel = params.level;
+        profile.webglNoiseConfig = { ...WEBGL_NOISE_CONFIGS[params.level] };
+      }
+
+      // Apply custom configuration overrides
+      if (params.customConfig) {
+        profile.webglNoiseConfig = {
+          ...profile.webglNoiseConfig,
+          ...params.customConfig,
+        };
+      }
+
+      return {
+        success: true,
+        profileId,
+        webglNoise: {
+          level: profile.webglNoiseLevel,
+          config: profile.webglNoiseConfig,
+        },
+        availableLevels: Object.keys(WEBGL_NOISE_CONFIGS),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
+
+  /**
+   * Configure audio fingerprint noise
+   *
+   * Command: configure_audio_noise
+   * Params:
+   *   - profileId: string (optional, uses active if not specified)
+   *   - level: 'disabled' | 'subtle' | 'moderate' | 'aggressive'
+   *   - customConfig: object (optional, for custom configuration)
+   *     - enabled: boolean
+   *     - intensity: number (0-0.001)
+   *     - noiseType: 'white' | 'pink'
+   *     - affectOscillator: boolean
+   */
+  commandHandlers.configure_audio_noise = async (params) => {
+    try {
+      const profileId = params.profileId || fingerprintManager.activeProfileId;
+      if (!profileId) {
+        return {
+          success: false,
+          error: 'No profile specified and no active profile',
+        };
+      }
+
+      const profile = fingerprintManager.getProfile(profileId);
+      if (!profile) {
+        return {
+          success: false,
+          error: `Profile ${profileId} not found`,
+        };
+      }
+
+      // Update audio noise configuration
+      if (params.level && AUDIO_NOISE_CONFIGS[params.level]) {
+        profile.audioNoiseLevel = params.level;
+        profile.audioNoiseConfig = { ...AUDIO_NOISE_CONFIGS[params.level] };
+      }
+
+      // Apply custom configuration overrides
+      if (params.customConfig) {
+        profile.audioNoiseConfig = {
+          ...profile.audioNoiseConfig,
+          ...params.customConfig,
+        };
+      }
+
+      return {
+        success: true,
+        profileId,
+        audioNoise: {
+          level: profile.audioNoiseLevel,
+          config: profile.audioNoiseConfig,
+        },
+        availableLevels: Object.keys(AUDIO_NOISE_CONFIGS),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
+
+  /**
+   * Configure font enumeration evasion
+   *
+   * Command: configure_font_evasion
+   * Params:
+   *   - profileId: string (optional, uses active if not specified)
+   *   - level: 'disabled' | 'subtle' | 'moderate' | 'aggressive'
+   *   - customConfig: object (optional, for custom configuration)
+   *     - enabled: boolean
+   *     - randomizeOrder: boolean
+   *     - removeCommonFonts: number (0-0.5 probability)
+   *     - addDecoyFonts: number (0-10)
+   */
+  commandHandlers.configure_font_evasion = async (params) => {
+    try {
+      const profileId = params.profileId || fingerprintManager.activeProfileId;
+      if (!profileId) {
+        return {
+          success: false,
+          error: 'No profile specified and no active profile',
+        };
+      }
+
+      const profile = fingerprintManager.getProfile(profileId);
+      if (!profile) {
+        return {
+          success: false,
+          error: `Profile ${profileId} not found`,
+        };
+      }
+
+      // Update font evasion configuration
+      if (params.level && FONT_EVASION_CONFIGS[params.level]) {
+        profile.fontEvasionLevel = params.level;
+        profile.fontEvasionConfig = { ...FONT_EVASION_CONFIGS[params.level] };
+        // Regenerate fonts with new configuration
+        profile.fonts = profile._generateFonts();
+      }
+
+      // Apply custom configuration overrides
+      if (params.customConfig) {
+        profile.fontEvasionConfig = {
+          ...profile.fontEvasionConfig,
+          ...params.customConfig,
+        };
+        // Regenerate fonts with new configuration
+        profile.fonts = profile._generateFonts();
+      }
+
+      return {
+        success: true,
+        profileId,
+        fontEvasion: {
+          level: profile.fontEvasionLevel,
+          config: profile.fontEvasionConfig,
+          fontCount: profile.fonts.length,
+          fonts: profile.fonts,
+        },
+        availableLevels: Object.keys(FONT_EVASION_CONFIGS),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
+
+  /**
+   * Get current evasion configuration for a profile
+   *
+   * Command: get_evasion_config
+   * Params:
+   *   - profileId: string (optional, uses active if not specified)
+   */
+  commandHandlers.get_evasion_config = async (params) => {
+    try {
+      const profileId = params.profileId || fingerprintManager.activeProfileId;
+      if (!profileId) {
+        return {
+          success: false,
+          error: 'No profile specified and no active profile',
+        };
+      }
+
+      const profile = fingerprintManager.getProfile(profileId);
+      if (!profile) {
+        return {
+          success: false,
+          error: `Profile ${profileId} not found`,
+        };
+      }
+
+      return {
+        success: true,
+        profileId,
+        evasion: {
+          canvas: {
+            level: profile.canvasNoiseLevel,
+            config: profile.canvasNoiseConfig,
+          },
+          webgl: {
+            level: profile.webglNoiseLevel,
+            config: profile.webglNoiseConfig,
+          },
+          audio: {
+            level: profile.audioNoiseLevel,
+            config: profile.audioNoiseConfig,
+          },
+          fonts: {
+            level: profile.fontEvasionLevel,
+            config: profile.fontEvasionConfig,
+            fontCount: profile.fonts.length,
+          },
+        },
+        availableLevels: {
+          canvas: Object.keys(CANVAS_NOISE_CONFIGS),
+          webgl: Object.keys(WEBGL_NOISE_CONFIGS),
+          audio: Object.keys(AUDIO_NOISE_CONFIGS),
+          fonts: Object.keys(FONT_EVASION_CONFIGS),
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  };
+
+  /**
+   * Set all evasion levels at once
+   *
+   * Command: set_evasion_levels
+   * Params:
+   *   - profileId: string (optional, uses active if not specified)
+   *   - level: 'disabled' | 'subtle' | 'moderate' | 'aggressive' (applies to all)
+   *   - canvas: string (optional, override for canvas)
+   *   - webgl: string (optional, override for webgl)
+   *   - audio: string (optional, override for audio)
+   *   - fonts: string (optional, override for fonts)
+   */
+  commandHandlers.set_evasion_levels = async (params) => {
+    try {
+      const profileId = params.profileId || fingerprintManager.activeProfileId;
+      if (!profileId) {
+        return {
+          success: false,
+          error: 'No profile specified and no active profile',
+        };
+      }
+
+      const profile = fingerprintManager.getProfile(profileId);
+      if (!profile) {
+        return {
+          success: false,
+          error: `Profile ${profileId} not found`,
+        };
+      }
+
+      const defaultLevel = params.level || 'subtle';
+
+      // Set canvas noise
+      const canvasLevel = params.canvas || defaultLevel;
+      if (CANVAS_NOISE_CONFIGS[canvasLevel]) {
+        profile.canvasNoiseLevel = canvasLevel;
+        profile.canvasNoiseConfig = { ...CANVAS_NOISE_CONFIGS[canvasLevel] };
+      }
+
+      // Set WebGL noise
+      const webglLevel = params.webgl || defaultLevel;
+      if (WEBGL_NOISE_CONFIGS[webglLevel]) {
+        profile.webglNoiseLevel = webglLevel;
+        profile.webglNoiseConfig = { ...WEBGL_NOISE_CONFIGS[webglLevel] };
+      }
+
+      // Set audio noise
+      const audioLevel = params.audio || defaultLevel;
+      if (AUDIO_NOISE_CONFIGS[audioLevel]) {
+        profile.audioNoiseLevel = audioLevel;
+        profile.audioNoiseConfig = { ...AUDIO_NOISE_CONFIGS[audioLevel] };
+      }
+
+      // Set font evasion
+      const fontsLevel = params.fonts || defaultLevel;
+      if (FONT_EVASION_CONFIGS[fontsLevel]) {
+        profile.fontEvasionLevel = fontsLevel;
+        profile.fontEvasionConfig = { ...FONT_EVASION_CONFIGS[fontsLevel] };
+        profile.fonts = profile._generateFonts();
+      }
+
+      return {
+        success: true,
+        profileId,
+        evasionLevels: {
+          canvas: profile.canvasNoiseLevel,
+          webgl: profile.webglNoiseLevel,
+          audio: profile.audioNoiseLevel,
+          fonts: profile.fontEvasionLevel,
+        },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
   };
 
   // ==========================================
@@ -733,7 +1146,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
     }
   };
 
-  console.log('[Evasion] 24 evasion commands registered');
+  console.log('[Evasion] 30 evasion commands registered (including 6 advanced evasion commands)');
 }
 
 module.exports = {

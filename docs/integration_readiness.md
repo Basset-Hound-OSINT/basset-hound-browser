@@ -16,10 +16,11 @@ The basset-hound-browser is **ready for integration testing** with other project
 | Docker Build | ✅ Working | Builds successfully with all fixes applied |
 | Container Startup | ✅ Working | Xvfb + Electron headless starts correctly |
 | WebSocket Server | ✅ Working | Listens on port 8765 |
-| API Commands | ✅ Working | 91% pass rate (10/11 core commands) |
+| API Commands | ✅ Working | 91% pass rate (10/11 core commands), 200+ total commands |
 | MCP Server | ✅ Available | Python MCP server at `mcp/server.py` |
 | Health Check | ✅ Fixed | Properly checks for 426 Upgrade Required |
 | Evasion Commands | ✅ Registered | 24 commands for fingerprint/behavioral AI |
+| Evidence Chain | ✅ Registered | 15 commands for chain of custody |
 
 ## Test Results (2026-01-21)
 
@@ -156,6 +157,18 @@ These commands work after the page loads (~3 seconds after navigation):
 3. **D-Bus Errors**
    - Expected in Docker environment (no D-Bus daemon)
    - Does not affect functionality
+
+## API Documentation
+
+Full API reference is available at [API-REFERENCE.md](API-REFERENCE.md), which includes:
+- Connection information and authentication
+- Message format (request/response)
+- All command categories with parameters
+- Detailed usage examples with timing
+- Error recovery guidance
+
+Additional API documentation:
+- [OpenAPI Specification](api/openapi.yaml) - OpenAPI 3.0 spec
 
 ## Files Modified Since Last Release
 

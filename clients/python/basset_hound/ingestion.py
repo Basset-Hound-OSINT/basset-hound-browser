@@ -6,8 +6,18 @@ This mixin adds methods for detecting various data types in web pages and
 ingesting them into the basset-hound platform.
 
 Phase 13 Implementation - Web Content Data Ingestion
+
+NOTE: Several methods in this module are deprecated as of v11.0.0.
+The following commands have been removed from the WebSocket API:
+- detect_data_types
+- configure_ingestion
+- ingest_selected
+- ingest_all
+
+See migration guide: docs/migration/ingestion-removal.md
 """
 
+import warnings
 from typing import Any, Dict, List, Optional
 
 
@@ -44,6 +54,11 @@ class IngestionMixin:
         provenance: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
+        .. deprecated:: 11.0.0
+            This method is deprecated and no longer supported.
+            Ingestion configuration is now handled on the agent side.
+            See migration guide: docs/migration/ingestion-removal.md
+
         Configure the ingestion processor settings.
 
         Args:
@@ -61,32 +76,28 @@ class IngestionMixin:
                        {'include_source_url': True, 'include_timestamp': True}
 
         Returns:
-            Dict with success status and updated configuration
+            Dict with error information about the deprecated command
 
-        Example:
-            >>> client.configure_ingestion(
-            ...     mode='selective',
-            ...     enabled_types=['email', 'phone_us'],
-            ...     confidence_threshold=0.8
-            ... )
+        Raises:
+            DeprecationWarning: Always raised when this method is called
         """
-        params = {}
-        if mode is not None:
-            params["mode"] = mode
-        if enabled_types is not None:
-            params["enabled_types"] = enabled_types
-        if auto_ingest_types is not None:
-            params["auto_ingest_types"] = auto_ingest_types
-        if confidence_threshold is not None:
-            params["confidence_threshold"] = confidence_threshold
-        if deduplication is not None:
-            params["deduplication"] = deduplication
-        if rate_limiting is not None:
-            params["rate_limiting"] = rate_limiting
-        if provenance is not None:
-            params["provenance"] = provenance
-
-        return self.send_command("configure_ingestion", params)
+        warnings.warn(
+            "configure_ingestion() is no longer supported in the WebSocket API. "
+            "This command was removed in v11.0.0. "
+            "Alternative: Manage ingestion configuration on the agent side. "
+            "See migration guide: docs/migration/ingestion-removal.md",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return {
+            "success": False,
+            "error": "DEPRECATED_COMMAND",
+            "message": (
+                "configure_ingestion command has been removed from the WebSocket API "
+                "in v11.0.0. Ingestion configuration should be handled on the agent side. "
+                "See migration guide: docs/migration/ingestion-removal.md"
+            )
+        }
 
     def get_ingestion_config(self) -> Dict[str, Any]:
         """
@@ -134,6 +145,11 @@ class IngestionMixin:
         url: Optional[str] = None
     ) -> Dict[str, Any]:
         """
+        .. deprecated:: 11.0.0
+            This method is deprecated and no longer supported.
+            Use get_content + agent-side regex for pattern detection instead.
+            See migration guide: docs/migration/ingestion-removal.md
+
         Detect data types in the current page.
 
         Scans the page for OSINT data including emails, phone numbers,
@@ -149,37 +165,29 @@ class IngestionMixin:
             url: Optional URL for context (defaults to current page URL)
 
         Returns:
-            Dict containing:
-                - success: bool
-                - data: Dict with:
-                    - pageUrl: Source URL
-                    - detectedAt: ISO timestamp
-                    - totalItems: Number of items detected
-                    - items: List of detected items
-                    - summary: Counts by type
-                    - processingTime: Time in milliseconds
-                - errors: List of error messages
-                - warnings: List of warnings
+            Dict with error information about the deprecated command
 
-        Example:
-            >>> detections = client.detect_data_types(
-            ...     types=['email', 'phone_us'],
-            ...     confidence_threshold=0.8
-            ... )
-            >>> for item in detections['data']['items']:
-            ...     print(f"{item['type']}: {item['value']}")
+        Raises:
+            DeprecationWarning: Always raised when this method is called
         """
-        params = {}
-        if types is not None:
-            params["types"] = types
-        if confidence_threshold is not None:
-            params["confidence_threshold"] = confidence_threshold
-        if html is not None:
-            params["html"] = html
-        if url is not None:
-            params["url"] = url
-
-        return self.send_command("detect_data_types", params)
+        warnings.warn(
+            "detect_data_types() is no longer supported in the WebSocket API. "
+            "This command was removed in v11.0.0. "
+            "Alternative: Use extract_all() or execute_script() to get page content, "
+            "then perform pattern detection on the agent side using regex. "
+            "See migration guide: docs/migration/ingestion-removal.md",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return {
+            "success": False,
+            "error": "DEPRECATED_COMMAND",
+            "message": (
+                "detect_data_types command has been removed from the WebSocket API "
+                "in v11.0.0. Use get_content + agent-side regex for pattern detection. "
+                "See migration guide: docs/migration/ingestion-removal.md"
+            )
+        }
 
     def get_detection_types(self) -> Dict[str, Any]:
         """
@@ -265,6 +273,11 @@ class IngestionMixin:
 
     def ingest_selected(self, item_ids: List[str]) -> Dict[str, Any]:
         """
+        .. deprecated:: 11.0.0
+            This method is deprecated and no longer supported.
+            Ingestion queue management is now handled on the agent side.
+            See migration guide: docs/migration/ingestion-removal.md
+
         Ingest selected items from the queue.
 
         Args:
@@ -272,37 +285,63 @@ class IngestionMixin:
                       (e.g., ['det_001', 'det_002'])
 
         Returns:
-            Dict containing:
-                - success: bool
-                - data: Dict with:
-                    - ingested: Number of items ingested
-                    - failed: List of failed items
-                    - notFound: List of IDs not in queue
-                    - items: Ingested item data with orphan format
+            Dict with error information about the deprecated command
 
-        Example:
-            >>> result = client.ingest_selected(['det_001', 'det_003'])
-            >>> print(f"Ingested: {result['data']['ingested']}")
+        Raises:
+            DeprecationWarning: Always raised when this method is called
         """
-        return self.send_command("ingest_selected", {"item_ids": item_ids})
+        warnings.warn(
+            "ingest_selected() is no longer supported in the WebSocket API. "
+            "This command was removed in v11.0.0. "
+            "Alternative: Use extract_all() to get content, detect patterns agent-side, "
+            "then manage ingestion in your application. "
+            "See migration guide: docs/migration/ingestion-removal.md",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return {
+            "success": False,
+            "error": "DEPRECATED_COMMAND",
+            "message": (
+                "ingest_selected command has been removed from the WebSocket API "
+                "in v11.0.0. Use get_content + agent-side processing for data ingestion. "
+                "See migration guide: docs/migration/ingestion-removal.md"
+            )
+        }
 
     def ingest_all(self) -> Dict[str, Any]:
         """
+        .. deprecated:: 11.0.0
+            This method is deprecated and no longer supported.
+            Ingestion queue management is now handled on the agent side.
+            See migration guide: docs/migration/ingestion-removal.md
+
         Ingest all items currently in the queue.
 
         Returns:
-            Dict containing:
-                - success: bool
-                - data: Dict with:
-                    - ingested: Number of items ingested
-                    - failed: List of failed items
-                    - items: Ingested item data
+            Dict with error information about the deprecated command
 
-        Example:
-            >>> result = client.ingest_all()
-            >>> print(f"Ingested {result['data']['ingested']} items")
+        Raises:
+            DeprecationWarning: Always raised when this method is called
         """
-        return self.send_command("ingest_all", {})
+        warnings.warn(
+            "ingest_all() is no longer supported in the WebSocket API. "
+            "This command was removed in v11.0.0. "
+            "Alternative: Use extract_all() to get content, detect patterns agent-side, "
+            "then manage ingestion in your application. "
+            "See migration guide: docs/migration/ingestion-removal.md",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        return {
+            "success": False,
+            "error": "DEPRECATED_COMMAND",
+            "message": (
+                "ingest_all command has been removed from the WebSocket API "
+                "in v11.0.0. Use get_content + agent-side processing for data ingestion. "
+                "See migration guide: docs/migration/ingestion-removal.md"
+            )
+        }
 
     def clear_ingestion_queue(self) -> Dict[str, Any]:
         """

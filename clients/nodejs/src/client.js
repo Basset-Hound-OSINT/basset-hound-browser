@@ -639,23 +639,33 @@ class BassetHoundClient extends EventEmitter {
   // ==================== Data Ingestion (Phase 13) ====================
 
   /**
+   * @deprecated This method is deprecated and no longer supported.
+   * Use get_content + agent-side regex for pattern detection instead.
+   * See migration guide: docs/migration/ingestion-removal.md
+   *
    * Detect data types in the current page
    * @param {Object} options - Detection options
    * @param {string[]} [options.types] - Specific types to detect
    * @param {number} [options.confidenceThreshold] - Min confidence (0-1)
    * @param {string} [options.html] - HTML content to scan
    * @param {string} [options.url] - URL for context
-   * @returns {Promise<Object>} Detection results
+   * @returns {Promise<Object>} Rejected promise with deprecation error
    */
   detectDataTypes(options = {}) {
-    const params = {};
-    if (options.types) params.types = options.types;
-    if (options.confidenceThreshold !== undefined) {
-      params.confidence_threshold = options.confidenceThreshold;
-    }
-    if (options.html) params.html = options.html;
-    if (options.url) params.url = options.url;
-    return this.sendCommand('detect_data_types', params);
+    console.warn(
+      '[DEPRECATED] detectDataTypes() is no longer supported in the WebSocket API. ' +
+      'This command was removed in v11.0.0. ' +
+      'Alternative: Use extractAll() or executeScript() to get page content, ' +
+      'then perform pattern detection on the agent side using regex. ' +
+      'See migration guide: docs/migration/ingestion-removal.md'
+    );
+    return Promise.reject({
+      success: false,
+      error: 'DEPRECATED_COMMAND',
+      message: 'detect_data_types command has been removed from the WebSocket API in v11.0.0. ' +
+        'Use get_content + agent-side regex for pattern detection. ' +
+        'See migration guide: docs/migration/ingestion-removal.md'
+    });
   }
 
   /**
@@ -667,6 +677,10 @@ class BassetHoundClient extends EventEmitter {
   }
 
   /**
+   * @deprecated This method is deprecated and no longer supported.
+   * Ingestion configuration is now handled on the agent side.
+   * See migration guide: docs/migration/ingestion-removal.md
+   *
    * Configure ingestion settings
    * @param {Object} config - Configuration options
    * @param {string} [config.mode] - Ingestion mode
@@ -676,20 +690,22 @@ class BassetHoundClient extends EventEmitter {
    * @param {Object} [config.deduplication] - Deduplication settings
    * @param {Object} [config.rateLimiting] - Rate limiting settings
    * @param {Object} [config.provenance] - Provenance settings
-   * @returns {Promise<Object>} Updated configuration
+   * @returns {Promise<Object>} Rejected promise with deprecation error
    */
   configureIngestion(config = {}) {
-    const params = {};
-    if (config.mode) params.mode = config.mode;
-    if (config.enabledTypes) params.enabled_types = config.enabledTypes;
-    if (config.autoIngestTypes) params.auto_ingest_types = config.autoIngestTypes;
-    if (config.confidenceThreshold !== undefined) {
-      params.confidence_threshold = config.confidenceThreshold;
-    }
-    if (config.deduplication) params.deduplication = config.deduplication;
-    if (config.rateLimiting) params.rate_limiting = config.rateLimiting;
-    if (config.provenance) params.provenance = config.provenance;
-    return this.sendCommand('configure_ingestion', params);
+    console.warn(
+      '[DEPRECATED] configureIngestion() is no longer supported in the WebSocket API. ' +
+      'This command was removed in v11.0.0. ' +
+      'Alternative: Manage ingestion configuration on the agent side. ' +
+      'See migration guide: docs/migration/ingestion-removal.md'
+    );
+    return Promise.reject({
+      success: false,
+      error: 'DEPRECATED_COMMAND',
+      message: 'configure_ingestion command has been removed from the WebSocket API in v11.0.0. ' +
+        'Ingestion configuration should be handled on the agent side. ' +
+        'See migration guide: docs/migration/ingestion-removal.md'
+    });
   }
 
   /**
@@ -732,20 +748,54 @@ class BassetHoundClient extends EventEmitter {
   }
 
   /**
+   * @deprecated This method is deprecated and no longer supported.
+   * Ingestion queue management is now handled on the agent side.
+   * See migration guide: docs/migration/ingestion-removal.md
+   *
    * Ingest selected items from queue
    * @param {string[]} itemIds - Item IDs to ingest
-   * @returns {Promise<Object>} Ingestion results
+   * @returns {Promise<Object>} Rejected promise with deprecation error
    */
   ingestSelected(itemIds) {
-    return this.sendCommand('ingest_selected', { item_ids: itemIds });
+    console.warn(
+      '[DEPRECATED] ingestSelected() is no longer supported in the WebSocket API. ' +
+      'This command was removed in v11.0.0. ' +
+      'Alternative: Use extractAll() to get content, detect patterns agent-side, ' +
+      'then manage ingestion in your application. ' +
+      'See migration guide: docs/migration/ingestion-removal.md'
+    );
+    return Promise.reject({
+      success: false,
+      error: 'DEPRECATED_COMMAND',
+      message: 'ingest_selected command has been removed from the WebSocket API in v11.0.0. ' +
+        'Use get_content + agent-side processing for data ingestion. ' +
+        'See migration guide: docs/migration/ingestion-removal.md'
+    });
   }
 
   /**
+   * @deprecated This method is deprecated and no longer supported.
+   * Ingestion queue management is now handled on the agent side.
+   * See migration guide: docs/migration/ingestion-removal.md
+   *
    * Ingest all items in queue
-   * @returns {Promise<Object>} Ingestion results
+   * @returns {Promise<Object>} Rejected promise with deprecation error
    */
   ingestAll() {
-    return this.sendCommand('ingest_all');
+    console.warn(
+      '[DEPRECATED] ingestAll() is no longer supported in the WebSocket API. ' +
+      'This command was removed in v11.0.0. ' +
+      'Alternative: Use extractAll() to get content, detect patterns agent-side, ' +
+      'then manage ingestion in your application. ' +
+      'See migration guide: docs/migration/ingestion-removal.md'
+    );
+    return Promise.reject({
+      success: false,
+      error: 'DEPRECATED_COMMAND',
+      message: 'ingest_all command has been removed from the WebSocket API in v11.0.0. ' +
+        'Use get_content + agent-side processing for data ingestion. ' +
+        'See migration guide: docs/migration/ingestion-removal.md'
+    });
   }
 
   /**
