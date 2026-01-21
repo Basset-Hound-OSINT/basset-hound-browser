@@ -31,8 +31,9 @@ class NetworkAnalysisManager {
     // WebContents reference
     this.webContents = null;
 
-    // Electron session reference
-    this.session = options.session || session.defaultSession;
+    // Electron session reference (lazy-loaded to avoid accessing before app is ready)
+    this._session = options.session || null;
+    this._sessionInitialized = !!options.session;
 
     // WebRequest handlers
     this.onBeforeRequestHandler = null;
@@ -57,6 +58,17 @@ class NetworkAnalysisManager {
     };
 
     console.log('[NetworkAnalysisManager] Initialized');
+  }
+
+  /**
+   * Get session (lazy-loaded to avoid accessing before app is ready)
+   */
+  get session() {
+    if (!this._sessionInitialized) {
+      this._session = session.defaultSession;
+      this._sessionInitialized = true;
+    }
+    return this._session;
   }
 
   /**

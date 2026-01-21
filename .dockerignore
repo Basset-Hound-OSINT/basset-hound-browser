@@ -52,10 +52,9 @@ temp
 .claude
 
 # Runtime data directories (created at runtime)
-recordings
-screenshots
-sessions
-downloads
+# Note: sessions/, screenshots/, downloads/ contain source code (manager.js)
+# So we only exclude the recordings data directory
+recordings/data
 
 # Development scripts (not needed in production)
 scripts/install

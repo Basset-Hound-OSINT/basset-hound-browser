@@ -24,6 +24,8 @@ let evidenceManager = null;
  * Register evidence chain of custody WebSocket commands
  */
 function registerEvidenceChainCommands(server, mainWindow) {
+  const commandHandlers = server.commandHandlers || server;
+
   /**
    * Initialize evidence manager
    *
@@ -37,7 +39,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { initialized: true, config: {} }
    */
-  server.registerCommand('init_evidence_chain', async (params) => {
+  commandHandlers.init_evidence_chain = async (params) => {
     try {
       if (evidenceManager) {
         return { success: false, error: 'Evidence manager already initialized' };
@@ -89,7 +91,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Create new investigation
@@ -104,7 +106,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { investigation: {} }
    */
-  server.registerCommand('create_investigation', async (params) => {
+  commandHandlers.create_investigation = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized. Call init_evidence_chain first.');
@@ -129,7 +131,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Collect evidence with full chain of custody
@@ -146,7 +148,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { evidence: {} }
    */
-  server.registerCommand('collect_evidence_chain', async (params) => {
+  commandHandlers.collect_evidence_chain = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -173,7 +175,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Verify evidence integrity
@@ -182,7 +184,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * Params: { evidenceId: string }
    * Response: { verified: boolean, evidence: {} }
    */
-  server.registerCommand('verify_evidence_chain', async (params) => {
+  commandHandlers.verify_evidence_chain = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -203,7 +205,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Seal evidence (make immutable)
@@ -212,7 +214,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * Params: { evidenceId: string, actor?: string }
    * Response: { evidence: {} }
    */
-  server.registerCommand('seal_evidence_chain', async (params) => {
+  commandHandlers.seal_evidence_chain = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -231,7 +233,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Create evidence package
@@ -247,7 +249,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { package: {} }
    */
-  server.registerCommand('create_evidence_package', async (params) => {
+  commandHandlers.create_evidence_package = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -273,7 +275,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Add evidence to package
@@ -282,7 +284,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * Params: { packageId: string, evidenceId: string }
    * Response: { package: {} }
    */
-  server.registerCommand('add_to_evidence_package', async (params) => {
+  commandHandlers.add_to_evidence_package = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -301,7 +303,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Seal evidence package
@@ -310,7 +312,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * Params: { packageId: string, actor?: string }
    * Response: { package: {} }
    */
-  server.registerCommand('seal_evidence_package', async (params) => {
+  commandHandlers.seal_evidence_package = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -329,7 +331,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Export evidence package
@@ -344,7 +346,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { exportData: any, filePath?: string }
    */
-  server.registerCommand('export_evidence_package', async (params) => {
+  commandHandlers.export_evidence_package = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -369,7 +371,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get evidence by ID
@@ -378,7 +380,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * Params: { evidenceId: string }
    * Response: { evidence: {} }
    */
-  server.registerCommand('get_evidence_chain', async (params) => {
+  commandHandlers.get_evidence_chain = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -401,7 +403,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * List all evidence
@@ -416,7 +418,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { evidence: [], count: number }
    */
-  server.registerCommand('list_evidence_chain', async (params) => {
+  commandHandlers.list_evidence_chain = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -440,7 +442,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get evidence chain statistics
@@ -448,7 +450,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * Command: get_evidence_chain_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_evidence_chain_stats', async (params) => {
+  commandHandlers.get_evidence_chain_stats = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -463,7 +465,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get chain of custody audit log
@@ -476,7 +478,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { auditLog: [], count: number }
    */
-  server.registerCommand('get_chain_audit_log', async (params) => {
+  commandHandlers.get_chain_audit_log = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -498,7 +500,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Export audit log
@@ -511,7 +513,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { filename: string, path: string, entries: number }
    */
-  server.registerCommand('export_chain_audit_log', async (params) => {
+  commandHandlers.export_chain_audit_log = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -532,7 +534,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Collect screenshot with chain of custody
@@ -547,7 +549,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
    * }
    * Response: { evidence: {} }
    */
-  server.registerCommand('collect_screenshot_chain', async (params) => {
+  commandHandlers.collect_screenshot_chain = async (params) => {
     try {
       if (!evidenceManager) {
         throw new Error('Evidence manager not initialized');
@@ -594,7 +596,7 @@ function registerEvidenceChainCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 }
 
 module.exports = { registerEvidenceChainCommands };

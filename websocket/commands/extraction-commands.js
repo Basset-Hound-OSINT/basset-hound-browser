@@ -18,6 +18,8 @@ let templateManager = null;
  * Register data extraction template WebSocket commands
  */
 function registerExtractionCommands(server, mainWindow) {
+  const commandHandlers = server.commandHandlers || server;
+
   /**
    * Create extraction template
    *
@@ -31,7 +33,7 @@ function registerExtractionCommands(server, mainWindow) {
    * }
    * Response: { template: {} }
    */
-  server.registerCommand('create_extraction_template', async (params) => {
+  commandHandlers.create_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -56,7 +58,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Use/extract with template
@@ -65,7 +67,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string }
    * Response: { data: {}, errors: [] }
    */
-  server.registerCommand('use_extraction_template', async (params) => {
+  commandHandlers.use_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -84,7 +86,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Extract data with template (alias for use_extraction_template)
@@ -93,7 +95,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string }
    * Response: { data: {}, errors: [] }
    */
-  server.registerCommand('extract_with_template', async (params) => {
+  commandHandlers.extract_with_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -112,7 +114,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * List extraction templates
@@ -121,7 +123,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { platform?: string, type?: string, builtin?: boolean }
    * Response: { templates: [], count: number }
    */
-  server.registerCommand('list_extraction_templates', async (params) => {
+  commandHandlers.list_extraction_templates = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -143,7 +145,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get extraction template
@@ -152,7 +154,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string }
    * Response: { template: {} }
    */
-  server.registerCommand('get_extraction_template', async (params) => {
+  commandHandlers.get_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -171,7 +173,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Update extraction template
@@ -180,7 +182,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string, updates: {} }
    * Response: { template: {} }
    */
-  server.registerCommand('update_extraction_template', async (params) => {
+  commandHandlers.update_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -199,7 +201,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Delete extraction template
@@ -208,7 +210,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string }
    * Response: { deleted: true }
    */
-  server.registerCommand('delete_extraction_template', async (params) => {
+  commandHandlers.delete_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -227,7 +229,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Validate extraction template
@@ -236,7 +238,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string }
    * Response: { valid: boolean }
    */
-  server.registerCommand('validate_extraction_template', async (params) => {
+  commandHandlers.validate_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -255,7 +257,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Extract bulk data
@@ -264,7 +266,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string, containerSelector: string }
    * Response: { items: [], count: number }
    */
-  server.registerCommand('extract_bulk', async (params) => {
+  commandHandlers.extract_bulk = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -286,7 +288,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get extraction statistics
@@ -294,7 +296,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Command: get_extraction_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_extraction_stats', async (params) => {
+  commandHandlers.get_extraction_stats = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -309,7 +311,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Clone extraction template
@@ -318,7 +320,7 @@ function registerExtractionCommands(server, mainWindow) {
    * Params: { templateId: string, newName: string }
    * Response: { template: {} }
    */
-  server.registerCommand('clone_extraction_template', async (params) => {
+  commandHandlers.clone_extraction_template = async (params) => {
     try {
       if (!templateManager) {
         templateManager = new TemplateManager(mainWindow.webContents);
@@ -337,7 +339,7 @@ function registerExtractionCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   // Setup event forwarding
   const setupEventForwarding = () => {

@@ -13,13 +13,16 @@ let formFiller = null;
  * Register form-related WebSocket commands
  */
 function registerFormCommands(server, mainWindow) {
+  // Get command handlers from server (same pattern as monitoring-commands.js)
+  const commandHandlers = server.commandHandlers || server;
+
   /**
    * Analyze all forms on the current page
    *
    * Command: analyze_forms
    * Response: { forms: Form[] }
    */
-  server.registerCommand('analyze_forms', async (params) => {
+  commandHandlers.analyze_forms = async (params) => {
     try {
       if (!formFiller) {
         formFiller = new SmartFormFiller(mainWindow.webContents);
@@ -62,7 +65,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Analyze a specific form
@@ -71,7 +74,7 @@ function registerFormCommands(server, mainWindow) {
    * Params: { selector: string }
    * Response: { form: Form }
    */
-  server.registerCommand('analyze_form', async (params) => {
+  commandHandlers.analyze_form = async (params) => {
     try {
       if (!params.selector) {
         throw new Error('selector is required');
@@ -127,7 +130,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Fill a form with provided data
@@ -140,7 +143,7 @@ function registerFormCommands(server, mainWindow) {
    * }
    * Response: { filled: [], skipped: [], failed: [], validationErrors?: [], submitted?: boolean }
    */
-  server.registerCommand('fill_form', async (params) => {
+  commandHandlers.fill_form = async (params) => {
     try {
       if (!params.selector) {
         throw new Error('selector is required');
@@ -166,7 +169,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Fill form with smart value generation
@@ -179,7 +182,7 @@ function registerFormCommands(server, mainWindow) {
    * }
    * Response: { filled: [], skipped: [], failed: [], validationErrors?: [], submitted?: boolean }
    */
-  server.registerCommand('fill_form_smart', async (params) => {
+  commandHandlers.fill_form_smart = async (params) => {
     try {
       if (!params.selector) {
         throw new Error('selector is required');
@@ -286,7 +289,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get form field types
@@ -294,12 +297,12 @@ function registerFormCommands(server, mainWindow) {
    * Command: get_field_types
    * Response: { fieldTypes: string[] }
    */
-  server.registerCommand('get_field_types', async (params) => {
+  commandHandlers.get_field_types = async (params) => {
     return {
       success: true,
       fieldTypes: Object.values(FIELD_TYPES)
     };
-  });
+  };
 
   /**
    * Configure form filler options
@@ -308,7 +311,7 @@ function registerFormCommands(server, mainWindow) {
    * Params: { respectHoneypots?, skipCaptchas?, humanLikeSpeed?, detectValidation?, maxRetries? }
    * Response: { config: {} }
    */
-  server.registerCommand('configure_form_filler', async (params) => {
+  commandHandlers.configure_form_filler = async (params) => {
     try {
       if (!formFiller) {
         formFiller = new SmartFormFiller(mainWindow.webContents, params);
@@ -323,7 +326,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get form filler statistics
@@ -331,7 +334,7 @@ function registerFormCommands(server, mainWindow) {
    * Command: get_form_filler_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_form_filler_stats', async (params) => {
+  commandHandlers.get_form_filler_stats = async (params) => {
     try {
       if (!formFiller) {
         formFiller = new SmartFormFiller(mainWindow.webContents);
@@ -344,7 +347,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Reset form filler statistics
@@ -352,7 +355,7 @@ function registerFormCommands(server, mainWindow) {
    * Command: reset_form_filler_stats
    * Response: { success: true }
    */
-  server.registerCommand('reset_form_filler_stats', async (params) => {
+  commandHandlers.reset_form_filler_stats = async (params) => {
     try {
       if (!formFiller) {
         formFiller = new SmartFormFiller(mainWindow.webContents);
@@ -364,7 +367,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Detect honeypot fields on the page
@@ -372,7 +375,7 @@ function registerFormCommands(server, mainWindow) {
    * Command: detect_honeypots
    * Response: { honeypots: [] }
    */
-  server.registerCommand('detect_honeypots', async (params) => {
+  commandHandlers.detect_honeypots = async (params) => {
     try {
       if (!formFiller) {
         formFiller = new SmartFormFiller(mainWindow.webContents);
@@ -404,7 +407,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Detect CAPTCHAs on the page
@@ -412,7 +415,7 @@ function registerFormCommands(server, mainWindow) {
    * Command: detect_captchas
    * Response: { captchas: [] }
    */
-  server.registerCommand('detect_captchas', async (params) => {
+  commandHandlers.detect_captchas = async (params) => {
     try {
       if (!formFiller) {
         formFiller = new SmartFormFiller(mainWindow.webContents);
@@ -443,7 +446,7 @@ function registerFormCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 }
 
 module.exports = { registerFormCommands };

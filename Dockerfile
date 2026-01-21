@@ -67,11 +67,21 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install --production
+# Install all dependencies (including electron)
+RUN npm install
 
 # Copy application files
 COPY . .
+
+# Create runtime directories that need to be writable
+RUN mkdir -p /app/automation/saved \
+    /app/recordings/screenshots \
+    /app/recordings/data \
+    /app/bin/tor \
+    /app/data \
+    /app/screenshots \
+    /app/downloads \
+    /app/blocking-data
 
 # Create non-root user for security
 RUN groupadd -r basset && useradd -r -g basset basset \
@@ -86,6 +96,9 @@ EXPOSE 8765
 # Create startup script
 RUN echo '#!/bin/bash\n\
 set -e\n\
+\n\
+# Add node_modules/.bin to PATH\n\
+export PATH="/app/node_modules/.bin:$PATH"\n\
 \n\
 # Start Xvfb virtual display\n\
 echo "Starting Xvfb on display ${DISPLAY}..."\n\
@@ -108,9 +121,9 @@ echo "Starting Basset Hound Browser in headless mode..."\n\
 exec electron . --headless --disable-gpu --no-sandbox --virtual-display "$@"\n\
 ' > /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoint.sh
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8765 || exit 1
+# Health check - verify WebSocket server is responding (returns 426 Upgrade Required for HTTP)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -s -o /dev/null -w "%{http_code}" http://localhost:8765 | grep -q "426" || exit 1
 
 # Use the startup script as entrypoint
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

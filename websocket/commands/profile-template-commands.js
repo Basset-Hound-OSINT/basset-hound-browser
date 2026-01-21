@@ -13,6 +13,8 @@ let templateManager = null;
  * Register profile template WebSocket commands
  */
 function registerProfileTemplateCommands(server, mainWindow) {
+  const commandHandlers = server.commandHandlers || server;
+
   // Initialize manager
   if (!templateManager) {
     templateManager = new ProfileTemplateManager();
@@ -25,7 +27,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { category?, riskLevel?, tags?, sortBy? }
    * Response: { templates: [] }
    */
-  server.registerCommand('list_profile_templates', async (params) => {
+  commandHandlers.list_profile_templates = async (params) => {
     try {
       const templates = templateManager.listTemplates(params || {});
 
@@ -46,7 +48,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get specific template
@@ -55,7 +57,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { id: string }
    * Response: { template: {} }
    */
-  server.registerCommand('get_profile_template', async (params) => {
+  commandHandlers.get_profile_template = async (params) => {
     try {
       if (!params.id) {
         throw new Error('id is required');
@@ -73,7 +75,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Search templates
@@ -82,7 +84,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { query: string }
    * Response: { templates: [] }
    */
-  server.registerCommand('search_profile_templates', async (params) => {
+  commandHandlers.search_profile_templates = async (params) => {
     try {
       if (!params.query) {
         throw new Error('query is required');
@@ -104,7 +106,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Generate profile from template
@@ -113,7 +115,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { templateId: string, customizations?: {} }
    * Response: { profile: {} }
    */
-  server.registerCommand('generate_profile_from_template', async (params) => {
+  commandHandlers.generate_profile_from_template = async (params) => {
     try {
       if (!params.templateId) {
         throw new Error('templateId is required');
@@ -134,7 +136,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Create custom template
@@ -143,7 +145,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { name, description?, category?, riskLevel?, ... }
    * Response: { template: {} }
    */
-  server.registerCommand('create_profile_template', async (params) => {
+  commandHandlers.create_profile_template = async (params) => {
     try {
       if (!params.name) {
         throw new Error('name is required');
@@ -164,7 +166,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Clone template
@@ -173,7 +175,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { id: string, modifications?: {} }
    * Response: { template: {} }
    */
-  server.registerCommand('clone_profile_template', async (params) => {
+  commandHandlers.clone_profile_template = async (params) => {
     try {
       if (!params.id) {
         throw new Error('id is required');
@@ -192,7 +194,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Delete template
@@ -201,7 +203,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { id: string }
    * Response: { success: true }
    */
-  server.registerCommand('delete_profile_template', async (params) => {
+  commandHandlers.delete_profile_template = async (params) => {
     try {
       if (!params.id) {
         throw new Error('id is required');
@@ -216,7 +218,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Export template
@@ -225,7 +227,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { id: string }
    * Response: { template: {}, json: string }
    */
-  server.registerCommand('export_profile_template', async (params) => {
+  commandHandlers.export_profile_template = async (params) => {
     try {
       if (!params.id) {
         throw new Error('id is required');
@@ -241,7 +243,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Import template
@@ -250,7 +252,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Params: { template: {} } or { json: string }
    * Response: { template: {} }
    */
-  server.registerCommand('import_profile_template', async (params) => {
+  commandHandlers.import_profile_template = async (params) => {
     try {
       let templateData;
 
@@ -275,7 +277,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get template statistics
@@ -283,7 +285,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Command: get_profile_template_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_profile_template_stats', async (params) => {
+  commandHandlers.get_profile_template_stats = async (params) => {
     try {
       const stats = templateManager.getStatistics();
 
@@ -294,7 +296,7 @@ function registerProfileTemplateCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get template categories
@@ -302,12 +304,12 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Command: get_template_categories
    * Response: { categories: [] }
    */
-  server.registerCommand('get_template_categories', async (params) => {
+  commandHandlers.get_template_categories = async (params) => {
     return {
       success: true,
       categories: Object.values(TEMPLATE_CATEGORIES)
     };
-  });
+  };
 
   /**
    * Get risk levels
@@ -315,12 +317,12 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Command: get_template_risk_levels
    * Response: { riskLevels: [] }
    */
-  server.registerCommand('get_template_risk_levels', async (params) => {
+  commandHandlers.get_template_risk_levels = async (params) => {
     return {
       success: true,
       riskLevels: Object.values(RISK_LEVELS)
     };
-  });
+  };
 
   /**
    * Get activity patterns
@@ -328,12 +330,12 @@ function registerProfileTemplateCommands(server, mainWindow) {
    * Command: get_template_activity_patterns
    * Response: { activityPatterns: [] }
    */
-  server.registerCommand('get_template_activity_patterns', async (params) => {
+  commandHandlers.get_template_activity_patterns = async (params) => {
     return {
       success: true,
       activityPatterns: Object.values(ACTIVITY_PATTERNS)
     };
-  });
+  };
 }
 
 module.exports = { registerProfileTemplateCommands };

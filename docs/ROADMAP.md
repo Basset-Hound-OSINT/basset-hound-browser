@@ -1,8 +1,18 @@
 # Basset Hound Browser - Product Roadmap
 
-**Last Updated:** January 13, 2026
+**Last Updated:** January 21, 2026
 **Current Version:** 11.0.0
-**Status:** ✅ Feature Complete - Ready for Integration Testing
+**Status:** ✅ Feature Complete - Docker Deployment Tested
+
+## Recent Updates
+
+### January 21, 2026 - Deployment Testing Complete
+- ✅ Docker build and deployment validated
+- ✅ 9 deployment issues identified and fixed
+- ✅ WebSocket API verified working (navigate, cookies)
+- ⚠️ Some commands need headless webview configuration
+- 📄 See `docs/integration_readiness.md` for full status
+- 📄 See `docs/findings/DEPLOYMENT-FIXES-2026-01-21.md` for fixes
 
 ---
 

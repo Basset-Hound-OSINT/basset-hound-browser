@@ -602,7 +602,7 @@ function getViewportConfig() {
 
 const viewportConfig = getViewportConfig();
 
-function createWindow() {
+async function createWindow() {
   // Remove command line switches that reveal automation
   app.commandLine.appendSwitch('disable-blink-features', 'AutomationControlled');
   app.commandLine.appendSwitch('disable-features', 'IsolateOrigins,site-per-process');
@@ -930,7 +930,7 @@ function createWindow() {
     headerManager,
     memoryManager,
     torManager,
-    proxyChainManager,
+    // proxyChainManager was migrated to basset-hound-networking
     technologyManager,
     extractionManager,
     networkAnalysisManager,
@@ -2694,7 +2694,7 @@ app.whenReady().then(async () => {
   }
 
   // Create the main window
-  createWindow();
+  await createWindow();
 
   // If we had an unclean shutdown and have saved state, offer recovery
   if (hadUncleanShutdown && savedState && savedState.tabs && savedState.tabs.length > 0) {
@@ -2735,9 +2735,9 @@ app.on('before-quit', () => {
   removeLockFile();
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    await createWindow();
   }
 });
 

@@ -18,6 +18,8 @@ let locationManager = null;
  * Register location simulation WebSocket commands
  */
 function registerLocationCommands(server, mainWindow) {
+  const commandHandlers = server.commandHandlers || server;
+
   /**
    * Set geolocation coordinates
    *
@@ -31,7 +33,7 @@ function registerLocationCommands(server, mainWindow) {
    * }
    * Response: { coordinates: {} }
    */
-  server.registerCommand('set_geolocation', async (params) => {
+  commandHandlers.set_geolocation = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -64,7 +66,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Set location using pre-configured profile
@@ -73,7 +75,7 @@ function registerLocationCommands(server, mainWindow) {
    * Params: { profile: string }
    * Response: { location: {} }
    */
-  server.registerCommand('set_location_profile', async (params) => {
+  commandHandlers.set_location_profile = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -92,7 +94,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Set timezone
@@ -101,7 +103,7 @@ function registerLocationCommands(server, mainWindow) {
    * Params: { timezone: string }
    * Response: { timezone: string }
    */
-  server.registerCommand('set_timezone', async (params) => {
+  commandHandlers.set_timezone = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -120,7 +122,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Set locale
@@ -129,7 +131,7 @@ function registerLocationCommands(server, mainWindow) {
    * Params: { locale: string, languages?: string[] }
    * Response: { locale: string, languages: string[] }
    */
-  server.registerCommand('set_locale', async (params) => {
+  commandHandlers.set_locale = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -148,7 +150,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Enable location spoofing
@@ -156,7 +158,7 @@ function registerLocationCommands(server, mainWindow) {
    * Command: enable_location_spoofing
    * Response: { enabled: true }
    */
-  server.registerCommand('enable_location_spoofing', async (params) => {
+  commandHandlers.enable_location_spoofing = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -171,7 +173,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Disable location spoofing
@@ -179,7 +181,7 @@ function registerLocationCommands(server, mainWindow) {
    * Command: disable_location_spoofing
    * Response: { enabled: false }
    */
-  server.registerCommand('disable_location_spoofing', async (params) => {
+  commandHandlers.disable_location_spoofing = async (params) => {
     try {
       if (!locationManager) {
         return { success: true, enabled: false, message: 'Location manager not initialized' };
@@ -194,7 +196,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get location status
@@ -202,7 +204,7 @@ function registerLocationCommands(server, mainWindow) {
    * Command: get_location_status
    * Response: { enabled: boolean, coordinates: {}, timezone: string, locale: string, profile: string }
    */
-  server.registerCommand('get_location_status', async (params) => {
+  commandHandlers.get_location_status = async (params) => {
     try {
       if (!locationManager) {
         return {
@@ -224,7 +226,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Match location to proxy
@@ -233,7 +235,7 @@ function registerLocationCommands(server, mainWindow) {
    * Params: { country: string, city?: string }
    * Response: { location: {} }
    */
-  server.registerCommand('match_location_to_proxy', async (params) => {
+  commandHandlers.match_location_to_proxy = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -252,7 +254,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Reset location
@@ -260,7 +262,7 @@ function registerLocationCommands(server, mainWindow) {
    * Command: reset_location
    * Response: { reset: true }
    */
-  server.registerCommand('reset_location', async (params) => {
+  commandHandlers.reset_location = async (params) => {
     try {
       if (!locationManager) {
         return { success: true, reset: true, message: 'Location manager not initialized' };
@@ -275,7 +277,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * List available location profiles
@@ -283,7 +285,7 @@ function registerLocationCommands(server, mainWindow) {
    * Command: list_location_profiles
    * Response: { profiles: [] }
    */
-  server.registerCommand('list_location_profiles', async (params) => {
+  commandHandlers.list_location_profiles = async (params) => {
     try {
       if (!locationManager) {
         locationManager = new LocationManager(mainWindow.webContents);
@@ -299,7 +301,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get location statistics
@@ -307,7 +309,7 @@ function registerLocationCommands(server, mainWindow) {
    * Command: get_location_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_location_stats', async (params) => {
+  commandHandlers.get_location_stats = async (params) => {
     try {
       if (!locationManager) {
         return {
@@ -325,7 +327,7 @@ function registerLocationCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   // Setup event forwarding
   const setupEventForwarding = () => {

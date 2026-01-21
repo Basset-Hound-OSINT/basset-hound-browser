@@ -13,6 +13,8 @@ let multiPageManager = null;
  * Register multi-page management WebSocket commands
  */
 function registerMultiPageCommands(server, mainWindow) {
+  const commandHandlers = server.commandHandlers || server;
+
   /**
    * Initialize multi-page manager
    *
@@ -20,7 +22,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { profile?: 'stealth'|'balanced'|'aggressive'|'single', config?: {} }
    * Response: { initialized: true, config: {} }
    */
-  server.registerCommand('init_multi_page', async (params) => {
+  commandHandlers.init_multi_page = async (params) => {
     try {
       if (multiPageManager) {
         return { success: false, error: 'Multi-page manager already initialized' };
@@ -64,7 +66,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Create a new page
@@ -73,7 +75,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { partition?: string, metadata?: {}, webPreferences?: {} }
    * Response: { pageId: string }
    */
-  server.registerCommand('create_page', async (params) => {
+  commandHandlers.create_page = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized. Call init_multi_page first.');
@@ -92,7 +94,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Navigate page to URL
@@ -101,7 +103,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { pageId: string, url: string, options?: {} }
    * Response: { pageId: string, url: string }
    */
-  server.registerCommand('navigate_page', async (params) => {
+  commandHandlers.navigate_page = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -124,7 +126,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Set active page
@@ -133,7 +135,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { pageId: string }
    * Response: { pageId: string }
    */
-  server.registerCommand('set_active_page', async (params) => {
+  commandHandlers.set_active_page = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -152,7 +154,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get page info
@@ -161,7 +163,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { pageId: string }
    * Response: { page: {} }
    */
-  server.registerCommand('get_page_info', async (params) => {
+  commandHandlers.get_page_info = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -184,7 +186,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * List all pages
@@ -192,7 +194,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Command: list_pages
    * Response: { pages: [], count: number }
    */
-  server.registerCommand('list_pages', async (params) => {
+  commandHandlers.list_pages = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -208,7 +210,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Destroy page
@@ -217,7 +219,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { pageId: string }
    * Response: { success: true }
    */
-  server.registerCommand('destroy_page', async (params) => {
+  commandHandlers.destroy_page = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -233,7 +235,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Execute JavaScript on page
@@ -242,7 +244,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { pageId: string, code: string }
    * Response: { result: any }
    */
-  server.registerCommand('execute_on_page', async (params) => {
+  commandHandlers.execute_on_page = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -261,7 +263,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get page screenshot
@@ -270,7 +272,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { pageId: string, options?: {} }
    * Response: { screenshot: string (base64) }
    */
-  server.registerCommand('get_page_screenshot', async (params) => {
+  commandHandlers.get_page_screenshot = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -291,7 +293,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Close all pages except specified ones
@@ -300,7 +302,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { keepPageIds: string[] }
    * Response: { closed: number }
    */
-  server.registerCommand('close_other_pages', async (params) => {
+  commandHandlers.close_other_pages = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -315,7 +317,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Close all pages
@@ -323,7 +325,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Command: close_all_pages
    * Response: { closed: number }
    */
-  server.registerCommand('close_all_pages', async (params) => {
+  commandHandlers.close_all_pages = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -338,7 +340,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get multi-page statistics
@@ -346,7 +348,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Command: get_multi_page_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_multi_page_stats', async (params) => {
+  commandHandlers.get_multi_page_stats = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -361,7 +363,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Update multi-page configuration
@@ -370,7 +372,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { config: {} }
    * Response: { config: {} }
    */
-  server.registerCommand('update_multi_page_config', async (params) => {
+  commandHandlers.update_multi_page_config = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -389,7 +391,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Navigate multiple pages concurrently
@@ -398,7 +400,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Params: { navigations: [{ pageId: string, url: string, options?: {} }] }
    * Response: { results: [] }
    */
-  server.registerCommand('navigate_pages_batch', async (params) => {
+  commandHandlers.navigate_pages_batch = async (params) => {
     try {
       if (!multiPageManager) {
         throw new Error('Multi-page manager not initialized');
@@ -426,7 +428,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Shutdown multi-page manager
@@ -434,7 +436,7 @@ function registerMultiPageCommands(server, mainWindow) {
    * Command: shutdown_multi_page
    * Response: { success: true }
    */
-  server.registerCommand('shutdown_multi_page', async (params) => {
+  commandHandlers.shutdown_multi_page = async (params) => {
     try {
       if (!multiPageManager) {
         return { success: true, message: 'Multi-page manager not initialized' };
@@ -447,7 +449,7 @@ function registerMultiPageCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 }
 
 module.exports = { registerMultiPageCommands };

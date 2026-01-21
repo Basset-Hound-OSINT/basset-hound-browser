@@ -361,3 +361,78 @@ Digital Forensics 2026 and Beyond
 Digital Evidence Chain of Custody
 Chain of Custody in Digital Forensics
 What would you like to do? Start integration testing, or implement Phase 29 (Evidence Chain of Custody) first?
+
+---
+
+## Deployment Testing Session - January 21, 2026
+
+### Summary
+
+Conducted deployment testing using Docker to validate the browser can be built, deployed, and accessed via WebSocket API. Multiple issues were identified and fixed during this session.
+
+### Issues Fixed
+
+1. **Dockerfile: npm install --production** - Skipped electron devDependency
+2. **Dockerfile: PATH not set** - electron binary not found
+3. **main.js: async createWindow()** - Missing async keyword
+4. **network-analysis/manager.js** - Session accessed before app ready
+5. **.dockerignore** - Excluded source code directories
+6. **main.js: proxyChainManager** - Reference to migrated module
+7. **Dockerfile: Missing directories** - Permission denied errors
+8. **websocket/commands/*.js** - Wrong command registration pattern (7 files fixed)
+9. **Dockerfile: Health check** - Expected HTTP but got WebSocket
+
+### Verification Results
+
+| Test | Result |
+|------|--------|
+| Docker build | ✅ PASS |
+| Container startup | ✅ PASS |
+| Xvfb display | ✅ PASS |
+| Electron headless | ✅ PASS |
+| WebSocket server | ✅ PASS (port 8765) |
+| navigate command | ✅ PASS |
+| get_cookies command | ✅ PASS |
+| get_page_state command | ⚠️ Needs active webview |
+| screenshot command | ⚠️ Needs active webview |
+
+### Next Steps
+
+1. **Integration Testing** - Connect palletai agents via MCP
+2. **Headless Fixes** - Configure BrowserWindow for full headless support
+3. **Performance Testing** - Validate concurrent page management
+4. **Bot Detection Testing** - Verify evasion on real platforms
+
+### Documentation Created
+
+- `docs/findings/DEPLOYMENT-FIXES-2026-01-21.md` - Detailed fix documentation
+- `docs/integration_readiness.md` - Integration readiness status
+
+### Docker Commands for Testing
+
+```bash
+# Build
+docker build -t basset-hound-browser:latest .
+
+# Run
+docker run -d --name basset-hound-browser \
+  -p 8765:8765 \
+  -e DISPLAY=:99 \
+  -e ELECTRON_DISABLE_SANDBOX=1 \
+  --cap-drop ALL \
+  --cap-add SYS_ADMIN \
+  basset-hound-browser:latest
+
+# Test WebSocket
+docker exec -i basset-hound-browser node -e "
+const WebSocket = require('/app/node_modules/ws');
+const ws = new WebSocket('ws://localhost:8765');
+ws.on('open', () => {
+  ws.send(JSON.stringify({id: 1, command: 'navigate', url: 'https://example.com'}));
+});
+ws.on('message', (data) => {
+  console.log(JSON.parse(data));
+  ws.close();
+});
+"
+```

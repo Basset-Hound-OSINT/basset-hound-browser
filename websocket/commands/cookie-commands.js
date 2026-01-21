@@ -13,6 +13,8 @@ let cookieManager = null;
  * Register cookie management WebSocket commands
  */
 function registerCookieCommands(server, mainWindow) {
+  const commandHandlers = server.commandHandlers || server;
+
   // Initialize manager
   if (!cookieManager) {
     cookieManager = new CookieManager(mainWindow.webContents);
@@ -25,7 +27,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { name: string, isolated?: boolean, syncEnabled?: boolean, metadata?: {} }
    * Response: { jar: {} }
    */
-  server.registerCommand('create_cookie_jar', async (params) => {
+  commandHandlers.create_cookie_jar = async (params) => {
     try {
       if (!params.name) {
         throw new Error('name is required');
@@ -44,7 +46,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Delete cookie jar
@@ -53,7 +55,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { name: string }
    * Response: { success: true }
    */
-  server.registerCommand('delete_cookie_jar', async (params) => {
+  commandHandlers.delete_cookie_jar = async (params) => {
     try {
       if (!params.name) {
         throw new Error('name is required');
@@ -65,7 +67,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * List cookie jars
@@ -73,7 +75,7 @@ function registerCookieCommands(server, mainWindow) {
    * Command: list_cookie_jars
    * Response: { jars: [] }
    */
-  server.registerCommand('list_cookie_jars', async (params) => {
+  commandHandlers.list_cookie_jars = async (params) => {
     try {
       const jars = cookieManager.listJars();
 
@@ -85,7 +87,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Switch cookie jar
@@ -94,7 +96,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { name: string, saveCurrent?: boolean, loadTarget?: boolean }
    * Response: { previousJar: string, currentJar: string, cookiesLoaded: number }
    */
-  server.registerCommand('switch_cookie_jar', async (params) => {
+  commandHandlers.switch_cookie_jar = async (params) => {
     try {
       if (!params.name) {
         throw new Error('name is required');
@@ -112,7 +114,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Save cookies to jar
@@ -121,7 +123,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { jar: string }
    * Response: { jarName: string, cookieCount: number }
    */
-  server.registerCommand('save_to_cookie_jar', async (params) => {
+  commandHandlers.save_to_cookie_jar = async (params) => {
     try {
       if (!params.jar) {
         throw new Error('jar is required');
@@ -136,7 +138,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Load cookies from jar
@@ -145,7 +147,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { jar: string }
    * Response: { jarName: string, loaded: number, failed: number }
    */
-  server.registerCommand('load_from_cookie_jar', async (params) => {
+  commandHandlers.load_from_cookie_jar = async (params) => {
     try {
       if (!params.jar) {
         throw new Error('jar is required');
@@ -160,7 +162,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Sync cookie jars
@@ -169,7 +171,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { source: string, target: string, mode?: 'merge'|'replace'|'update', filter?: {} }
    * Response: { added: number, updated: number, skipped: number }
    */
-  server.registerCommand('sync_cookie_jars', async (params) => {
+  commandHandlers.sync_cookie_jars = async (params) => {
     try {
       if (!params.source || !params.target) {
         throw new Error('source and target are required');
@@ -204,7 +206,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Analyze cookie security
@@ -213,7 +215,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { name?: string, domain?: string }
    * Response: { analysis: {} }
    */
-  server.registerCommand('analyze_cookie_security', async (params) => {
+  commandHandlers.analyze_cookie_security = async (params) => {
     try {
       const cookies = await mainWindow.webContents.session.cookies.get({
         name: params.name,
@@ -233,7 +235,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Analyze all cookies
@@ -242,7 +244,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { includeDetails?: boolean }
    * Response: { summary: {}, analyses: [], overallScore: number }
    */
-  server.registerCommand('analyze_all_cookies', async (params) => {
+  commandHandlers.analyze_all_cookies = async (params) => {
     try {
       const analysis = await cookieManager.analyzeAllCookies({
         includeDetails: params.includeDetails
@@ -255,7 +257,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Export cookies
@@ -264,7 +266,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { format?: 'json'|'netscape'|'csv'|'curl', jar?: string, includeMetadata?: boolean }
    * Response: { data: string|object, format: string }
    */
-  server.registerCommand('export_cookies', async (params) => {
+  commandHandlers.export_cookies = async (params) => {
     try {
       const data = await cookieManager.exportCookies({
         format: params.format,
@@ -282,7 +284,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Import cookies
@@ -291,7 +293,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { data: string|object, format?: 'json'|'netscape'|'csv', jar?: string, mode?: 'merge'|'replace' }
    * Response: { imported: number, failed?: number }
    */
-  server.registerCommand('import_cookies', async (params) => {
+  commandHandlers.import_cookies = async (params) => {
     try {
       if (!params.data) {
         throw new Error('data is required');
@@ -310,7 +312,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get cookie history
@@ -319,7 +321,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { action?: string, domain?: string, jar?: string, limit?: number }
    * Response: { history: [], count: number }
    */
-  server.registerCommand('get_cookie_history', async (params) => {
+  commandHandlers.get_cookie_history = async (params) => {
     try {
       const history = cookieManager.getHistory({
         action: params.action,
@@ -336,7 +338,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Clear all cookies
@@ -344,7 +346,7 @@ function registerCookieCommands(server, mainWindow) {
    * Command: clear_all_cookies
    * Response: { cleared: number }
    */
-  server.registerCommand('clear_all_cookies', async (params) => {
+  commandHandlers.clear_all_cookies = async (params) => {
     try {
       const result = await cookieManager.clearAllCookies();
 
@@ -355,7 +357,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get cookie manager statistics
@@ -363,7 +365,7 @@ function registerCookieCommands(server, mainWindow) {
    * Command: get_cookie_manager_stats
    * Response: { stats: {} }
    */
-  server.registerCommand('get_cookie_manager_stats', async (params) => {
+  commandHandlers.get_cookie_manager_stats = async (params) => {
     try {
       const stats = cookieManager.getStatistics();
 
@@ -374,7 +376,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Find insecure cookies
@@ -382,7 +384,7 @@ function registerCookieCommands(server, mainWindow) {
    * Command: find_insecure_cookies
    * Response: { insecure: [] }
    */
-  server.registerCommand('find_insecure_cookies', async (params) => {
+  commandHandlers.find_insecure_cookies = async (params) => {
     try {
       const analysis = await cookieManager.analyzeAllCookies({ includeDetails: true });
       const insecure = analysis.analyses.filter(a =>
@@ -398,7 +400,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 
   /**
    * Get cookies by classification
@@ -407,7 +409,7 @@ function registerCookieCommands(server, mainWindow) {
    * Params: { classification: string }
    * Response: { cookies: [] }
    */
-  server.registerCommand('get_cookies_by_classification', async (params) => {
+  commandHandlers.get_cookies_by_classification = async (params) => {
     try {
       if (!params.classification) {
         throw new Error('classification is required');
@@ -427,7 +429,7 @@ function registerCookieCommands(server, mainWindow) {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  });
+  };
 }
 
 module.exports = { registerCookieCommands };
