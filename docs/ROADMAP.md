@@ -6,6 +6,20 @@
 
 ## Recent Updates
 
+### January 21, 2026 - Tor Master Switch & Scope Cleanup ✅
+- ✅ **Tor Master Switch:** Implemented ON/OFF/AUTO modes for intelligent Tor routing
+  - **ON:** Always route through Tor (requires TOR_MODE=1 for .onion)
+  - **OFF:** Never route through Tor (direct connection)
+  - **AUTO:** Automatically detect .onion URLs and switch appropriately
+  - Commands: `set_tor_mode`, `get_tor_mode`
+- ✅ **Evidence System Cleanup:** Removed Phase 29 investigation management (15 commands)
+  - Removed: `evidence-chain-commands.js`, `evidence-manager.js`
+  - Kept: Basic evidence capture (`evidence-collector.js`, `evidence-commands.js`)
+- ✅ **MCP Server Verified:** 164 tools remaining, all in-scope
+- ✅ **.onion Detection:** Helpful error when navigating to .onion without TOR_MODE
+- ✅ **Performance Analysis:** 15 lazy-loading opportunities identified (520-890ms potential savings)
+- 📄 See [findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md](findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md)
+
 ### January 21, 2026 - Deployment Testing Complete ✅
 - ✅ Docker build and deployment validated
 - ✅ 9 deployment issues identified and fixed
@@ -563,6 +577,47 @@ Available commands:
 | New identity | ✅ Done | Request new Tor circuit for IP rotation |
 | Dynamic Tor toggle | ✅ Done | Enable/disable routing at runtime |
 | Exit node config | ✅ Done | Get exit info, set preferred countries |
+
+#### Tor Master Switch
+
+The browser provides a **master switch** for Tor networking with three modes:
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **OFF** | Never route through Tor | Normal browsing, maximum speed |
+| **ON** | Always route through Tor | Maximum anonymity, manual control |
+| **AUTO** | Intelligently switch based on .onion URLs | Best of both worlds |
+
+**Commands:**
+| Command | Description |
+|---------|-------------|
+| `set_tor_mode` | Set master switch mode: `off`, `on`, or `auto` |
+| `get_tor_mode` | Get current master switch mode and status |
+
+**AUTO Mode Behavior:**
+- When navigating to `.onion` domains, automatically enables Tor routing
+- When navigating to clearnet (non-.onion) domains, automatically disables Tor routing
+- Useful for investigations that might encounter sites with Tor-facing redirects
+- Operators/agents can always override by switching to ON or OFF mode
+
+**Example:**
+```json
+// Set to AUTO mode
+{"command": "set_tor_mode", "mode": "auto"}
+// Response: {"success": true, "mode": "auto", "routing": {"enabled": false}}
+
+// Navigate to .onion - routing auto-enables
+{"command": "navigate", "url": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/"}
+// Tor routing automatically enabled
+
+// Navigate to clearnet - routing auto-disables
+{"command": "navigate", "url": "https://example.com"}
+// Tor routing automatically disabled
+```
+
+> **Note:** For full `.onion` support, start with `TOR_MODE=1`. AUTO mode works best when TOR_MODE is enabled at startup.
+
+> **Architectural Note:** The Tor Master Switch is the **ONLY** user-facing network routing control in this browser. Generic proxy management (pools, rotation, health checks) has been migrated to `basset-hound-networking`. This browser handles Tor because it directly enables network forensics capabilities (.onion access, anonymous investigations).
 
 #### Dynamic Tor Routing Commands
 
@@ -1317,25 +1372,101 @@ See [ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md) for detailed history of Phase
 #### Priority 1: Integration Testing with palletai 🔜
 The browser is ready for integration testing with AI agents.
 - Test MCP server connection with palletai agents
-- Validate evidence chain of custody workflow
+- Test Tor Master Switch via MCP (`browser_set_tor_mode`, `browser_get_tor_mode`)
+- Validate basic evidence capture workflow
 - Verify multi-page concurrent browsing for parallel investigations
 
-#### Priority 2: Chain of Custody Documentation 📋
+#### Priority 2: Bot Detection Validation 🧪
+Test evasion capabilities on real platforms (from palletai):
+- Cloudflare, DataDome, PerimeterX
+- Validate fingerprint consistency across sessions
+- Test behavioral AI mouse/typing patterns
+
+---
+
+### Session Summary (January 21, 2026)
+
+**Completed This Session:**
+- ✅ Evidence System Cleanup - Removed 15 out-of-scope Phase 29 commands
+- ✅ MCP Server Verified - 164 tools, all in-scope
+- ✅ Tor Master Switch - Implemented ON/OFF/AUTO modes
+- ✅ .onion Detection - Helpful errors when TOR_MODE not enabled
+- ✅ Documentation - Updated SCOPE.md, ROADMAP.md with architectural boundaries
+
+**Ready for Integration Testing:**
+- WebSocket API (164 commands)
+- MCP Server (166 tools including new Tor Master Switch)
+- Tor integration with master switch
+- Basic evidence capture
+- Bot detection evasion
+
+---
+
+### Future Development Suggestions (Deferred)
+
+The following items were analyzed but deferred. They can be addressed after integration testing or as needed.
+
+#### Test Coverage Gaps
+| Test File Needed | Priority | Functions to Cover |
+|------------------|----------|-------------------|
+| `tests/unit/tor-master-switch.test.js` | HIGH | `setTorMasterMode()`, `handleAutoModeNavigation()`, `isOnionUrl()` |
+| `tests/unit/error-recovery.test.js` | MEDIUM | `isRetryableError()`, `calculateRetryDelay()`, circuit breaker |
+| `tests/unit/rate-limiting.test.js` | MEDIUM | `checkRateLimit()`, burst allowance, window reset |
+
+#### Memory Leak Fix (Real Issue)
+| Issue | Location | Impact |
+|-------|----------|--------|
+| Rate limit data cleanup | `websocket/server.js:313` | Unbounded growth in long sessions |
+
+**Fix:** Add periodic cleanup to heartbeat loop - remove rate limit entries older than the window.
+
+#### Performance Optimizations (SKIPPED)
+> **Decision:** Lazy loading optimizations were analyzed but skipped. Network I/O is the real bottleneck (100ms-5000ms per operation), not internal processing (1-50ms). Optimizing startup by 500ms provides diminishing returns when actual usage is network-bound.
+
+| Optimization | Savings | Status |
+|--------------|---------|--------|
+| Lazy load managers | 370-570ms | ⏸️ Skipped - network is bottleneck |
+| Conditional Tor loading | 50-100ms | ⏸️ Skipped - network is bottleneck |
+| Plugin system lazy load | 150-200ms | ⏸️ Skipped - network is bottleneck |
+
+#### Documentation Gaps (Low Priority)
+| Doc Needed | Content |
+|------------|---------|
+| `docs/features/rate-limiting.md` | Configuration, defaults, recovery behavior |
+| `docs/features/memory-management.md` | Thresholds, cleanup callbacks, GC behavior |
+
+#### Code Cleanup (Low Priority)
+- Replace `console.*` with `this.logger` in websocket/server.js (~10 occurrences)
+- Remove commented migration code in main.js:8-9
+
+---
+
+### What's Next
+
+1. **Integration Testing** - Test from palletai with real workflows
+2. **Bot Detection Validation** - Run against real anti-bot systems
+3. **Address Issues Found** - Fix any bugs discovered during integration
+4. **Memory Leak Fix** - If long-running sessions show problems
+
+---
+
+### Legacy Priorities (Reference Only)
+
+<details>
+<summary>Previous priorities before January 21 cleanup</summary>
+
+#### Chain of Custody Documentation 📋
 Clarify scope of chain of custody feature for external systems:
 - Everything the browser does should be recorded for forensic purposes
 - External systems (like palletai) consume this audit trail
 - Ensure all WebSocket commands log to the evidence chain when active
 
-#### Priority 3: Bot Detection Validation 🧪
-Test evasion capabilities on real platforms:
-- Cloudflare, DataDome, PerimeterX
-- Validate fingerprint consistency across sessions
-- Test behavioral AI mouse/typing patterns
-
-#### Priority 4: Performance Optimization ⚡
+#### Performance Optimization ⚡
 - Test concurrent page management under load
 - Memory usage optimization for long-running sessions
 - Connection pooling for high-throughput scenarios
+
+</details>
 
 ### Completed Features (All Phases)
 
@@ -1384,3 +1515,4 @@ Test evasion capabilities on real platforms:
 *Last updated: January 21, 2026*
 *Version: 11.0.0*
 *Status: Ready for Integration Testing*
+*Session: Scope cleanup, Tor Master Switch, development analysis complete*

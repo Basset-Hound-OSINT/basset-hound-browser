@@ -69,6 +69,11 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - **Tor new identity:** Request new circuit for IP rotation
 - **Tor status/control:** Monitor bootstrap progress, get exit node info
 - **Tor configuration:** Exit country preferences, circuit management
+- **Tor Master Switch:** Intelligent routing control with three modes
+  - `set_tor_mode` / `get_tor_mode` - Master switch control
+  - **OFF mode:** Never route through Tor (direct connection)
+  - **ON mode:** Always route through Tor (maximum anonymity)
+  - **AUTO mode:** Automatically switch based on .onion URLs
 - **Tor on/off toggle:** Dynamically enable/disable Tor routing during automation
   - `tor_enable` - Route traffic through Tor
   - `tor_disable` - Return to direct connection
@@ -93,6 +98,22 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - **No special permissions needed:** Browser connects to Tor SOCKS like any client
 
 > **Note:** Advanced networking infrastructure (proxy pools, rotation strategies, bridge configuration, exit node selection) has been moved to a separate project: **Basset Hound Networking**. This browser accepts a single proxy/Tor configuration; external tools manage complex routing.
+
+#### Summary: Network Control Architecture
+
+| Feature | In Scope? | Reason |
+|---------|-----------|--------|
+| Tor Master Switch (OFF/ON/AUTO) | ✅ YES | Network forensics - intelligent .onion handling |
+| Tor daemon control (start/stop) | ✅ YES | Network forensics - required for .onion access |
+| Tor identity/circuit management | ✅ YES | Network forensics - IP rotation for investigations |
+| Exit node configuration | ✅ YES | Network forensics - geographic targeting |
+| .onion site access | ✅ YES | Network forensics - dark web investigations |
+| Generic HTTP/HTTPS proxies | ❌ NO | Out of scope - use basset-hound-networking |
+| Proxy pool management | ❌ NO | Out of scope - use basset-hound-networking |
+| Proxy rotation strategies | ❌ NO | Out of scope - use basset-hound-networking |
+| Proxy health checking | ❌ NO | Out of scope - use basset-hound-networking |
+
+**The Tor Master Switch is the ONLY user-facing network routing control in this browser.** This matches normal browser behavior - browsers have Tor support (like Tor Browser) but don't have generic proxy pool management built in.
 
 ### 6. Network Monitoring & Forensics (Browser-Level)
 - **DNS query capture:** Record all DNS lookups made by browser

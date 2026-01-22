@@ -38,6 +38,16 @@ const PROXY_MODES = {
 };
 
 /**
+ * Tor Master Switch modes
+ * Controls how Tor routing is managed across the browser
+ */
+const TOR_MASTER_MODES = {
+  OFF: 'off',    // Never route through Tor
+  ON: 'on',      // Always route through Tor
+  AUTO: 'auto'   // Automatically switch based on .onion URLs
+};
+
+/**
  * Get TorManager instance (lazy load)
  */
 function getTorManager() {
@@ -92,6 +102,12 @@ class ProxyManager {
       socksHost: '127.0.0.1',
       socksPort: 9050
     };
+
+    // Tor Master Switch mode: 'off', 'on', or 'auto'
+    // - OFF: Never route through Tor
+    // - ON: Always route through Tor
+    // - AUTO: Automatically detect .onion URLs and switch routing
+    this.torMasterMode = TOR_MASTER_MODES.OFF;
   }
 
   /**
@@ -971,6 +987,179 @@ class ProxyManager {
   }
 
   // ==========================================
+  // Tor Master Switch Methods
+  // ==========================================
+  // The master switch provides three modes for Tor networking:
+  // - OFF: Never route through Tor (direct connection)
+  // - ON: Always route through Tor (maximum anonymity)
+  // - AUTO: Intelligently switch based on .onion URL detection
+  //
+  // AUTO mode is useful for investigations that might encounter
+  // websites with Tor-facing redirects. The system will automatically
+  // enable Tor routing when navigating to .onion domains and disable
+  // it for clearnet sites.
+  // ==========================================
+
+  /**
+   * Set Tor master switch mode
+   * @param {string} mode - 'off', 'on', or 'auto'
+   * @param {Object} options - Configuration options
+   * @returns {Promise<Object>} - Result of the operation
+   */
+  async setTorMasterMode(mode, options = {}) {
+    try {
+      const normalizedMode = mode.toLowerCase();
+
+      if (!Object.values(TOR_MASTER_MODES).includes(normalizedMode)) {
+        return {
+          success: false,
+          error: `Invalid mode. Must be one of: ${Object.values(TOR_MASTER_MODES).join(', ')}`
+        };
+      }
+
+      const previousMode = this.torMasterMode;
+      this.torMasterMode = normalizedMode;
+
+      // Apply routing based on mode
+      let routingResult;
+      if (normalizedMode === TOR_MASTER_MODES.ON) {
+        // ON mode: Enable Tor routing immediately
+        routingResult = await this.enableTorRouting(options);
+      } else if (normalizedMode === TOR_MASTER_MODES.OFF) {
+        // OFF mode: Disable Tor routing immediately
+        routingResult = await this.disableTorRouting();
+      } else {
+        // AUTO mode: Keep current routing state, will switch on navigation
+        routingResult = {
+          success: true,
+          message: 'AUTO mode enabled. Routing will switch based on URL type.',
+          routing: {
+            enabled: this.torRoutingEnabled
+          }
+        };
+      }
+
+      console.log(`[ProxyManager] Tor master mode changed: ${previousMode} -> ${normalizedMode}`);
+
+      return {
+        success: true,
+        mode: normalizedMode,
+        previousMode,
+        routing: routingResult.routing || { enabled: this.torRoutingEnabled },
+        note: normalizedMode === TOR_MASTER_MODES.AUTO
+          ? 'Routing will automatically switch when navigating to .onion URLs. For full .onion support, ensure TOR_MODE=1 at startup.'
+          : undefined
+      };
+    } catch (error) {
+      console.error('[ProxyManager] Error setting Tor master mode:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Get current Tor master switch status
+   * @returns {Promise<Object>} - Current mode and status
+   */
+  async getTorMasterMode() {
+    const routingStatus = await this.getTorRoutingStatus();
+
+    return {
+      success: true,
+      mode: this.torMasterMode,
+      description: this.getModeDescription(this.torMasterMode),
+      routing: routingStatus.routing,
+      daemon: routingStatus.daemon,
+      onionSupport: routingStatus.onionSupport
+    };
+  }
+
+  /**
+   * Get description for a Tor master mode
+   * @param {string} mode - The mode
+   * @returns {string} - Human-readable description
+   */
+  getModeDescription(mode) {
+    switch (mode) {
+      case TOR_MASTER_MODES.OFF:
+        return 'Tor routing is disabled. All traffic uses direct connection.';
+      case TOR_MASTER_MODES.ON:
+        return 'Tor routing is always enabled. All traffic routes through Tor.';
+      case TOR_MASTER_MODES.AUTO:
+        return 'Tor routing switches automatically based on URL type (.onion = Tor, clearnet = direct).';
+      default:
+        return 'Unknown mode';
+    }
+  }
+
+  /**
+   * Handle navigation in AUTO mode - called before navigation
+   * @param {string} url - The URL being navigated to
+   * @returns {Promise<Object>} - Result with any routing changes made
+   */
+  async handleAutoModeNavigation(url) {
+    if (this.torMasterMode !== TOR_MASTER_MODES.AUTO) {
+      return {
+        handled: false,
+        reason: `Master mode is ${this.torMasterMode}, not auto`
+      };
+    }
+
+    const isOnion = this.isOnionUrl(url);
+    const currentlyEnabled = this.torRoutingEnabled;
+
+    // Check if we need to switch
+    if (isOnion && !currentlyEnabled) {
+      // Navigating to .onion but Tor routing is off - enable it
+      console.log(`[ProxyManager] AUTO mode: Enabling Tor routing for .onion URL`);
+      const result = await this.enableTorRouting();
+      return {
+        handled: true,
+        action: 'enabled_tor',
+        url,
+        isOnion: true,
+        result
+      };
+    } else if (!isOnion && currentlyEnabled) {
+      // Navigating to clearnet but Tor routing is on - disable it
+      console.log(`[ProxyManager] AUTO mode: Disabling Tor routing for clearnet URL`);
+      const result = await this.disableTorRouting();
+      return {
+        handled: true,
+        action: 'disabled_tor',
+        url,
+        isOnion: false,
+        result
+      };
+    }
+
+    return {
+      handled: false,
+      reason: isOnion ? 'Already routing through Tor' : 'Already using direct connection',
+      url,
+      isOnion,
+      torRoutingEnabled: currentlyEnabled
+    };
+  }
+
+  /**
+   * Check if a URL is an .onion domain
+   * @param {string} url - URL to check
+   * @returns {boolean} - True if .onion domain
+   */
+  isOnionUrl(url) {
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname.endsWith('.onion');
+    } catch {
+      // If URL parsing fails, check for .onion substring
+      return url.includes('.onion');
+    }
+  }
+
+  // ==========================================
   // Proxy Chain Integration Methods
   // ==========================================
 
@@ -1163,6 +1352,7 @@ module.exports = {
   ProxyManager,
   PROXY_TYPES,
   PROXY_MODES,
+  TOR_MASTER_MODES,
   getTorManager,
   getProxyChainManager
 };

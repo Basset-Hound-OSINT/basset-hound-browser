@@ -976,6 +976,47 @@ if mcp:
         return await browser.send_command("tor_set_exit_country", country_code=country_code)
 
 
+    @mcp.tool
+    async def browser_set_tor_mode(mode: str) -> Dict[str, Any]:
+        """
+        Set the Tor master switch mode for intelligent network routing.
+
+        The master switch controls how Tor routing is managed:
+        - 'off': Never route through Tor (direct connection)
+        - 'on': Always route through Tor (maximum anonymity)
+        - 'auto': Automatically switch based on URL type (.onion = Tor, clearnet = direct)
+
+        AUTO mode is useful for investigations that might encounter sites with
+        Tor-facing redirects. The system will automatically enable Tor routing
+        when navigating to .onion domains.
+
+        Args:
+            mode: The mode to set ('off', 'on', or 'auto')
+
+        Returns:
+            Mode change result with current routing status
+        """
+        browser = get_browser()
+        return await browser.send_command("set_tor_mode", mode=mode)
+
+
+    @mcp.tool
+    async def browser_get_tor_mode() -> Dict[str, Any]:
+        """
+        Get the current Tor master switch mode and status.
+
+        Returns the current mode ('off', 'on', or 'auto') along with:
+        - Current routing status (enabled/disabled)
+        - Tor daemon status (reachable/unreachable)
+        - .onion support availability
+
+        Returns:
+            Current mode and detailed status information
+        """
+        browser = get_browser()
+        return await browser.send_command("get_tor_mode")
+
+
     # ==================== Image Analysis (Phase 14) ====================
 
     @mcp.tool
@@ -3495,398 +3536,6 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("list_monitored_pages")
 
-
-    # ==========================================
-    # Phase 29: Evidence Chain of Custody Tools
-    # ==========================================
-
-    @mcp.tool
-    async def browser_init_evidence_chain(
-        base_path: Optional[str] = None,
-        auto_verify: bool = True,
-        auto_seal: bool = False,
-        timestamp_server: Optional[str] = None,
-        enable_blockchain: bool = False
-    ) -> Dict[str, Any]:
-        """
-        Initialize forensic evidence chain of custody system.
-
-        Initializes the evidence manager with RFC 3161 timestamping, SHA-256
-        hashing, and SWGDE-compliant reporting for forensic investigations.
-
-        Args:
-            base_path: Base directory for evidence vault
-            auto_verify: Automatically verify evidence integrity
-            auto_seal: Automatically seal collected evidence
-            timestamp_server: RFC 3161 timestamp server URL
-            enable_blockchain: Enable blockchain anchoring
-
-        Returns:
-            Initialization status and configuration
-        """
-        browser = get_browser()
-        params = {
-            "autoVerify": auto_verify,
-            "autoSeal": auto_seal,
-            "enableBlockchain": enable_blockchain
-        }
-        if base_path:
-            params["basePath"] = base_path
-        if timestamp_server:
-            params["timestampServer"] = timestamp_server
-
-        return await browser.send_command("init_evidence_chain", **params)
-
-
-    @mcp.tool
-    async def browser_create_investigation(
-        name: str,
-        description: Optional[str] = None,
-        investigator: Optional[str] = None,
-        case_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """
-        Create a new forensic investigation.
-
-        Initializes a new investigation with metadata for organizing and
-        tracking evidence collection throughout a case.
-
-        Args:
-            name: Investigation name
-            description: Detailed description of the investigation
-            investigator: Name of the investigator
-            case_id: Associated case identifier
-            metadata: Additional investigation metadata
-
-        Returns:
-            Investigation details with unique ID
-        """
-        browser = get_browser()
-        params = {"name": name}
-        if description:
-            params["description"] = description
-        if investigator:
-            params["investigator"] = investigator
-        if case_id:
-            params["caseId"] = case_id
-        if metadata:
-            params["metadata"] = metadata
-
-        return await browser.send_command("create_investigation", **params)
-
-
-    @mcp.tool
-    async def browser_collect_evidence_chain(
-        evidence_type: str,
-        data: Any,
-        metadata: Optional[Dict[str, Any]] = None,
-        actor: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        case_id: Optional[str] = None,
-        investigation_id: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Collect evidence with full chain of custody.
-
-        Collects digital evidence with cryptographic hashing, timestamping,
-        and complete audit trail. Evidence types include screenshots,
-        HTML source, network logs, cookies, storage, and more.
-
-        Args:
-            evidence_type: Type of evidence (screenshot, html_source, network_log, etc.)
-            data: Evidence data to collect
-            metadata: Additional metadata about the evidence
-            actor: Person/system collecting the evidence
-            tags: Tags for categorization
-            case_id: Associated case ID
-            investigation_id: Associated investigation ID
-
-        Returns:
-            Collected evidence with hash and custody chain
-        """
-        browser = get_browser()
-        params = {
-            "type": evidence_type,
-            "data": data
-        }
-        if metadata:
-            params["metadata"] = metadata
-        if actor:
-            params["actor"] = actor
-        if tags:
-            params["tags"] = tags
-        if case_id:
-            params["caseId"] = case_id
-        if investigation_id:
-            params["investigationId"] = investigation_id
-
-        return await browser.send_command("collect_evidence_chain", **params)
-
-
-    @mcp.tool
-    async def browser_verify_evidence_chain(evidence_id: str) -> Dict[str, Any]:
-        """
-        Verify evidence integrity using cryptographic hash.
-
-        Performs SHA-256 hash verification to ensure evidence has not
-        been tampered with since collection. Updates custody chain.
-
-        Args:
-            evidence_id: Evidence ID to verify
-
-        Returns:
-            Verification result and updated evidence
-        """
-        browser = get_browser()
-        return await browser.send_command("verify_evidence_chain", evidenceId=evidence_id)
-
-
-    @mcp.tool
-    async def browser_seal_evidence_chain(
-        evidence_id: str,
-        actor: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Seal evidence to make it immutable.
-
-        Seals evidence preventing any further modifications. This is
-        typically done before presenting evidence in court or formal
-        proceedings. Records seal event in custody chain.
-
-        Args:
-            evidence_id: Evidence ID to seal
-            actor: Person/system sealing the evidence
-
-        Returns:
-            Sealed evidence with seal timestamp
-        """
-        browser = get_browser()
-        params = {"evidenceId": evidence_id}
-        if actor:
-            params["actor"] = actor
-
-        return await browser.send_command("seal_evidence_chain", **params)
-
-
-    @mcp.tool
-    async def browser_create_evidence_package(
-        name: str,
-        description: Optional[str] = None,
-        case_id: Optional[str] = None,
-        investigation_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        actor: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Create an evidence package for grouping related evidence.
-
-        Creates a package to organize and bundle related evidence items
-        together for a specific investigation or case.
-
-        Args:
-            name: Package name
-            description: Package description
-            case_id: Associated case ID
-            investigation_id: Associated investigation ID
-            metadata: Additional package metadata
-            actor: Person/system creating the package
-
-        Returns:
-            Package details with unique ID
-        """
-        browser = get_browser()
-        params = {"name": name}
-        if description:
-            params["description"] = description
-        if case_id:
-            params["caseId"] = case_id
-        if investigation_id:
-            params["investigationId"] = investigation_id
-        if metadata:
-            params["metadata"] = metadata
-        if actor:
-            params["actor"] = actor
-
-        return await browser.send_command("create_evidence_package", **params)
-
-
-    @mcp.tool
-    async def browser_add_to_evidence_package(
-        package_id: str,
-        evidence_id: str
-    ) -> Dict[str, Any]:
-        """
-        Add evidence item to an existing package.
-
-        Adds an evidence item to a package. Package must not be sealed.
-        Records the addition in the audit trail.
-
-        Args:
-            package_id: Package ID
-            evidence_id: Evidence ID to add
-
-        Returns:
-            Updated package with new item
-        """
-        browser = get_browser()
-        return await browser.send_command(
-            "add_to_evidence_package",
-            packageId=package_id,
-            evidenceId=evidence_id
-        )
-
-
-    @mcp.tool
-    async def browser_seal_evidence_package(
-        package_id: str,
-        actor: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Seal an evidence package to make it immutable.
-
-        Seals the package and all contained evidence items. No further
-        evidence can be added after sealing. Calculates package hash.
-
-        Args:
-            package_id: Package ID to seal
-            actor: Person/system sealing the package
-
-        Returns:
-            Sealed package with package hash
-        """
-        browser = get_browser()
-        params = {"packageId": package_id}
-        if actor:
-            params["actor"] = actor
-
-        return await browser.send_command("seal_evidence_package", **params)
-
-
-    @mcp.tool
-    async def browser_export_evidence_package(
-        package_id: str,
-        format: str = "json",
-        include_audit: bool = True,
-        persist: bool = True,
-        actor: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Export evidence package for court or archival.
-
-        Exports package in specified format. Supports JSON for machine
-        processing and SWGDE-compliant forensic reports for court
-        presentation. Includes full chain of custody.
-
-        Args:
-            package_id: Package ID to export
-            format: Export format (json or swgde-report)
-            include_audit: Include audit trail in export
-            persist: Save export to disk
-            actor: Person/system exporting the package
-
-        Returns:
-            Export data and file path if persisted
-        """
-        browser = get_browser()
-        return await browser.send_command(
-            "export_evidence_package",
-            packageId=package_id,
-            format=format,
-            includeAudit=include_audit,
-            persist=persist,
-            actor=actor
-        )
-
-
-    @mcp.tool
-    async def browser_list_evidence_chain(
-        evidence_type: Optional[str] = None,
-        investigation_id: Optional[str] = None,
-        case_id: Optional[str] = None,
-        sealed: Optional[bool] = None,
-        verified: Optional[bool] = None
-    ) -> Dict[str, Any]:
-        """
-        List collected evidence with optional filtering.
-
-        Returns all evidence items matching the specified filters.
-        Useful for reviewing evidence collection status.
-
-        Args:
-            evidence_type: Filter by evidence type
-            investigation_id: Filter by investigation
-            case_id: Filter by case
-            sealed: Filter by seal status
-            verified: Filter by verification status
-
-        Returns:
-            List of evidence items with metadata
-        """
-        browser = get_browser()
-        params = {}
-        if evidence_type:
-            params["type"] = evidence_type
-        if investigation_id:
-            params["investigationId"] = investigation_id
-        if case_id:
-            params["caseId"] = case_id
-        if sealed is not None:
-            params["sealed"] = sealed
-        if verified is not None:
-            params["verified"] = verified
-
-        return await browser.send_command("list_evidence_chain", **params)
-
-
-    @mcp.tool
-    async def browser_get_evidence_chain_stats() -> Dict[str, Any]:
-        """
-        Get evidence collection statistics.
-
-        Returns comprehensive statistics about evidence collection
-        including total evidence, packages, verifications, and failures.
-
-        Returns:
-            Statistics about evidence collection system
-        """
-        browser = get_browser()
-        return await browser.send_command("get_evidence_chain_stats")
-
-
-    @mcp.tool
-    async def browser_export_chain_audit_log(
-        investigation_id: Optional[str] = None,
-        actor: Optional[str] = None,
-        action: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Export complete audit trail for investigation.
-
-        Exports the full chain of custody audit log with all actions
-        performed on evidence. Critical for demonstrating proper
-        evidence handling procedures in court.
-
-        Args:
-            investigation_id: Filter by investigation
-            actor: Filter by actor/person
-            action: Filter by action type
-
-        Returns:
-            Audit log export with file path and entry count
-        """
-        browser = get_browser()
-        params = {}
-        if investigation_id:
-            params["investigationId"] = investigation_id
-        if actor:
-            params["actor"] = actor
-        if action:
-            params["action"] = action
-
-        return await browser.send_command("export_chain_audit_log", **params)
-
-
     # ==========================================
     # Phase 30: Geolocation/Location Simulation Tools
     # ==========================================
@@ -4326,52 +3975,47 @@ def main():
 
     print("Starting Basset Hound Browser MCP Server...")
     print(f"Connecting to browser at ws://{DEFAULT_WS_HOST}:{DEFAULT_WS_PORT}")
-    print("\nAvailable tools (141+ total):")
+    print("\nAvailable tools (browser automation only):")
     print("  Navigation: browser_navigate, browser_go_back, browser_go_forward, browser_reload")
     print("  Interaction: browser_click, browser_fill, browser_type, browser_select, browser_scroll, browser_hover")
     print("  Extraction: browser_get_content, browser_get_page_state, browser_extract_*")
-    print("  Screenshots (9): browser_screenshot, browser_screenshot_with_highlights,")
-    print("                   browser_screenshot_with_blur, browser_screenshot_diff,")
-    print("                   browser_screenshot_stitch, browser_screenshot_ocr,")
-    print("                   browser_screenshot_similarity, browser_screenshot_element_context,")
-    print("                   browser_screenshot_forensic, browser_screenshot_configure_quality")
+    print("  Screenshots: browser_screenshot, browser_screenshot_with_highlights,")
+    print("               browser_screenshot_with_blur, browser_screenshot_diff,")
+    print("               browser_screenshot_stitch, browser_screenshot_ocr,")
+    print("               browser_screenshot_similarity, browser_screenshot_element_context,")
+    print("               browser_screenshot_forensic, browser_screenshot_configure_quality")
     print("  Wait: browser_wait_for_element, browser_wait_for_navigation")
     print("  JavaScript: browser_execute_script")
     print("  Cookies: browser_get_cookies, browser_set_cookies, browser_clear_cookies")
     print("  Profiles: browser_get_profiles, browser_switch_profile, browser_create_profile")
-    print("  Proxy/Tor: browser_set_proxy, browser_tor_new_identity, browser_tor_set_exit_country")
+    print("  Proxy/Tor: browser_set_proxy, browser_set_tor_mode, browser_get_tor_mode,")
+    print("             browser_tor_new_identity, browser_tor_set_exit_country")
     print("  Image Analysis: browser_extract_image_metadata, browser_extract_image_text")
     print("  Network: browser_start_network_capture, browser_get_network_requests")
     print("  Tech Detection: browser_detect_technologies")
     print("  Fingerprints: browser_create_fingerprint_profile, browser_apply_fingerprint")
     print("  Behavioral AI: browser_generate_mouse_path, browser_generate_typing_events")
-    print("  Evidence: browser_create_evidence_package, browser_capture_screenshot_evidence")
-    print("  Court Export: browser_seal_evidence_package, browser_export_evidence_for_court")
-    print("  Network Forensics (16): browser_start_network_forensics_capture, browser_get_dns_queries,")
-    print("                          browser_get_tls_certificates, browser_get_websocket_connections,")
-    print("                          browser_get_http_headers, browser_get_cookies_with_provenance,")
-    print("                          browser_export_forensic_report, and analyze tools")
-    print("  Smart Forms (8): browser_analyze_forms, browser_fill_form, browser_fill_form_smart,")
-    print("                   browser_detect_honeypots, browser_detect_captchas,")
-    print("                   browser_get_form_filler_stats, browser_configure_form_filler")
-    print("  Profile Templates (9): browser_list_profile_templates, browser_get_profile_template,")
-    print("                         browser_search_profile_templates, browser_generate_profile_from_template,")
-    print("                         browser_create_profile_template, browser_clone_profile_template,")
-    print("                         browser_get_template_categories, browser_get_template_risk_levels")
-    print("  Cookie Management (11): browser_create_cookie_jar, browser_list_cookie_jars,")
-    print("                          browser_switch_cookie_jar, browser_sync_cookie_jars,")
-    print("                          browser_analyze_all_cookies, browser_find_insecure_cookies,")
-    print("                          browser_export_cookies, browser_import_cookies,")
-    print("                          browser_get_cookie_history, browser_get_cookies_by_classification")
-    print("  Proxy Pool: MIGRATED to basset-hound-networking package")
-    print("              Use browser_set_proxy for single proxy configuration")
-    print("  Page Monitoring (12): browser_start_monitoring_page, browser_stop_monitoring_page,")
-    print("                        browser_pause_monitoring_page, browser_resume_monitoring_page,")
-    print("                        browser_check_page_changes_now, browser_get_page_changes,")
-    print("                        browser_compare_page_versions, browser_get_monitoring_schedule,")
-    print("                        browser_configure_monitoring, browser_export_monitoring_report,")
-    print("                        browser_get_monitoring_stats, browser_add_monitoring_zone,")
-    print("                        browser_list_monitored_pages")
+    print("  Basic Evidence: browser_create_evidence_package, browser_capture_screenshot_evidence,")
+    print("                  browser_seal_evidence_package, browser_export_evidence_for_court")
+    print("  Network Forensics: browser_start_network_forensics_capture, browser_get_dns_queries,")
+    print("                     browser_get_tls_certificates, browser_get_websocket_connections,")
+    print("                     browser_get_http_headers, browser_export_forensic_report")
+    print("  Smart Forms: browser_analyze_forms, browser_fill_form, browser_fill_form_smart,")
+    print("               browser_detect_honeypots, browser_detect_captchas")
+    print("  Profile Templates: browser_list_profile_templates, browser_get_profile_template,")
+    print("                     browser_generate_profile_from_template, browser_clone_profile_template")
+    print("  Cookie Management: browser_create_cookie_jar, browser_list_cookie_jars,")
+    print("                     browser_switch_cookie_jar, browser_sync_cookie_jars,")
+    print("                     browser_export_cookies, browser_import_cookies")
+    print("  Multi-Page: browser_init_multi_page, browser_create_page, browser_navigate_page,")
+    print("              browser_list_pages, browser_destroy_page")
+    print("  Page Monitoring: browser_start_monitoring_page, browser_stop_monitoring_page,")
+    print("                   browser_check_page_changes_now, browser_get_page_changes")
+    print("  Geolocation: browser_set_geolocation, browser_set_location_profile, browser_set_timezone")
+    print("  Data Extraction: browser_create_extraction_template, browser_extract_with_template")
+    print()
+    print("  NOTE: Investigation management and evidence chain of custody tools have been")
+    print("        moved to external systems (palletai agents).")
     print()
 
     mcp.run()

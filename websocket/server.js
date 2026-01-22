@@ -106,6 +106,55 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// ==========================================
+// .onion Domain Detection
+// ==========================================
+
+/**
+ * Check if a URL is a .onion domain
+ * @param {string} url - The URL to check
+ * @returns {boolean} True if the URL is a .onion domain
+ */
+function isOnionUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith('.onion');
+  } catch {
+    // Fallback for malformed URLs - check if .onion appears in the string
+    return url.includes('.onion');
+  }
+}
+
+/**
+ * Check if Tor mode is enabled at startup
+ * @returns {boolean} True if Tor mode is enabled
+ */
+function isTorModeEnabled() {
+  const args = process.argv;
+  return (
+    process.env.TOR_MODE === '1' ||
+    process.env.TOR_MODE === 'true' ||
+    args.includes('--tor-mode')
+  );
+}
+
+/**
+ * Check URL and return error if .onion without Tor mode
+ * @param {string} url - The URL to check
+ * @returns {Object|null} Error object if .onion without Tor mode, null otherwise
+ */
+function checkOnionWithoutTor(url) {
+  if (isOnionUrl(url) && !isTorModeEnabled()) {
+    return {
+      success: false,
+      error: '.onion domains require TOR_MODE=1 at startup.',
+      suggestion: 'Restart with TOR_MODE=1 or --tor-mode flag.',
+      url
+    };
+  }
+  return null;
+}
+
 /**
  * Default timeout for IPC responses (30 seconds)
  */
@@ -990,12 +1039,34 @@ class WebSocketServer {
         return { success: false, error: 'URL is required' };
       }
 
+      // Handle Tor Master Switch AUTO mode - automatically enable/disable routing
+      let autoModeResult = null;
+      try {
+        autoModeResult = await proxyManager.handleAutoModeNavigation(url);
+        if (autoModeResult.handled) {
+          console.log(`[Navigate] AUTO mode: ${autoModeResult.action} for ${url}`);
+        }
+      } catch (error) {
+        console.error('[Navigate] AUTO mode error:', error.message);
+      }
+
+      // Check for .onion URL without Tor mode (only if not in AUTO mode or AUTO mode failed)
+      // In AUTO mode, Tor routing should have been enabled above
+      const onionError = checkOnionWithoutTor(url);
+      if (onionError && (!autoModeResult || !autoModeResult.handled || autoModeResult.action !== 'enabled_tor')) {
+        return onionError;
+      }
+
       await humanDelay(100, 300);
       return new Promise((resolve) => {
         this.mainWindow.webContents.send('navigate-webview', url);
         // Wait for navigation to complete
         setTimeout(() => {
-          resolve({ success: true, url });
+          resolve({
+            success: true,
+            url,
+            torAutoMode: autoModeResult?.handled ? autoModeResult : undefined
+          });
         }, 1000);
       });
     };
@@ -1876,6 +1947,12 @@ class WebSocketServer {
         return { success: false, error: 'URL is required' };
       }
 
+      // Check for .onion URL without Tor mode
+      const onionError = checkOnionWithoutTor(url);
+      if (onionError) {
+        return onionError;
+      }
+
       const result = this.tabManager.navigateTab(tabId, url);
 
       if (result.success) {
@@ -2735,6 +2812,51 @@ class WebSocketServer {
     this.commandHandlers.get_tor_routing_status = async (params) => {
       try {
         const result = await proxyManager.getTorRoutingStatus();
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // ==========================================
+    // Tor Master Switch Commands
+    // ==========================================
+    // The master switch provides three modes:
+    // - OFF: Never route through Tor (direct connection)
+    // - ON: Always route through Tor (maximum anonymity)
+    // - AUTO: Intelligently switch based on .onion URL detection
+    //
+    // AUTO mode is useful for investigations where sites might
+    // redirect to Tor-facing pages. The system will automatically
+    // enable Tor routing when navigating to .onion domains.
+    // ==========================================
+
+    // Set Tor master switch mode
+    this.commandHandlers.set_tor_mode = async (params) => {
+      try {
+        const mode = params.mode;
+        if (!mode) {
+          return {
+            success: false,
+            error: 'Mode is required. Must be one of: off, on, auto'
+          };
+        }
+
+        const options = {};
+        if (params.socksHost) options.socksHost = params.socksHost;
+        if (params.socksPort) options.socksPort = parseInt(params.socksPort, 10);
+
+        const result = await proxyManager.setTorMasterMode(mode, options);
+        return result;
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    };
+
+    // Get current Tor master switch mode and status
+    this.commandHandlers.get_tor_mode = async (params) => {
+      try {
+        const result = await proxyManager.getTorMasterMode();
         return result;
       } catch (error) {
         return { success: false, error: error.message };
@@ -6995,6 +7117,12 @@ class WebSocketServer {
         return { success: false, error: 'URL is required' };
       }
 
+      // Check for .onion URL without Tor mode
+      const onionError = checkOnionWithoutTor(url);
+      if (onionError) {
+        return onionError;
+      }
+
       return await this.windowManager.navigateWindow(windowId, url);
     };
 
@@ -7818,9 +7946,9 @@ class WebSocketServer {
     const { registerMultiPageCommands } = require('./commands/multi-page-commands');
     registerMultiPageCommands(this, this.mainWindow);
 
-    // Register evidence chain of custody commands (Phase 29)
-    const { registerEvidenceChainCommands } = require('./commands/evidence-chain-commands');
-    registerEvidenceChainCommands(this, this.mainWindow);
+    // Phase 29: Evidence Chain Commands - REMOVED (out of scope)
+    // Investigation management belongs in external systems (palletai, basset-hound)
+    // Basic evidence capture is available via evidence-commands.js
 
     // Register geolocation/location simulation commands (Phase 30)
     const { registerLocationCommands } = require('./commands/location-commands');
