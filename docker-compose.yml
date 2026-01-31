@@ -1,8 +1,6 @@
 # Basset Hound Browser - Docker Compose Configuration
 # For running the browser in headless mode with Xvfb
 
-version: '3.8'
-
 services:
   basset-hound-browser:
     build:
