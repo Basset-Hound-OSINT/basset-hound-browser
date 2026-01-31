@@ -1,10 +1,27 @@
 # Basset Hound Browser - Product Roadmap
 
-**Last Updated:** January 21, 2026
+**Last Updated:** January 31, 2026
 **Current Version:** 11.0.0
 **Status:** ✅ Feature Complete - Ready for Integration Testing
 
 ## Recent Updates
+
+### January 31, 2026 - Docker Network & Test Infrastructure ✅
+- ✅ **Docker Network:** Added `basset-hound-browser` bridge network for multi-container support
+  - Enables future frontend/API containers to communicate without port conflicts
+  - Single port (8765) exposed externally
+- ✅ **Deployment Scripts Updated:** `deploy.sh` and `redeploy.sh` now create/use the network
+- ✅ **Test Output Standardized:** All test outputs now go to `tests/results/`
+  - Screenshots: `tests/results/screenshots/`
+  - Reports: `tests/results/reports/`
+  - SSL certs: `tests/results/ssl/`
+- ✅ **Test Portability Fixed:** 9 test files updated from hardcoded `/app/node_modules/ws` to `require('ws')`
+- ✅ **Repository Cleanup:**
+  - Moved `PHASES-29-31-SUMMARY.txt` to `docs/archive/`
+  - Removed `buildlog.txt` from root
+  - Updated `.gitignore` for test outputs and build logs
+- ✅ **Configuration Validated:** docker-compose.yml and shell scripts syntax verified
+- 📄 Docker registry connectivity issue blocked live deployment test (temporary)
 
 ### January 21, 2026 - Tor Master Switch & Scope Cleanup ✅
 - ✅ **Tor Master Switch:** Implemented ON/OFF/AUTO modes for intelligent Tor routing
