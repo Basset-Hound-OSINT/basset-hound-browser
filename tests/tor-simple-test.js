@@ -5,7 +5,7 @@
  * This test waits longer for Tor circuits and page loads.
  */
 
-const WebSocket = require('/app/node_modules/ws');
+const WebSocket = require('ws');
 
 const WS_URL = process.env.WS_URL || 'ws://localhost:8765';
 

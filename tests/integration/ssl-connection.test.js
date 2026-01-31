@@ -10,7 +10,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 // Test configuration
-const SSL_FIXTURES_DIR = path.join(__dirname, '..', 'fixtures', 'ssl');
+const SSL_FIXTURES_DIR = path.join(__dirname, '..', 'results', 'ssl');
 const TEST_HOST = 'localhost';
 const TEST_PORT = 18900 + Math.floor(Math.random() * 100);
 

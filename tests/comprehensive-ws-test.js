@@ -3,7 +3,7 @@
  * Tests all major command categories to identify what works in headless mode
  */
 
-const WebSocket = require('/app/node_modules/ws');
+const WebSocket = require('ws');
 const ws = new WebSocket('ws://localhost:8765');
 
 const tests = [];

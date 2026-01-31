@@ -17,6 +17,10 @@ release/
 # Test artifacts
 coverage/
 test-results/
+tests/results/*
+!tests/results/.gitkeep
+tests/screenshots/
+tests/reports/
 test-user-data*/
 *.log
 **/test-certs*/
@@ -45,6 +49,10 @@ recordings/*.webm
 # Temporary
 *.tmp
 *.bak
+
+# Build logs (don't commit to root)
+buildlog.txt
+buildlog*.txt
 
 # Embedded Tor (development/testing)
 tor_tmp/

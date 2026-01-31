@@ -6,6 +6,7 @@ set -e
 
 IMAGE_NAME="basset-hound-browser"
 CONTAINER_NAME="basset-hound-browser"
+NETWORK_NAME="basset-hound-browser"
 
 echo "Quick redeploy starting..."
 
@@ -13,9 +14,13 @@ echo "Quick redeploy starting..."
 docker stop $CONTAINER_NAME 2>/dev/null || true
 docker rm $CONTAINER_NAME 2>/dev/null || true
 
+# Ensure network exists
+docker network create $NETWORK_NAME 2>/dev/null || true
+
 docker build -t $IMAGE_NAME:latest . | tail -5
 
 docker run -d --name $CONTAINER_NAME \
+  --network $NETWORK_NAME \
   -p 8765:8765 \
   -e DISPLAY=:99 \
   -e ELECTRON_DISABLE_SANDBOX=1 \
@@ -25,3 +30,4 @@ docker run -d --name $CONTAINER_NAME \
   $IMAGE_NAME:latest
 
 echo "Redeployed. WebSocket at ws://localhost:8765"
+echo "Container on network: $NETWORK_NAME"

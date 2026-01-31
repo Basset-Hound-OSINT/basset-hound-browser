@@ -82,7 +82,7 @@ async function waitForWebSocketServer(timeout = 10000) {
  * @returns {Promise<Buffer>} - Screenshot buffer
  */
 async function takeScreenshot(window, name = 'screenshot') {
-  const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+  const screenshotsDir = path.join(__dirname, '..', 'results', 'screenshots');
 
   // Ensure screenshots directory exists
   const fs = require('fs');

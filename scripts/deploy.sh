@@ -6,11 +6,13 @@ set -e
 
 IMAGE_NAME="basset-hound-browser"
 CONTAINER_NAME="basset-hound-browser"
+NETWORK_NAME="basset-hound-browser"
 PORT=8765
 
 echo "=== Basset Hound Browser Deployment ==="
 echo "Image: $IMAGE_NAME"
 echo "Container: $CONTAINER_NAME"
+echo "Network: $NETWORK_NAME"
 echo "Port: $PORT"
 echo ""
 
@@ -22,17 +24,22 @@ if [ "$1" == "--no-cache" ]; then
 fi
 
 # Step 1: Stop existing container (if running)
-echo "[1/4] Stopping existing container..."
+echo "[1/5] Stopping existing container..."
 docker stop $CONTAINER_NAME 2>/dev/null || true
 docker rm $CONTAINER_NAME 2>/dev/null || true
 
-# Step 2: Build new image
-echo "[2/4] Building Docker image..."
+# Step 2: Create network (if not exists)
+echo "[2/5] Creating Docker network..."
+docker network create $NETWORK_NAME 2>/dev/null || echo "Network already exists"
+
+# Step 3: Build new image
+echo "[3/5] Building Docker image..."
 docker build $NO_CACHE -t $IMAGE_NAME:latest .
 
-# Step 3: Start new container
-echo "[3/4] Starting new container..."
+# Step 4: Start new container
+echo "[4/5] Starting new container..."
 docker run -d --name $CONTAINER_NAME \
+  --network $NETWORK_NAME \
   -p $PORT:$PORT \
   -e DISPLAY=:99 \
   -e ELECTRON_DISABLE_SANDBOX=1 \
@@ -41,8 +48,8 @@ docker run -d --name $CONTAINER_NAME \
   --restart unless-stopped \
   $IMAGE_NAME:latest
 
-# Step 4: Verify
-echo "[4/4] Verifying deployment..."
+# Step 5: Verify
+echo "[5/5] Verifying deployment..."
 sleep 10
 
 # Check if container is running

@@ -15,8 +15,8 @@ const TEST_CONFIG = {
   COMMAND_TIMEOUT: 30000,
   NAVIGATION_TIMEOUT: 60000,
   TEST_PAGE_PATH: path.join(__dirname, '..', 'test-server.html'),
-  SCREENSHOTS_DIR: path.join(__dirname, '..', 'screenshots'),
-  REPORTS_DIR: path.join(__dirname, '..', 'reports'),
+  SCREENSHOTS_DIR: path.join(__dirname, '..', 'results', 'screenshots'),
+  REPORTS_DIR: path.join(__dirname, '..', 'results', 'reports'),
   VERBOSE: process.env.VERBOSE === 'true' || process.argv.includes('--verbose')
 };
 

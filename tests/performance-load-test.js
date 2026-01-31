@@ -12,7 +12,7 @@
  * Prerequisites: Browser must be running at ws://localhost:8765
  */
 
-const WebSocket = require('/app/node_modules/ws');
+const WebSocket = require('ws');
 
 // Parse command line arguments
 const args = process.argv.slice(2).reduce((acc, arg) => {

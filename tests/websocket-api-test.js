@@ -3,7 +3,7 @@
  * Tests commands that require webview to be ready after navigation
  */
 
-const WebSocket = require('/app/node_modules/ws');
+const WebSocket = require('ws');
 const ws = new WebSocket('ws://localhost:8765');
 
 const results = { passed: [], failed: [] };

@@ -10,8 +10,10 @@ services:
       dockerfile: Dockerfile
     container_name: basset-hound-browser
     ports:
-      # WebSocket API port
+      # WebSocket API port - only external-facing port
       - "8765:8765"
+    networks:
+      - basset-hound-browser
     environment:
       # Display configuration
       - DISPLAY=:99
@@ -62,3 +64,8 @@ services:
 volumes:
   basset-data:
     driver: local
+
+networks:
+  basset-hound-browser:
+    name: basset-hound-browser
+    driver: bridge

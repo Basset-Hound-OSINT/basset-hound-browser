@@ -20,7 +20,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 // Configuration
-const SSL_FIXTURES_DIR = path.join(__dirname, '..', 'fixtures', 'ssl');
+const SSL_FIXTURES_DIR = path.join(__dirname, '..', 'results', 'ssl');
 const CERT_VALIDITY_DAYS = 365;
 const KEY_SIZE = 2048;
 

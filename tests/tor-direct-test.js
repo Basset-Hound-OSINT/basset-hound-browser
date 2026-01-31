@@ -6,7 +6,7 @@
  * and navigates to a .onion site.
  */
 
-const WebSocket = require('/app/node_modules/ws');
+const WebSocket = require('ws');
 
 const WS_URL = process.env.WS_URL || 'ws://localhost:8765';
 

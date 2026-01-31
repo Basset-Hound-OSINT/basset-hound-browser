@@ -5,7 +5,7 @@
  * Verifies that .onion sites can be accessed through Tor in Tor mode.
  */
 
-const WebSocket = require('/app/node_modules/ws');
+const WebSocket = require('ws');
 
 const WS_URL = process.env.WS_URL || 'ws://localhost:8765';
 
