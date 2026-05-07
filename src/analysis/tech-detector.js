@@ -7,9 +7,12 @@
  */
 
 const crypto = require('crypto');
+const SignatureLoader = require('./signature-loader');
+const path = require('path');
 
 class TechDetector {
   constructor(signatureDatabase = null) {
+    this.signatureLoader = new SignatureLoader();
     this.signatures = signatureDatabase || this.loadDefaultSignatures();
     this.detectionCache = new Map();
     this.cacheTimeout = 3600000; // 1 hour
@@ -493,18 +496,42 @@ class TechDetector {
   }
 
   /**
-   * Load external signature database
+   * Load external signature database using SignatureLoader
    */
   async loadSignatures(filePath) {
     try {
-      const fs = require('fs').promises;
-      const data = await fs.readFile(filePath, 'utf-8');
-      this.signatures = JSON.parse(data);
-      return true;
+      const result = await this.signatureLoader.loadFromFile(filePath);
+      if (result.success) {
+        this.signatures = this.signatureLoader.getSignatures();
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Failed to load signatures:', error);
       return false;
     }
+  }
+
+  /**
+   * Load seed database (100+ pre-configured technologies)
+   */
+  async loadSeedDatabase() {
+    const seedPath = path.join(__dirname, '../../data/technology-signatures-seed.json');
+    return this.loadSignatures(seedPath);
+  }
+
+  /**
+   * Get signature loader instance
+   */
+  getSignatureLoader() {
+    return this.signatureLoader;
+  }
+
+  /**
+   * Get current signature count
+   */
+  getSignatureCount() {
+    return Object.keys(this.signatures).length;
   }
 }
 
