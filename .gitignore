@@ -63,6 +63,21 @@ bin/tor/
 .bhb/
 bhb-data/
 
+# Downloaded databases and data
+data/*.json
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/technology-signatures*.json
+data/fingerprint-profiles*.json
+data/device-profiles*.json
+downloads/
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
 # Python (for any scripts)
 __pycache__/
 *.py[cod]
