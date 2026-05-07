@@ -239,8 +239,14 @@ class ProxyManager {
       }
 
       // Verify proxy configuration was applied
-      const resolvedProxy = await session.defaultSession.resolveProxy('https://check.torproject.org');
-      console.log(`[ProxyManager] Resolved proxy for check.torproject.org: ${resolvedProxy}`);
+      if (session.defaultSession.resolveProxy) {
+        try {
+          const resolvedProxy = await session.defaultSession.resolveProxy('https://check.torproject.org');
+          console.log(`[ProxyManager] Resolved proxy for check.torproject.org: ${resolvedProxy}`);
+        } catch (error) {
+          console.log('[ProxyManager] Could not verify proxy resolution:', error.message);
+        }
+      }
 
       // Store authentication credentials if provided
       if (proxyConfig.auth) {
