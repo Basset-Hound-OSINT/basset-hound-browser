@@ -19,6 +19,7 @@ coverage/
 test-results/
 tests/results/*
 !tests/results/.gitkeep
+!tests/results/*.md
 tests/screenshots/
 tests/reports/
 test-user-data*/
