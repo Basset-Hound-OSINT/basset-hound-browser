@@ -1,0 +1,582 @@
+{
+  "technologies": {
+    "react": {
+      "id": "react",
+      "name": "React",
+      "category": "JavaScript Framework",
+      "website": "https://react.dev",
+      "headers": {},
+      "js": {
+        "patterns": ["React.version", "ReactDOM", "__REACT_"],
+        "urls": ["react\\..*\\.js"]
+      },
+      "html": {
+        "patterns": ["data-react-root", "data-reactroot"]
+      },
+      "versions": ["(\\d+\\.\\d+\\.\\d+)"],
+      "confidence": 100
+    },
+    "vue": {
+      "id": "vue",
+      "name": "Vue.js",
+      "category": "JavaScript Framework",
+      "website": "https://vuejs.org",
+      "js": {
+        "patterns": ["Vue"],
+        "urls": ["vue\\..*\\.js"]
+      },
+      "html": {
+        "patterns": ["data-v-", "v-app", "v-bind", "v-on"]
+      },
+      "confidence": 90
+    },
+    "angular": {
+      "id": "angular",
+      "name": "Angular",
+      "category": "JavaScript Framework",
+      "website": "https://angular.io",
+      "js": {
+        "patterns": ["angular"],
+        "urls": ["angular\\..*\\.js"]
+      },
+      "html": {
+        "patterns": ["ng-app", "data-ng-app"]
+      },
+      "confidence": 85
+    },
+    "jquery": {
+      "id": "jquery",
+      "name": "jQuery",
+      "category": "JavaScript Library",
+      "website": "https://jquery.com",
+      "js": {
+        "patterns": ["jQuery", "$"],
+        "urls": ["jquery.*\\.js"]
+      },
+      "confidence": 90
+    },
+    "bootstrap": {
+      "id": "bootstrap",
+      "name": "Bootstrap",
+      "category": "CSS Framework",
+      "website": "https://getbootstrap.com",
+      "html": {
+        "patterns": ["col-md-", "col-sm-", "col-lg-", "container-fluid", "btn-primary"]
+      },
+      "confidence": 85
+    },
+    "wordpress": {
+      "id": "wordpress",
+      "name": "WordPress",
+      "category": "CMS",
+      "website": "https://wordpress.org",
+      "headers": {
+        "x-powered-by": "WordPress"
+      },
+      "html": {
+        "metaGenerator": "WordPress",
+        "patterns": ["/wp-content/", "/wp-includes/", "/wp-json/"]
+      },
+      "confidence": 95
+    },
+    "drupal": {
+      "id": "drupal",
+      "name": "Drupal",
+      "category": "CMS",
+      "website": "https://drupal.org",
+      "headers": {
+        "x-drupal-cache": ".*"
+      },
+      "html": {
+        "patterns": ["Drupal\\.settings", "drupal"]
+      },
+      "confidence": 90
+    },
+    "joomla": {
+      "id": "joomla",
+      "name": "Joomla",
+      "category": "CMS",
+      "website": "https://joomla.org",
+      "html": {
+        "patterns": ["/components/", "/modules/joomla", "joomla"]
+      },
+      "confidence": 85
+    },
+    "apache": {
+      "id": "apache",
+      "name": "Apache",
+      "category": "Web Server",
+      "website": "https://apache.org",
+      "headers": {
+        "server": "Apache"
+      },
+      "confidence": 100
+    },
+    "nginx": {
+      "id": "nginx",
+      "name": "Nginx",
+      "category": "Web Server",
+      "website": "https://nginx.org",
+      "headers": {
+        "server": "nginx"
+      },
+      "confidence": 100
+    },
+    "iis": {
+      "id": "iis",
+      "name": "IIS",
+      "category": "Web Server",
+      "website": "https://www.iis.net",
+      "headers": {
+        "server": "Microsoft-IIS"
+      },
+      "confidence": 100
+    },
+    "cloudflare": {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "category": "CDN",
+      "website": "https://cloudflare.com",
+      "headers": {
+        "cf-ray": ".*",
+        "server": "cloudflare"
+      },
+      "confidence": 100
+    },
+    "akamai": {
+      "id": "akamai",
+      "name": "Akamai",
+      "category": "CDN",
+      "website": "https://akamai.com",
+      "headers": {
+        "x-akamai-transformed": ".*"
+      },
+      "confidence": 90
+    },
+    "fastly": {
+      "id": "fastly",
+      "name": "Fastly",
+      "category": "CDN",
+      "website": "https://fastly.com",
+      "headers": {
+        "x-served-by": ".*fastly.*"
+      },
+      "confidence": 85
+    },
+    "express": {
+      "id": "express",
+      "name": "Express",
+      "category": "Web Framework",
+      "website": "https://expressjs.com",
+      "headers": {
+        "x-powered-by": "Express"
+      },
+      "html": {
+        "patterns": []
+      },
+      "confidence": 95
+    },
+    "django": {
+      "id": "django",
+      "name": "Django",
+      "category": "Web Framework",
+      "website": "https://djangoproject.com",
+      "html": {
+        "patterns": ["django"]
+      },
+      "confidence": 75
+    },
+    "laravel": {
+      "id": "laravel",
+      "name": "Laravel",
+      "category": "Web Framework",
+      "website": "https://laravel.com",
+      "headers": {
+        "x-powered-by": "Laravel"
+      },
+      "html": {
+        "patterns": ["laravel"]
+      },
+      "confidence": 85
+    },
+    "rails": {
+      "id": "rails",
+      "name": "Rails",
+      "category": "Web Framework",
+      "website": "https://rubyonrails.org",
+      "headers": {
+        "x-powered-by": "Rails"
+      },
+      "confidence": 85
+    },
+    "python": {
+      "id": "python",
+      "name": "Python",
+      "category": "Programming Language",
+      "website": "https://python.org",
+      "headers": {
+        "server": "Python"
+      },
+      "confidence": 80
+    },
+    "php": {
+      "id": "php",
+      "name": "PHP",
+      "category": "Programming Language",
+      "website": "https://php.net",
+      "headers": {
+        "x-powered-by": "PHP"
+      },
+      "confidence": 90
+    },
+    "node": {
+      "id": "node",
+      "name": "Node.js",
+      "category": "Runtime",
+      "website": "https://nodejs.org",
+      "headers": {
+        "x-powered-by": "Node"
+      },
+      "confidence": 85
+    },
+    "google-analytics": {
+      "id": "google-analytics",
+      "name": "Google Analytics",
+      "category": "Analytics",
+      "website": "https://analytics.google.com",
+      "js": {
+        "patterns": ["ga(", "_gat", "gtag"],
+        "urls": ["google-analytics\\.com", "gtag\\.js"]
+      },
+      "confidence": 90
+    },
+    "google-tagmanager": {
+      "id": "google-tagmanager",
+      "name": "Google Tag Manager",
+      "category": "Tag Manager",
+      "website": "https://tagmanager.google.com",
+      "js": {
+        "urls": ["googletagmanager\\.com"]
+      },
+      "confidence": 95
+    },
+    "facebook-pixel": {
+      "id": "facebook-pixel",
+      "name": "Facebook Pixel",
+      "category": "Analytics",
+      "website": "https://facebook.com",
+      "js": {
+        "patterns": ["fbq("],
+        "urls": ["connect\\.facebook\\.net"]
+      },
+      "confidence": 90
+    },
+    "stripe": {
+      "id": "stripe",
+      "name": "Stripe",
+      "category": "Payment Processor",
+      "website": "https://stripe.com",
+      "js": {
+        "patterns": ["Stripe"],
+        "urls": ["stripe\\.js", "js\\.stripe\\.com"]
+      },
+      "confidence": 95
+    },
+    "paypal": {
+      "id": "paypal",
+      "name": "PayPal",
+      "category": "Payment Processor",
+      "website": "https://paypal.com",
+      "js": {
+        "urls": ["paypal\\.com", "checkoutserv"]
+      },
+      "confidence": 90
+    },
+    "auth0": {
+      "id": "auth0",
+      "name": "Auth0",
+      "category": "Authentication",
+      "website": "https://auth0.com",
+      "js": {
+        "patterns": ["Auth0"],
+        "urls": ["auth0\\.com"]
+      },
+      "confidence": 95
+    },
+    "okta": {
+      "id": "okta",
+      "name": "Okta",
+      "category": "Authentication",
+      "website": "https://okta.com",
+      "js": {
+        "patterns": ["okta"],
+        "urls": ["okta\\.com"]
+      },
+      "confidence": 90
+    },
+    "recaptcha": {
+      "id": "recaptcha",
+      "name": "Google reCAPTCHA",
+      "category": "Security",
+      "website": "https://google.com/recaptcha",
+      "js": {
+        "patterns": ["grecaptcha"],
+        "urls": ["recaptcha__en\\.js", "recaptcha\\.net"]
+      },
+      "confidence": 95
+    },
+    "cloudflare-turnstile": {
+      "id": "cloudflare-turnstile",
+      "name": "Cloudflare Turnstile",
+      "category": "Security",
+      "website": "https://cloudflare.com/products/turnstile",
+      "js": {
+        "patterns": ["turnstile"],
+        "urls": ["challenges\\.cloudflare\\.com"]
+      },
+      "confidence": 95
+    },
+    "aws": {
+      "id": "aws",
+      "name": "Amazon Web Services",
+      "category": "Cloud Provider",
+      "website": "https://aws.amazon.com",
+      "headers": {
+        "x-amz-": ".*"
+      },
+      "confidence": 85
+    },
+    "azure": {
+      "id": "azure",
+      "name": "Microsoft Azure",
+      "category": "Cloud Provider",
+      "website": "https://azure.microsoft.com",
+      "headers": {
+        "x-aspnet-version": ".*"
+      },
+      "confidence": 85
+    },
+    "heroku": {
+      "id": "heroku",
+      "name": "Heroku",
+      "category": "Cloud Provider",
+      "website": "https://heroku.com",
+      "headers": {
+        "via": ".*heroku.*"
+      },
+      "confidence": 80
+    },
+    "slack": {
+      "id": "slack",
+      "name": "Slack",
+      "category": "SaaS",
+      "website": "https://slack.com",
+      "js": {
+        "patterns": ["slack"],
+        "urls": ["slack\\.com"]
+      },
+      "confidence": 85
+    },
+    "intercom": {
+      "id": "intercom",
+      "name": "Intercom",
+      "category": "Customer Support",
+      "website": "https://intercom.com",
+      "js": {
+        "patterns": ["Intercom"],
+        "urls": ["intercom\\.io"]
+      },
+      "confidence": 90
+    },
+    "mixpanel": {
+      "id": "mixpanel",
+      "name": "Mixpanel",
+      "category": "Analytics",
+      "website": "https://mixpanel.com",
+      "js": {
+        "patterns": ["mixpanel"],
+        "urls": ["mixpanel\\.com"]
+      },
+      "confidence": 90
+    },
+    "segment": {
+      "id": "segment",
+      "name": "Segment",
+      "category": "Analytics",
+      "website": "https://segment.com",
+      "js": {
+        "patterns": ["analytics"],
+        "urls": ["cdn\\.segment\\.com"]
+      },
+      "confidence": 85
+    },
+    "openai-gpt": {
+      "id": "openai-gpt",
+      "name": "OpenAI GPT",
+      "category": "AI/ML",
+      "website": "https://openai.com",
+      "js": {
+        "patterns": ["openai"],
+        "urls": ["openai\\.com"]
+      },
+      "confidence": 80
+    },
+    "webpack": {
+      "id": "webpack",
+      "name": "Webpack",
+      "category": "Build Tool",
+      "website": "https://webpack.js.org",
+      "html": {
+        "patterns": ["/js/", "/app/"]
+      },
+      "confidence": 75
+    },
+    "next": {
+      "id": "next",
+      "name": "Next.js",
+      "category": "Framework",
+      "website": "https://nextjs.org",
+      "headers": {
+        "x-powered-by": "Next.js"
+      },
+      "html": {
+        "patterns": ["__NEXT_"]
+      },
+      "confidence": 95
+    },
+    "gatsby": {
+      "id": "gatsby",
+      "name": "Gatsby",
+      "category": "Static Site Generator",
+      "website": "https://gastbyjs.org",
+      "html": {
+        "patterns": ["Gatsby"]
+      },
+      "confidence": 85
+    },
+    "prismic": {
+      "id": "prismic",
+      "name": "Prismic",
+      "category": "Headless CMS",
+      "website": "https://prismic.io",
+      "html": {
+        "patterns": ["prismic"]
+      },
+      "confidence": 80
+    },
+    "contentful": {
+      "id": "contentful",
+      "name": "Contentful",
+      "category": "Headless CMS",
+      "website": "https://contentful.com",
+      "headers": {
+        "x-contentful": ".*"
+      },
+      "confidence": 85
+    },
+    "mongodb": {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "category": "Database",
+      "website": "https://mongodb.com",
+      "confidence": 70
+    },
+    "postgresql": {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "category": "Database",
+      "website": "https://postgresql.org",
+      "confidence": 70
+    },
+    "mysql": {
+      "id": "mysql",
+      "name": "MySQL",
+      "category": "Database",
+      "website": "https://mysql.com",
+      "confidence": 70
+    },
+    "redis": {
+      "id": "redis",
+      "name": "Redis",
+      "category": "Cache",
+      "website": "https://redis.io",
+      "confidence": 65
+    },
+    "elasticsearch": {
+      "id": "elasticsearch",
+      "name": "Elasticsearch",
+      "category": "Search Engine",
+      "website": "https://elastic.co",
+      "headers": {
+        "x-elastic-product": ".*"
+      },
+      "confidence": 85
+    },
+    "matomo": {
+      "id": "matomo",
+      "name": "Matomo",
+      "category": "Analytics",
+      "website": "https://matomo.org",
+      "js": {
+        "patterns": ["piwik", "matomo"],
+        "urls": ["matomo\\.js", "piwik\\.js"]
+      },
+      "confidence": 90
+    },
+    "hotjar": {
+      "id": "hotjar",
+      "name": "Hotjar",
+      "category": "User Behavior Analytics",
+      "website": "https://hotjar.com",
+      "js": {
+        "patterns": ["hj", "hjid"],
+        "urls": ["hotjar\\.com"]
+      },
+      "confidence": 90
+    },
+    "amplitude": {
+      "id": "amplitude",
+      "name": "Amplitude",
+      "category": "Analytics",
+      "website": "https://amplitude.com",
+      "js": {
+        "patterns": ["amplitude"],
+        "urls": ["amplitude\\.com"]
+      },
+      "confidence": 90
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-05-07",
+    "totalTechnologies": 76,
+    "categories": [
+      "JavaScript Framework",
+      "JavaScript Library",
+      "CSS Framework",
+      "CMS",
+      "Web Server",
+      "CDN",
+      "Web Framework",
+      "Programming Language",
+      "Runtime",
+      "Analytics",
+      "Tag Manager",
+      "Payment Processor",
+      "Authentication",
+      "Security",
+      "Cloud Provider",
+      "SaaS",
+      "Customer Support",
+      "AI/ML",
+      "Build Tool",
+      "Framework",
+      "Static Site Generator",
+      "Headless CMS",
+      "Database",
+      "Cache",
+      "Search Engine",
+      "User Behavior Analytics"
+    ]
+  }
+}
