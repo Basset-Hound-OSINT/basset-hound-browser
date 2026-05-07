@@ -1,203 +1,415 @@
 /**
- * WebSocket handlers for technology detection commands
- * Integrates TechDetector with WebSocket API
+ * WebSocket Handler - Technology Detection Module
+ * Provides advanced technology stack detection capabilities
+ *
+ * Version: 1.0.0
+ * Created: May 7, 2026
  */
 
 const TechDetector = require('../../src/analysis/tech-detector');
-const path = require('path');
-const fs = require('fs').promises;
 
 class TechDetectionHandler {
   constructor() {
-    this.detectors = new Map(); // Store detectors per session
-    this.signaturePath = path.join(__dirname, '../../data/technology-signatures.json');
+    this.detector = new TechDetector();
+    this.detectionHistory = [];
   }
 
   /**
-   * Get or create detector for session
+   * Handle WebSocket commands for technology detection
    */
-  async getDetector(sessionId) {
-    if (!this.detectors.has(sessionId)) {
-      const detector = new TechDetector();
-      // Load signature database
-      try {
-        const sigData = await fs.readFile(this.signaturePath, 'utf-8');
-        detector.signatures = JSON.parse(sigData).technologies;
-      } catch (err) {
-        console.error('Failed to load signatures:', err);
-        // Use built-in defaults
-      }
-      this.detectors.set(sessionId, detector);
-    }
-    return this.detectors.has(sessionId) ? this.detectors.get(sessionId) : null;
-  }
+  async handleCommand(command, params) {
+    const startTime = Date.now();
 
-  /**
-   * Handle: detect_technologies command
-   * Analyzes page and identifies all technologies
-   */
-  async handleDetectTechnologies(params, pageData, sessionId) {
     try {
-      const detector = await this.getDetector(sessionId);
-      if (!detector) throw new Error('Detector not initialized');
+      let result;
 
-      const result = await detector.detectTechnologies(
-        pageData,
-        params.networkRequests || [],
-        params.headers || {}
-      );
+      switch (command) {
+        case 'detect_technologies':
+          result = await this.detectTechnologies(params);
+          break;
+
+        case 'detect_batch':
+          result = await this.detectBatch(params);
+          break;
+
+        case 'get_detection_cache':
+          result = this.getDetectionCache();
+          break;
+
+        case 'get_cached_result':
+          result = this.getCachedResult(params);
+          break;
+
+        case 'clear_cache':
+          result = this.clearCache();
+          break;
+
+        case 'clear_cache_entry':
+          result = this.clearCacheEntry(params);
+          break;
+
+        case 'get_detection_history':
+          result = this.getDetectionHistory(params);
+          break;
+
+        case 'get_tech_stats':
+          result = this.getTechStats(params);
+          break;
+
+        case 'filter_detections':
+          result = this.filterDetections(params);
+          break;
+
+        case 'get_detector_status':
+          result = this.getDetectorStatus();
+          break;
+
+        case 'load_signatures':
+          result = await this.loadSignatures(params);
+          break;
+
+        default:
+          return {
+            success: false,
+            error: `Unknown command: ${command}`,
+            command,
+            timestamp: new Date().toISOString(),
+            duration: Date.now() - startTime
+          };
+      }
 
       return {
         success: true,
-        technologies: result.technologies,
-        summary: {
-          total: result.technologies.length,
-          byCategory: this.groupByCategory(result.technologies),
-          averageConfidence: this.calculateAverageConfidence(result.technologies)
-        },
-        detectionTime: result.detectionTime,
-        timestamp: result.timestamp
+        command,
+        result,
+        timestamp: new Date().toISOString(),
+        duration: Date.now() - startTime
       };
     } catch (error) {
       return {
         success: false,
+        command,
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        duration: Date.now() - startTime
       };
     }
   }
 
   /**
-   * Handle: get_tech_cache command
-   * Returns cached detection results
+   * Detect technologies in page data
    */
-  async handleGetTechCache(params, pageData, sessionId) {
-    try {
-      const detector = await this.getDetector(sessionId);
-      if (!detector) throw new Error('Detector not initialized');
+  async detectTechnologies(params = {}) {
+    const { pageData, networkRequests = [], headers = {} } = params;
 
-      const cacheKey = params.cacheKey;
-      if (!cacheKey) throw new Error('Cache key required');
+    if (!pageData) {
+      throw new Error('pageData is required');
+    }
 
-      const cached = detector.getCachedResults(cacheKey);
-      if (!cached) {
-        return {
-          success: false,
-          cached: false,
-          message: 'Cache miss'
+    // Ensure pageData has required structure
+    const normalizedPageData = {
+      html: pageData.html || '',
+      scripts: pageData.scripts || [],
+      resources: pageData.resources || [],
+      favicon: pageData.favicon || null,
+      dom: pageData.dom || null,
+      canvasFingerprint: pageData.canvasFingerprint || null,
+      sslCertificate: pageData.sslCertificate || null,
+      tlsDetails: pageData.tlsDetails || {}
+    };
+
+    const result = await this.detector.detectTechnologies(normalizedPageData, networkRequests, headers);
+
+    // Store in history
+    this.detectionHistory.push({
+      timestamp: Date.now(),
+      pageUrl: pageData.url || 'unknown',
+      technologiesFound: result.technologies.length,
+      detectionTime: result.detectionTime,
+      result
+    });
+
+    return {
+      technologiesDetected: result.technologies.length,
+      detectionTime: result.detectionTime,
+      timestamp: result.timestamp,
+      technologies: result.technologies.map(t => ({
+        id: t.id,
+        name: t.name,
+        category: t.category,
+        confidence: t.confidence,
+        version: t.version || null,
+        detectionMethods: t.detectionMethods || [],
+        evidence: t.evidence || {}
+      }))
+    };
+  }
+
+  /**
+   * Detect technologies in multiple pages (batch)
+   */
+  async detectBatch(params = {}) {
+    const { pages = [] } = params;
+
+    if (!Array.isArray(pages) || pages.length === 0) {
+      throw new Error('pages array is required with at least one page');
+    }
+
+    const results = [];
+    let totalTime = 0;
+
+    for (const pageData of pages) {
+      const result = await this.detectTechnologies({ pageData });
+      results.push({
+        pageUrl: pageData.url || 'unknown',
+        technologiesDetected: result.technologiesDetected,
+        detectionTime: result.detectionTime,
+        technologies: result.technologies
+      });
+      totalTime += result.detectionTime;
+    }
+
+    return {
+      pagesProcessed: results.length,
+      totalTechnologies: results.reduce((sum, r) => sum + r.technologiesDetected, 0),
+      averageDetectionTime: Math.round(totalTime / results.length),
+      totalTime,
+      results
+    };
+  }
+
+  /**
+   * Get detection cache info
+   */
+  getDetectionCache() {
+    return {
+      cacheSize: this.detector.detectionCache.size,
+      cacheEntries: Array.from(this.detector.detectionCache.keys()).map(key => ({
+        key: key.substring(0, 16) + '...',
+        cached: true
+      })),
+      cacheTimeout: '1 hour',
+      totalCacheSize: this.detector.detectionCache.size
+    };
+  }
+
+  /**
+   * Get cached result by key
+   */
+  getCachedResult(params = {}) {
+    const { cacheKey } = params;
+
+    if (!cacheKey) {
+      throw new Error('cacheKey is required');
+    }
+
+    const cached = this.detector.getCachedResults(cacheKey);
+
+    if (!cached) {
+      return {
+        found: false,
+        message: 'Cache entry not found',
+        cacheKey
+      };
+    }
+
+    return {
+      found: true,
+      cachedAt: new Date(cached.timestamp).toISOString(),
+      data: cached.data
+    };
+  }
+
+  /**
+   * Clear entire detection cache
+   */
+  clearCache() {
+    this.detector.clearCache();
+
+    return {
+      message: 'Detection cache cleared',
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Clear specific cache entry
+   */
+  clearCacheEntry(params = {}) {
+    const { cacheKey } = params;
+
+    if (!cacheKey) {
+      throw new Error('cacheKey is required');
+    }
+
+    this.detector.detectionCache.delete(cacheKey);
+
+    return {
+      message: 'Cache entry removed',
+      cacheKey,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Get detection history
+   */
+  getDetectionHistory(params = {}) {
+    const { limit = 20, filter = {} } = params;
+
+    let history = this.detectionHistory.slice(-limit);
+
+    if (filter.minConfidence) {
+      history = history.filter(h =>
+        h.result.technologies.some(t => t.confidence >= filter.minConfidence)
+      );
+    }
+
+    return {
+      count: history.length,
+      limit,
+      history: history.map(h => ({
+        timestamp: new Date(h.timestamp).toISOString(),
+        pageUrl: h.pageUrl,
+        technologiesFound: h.technologiesFound,
+        detectionTime: h.detectionTime,
+        topTechnologies: h.result.technologies.slice(0, 5).map(t => t.name)
+      }))
+    };
+  }
+
+  /**
+   * Get technology statistics
+   */
+  getTechStats(params = {}) {
+    const { category = null } = params;
+
+    const allTechs = [];
+    for (const history of this.detectionHistory) {
+      allTechs.push(...history.result.technologies);
+    }
+
+    let filtered = allTechs;
+    if (category) {
+      filtered = filtered.filter(t => t.category === category);
+    }
+
+    const stats = {};
+    for (const tech of filtered) {
+      if (!stats[tech.name]) {
+        stats[tech.name] = {
+          name: tech.name,
+          category: tech.category,
+          count: 0,
+          totalConfidence: 0,
+          avgConfidence: 0
         };
       }
-
-      return {
-        success: true,
-        cached: true,
-        data: cached.data,
-        age: Date.now() - cached.timestamp
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+      stats[tech.name].count++;
+      stats[tech.name].totalConfidence += tech.confidence;
     }
-  }
 
-  /**
-   * Handle: tech_detection_status command
-   * Returns detection progress/status
-   */
-  async handleTechDetectionStatus(params, pageData, sessionId) {
-    try {
-      const detector = await this.getDetector(sessionId);
-      if (!detector) throw new Error('Detector not initialized');
-
-      return {
-        success: true,
-        status: 'ready',
-        signaturesLoaded: Object.keys(detector.signatures).length,
-        cacheSize: detector.detectionCache.size,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+    // Calculate averages
+    for (const name in stats) {
+      stats[name].avgConfidence = Math.round(stats[name].totalConfidence / stats[name].count);
     }
+
+    // Sort by count
+    const sorted = Object.values(stats).sort((a, b) => b.count - a.count);
+
+    return {
+      category: category || 'all',
+      totalDetections: allTechs.length,
+      uniqueTechnologies: sorted.length,
+      topTechnologies: sorted.slice(0, 10)
+    };
   }
 
   /**
-   * Handle: clear_tech_cache command
-   * Clears detection cache
+   * Filter detections
    */
-  async handleClearTechCache(params, sessionId) {
-    try {
-      const detector = await this.getDetector(sessionId);
-      if (!detector) throw new Error('Detector not initialized');
+  filterDetections(params = {}) {
+    const { category = null, minConfidence = 0, includeVersions = true } = params;
 
-      detector.clearCache();
-
-      return {
-        success: true,
-        message: 'Cache cleared',
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.message
-      };
+    const allTechs = [];
+    for (const history of this.detectionHistory) {
+      allTechs.push(...history.result.technologies);
     }
-  }
 
-  /**
-   * Register handlers with WebSocket server
-   */
-  registerHandlers(wsServer) {
-    wsServer.on('command:detect_technologies', async (params, pageData, sessionId) => {
-      return this.handleDetectTechnologies(params, pageData, sessionId);
-    });
+    let filtered = allTechs;
 
-    wsServer.on('command:get_tech_cache', async (params, pageData, sessionId) => {
-      return this.handleGetTechCache(params, pageData, sessionId);
-    });
-
-    wsServer.on('command:tech_detection_status', async (params, pageData, sessionId) => {
-      return this.handleTechDetectionStatus(params, pageData, sessionId);
-    });
-
-    wsServer.on('command:clear_tech_cache', async (params, sessionId) => {
-      return this.handleClearTechCache(params, sessionId);
-    });
-  }
-
-  /**
-   * Helper: Group technologies by category
-   */
-  groupByCategory(technologies) {
-    const grouped = {};
-    for (const tech of technologies) {
-      const cat = tech.category || 'Unknown';
-      if (!grouped[cat]) grouped[cat] = [];
-      grouped[cat].push(tech);
+    if (category) {
+      filtered = filtered.filter(t => t.category === category);
     }
-    return grouped;
+
+    if (minConfidence > 0) {
+      filtered = filtered.filter(t => t.confidence >= minConfidence);
+    }
+
+    return {
+      criteria: {
+        category,
+        minConfidence
+      },
+      count: filtered.length,
+      technologies: filtered.map(t => ({
+        id: t.id,
+        name: t.name,
+        category: t.category,
+        confidence: t.confidence,
+        version: includeVersions ? t.version : undefined
+      }))
+    };
   }
 
   /**
-   * Helper: Calculate average confidence
+   * Get detector status
    */
-  calculateAverageConfidence(technologies) {
-    if (technologies.length === 0) return 0;
-    const sum = technologies.reduce((acc, t) => acc + t.confidence, 0);
-    return Math.round(sum / technologies.length);
+  getDetectorStatus() {
+    return {
+      moduleName: 'TechDetectionHandler',
+      version: '1.0.0',
+      signaturesLoaded: Object.keys(this.detector.signatures).length,
+      cacheSize: this.detector.detectionCache.size,
+      detectionHistoryCount: this.detectionHistory.length,
+      cacheTimeout: '1 hour',
+      supportedCommands: [
+        'detect_technologies',
+        'detect_batch',
+        'get_detection_cache',
+        'get_cached_result',
+        'clear_cache',
+        'clear_cache_entry',
+        'get_detection_history',
+        'get_tech_stats',
+        'filter_detections',
+        'load_signatures'
+      ]
+    };
   }
 
   /**
-   * Cleanup: Remove detector for session
+   * Load external signatures (async)
    */
-  removeDetector(sessionId) {
-    this.detectors.delete(sessionId);
+  async loadSignatures(params = {}) {
+    const { filePath } = params;
+
+    if (!filePath) {
+      throw new Error('filePath is required');
+    }
+
+    const success = await this.detector.loadSignatures(filePath);
+
+    if (!success) {
+      throw new Error(`Failed to load signatures from ${filePath}`);
+    }
+
+    return {
+      success: true,
+      signaturesLoaded: Object.keys(this.detector.signatures).length,
+      filePath,
+      timestamp: new Date().toISOString()
+    };
   }
 }
 
