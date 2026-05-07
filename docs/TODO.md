@@ -1,7 +1,7 @@
 # Basset Hound Browser - TODO
 
-**Last Updated:** January 31, 2026
-**Version:** 11.0.0
+**Last Updated:** May 6, 2026
+**Version:** 11.1.0
 
 ## Current Status
 

@@ -1,240 +1,295 @@
-# Integration Readiness Assessment
+# basset-hound-browser Integration Readiness
 
-**Project**: basset-hound-browser
-**Version**: 11.0.0
-**Date**: 2026-01-21 (Updated)
-**Status**: ✅ READY FOR INTEGRATION TESTING
+**Last Updated**: 2026-05-06
+**Status**: ⚠️ NEEDS REVIEW (MCP Server under development)
 
-## Executive Summary
+---
 
-The basset-hound-browser is **ready for integration testing** with other projects in the ecosystem. All critical deployment issues have been resolved, the Docker container builds and runs successfully, and the WebSocket API is fully operational. **91% API pass rate** achieved in testing.
+## Readiness Criteria Assessment
 
-## Deployment Status
+| Criteria | Status | Evidence |
+|----------|--------|----------|
+| Health endpoint | ❌ Not HTTP-based | Electron-based browser, WebSocket only |
+| Version endpoint | ✅ Partial | Version info in MCP server (line 153) |
+| Meaningful error messages | ✅ Present | WebSocket error handling in `browser_mcp/server.py` |
+| Logging capabilities | ❌ Minimal | Basic logging, no structured logging system |
+| API documentation | ⚠️ Partial | README (100+ lines), MCP docs incomplete |
+| Independent startup | ✅ Present | Electron app + WebSocket server + MCP server |
+| Graceful error handling | ⚠️ Partial | Connection error handling, needs more robustness |
+| MCP Server | 🚧 In Progress | FastMCP implementation with WebSocket bridge |
 
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Docker Build | ✅ Working | Builds successfully with all fixes applied |
-| Container Startup | ✅ Working | Xvfb + Electron headless starts correctly |
-| WebSocket Server | ✅ Working | Listens on port 8765 |
-| API Commands | ✅ Working | 91% pass rate (10/11 core commands), 200+ total commands |
-| MCP Server | ✅ Available | Python MCP server at `mcp/server.py` |
-| Health Check | ✅ Fixed | Properly checks for 426 Upgrade Required |
-| Evasion Commands | ✅ Registered | 24 commands for fingerprint/behavioral AI |
-| Evidence Chain | ✅ Registered | 15 commands for chain of custody |
+**Overall Readiness**: ⚠️ **NEEDS REVIEW** - MCP Server implementation ongoing
 
-## Test Results (2026-01-21)
+---
 
-| Command | Status | Notes |
-|---------|--------|-------|
-| `navigate` | ✅ PASS | Initiates page navigation |
-| `get_page_state` | ✅ PASS | Returns URL, title, forms, links |
-| `get_content` | ✅ PASS | Returns HTML and text content |
-| `execute_script` | ✅ PASS | Executes JS in page context |
-| `screenshot` | ✅ PASS | Captures page screenshot |
-| `get_cookies` | ✅ PASS | Retrieves cookies |
-| `get_all_cookies` | ✅ PASS | Retrieves all cookies |
-| `list_sessions` | ✅ PASS | Lists browser sessions |
-| `list_tabs` | ✅ PASS | Lists open tabs |
-| `get_memory_usage` | ✅ PASS | Returns memory stats |
+## Service Details
 
-## Important: Timing Requirements
+| Property | Value |
+|----------|-------|
+| **Architecture** | Electron-based browser + WebSocket server + MCP bridge |
+| **Primary Interface** | WebSocket (ws://localhost:8765) |
+| **MCP Interface** | stdio-based for AI agent integration |
+| **Startup Time** | < 15 seconds |
+| **Dependencies** | Electron, FastMCP, websockets |
 
-**Webview-dependent commands require the page to load first.**
+---
 
-After calling `navigate`, wait 2-4 seconds (or use `wait_for_element`) before calling:
-- `get_page_state`
-- `get_content`
-- `execute_script`
-- `screenshot`
-- `click`, `fill`, `scroll`
+## Available Features
 
-See [WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md](findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md) for details.
+### Bot Detection Evasion
+- Navigator property spoofing
+- WebGL fingerprint randomization
+- Canvas fingerprint noise injection
+- Audio context fingerprint modification
+- Timezone spoofing
+- Screen resolution spoofing
+- User agent rotation
 
-## Quick Start for Integration
+### Human-like Behavior Simulation
+- Natural mouse movement (Bezier curves)
+- Realistic typing with pauses
+- Random scroll patterns
+- Variable delays between actions
 
-### Docker Deployment
-```bash
-# Build the image
-docker build -t basset-hound-browser:latest .
+### Tab Management
+- Multi-tab support
+- Tab state tracking
+- Tab groups
+- Background tab execution
 
-# Run the container
-docker run -d --name basset-hound-browser \
-  -p 8765:8765 \
-  -e DISPLAY=:99 \
-  -e ELECTRON_DISABLE_SANDBOX=1 \
-  --cap-drop ALL \
-  --cap-add SYS_ADMIN \
-  basset-hound-browser:latest
+### Profile & Identity Management
+- Browser profiles with isolation
+- Fingerprint spoofing per profile
+- Persistent sessions
+- Cookie import/export (multiple formats)
+- Geolocation spoofing
+- Storage manager (localStorage, sessionStorage, IndexedDB)
+
+### Network & Monitoring
+- Network throttling
+- Connection simulation (3G, 4G, etc.)
+- Offline mode support
+- Page history tracking
+- Page version comparison
+
+### DevTools Access
+- Console access
+- Network monitoring
+- DOM inspection
+- Performance profiling
+
+---
+
+## WebSocket API
+
+**Connection**:
+```
+ws://localhost:8765
 ```
 
-### WebSocket Connection (with timing)
-```javascript
-const WebSocket = require('ws');
-const ws = new WebSocket('ws://localhost:8765');
-
-ws.on('open', () => {
-  // Step 1: Navigate
-  ws.send(JSON.stringify({
-    id: 1,
-    command: 'navigate',
-    url: 'https://example.com'
-  }));
-});
-
-ws.on('message', (data) => {
-  const msg = JSON.parse(data);
-  if (msg.id === 1 && msg.success) {
-    // Step 2: Wait for page load, then get content
-    setTimeout(() => {
-      ws.send(JSON.stringify({ id: 2, command: 'get_page_state' }));
-    }, 3000);
+**Command Format**:
+```json
+{
+  "id": "cmd_123",
+  "command": "open_tab",
+  "parameters": {
+    "url": "https://example.com"
   }
-  if (msg.id === 2) {
-    console.log('Page state:', msg);
-  }
-});
+}
 ```
 
-### MCP Server Integration
-```python
-# Install dependencies
-pip install -r mcp/requirements.txt
-
-# Run MCP server
-python mcp/server.py
+**Response Format**:
+```json
+{
+  "id": "cmd_123",
+  "status": "success|error",
+  "result": {},
+  "error": null
+}
 ```
 
-## API Compatibility
+---
 
-### Fully Working Commands (Immediate)
-- `navigate` - Navigate to URL
-- `get_cookies` - Retrieve cookies
-- `set_cookie` - Set a cookie
-- `get_all_cookies` - Get all cookies
-- `clear_all_cookies` - Clear cookies
-- `list_sessions` - List sessions
-- `list_tabs` - List tabs
-- `get_memory_usage` - Memory stats
-- All cookie management commands
+## MCP Server Status
 
-### Working After Page Load (Wait Required)
-These commands work after the page loads (~3 seconds after navigation):
-- `get_page_state` - Page URL, title, forms, links
-- `get_content` - HTML and text content
-- `execute_script` - Run JavaScript
-- `screenshot` - Capture screenshot
-- `click` - Click elements
-- `fill` - Fill form fields
+**Current Phase**: Phase 15 (MCP Server for AI Agent Integration)
 
-## Integration Points
+**Implementation Status**:
+- FastMCP framework integrated
+- WebSocket bridge to Electron browser in progress
+- Tool registration framework established
+- Command routing system implemented
 
-### 1. basset-hound (Main Platform)
-- **Connection**: WebSocket on port 8765
-- **Evidence Submission**: Use chain of custody commands
-- **Session Management**: Use session/profile commands
+**Files**:
+- `browser_mcp/server.py` - Main MCP server (150+ lines)
+- `browser_mcp/requirements.txt` - Dependencies
 
-### 2. palletai (AI Agents)
-- **MCP Server**: `mcp/server.py` provides MCP 2025-11-25 compatible interface
-- **FastMCP**: Uses FastMCP 2.0 framework
-- **Direct WebSocket**: Agents can connect directly to WebSocket API
+**Capabilities** (under development):
+- Browser control tools
+- Page content extraction
+- Screenshot capture
+- Tab management
+- Profile management
+- Cookie handling
 
-### 3. basset-hound-networking
-- **Status**: Proxy chain management was migrated to this package
-- **Integration**: Browser uses basic proxy setting via `proxy/manager.js`
-- **Advanced Features**: Multi-hop proxy chains require basset-hound-networking
+---
 
-## Known Limitations
+## Startup Commands
 
-1. **Timing for Page Commands**
-   - Commands that interact with page content need the page to load first
-   - Wait 2-4 seconds after navigation or use `wait_for_element`
-   - This is standard browser automation behavior
-
-2. **Tor Integration**
-   - Embedded Tor auto-download may fail due to permissions in Docker
-   - Tor features still work with external Tor process
-
-3. **D-Bus Errors**
-   - Expected in Docker environment (no D-Bus daemon)
-   - Does not affect functionality
-
-## API Documentation
-
-Full API reference is available at [API-REFERENCE.md](API-REFERENCE.md), which includes:
-- Connection information and authentication
-- Message format (request/response)
-- All command categories with parameters
-- Detailed usage examples with timing
-- Error recovery guidance
-
-Additional API documentation:
-- [OpenAPI Specification](api/openapi.yaml) - OpenAPI 3.0 spec
-
-## Files Modified Since Last Release
-
-See [DEPLOYMENT-FIXES-2026-01-21.md](findings/DEPLOYMENT-FIXES-2026-01-21.md) for deployment fixes.
-See [WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md](findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md) for timing requirements.
-
-## Recommended Integration Testing
-
-1. **WebSocket API Tests**
-   - Connect to `ws://localhost:8765`
-   - Navigate, wait, then get content
-   - Verify cookie management
-
-2. **MCP Server Tests**
-   - Start MCP server
-   - Connect via Claude Desktop or other MCP client
-   - Execute browser automation tools
-
-3. **Evidence Chain Tests**
-   - Create evidence records
-   - Verify chain of custody
-   - Test evidence export
-
-4. **Bot Detection Validation**
-   - Run: `node tests/bot-detection-validation.js`
-   - Tests fingerprint spoofing, behavioral AI, honeypot detection
-   - Live test against bot.sannysoft.com
-   - See [findings/BOT-DETECTION-EVASION-WORKFLOW-2026-01-21.md](findings/BOT-DETECTION-EVASION-WORKFLOW-2026-01-21.md)
-
-5. **Multi-Project Integration**
-   - Connect palletai agents to browser via MCP
-   - Submit evidence to basset-hound
-   - Test end-to-end OSINT workflow
-
-## Conclusion
-
-**The browser is ready for integration testing.**
-
-All core functionality works. The key insight is that page-dependent commands need proper timing after navigation - this is standard behavior for all browser automation tools (Puppeteer, Playwright, Selenium).
-
-## Test Results Summary (2026-01-21)
-
-| Test Suite | Pass Rate | Notes |
-|------------|-----------|-------|
-| Bot Detection Validation | 9/11 (82%) | 90% pass on Sannysoft live test |
-| Evidence Chain of Custody | 8/8 (100%) | All chain of custody features working |
-| Memory Monitoring | 7/7 (100%) | Heap monitoring, leak detection working |
-| Performance Load Test | Pass | 10 concurrent tabs stable at ~240MB RSS |
-
-### Test Commands
 ```bash
-# Run inside container
-node /tmp/bot-detection-validation.js
-node /tmp/evidence-chain-test.js
-node /tmp/memory-monitoring-test.js
-node /tmp/performance-load-test.js
+# Start the Electron browser application
+npm start
+
+# Start WebSocket server (runs with browser)
+# Typically: npm start includes WebSocket on port 8765
+
+# Start MCP server (for Claude Desktop integration)
+python browser_mcp/server.py
 ```
 
-## Next Steps
+---
 
-1. ✅ Docker deployment working
-2. ✅ WebSocket API verified (91% pass rate)
-3. ✅ Evidence chain of custody fixed and tested (100% pass)
-4. ✅ Bot detection evasion validated (90% Sannysoft pass)
-5. ✅ Memory monitoring verified (stable under load)
-6. ⏳ Proceed with integration testing:
-   - basset-hound-browser ↔ palletai
-   - basset-hound-browser ↔ basset-hound
-   - basset-hound-browser ↔ basset-hound-networking
+## Prerequisites for Integration
+
+**Required**:
+1. Node.js 18+ (for Electron)
+2. Python 3.9+ (for MCP server)
+3. Electron dependencies (installed via npm)
+4. FastMCP library (`pip install fastmcp`)
+5. websockets library (`pip install websockets`)
+
+**Optional**:
+- Docker for containerized deployment
+
+---
+
+## Integration Considerations
+
+1. **Dual Interface**: Both WebSocket (browser automation) and MCP (AI agent) interfaces
+2. **Electron Dependency**: Not headless-compatible in current form
+3. **Resource Usage**: Runs full browser, requires GUI environment
+4. **MCP Server**: Still under development - use with caution
+5. **Error Handling**: WebSocket connection failures need better recovery
+
+---
+
+## Known Issues & Limitations
+
+1. **MCP Server Incomplete**:
+   - Tool registration needs completion
+   - Command routing to browser needs testing
+   - Error handling needs robustness
+
+2. **Documentation**:
+   - MCP tools documentation incomplete
+   - WebSocket API examples minimal
+   - Integration guides needed
+
+3. **Testing**:
+   - MCP server lacks integration tests
+   - WebSocket reliability under load unknown
+   - Error scenarios not fully tested
+
+4. **Logging**:
+   - Minimal structured logging
+   - No audit trail system
+   - No request/response logging
+
+---
+
+## Performance Characteristics
+
+- **WebSocket latency**: <50ms typical
+- **Page load**: ~5-10 seconds with evasion enabled
+- **Memory usage**: 200-500MB per browser instance
+- **Concurrent instances**: 1-2 recommended (Electron overhead)
+
+---
+
+## Configuration
+
+**WebSocket Server** (`browser_mcp/server.py`):
+- Host: localhost (default)
+- Port: 8765 (default)
+- Timeout: 30 seconds
+
+**Browser** (Electron):
+- Configured via config.yaml
+- Per-profile settings supported
+- Fingerprint randomization enabled by default
+
+---
+
+## Recommended Next Steps
+
+1. **Complete MCP Server Implementation**:
+   - Finish tool registration
+   - Test command routing
+   - Add comprehensive error handling
+
+2. **Improve Logging**:
+   - Add structured logging throughout
+   - Implement audit trail
+   - Add request/response logging
+
+3. **Add Health Check**:
+   - Implement HTTP `/health` endpoint
+   - WebSocket health ping/pong
+   - MCP server health tool
+
+4. **Testing**:
+   - Add integration tests for MCP
+   - Test WebSocket reliability
+   - Test error recovery scenarios
+
+5. **Documentation**:
+   - Complete MCP tools documentation
+   - Add WebSocket API examples
+   - Create integration guides
+
+---
+
+## Related Projects
+
+| Project | Integration Status |
+|---------|-------------------|
+| basset-hound | ✅ Integration started (browser_integration.py in MCP) |
+| basset-verify | 📋 Verification integration possible |
+| palletai | 📋 AI agent integration in progress |
+
+---
+
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────┐
+│   Electron Browser Application              │
+│  - GUI rendering                            │
+│  - DOM interaction                          │
+│  - JavaScript execution                     │
+└──────────────────┬──────────────────────────┘
+                   │ WebSocket (local)
+                   ▼
+┌─────────────────────────────────────────────┐
+│   WebSocket Server                          │
+│  - Command parsing                          │
+│  - IPC to Electron                          │
+│  - Response serialization                   │
+└──────────────────┬──────────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        │                     │
+        ▼                     ▼
+   Direct Clients     MCP Server (stdio)
+   (Python scripts)   (Claude Desktop, etc.)
+```
+
+---
+
+## Contact & Support
+
+For issues with MCP server integration, see:
+- `browser_mcp/server.py` implementation notes
+- `browser_mcp/requirements.txt` for dependencies
+- `docs/` folder for additional documentation
+

@@ -160,7 +160,7 @@ else:
 # ==================== Navigation Tools ====================
 
 if mcp:
-    @mcp.tool
+    @mcp.tool()
     async def browser_navigate(url: str, wait_until: str = "load", timeout: int = 30000) -> Dict[str, Any]:
         """
         Navigate the browser to a URL.
@@ -177,7 +177,7 @@ if mcp:
         return await browser.send_command("navigate", url=url, wait_until=wait_until, timeout=timeout)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_url() -> Dict[str, Any]:
         """
         Get the current page URL.
@@ -189,7 +189,7 @@ if mcp:
         return await browser.send_command("get_url")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_title() -> Dict[str, Any]:
         """
         Get the current page title.
@@ -201,21 +201,21 @@ if mcp:
         return await browser.send_command("get_title")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_go_back() -> Dict[str, Any]:
         """Navigate back in browser history."""
         browser = get_browser()
         return await browser.send_command("go_back")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_go_forward() -> Dict[str, Any]:
         """Navigate forward in browser history."""
         browser = get_browser()
         return await browser.send_command("go_forward")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_reload(force: bool = False) -> Dict[str, Any]:
         """
         Reload the current page.
@@ -229,7 +229,7 @@ if mcp:
 
     # ==================== Interaction Tools ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_click(selector: str, button: str = "left", click_count: int = 1) -> Dict[str, Any]:
         """
         Click an element on the page.
@@ -248,7 +248,7 @@ if mcp:
         return await browser.send_command("click", selector=selector, button=button, click_count=click_count)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_fill(selector: str, text: str, clear_first: bool = True) -> Dict[str, Any]:
         """
         Fill a text input field with human-like typing simulation.
@@ -265,7 +265,7 @@ if mcp:
         return await browser.send_command("fill", selector=selector, text=text, clear_first=clear_first)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_type(selector: str, text: str, delay: int = 50) -> Dict[str, Any]:
         """
         Type text character by character with realistic delays.
@@ -282,7 +282,7 @@ if mcp:
         return await browser.send_command("type", selector=selector, text=text, delay=delay)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_select(selector: str, value: str) -> Dict[str, Any]:
         """
         Select an option from a dropdown.
@@ -298,7 +298,7 @@ if mcp:
         return await browser.send_command("select", selector=selector, value=value)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_scroll(x: int = 0, y: int = 0, selector: Optional[str] = None) -> Dict[str, Any]:
         """
         Scroll the page or an element.
@@ -318,7 +318,7 @@ if mcp:
         return await browser.send_command("scroll", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_hover(selector: str) -> Dict[str, Any]:
         """
         Hover over an element.
@@ -335,7 +335,7 @@ if mcp:
 
     # ==================== Content Extraction Tools ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_content(selector: Optional[str] = None, content_type: str = "html") -> Dict[str, Any]:
         """
         Get page content.
@@ -354,7 +354,7 @@ if mcp:
         return await browser.send_command("get_content", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_text(selector: str) -> Dict[str, Any]:
         """
         Get text content of an element.
@@ -369,7 +369,7 @@ if mcp:
         return await browser.send_command("get_text", selector=selector)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_attribute(selector: str, attribute: str) -> Dict[str, Any]:
         """
         Get an attribute value from an element.
@@ -385,7 +385,7 @@ if mcp:
         return await browser.send_command("get_attribute", selector=selector, attribute=attribute)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_page_state() -> Dict[str, Any]:
         """
         Get comprehensive page state including URL, title, forms, links, and more.
@@ -397,7 +397,7 @@ if mcp:
         return await browser.send_command("get_page_state")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_metadata() -> Dict[str, Any]:
         """
         Extract page metadata including Open Graph, Twitter cards, and meta tags.
@@ -409,7 +409,7 @@ if mcp:
         return await browser.send_command("extract_metadata")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_links() -> Dict[str, Any]:
         """
         Extract all links from the page with categorization.
@@ -421,7 +421,7 @@ if mcp:
         return await browser.send_command("extract_links")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_forms() -> Dict[str, Any]:
         """
         Extract form information from the page.
@@ -433,7 +433,7 @@ if mcp:
         return await browser.send_command("extract_forms")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_images() -> Dict[str, Any]:
         """
         Extract image information from the page.
@@ -447,7 +447,7 @@ if mcp:
 
     # ==================== Screenshot Tools ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot(
         path: Optional[str] = None,
         full_page: bool = False,
@@ -473,7 +473,7 @@ if mcp:
         return await browser.send_command("screenshot", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_with_highlights(
         selectors: List[str],
         full_page: bool = False,
@@ -510,7 +510,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_with_blur(
         blur_patterns: Optional[List[str]] = None,
         custom_selectors: Optional[List[str]] = None,
@@ -548,7 +548,7 @@ if mcp:
         return await browser.send_command("capture_screenshot_with_blur", options=options)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_diff(
         image_data1: str,
         image_data2: str,
@@ -582,7 +582,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_stitch(
         image_datas: List[str],
         direction: str = "vertical",
@@ -616,7 +616,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_ocr(
         image_data: str,
         language: str = "eng",
@@ -650,7 +650,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_similarity(
         image_data1: str,
         image_data2: str,
@@ -679,7 +679,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_element_context(
         selector: str,
         context_padding: int = 50,
@@ -713,7 +713,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_forensic(
         full_page: bool = False,
         format: str = "png",
@@ -755,7 +755,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_screenshot_configure_quality(
         preset: str
     ) -> Dict[str, Any]:
@@ -780,7 +780,7 @@ if mcp:
 
     # ==================== Wait Tools ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_wait_for_element(
         selector: str,
         state: str = "visible",
@@ -801,7 +801,7 @@ if mcp:
         return await browser.send_command("wait_for_element", selector=selector, state=state, timeout=timeout)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_wait_for_navigation(timeout: int = 30000) -> Dict[str, Any]:
         """
         Wait for navigation to complete.
@@ -818,7 +818,7 @@ if mcp:
 
     # ==================== JavaScript Execution ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_execute_script(script: str) -> Dict[str, Any]:
         """
         Execute JavaScript in the page context.
@@ -835,7 +835,7 @@ if mcp:
 
     # ==================== Cookie Management ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_cookies(url: Optional[str] = None) -> Dict[str, Any]:
         """
         Get cookies from the browser.
@@ -853,7 +853,7 @@ if mcp:
         return await browser.send_command("get_cookies", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_cookies(cookies: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Set cookies in the browser.
@@ -868,7 +868,7 @@ if mcp:
         return await browser.send_command("set_cookies", cookies=cookies)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_clear_cookies() -> Dict[str, Any]:
         """Clear all cookies from the browser."""
         browser = get_browser()
@@ -877,7 +877,7 @@ if mcp:
 
     # ==================== Profile Management ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_profiles() -> Dict[str, Any]:
         """
         Get list of available browser profiles.
@@ -889,7 +889,7 @@ if mcp:
         return await browser.send_command("get_profiles")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_switch_profile(profile_name: str) -> Dict[str, Any]:
         """
         Switch to a different browser profile.
@@ -906,7 +906,7 @@ if mcp:
         return await browser.send_command("switch_profile", profile_name=profile_name)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_profile(
         profile_name: str,
         fingerprint_config: Optional[Dict[str, Any]] = None
@@ -930,7 +930,7 @@ if mcp:
 
     # ==================== Proxy & Tor ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_proxy(
         proxy_url: str,
         proxy_type: str = "http"
@@ -949,7 +949,7 @@ if mcp:
         return await browser.send_command("set_proxy", proxy_url=proxy_url, proxy_type=proxy_type)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_tor_new_identity() -> Dict[str, Any]:
         """
         Get a new Tor identity (new circuit/exit node).
@@ -961,7 +961,7 @@ if mcp:
         return await browser.send_command("tor_rebuild_circuit")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_tor_set_exit_country(country_code: str) -> Dict[str, Any]:
         """
         Set preferred Tor exit node country.
@@ -976,7 +976,7 @@ if mcp:
         return await browser.send_command("tor_set_exit_country", country_code=country_code)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_tor_mode(mode: str) -> Dict[str, Any]:
         """
         Set the Tor master switch mode for intelligent network routing.
@@ -1000,7 +1000,7 @@ if mcp:
         return await browser.send_command("set_tor_mode", mode=mode)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_tor_mode() -> Dict[str, Any]:
         """
         Get the current Tor master switch mode and status.
@@ -1019,7 +1019,7 @@ if mcp:
 
     # ==================== Image Analysis (Phase 14) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_image_metadata(image_url: str) -> Dict[str, Any]:
         """
         Extract metadata from an image.
@@ -1036,7 +1036,7 @@ if mcp:
         return await browser.send_command("extract_image_metadata", imageUrl=image_url)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_image_text(image_url: str, language: str = "eng") -> Dict[str, Any]:
         """
         Extract text from an image using OCR.
@@ -1052,7 +1052,7 @@ if mcp:
         return await browser.send_command("extract_image_text", imageUrl=image_url, language=language)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_page_images_with_metadata(limit: int = 20) -> Dict[str, Any]:
         """
         Get all images from the page with their metadata.
@@ -1069,7 +1069,7 @@ if mcp:
 
     # ==================== Technology Detection ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_detect_technologies() -> Dict[str, Any]:
         """
         Detect technologies used on the current page.
@@ -1085,7 +1085,7 @@ if mcp:
 
     # ==================== Network Analysis ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_start_network_capture() -> Dict[str, Any]:
         """
         Start capturing network traffic.
@@ -1097,7 +1097,7 @@ if mcp:
         return await browser.send_command("start_network_capture")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_stop_network_capture() -> Dict[str, Any]:
         """
         Stop capturing network traffic.
@@ -1109,7 +1109,7 @@ if mcp:
         return await browser.send_command("stop_network_capture")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_network_requests(
         domain: Optional[str] = None,
         content_type: Optional[str] = None
@@ -1135,7 +1135,7 @@ if mcp:
 
     # ==================== Fingerprint Profile Tools (Phase 17) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_fingerprint_profile(
         platform: Optional[str] = None,
         timezone: Optional[str] = None,
@@ -1170,7 +1170,7 @@ if mcp:
         return await browser.send_command("create_fingerprint_profile", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_regional_fingerprint(
         region: str,
         profile_id: Optional[str] = None
@@ -1192,7 +1192,7 @@ if mcp:
         return await browser.send_command("create_regional_fingerprint", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_fingerprint_profiles() -> Dict[str, Any]:
         """
         List all fingerprint profiles.
@@ -1204,7 +1204,7 @@ if mcp:
         return await browser.send_command("list_fingerprint_profiles")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_apply_fingerprint(profile_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Apply a fingerprint profile to the current page.
@@ -1224,7 +1224,7 @@ if mcp:
         return await browser.send_command("apply_fingerprint", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_fingerprint_options() -> Dict[str, Any]:
         """
         Get available fingerprint options.
@@ -1238,7 +1238,7 @@ if mcp:
 
     # ==================== Behavioral AI Tools (Phase 17) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_behavioral_profile(
         session_id: Optional[str] = None,
         speed_multiplier: Optional[float] = None,
@@ -1268,7 +1268,7 @@ if mcp:
         return await browser.send_command("create_behavioral_profile", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_generate_mouse_path(
         start_x: int,
         start_y: int,
@@ -1305,7 +1305,7 @@ if mcp:
         return await browser.send_command("generate_mouse_path", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_generate_typing_events(
         text: str,
         session_id: Optional[str] = None
@@ -1330,7 +1330,7 @@ if mcp:
         return await browser.send_command("generate_typing_events", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_check_honeypot(
         selector: str
     ) -> Dict[str, Any]:
@@ -1349,7 +1349,7 @@ if mcp:
         return await browser.send_command("check_honeypot_selector", selector=selector)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_rate_limit_delay(domain: str) -> Dict[str, Any]:
         """
         Get recommended delay before next request to a domain.
@@ -1366,7 +1366,7 @@ if mcp:
         return await browser.send_command("get_rate_limit_state", domain=domain)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_record_rate_limit(
         domain: str,
         retry_after: Optional[int] = None
@@ -1390,7 +1390,7 @@ if mcp:
 
     # ==================== Evidence Collection Tools (Phase 18) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_evidence_package(
         name: str,
         description: Optional[str] = None,
@@ -1424,7 +1424,7 @@ if mcp:
         return await browser.send_command("create_evidence_package", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_capture_screenshot_evidence(
         url: Optional[str] = None,
         title: Optional[str] = None,
@@ -1462,7 +1462,7 @@ if mcp:
         return await browser.send_command("capture_screenshot_evidence", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_capture_page_archive_evidence(
         format: str = "mhtml",
         url: Optional[str] = None,
@@ -1490,7 +1490,7 @@ if mcp:
         return await browser.send_command("capture_page_archive_evidence", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_capture_har_evidence(
         url: Optional[str] = None
     ) -> Dict[str, Any]:
@@ -1518,7 +1518,7 @@ if mcp:
         return await browser.send_command("capture_har_evidence", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_seal_evidence_package(
         package_id: Optional[str] = None,
         sealed_by: str = "investigator"
@@ -1542,7 +1542,7 @@ if mcp:
         return await browser.send_command("seal_evidence_package", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_verify_evidence_package(package_id: str) -> Dict[str, Any]:
         """
         Verify integrity of an evidence package.
@@ -1559,7 +1559,7 @@ if mcp:
         return await browser.send_command("verify_evidence_package", packageId=package_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_export_evidence_for_court(package_id: str) -> Dict[str, Any]:
         """
         Export evidence package in court-ready format.
@@ -1576,7 +1576,7 @@ if mcp:
         return await browser.send_command("export_for_court", packageId=package_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_evidence_packages() -> Dict[str, Any]:
         """
         List all evidence packages.
@@ -1588,7 +1588,7 @@ if mcp:
         return await browser.send_command("list_evidence_packages")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_evidence_stats() -> Dict[str, Any]:
         """
         Get evidence collection statistics.
@@ -1600,7 +1600,7 @@ if mcp:
         return await browser.send_command("get_evidence_stats")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_add_evidence_annotation(
         text: str,
         author: str,
@@ -1632,7 +1632,7 @@ if mcp:
     # Network Forensics Tools (Phase 19)
     # ==========================================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_start_network_forensics_capture(
         max_dns_queries: int = 10000,
         max_certificates: int = 1000,
@@ -1665,7 +1665,7 @@ if mcp:
             }
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_stop_network_forensics_capture() -> Dict[str, Any]:
         """
         Stop network forensics capture.
@@ -1676,7 +1676,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("stop_network_forensics_capture")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_dns_queries(
         hostname: Optional[str] = None,
         query_type: Optional[str] = None,
@@ -1704,7 +1704,7 @@ if mcp:
 
         return await browser.send_command("get_dns_queries", filter=filter_params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_dns_queries() -> Dict[str, Any]:
         """
         Analyze captured DNS queries.
@@ -1716,7 +1716,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_dns_queries")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_tls_certificates(
         hostname: Optional[str] = None,
         valid: Optional[bool] = None,
@@ -1744,7 +1744,7 @@ if mcp:
 
         return await browser.send_command("get_tls_certificates", filter=filter_params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_tls_certificates() -> Dict[str, Any]:
         """
         Analyze captured TLS certificates.
@@ -1756,7 +1756,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_tls_certificates")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_websocket_connections(
         url: Optional[str] = None,
         state: Optional[str] = None
@@ -1780,7 +1780,7 @@ if mcp:
 
         return await browser.send_command("get_websocket_connections", filter=filter_params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_websocket_connections() -> Dict[str, Any]:
         """
         Analyze WebSocket connections.
@@ -1792,7 +1792,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_websocket_connections")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_http_headers(
         url: Optional[str] = None,
         method: Optional[str] = None
@@ -1816,7 +1816,7 @@ if mcp:
 
         return await browser.send_command("get_http_headers", filter=filter_params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_http_headers() -> Dict[str, Any]:
         """
         Analyze HTTP headers.
@@ -1828,7 +1828,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_http_headers")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_cookies_with_provenance(
         domain: Optional[str] = None,
         secure: Optional[bool] = None
@@ -1852,7 +1852,7 @@ if mcp:
 
         return await browser.send_command("get_cookies", filter=filter_params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_cookie_provenance(domain: str, name: str) -> Dict[str, Any]:
         """
         Get detailed provenance for a specific cookie.
@@ -1867,7 +1867,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("get_cookie_provenance", domain=domain, name=name)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_cookies() -> Dict[str, Any]:
         """
         Analyze captured cookies.
@@ -1879,7 +1879,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_cookies")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_export_forensic_report(
         format: str = "json",
         include_dns: bool = True,
@@ -1918,7 +1918,7 @@ if mcp:
             }
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_network_forensics_stats() -> Dict[str, Any]:
         """
         Get network forensics statistics.
@@ -1971,7 +1971,7 @@ if mcp:
     # INTERACTION RECORDING TOOLS (Phase 20)
     # ==========================================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_start_interaction_recording(
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -2017,7 +2017,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_stop_interaction_recording() -> Dict[str, Any]:
         """
         Stop the current interaction recording session.
@@ -2033,7 +2033,7 @@ if mcp:
         return await browser.send_command("stop_interaction_recording")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_export_recording_as_script(
         format: str = "puppeteer",
         include_header: bool = True,
@@ -2067,7 +2067,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_interaction_timeline(
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
@@ -2103,7 +2103,7 @@ if mcp:
         return await browser.send_command("get_interaction_timeline", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_recording_checkpoint(
         name: Optional[str] = None,
         description: Optional[str] = None
@@ -2130,7 +2130,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_annotate_recording(
         text: str,
         category: str = "note",
@@ -2160,7 +2160,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_recording_stats() -> Dict[str, Any]:
         """
         Get statistics for the current interaction recording.
@@ -2176,7 +2176,7 @@ if mcp:
         return await browser.send_command("get_recording_stats")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_replay_recording(
         speed: float = 1.0,
         skip_mouse_movements: bool = True,
@@ -2211,7 +2211,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_interaction_recordings(
         offset: int = 0,
         limit: int = 50
@@ -2265,7 +2265,7 @@ if mcp:
 
     # ==================== Smart Form Filling (Phase 22) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_forms() -> Dict[str, Any]:
         """
         Analyze all forms on the current page.
@@ -2278,7 +2278,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_forms")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_form(selector: str) -> Dict[str, Any]:
         """
         Analyze a specific form by selector.
@@ -2292,7 +2292,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("analyze_form", selector=selector)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_fill_form(
         selector: str,
         data: Dict[str, Any],
@@ -2323,7 +2323,7 @@ if mcp:
             validate=validate
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_fill_form_smart(
         selector: str,
         profile: Optional[str] = None,
@@ -2348,7 +2348,7 @@ if mcp:
             params["profile"] = profile
         return await browser.send_command("fill_form_smart", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_detect_honeypots(selector: Optional[str] = None) -> Dict[str, Any]:
         """
         Detect honeypot fields on the page.
@@ -2367,7 +2367,7 @@ if mcp:
             params["selector"] = selector
         return await browser.send_command("detect_honeypots", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_detect_captchas(selector: Optional[str] = None) -> Dict[str, Any]:
         """
         Detect CAPTCHA challenges on the page.
@@ -2384,7 +2384,7 @@ if mcp:
             params["selector"] = selector
         return await browser.send_command("detect_captchas", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_form_filler_stats() -> Dict[str, Any]:
         """
         Get statistics for form filling operations.
@@ -2395,7 +2395,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("get_form_filler_stats")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_configure_form_filler(
         respect_honeypots: Optional[bool] = None,
         skip_captchas: Optional[bool] = None,
@@ -2429,7 +2429,7 @@ if mcp:
 
     # ==================== Profile Templates (Phase 23) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_profile_templates(
         category: Optional[str] = None,
         risk_level: Optional[str] = None,
@@ -2459,7 +2459,7 @@ if mcp:
             params["tags"] = tags
         return await browser.send_command("list_profile_templates", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_profile_template(template_id: str) -> Dict[str, Any]:
         """
         Get details of a specific profile template.
@@ -2473,7 +2473,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("get_profile_template", id=template_id)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_search_profile_templates(query: str) -> Dict[str, Any]:
         """
         Search profile templates by name, description, or tags.
@@ -2487,7 +2487,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("search_profile_templates", query=query)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_generate_profile_from_template(
         template_id: str,
         customizations: Optional[Dict[str, Any]] = None
@@ -2511,7 +2511,7 @@ if mcp:
             params["customizations"] = customizations
         return await browser.send_command("generate_profile_from_template", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_profile_template(
         name: str,
         description: Optional[str] = None,
@@ -2544,7 +2544,7 @@ if mcp:
             params.update(config)
         return await browser.send_command("create_profile_template", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_clone_profile_template(
         template_id: str,
         modifications: Optional[Dict[str, Any]] = None
@@ -2565,7 +2565,7 @@ if mcp:
             params["modifications"] = modifications
         return await browser.send_command("clone_profile_template", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_template_categories() -> Dict[str, Any]:
         """
         Get all available template categories.
@@ -2576,7 +2576,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("get_template_categories")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_template_risk_levels() -> Dict[str, Any]:
         """
         Get all available risk levels.
@@ -2587,7 +2587,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("get_template_risk_levels")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_profile_template_stats() -> Dict[str, Any]:
         """
         Get statistics about profile templates.
@@ -2601,7 +2601,7 @@ if mcp:
 
     # ==================== Advanced Cookie Management (Phase 27) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_cookie_jar(
         name: str,
         isolated: bool = True,
@@ -2629,7 +2629,7 @@ if mcp:
             params["metadata"] = metadata
         return await browser.send_command("create_cookie_jar", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_cookie_jars() -> Dict[str, Any]:
         """
         List all cookie jars with statistics.
@@ -2640,7 +2640,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("list_cookie_jars")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_switch_cookie_jar(
         name: str,
         save_current: bool = True,
@@ -2667,7 +2667,7 @@ if mcp:
             loadTarget=load_target
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_sync_cookie_jars(
         source: str,
         target: str,
@@ -2692,7 +2692,7 @@ if mcp:
             mode=mode
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_analyze_all_cookies(include_details: bool = True) -> Dict[str, Any]:
         """
         Analyze all cookies for security issues.
@@ -2715,7 +2715,7 @@ if mcp:
             includeDetails=include_details
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_find_insecure_cookies() -> Dict[str, Any]:
         """
         Find cookies with security issues.
@@ -2726,7 +2726,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("find_insecure_cookies")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_export_cookies(
         format: str = "json",
         jar: Optional[str] = None,
@@ -2755,7 +2755,7 @@ if mcp:
             params["jar"] = jar
         return await browser.send_command("export_cookies", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_import_cookies(
         data: str,
         format: str = "json",
@@ -2780,7 +2780,7 @@ if mcp:
             params["jar"] = jar
         return await browser.send_command("import_cookies", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_cookie_history(
         action: Optional[str] = None,
         domain: Optional[str] = None,
@@ -2807,7 +2807,7 @@ if mcp:
             params["domain"] = domain
         return await browser.send_command("get_cookie_history", **params)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_cookies_by_classification(classification: str) -> Dict[str, Any]:
         """
         Get cookies by classification type.
@@ -2832,7 +2832,7 @@ if mcp:
             classification=classification
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_cookie_manager_stats() -> Dict[str, Any]:
         """
         Get cookie manager statistics.
@@ -2846,7 +2846,7 @@ if mcp:
 
     # ==================== Multi-Page Management (Phase 28) ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_init_multi_page(
         profile: str = "balanced",
         max_concurrent_pages: Optional[int] = None,
@@ -2894,7 +2894,7 @@ if mcp:
             config=config if config else None
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_page(
         partition: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
@@ -2929,7 +2929,7 @@ if mcp:
             metadata=metadata
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_navigate_page(
         page_id: str,
         url: str
@@ -2962,7 +2962,7 @@ if mcp:
             url=url
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_navigate_pages_batch(
         navigations: List[Dict[str, str]]
     ) -> Dict[str, Any]:
@@ -2992,7 +2992,7 @@ if mcp:
             navigations=navigations
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_pages() -> Dict[str, Any]:
         """
         List all open pages.
@@ -3011,7 +3011,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("list_pages")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_page_info(page_id: str) -> Dict[str, Any]:
         """
         Get detailed information about a specific page.
@@ -3030,7 +3030,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("get_page_info", pageId=page_id)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_active_page(page_id: str) -> Dict[str, Any]:
         """
         Set the active (visible) page.
@@ -3050,7 +3050,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("set_active_page", pageId=page_id)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_execute_on_page(
         page_id: str,
         code: str
@@ -3092,7 +3092,7 @@ if mcp:
             code=code
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_page_screenshot(
         page_id: str
     ) -> Dict[str, Any]:
@@ -3122,7 +3122,7 @@ if mcp:
             pageId=page_id
         )
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_destroy_page(page_id: str) -> Dict[str, Any]:
         """
         Close and destroy a page.
@@ -3141,7 +3141,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("destroy_page", pageId=page_id)
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_close_all_pages() -> Dict[str, Any]:
         """
         Close all open pages.
@@ -3158,7 +3158,7 @@ if mcp:
         browser = get_browser()
         return await browser.send_command("close_all_pages")
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_multi_page_stats() -> Dict[str, Any]:
         """
         Get multi-page manager statistics.
@@ -3181,7 +3181,7 @@ if mcp:
 
     # ==================== Page Monitoring & Change Detection ====================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_start_monitoring_page(
         methods: Optional[List[str]] = None,
         interval: int = 60000,
@@ -3223,7 +3223,7 @@ if mcp:
         return await browser.send_command("start_monitoring_page", config=config)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_stop_monitoring_page(monitor_id: str) -> Dict[str, Any]:
         """
         Stop monitoring a page.
@@ -3241,7 +3241,7 @@ if mcp:
         return await browser.send_command("stop_monitoring_page", monitorId=monitor_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_pause_monitoring_page(monitor_id: str) -> Dict[str, Any]:
         """
         Pause page monitoring temporarily.
@@ -3259,7 +3259,7 @@ if mcp:
         return await browser.send_command("pause_monitoring_page", monitorId=monitor_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_resume_monitoring_page(monitor_id: str) -> Dict[str, Any]:
         """
         Resume paused page monitoring.
@@ -3276,7 +3276,7 @@ if mcp:
         return await browser.send_command("resume_monitoring_page", monitorId=monitor_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_check_page_changes_now(monitor_id: str) -> Dict[str, Any]:
         """
         Check for page changes immediately.
@@ -3294,7 +3294,7 @@ if mcp:
         return await browser.send_command("check_page_changes_now", monitorId=monitor_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_page_changes(
         monitor_id: str,
         limit: int = 50,
@@ -3332,7 +3332,7 @@ if mcp:
         return await browser.send_command("get_page_changes", monitorId=monitor_id, options=options)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_compare_page_versions(
         monitor_id: str,
         version1_id: str,
@@ -3362,7 +3362,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_monitoring_schedule(monitor_id: str) -> Dict[str, Any]:
         """
         Get monitoring schedule information.
@@ -3380,7 +3380,7 @@ if mcp:
         return await browser.send_command("get_monitoring_schedule", monitorId=monitor_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_configure_monitoring(
         monitor_id: str,
         methods: Optional[List[str]] = None,
@@ -3422,7 +3422,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_export_monitoring_report(
         monitor_id: str,
         format: str = "json",
@@ -3463,7 +3463,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_monitoring_stats(monitor_id: str) -> Dict[str, Any]:
         """
         Get detailed monitoring statistics and analytics.
@@ -3481,7 +3481,7 @@ if mcp:
         return await browser.send_command("get_monitoring_stats", monitorId=monitor_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_add_monitoring_zone(
         monitor_id: str,
         selector: str,
@@ -3522,7 +3522,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_monitored_pages() -> Dict[str, Any]:
         """
         List all active page monitors.
@@ -3540,7 +3540,7 @@ if mcp:
     # Phase 30: Geolocation/Location Simulation Tools
     # ==========================================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_geolocation(
         latitude: float,
         longitude: float,
@@ -3579,7 +3579,7 @@ if mcp:
         return await browser.send_command("set_geolocation", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_location_profile(profile: str) -> Dict[str, Any]:
         """
         Set location using pre-configured profile.
@@ -3604,7 +3604,7 @@ if mcp:
         return await browser.send_command("set_location_profile", profile=profile)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_timezone(timezone: str) -> Dict[str, Any]:
         """
         Set browser timezone.
@@ -3627,7 +3627,7 @@ if mcp:
         return await browser.send_command("set_timezone", timezone=timezone)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_set_locale(
         locale: str,
         languages: Optional[List[str]] = None
@@ -3653,7 +3653,7 @@ if mcp:
         return await browser.send_command("set_locale", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_enable_location_spoofing() -> Dict[str, Any]:
         """
         Enable location spoofing.
@@ -3668,7 +3668,7 @@ if mcp:
         return await browser.send_command("enable_location_spoofing")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_location_status() -> Dict[str, Any]:
         """
         Get current location spoofing status.
@@ -3691,7 +3691,7 @@ if mcp:
     # then configure your proxy separately.
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_reset_location() -> Dict[str, Any]:
         """
         Reset location to browser defaults.
@@ -3710,7 +3710,7 @@ if mcp:
     # Phase 31: Data Extraction Templates Tools
     # ==========================================
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_create_extraction_template(
         name: str,
         fields: Dict[str, Any],
@@ -3758,7 +3758,7 @@ if mcp:
         return await browser.send_command("create_extraction_template", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_with_template(template_id: str) -> Dict[str, Any]:
         """
         Extract data from current page using template.
@@ -3776,7 +3776,7 @@ if mcp:
         return await browser.send_command("extract_with_template", templateId=template_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_list_extraction_templates(
         platform: Optional[str] = None,
         extraction_type: Optional[str] = None,
@@ -3815,7 +3815,7 @@ if mcp:
         return await browser.send_command("list_extraction_templates", **params)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_extraction_template(template_id: str) -> Dict[str, Any]:
         """
         Get extraction template details.
@@ -3833,7 +3833,7 @@ if mcp:
         return await browser.send_command("get_extraction_template", templateId=template_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_update_extraction_template(
         template_id: str,
         updates: Dict[str, Any]
@@ -3859,7 +3859,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_delete_extraction_template(template_id: str) -> Dict[str, Any]:
         """
         Delete extraction template.
@@ -3876,7 +3876,7 @@ if mcp:
         return await browser.send_command("delete_extraction_template", templateId=template_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_validate_extraction_template(template_id: str) -> Dict[str, Any]:
         """
         Validate extraction template.
@@ -3895,7 +3895,7 @@ if mcp:
         return await browser.send_command("validate_extraction_template", templateId=template_id)
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_extract_bulk(
         template_id: str,
         container_selector: str
@@ -3922,7 +3922,7 @@ if mcp:
         )
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_get_extraction_stats() -> Dict[str, Any]:
         """
         Get extraction template statistics.
@@ -3937,7 +3937,7 @@ if mcp:
         return await browser.send_command("get_extraction_stats")
 
 
-    @mcp.tool
+    @mcp.tool()
     async def browser_clone_extraction_template(
         template_id: str,
         new_name: str

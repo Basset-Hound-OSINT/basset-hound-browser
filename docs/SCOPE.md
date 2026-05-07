@@ -390,6 +390,85 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 
 ---
 
+## AI Agent Integration Testing (IN SCOPE)
+
+### MCP Testing Methodology
+
+Basset Hound Browser's MCP server is systematically validated through **multi-model agent testing**. This ensures the MCP interface works effectively with different AI models and capability levels, providing integrators with clear performance expectations.
+
+#### Testing Strategy
+
+**Three-Model Validation:**
+- **Opus 4.7** (full capability) - Complex reasoning, comprehensive testing
+- **Sonnet 4.6** (balanced) - Strong reasoning with good speed-capability tradeoff  
+- **Haiku 4.5** (fast) - Optimized for speed, practical tasks
+
+**Ten Core Test Scenarios:**
+1. Simple Navigation - Visit multiple URLs
+2. Form Interaction - Fill and submit forms
+3. Content Extraction - Get HTML, text, links
+4. Screenshot Capture - Full-page image capture
+5. Cookie Management - Get, set, clear cookies
+6. Multiple Tabs - Create, switch, close tabs
+7. JavaScript Execution - Run custom scripts in page
+8. Proxy Configuration - Set and test proxy
+9. User Agent Rotation - Get and rotate user agents
+10. Tor Integration - Check Tor mode and status
+
+#### Testing Artifacts
+
+All MCP testing is systematically documented in:
+
+```
+docs/archive/experimentation/
+├── mcp-testing-opus-4-7-[DATE]/
+│   ├── test-prompts.md (exact prompts used)
+│   ├── test-results.json (success rates, timings)
+│   ├── findings.md (observations, issues)
+│   └── screenshots/ (captures for analysis)
+├── mcp-testing-sonnet-4-6-[DATE]/
+│   ├── test-prompts.md
+│   ├── test-results.json
+│   └── findings.md
+├── mcp-testing-haiku-4-5-[DATE]/
+│   ├── test-prompts.md
+│   ├── test-results.json
+│   └── findings.md
+└── MCP-TESTING-MASTER-REPORT-[DATE].md (consolidated findings)
+```
+
+#### Integration Performance Guide
+
+`docs/integration-performance-recommendations.md` provides integrators with:
+- Which model to use for different use cases
+- Cost-benefit analysis per model
+- Prompt engineering patterns that work well
+- Error recovery strategies
+- Optimization recommendations
+
+This ensures secondary projects (like palletai agents) can make informed decisions about:
+- Which Claude model to use for browser automation
+- Expected performance and cost tradeoffs
+- Prompt engineering best practices
+- Error handling strategies
+
+#### Scope of MCP Testing
+
+✅ **IN SCOPE:**
+- Systematic validation of browser automation capabilities via MCP
+- Multi-model performance profiling
+- Prompt engineering best practices documentation
+- Error handling and recovery patterns
+- Performance comparison across models
+
+❌ **OUT OF SCOPE:**
+- Intelligence analysis results
+- Decision-making about what to test next
+- Creating test data or scenarios
+- Data interpretation or analysis
+
+---
+
 ## Related Projects
 
 - **basset-hound:** Entity storage and graph database

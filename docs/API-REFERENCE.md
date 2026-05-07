@@ -1,6 +1,6 @@
 # Basset Hound Browser API Reference
 
-**Version**: 11.0.0
+**Version**: 11.1.0
 **Protocol**: WebSocket (JSON messages)
 **Default Port**: 8765
 

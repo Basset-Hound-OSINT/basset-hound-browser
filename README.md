@@ -1,6 +1,22 @@
 # Basset Hound Browser
 
+**Version 11.1.0** - Production Ready  
 A custom Electron-based browser designed for OSINT (Open Source Intelligence) and automation tasks with advanced bot detection evasion capabilities. Part of the Basset Hound OSINT toolkit.
+
+---
+
+### 🎉 What's New in v11.1.0
+
+✅ **MCP Integration Ready** - 166 tools via Model Context Protocol for AI agents  
+✅ **Client Libraries** - Python and Node.js clients for easy integration  
+✅ **Sample Workflows** - Complete OSINT workflow examples  
+✅ **Production Validated** - 100% test pass rate, cost analysis complete  
+✅ **Integration Guides** - Comprehensive guides for secondary projects (palletai, etc.)  
+✅ **Complete Documentation** - Deployment, troubleshooting, performance tuning  
+
+**See:** [RELEASE-NOTES-11.1.0.md](docs/RELEASE-NOTES-11.1.0.md)
+
+---
 
 ## Table of Contents
 
@@ -162,11 +178,12 @@ The browser is designed to blend in with regular browser traffic while providing
 
 ## Quick Start
 
-```bash
-# Clone the repository (if not already done)
-cd basset-hound/basset-hound-browser
+### For Developers (5 minutes)
 
-# Install dependencies
+```bash
+# Clone and install
+git clone https://github.com/basset-hound/basset-hound-browser.git
+cd basset-hound-browser
 npm install
 
 # Start the browser
@@ -174,6 +191,51 @@ npm start
 ```
 
 Once running, connect to `ws://localhost:8765` to control the browser programmatically.
+
+### For Integrators (New in v11.1.0)
+
+**Option 1: Python Client**
+```python
+from integrations.python_client import BassetHoundClient
+import asyncio
+
+async def main():
+    async with BassetHoundClient() as browser:
+        await browser.navigate("https://example.com")
+        links = await browser.extract_links()
+        print(f"Found {len(links)} links")
+
+asyncio.run(main())
+```
+
+**Option 2: Node.js Client**
+```javascript
+const { BassetHoundClient } = require('./integrations/nodejs_client');
+
+const browser = new BassetHoundClient();
+await browser.connect();
+await browser.navigate("https://example.com");
+const content = await browser.getContent();
+console.log(content.text);
+await browser.disconnect();
+```
+
+**Option 3: MCP Server (for AI agents / palletai)**
+```bash
+# Register with Claude Code
+claude mcp add basset-hound -- python -m browser_mcp.server
+
+# Then use 166 MCP tools in your agent:
+# browser_navigate, browser_click, browser_extract_links, etc.
+```
+
+**Option 4: Sample OSINT Workflow**
+```bash
+python integrations/sample_osint_workflow.py https://example.com
+python integrations/sample_osint_workflow.py https://example.com --advanced
+```
+
+See: [Client Libraries & Integration Guide](integrations/README.md)
 
 ## Installation
 
@@ -639,6 +701,15 @@ const options = {
 
 ### Project Continuity
 - [TMP.md](TMP.md) - Project continuity file for developers containing current state, recent changes, and next steps
+
+### v11.1.0 Resources (NEW - Production Ready)
+- [RELEASE-NOTES-11.1.0.md](docs/RELEASE-NOTES-11.1.0.md) - Complete release information and test results
+- [DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md) - Step-by-step deployment for dev/production/headless
+- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [integration-performance-recommendations.md](docs/integration-performance-recommendations.md) - Performance tuning and cost analysis
+- [Client Libraries Guide](integrations/README.md) - Python/Node.js/MCP integration
+- [palletai Integration](integrations/palletai_integration.md) - AI agent integration patterns
+- [Python OSINT Workflow](integrations/sample_osint_workflow.py) - Complete reconnaissance example
 
 ## Security Considerations
 
