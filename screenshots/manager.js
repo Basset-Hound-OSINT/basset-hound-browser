@@ -2,12 +2,14 @@
  * Basset Hound Browser - Enhanced Screenshot Manager
  * Provides advanced screenshot capabilities including full page capture,
  * element screenshots, annotations, and multiple format support.
+ * Includes headless mode detection and fallback mechanisms.
  */
 
 const { ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { execSync } = require('child_process');
 
 /**
  * Screenshot format configurations
@@ -67,7 +69,50 @@ class ScreenshotManager {
     this.mainWindow = mainWindow;
     this.pendingRequests = new Map();
     this.requestIdCounter = 0;
+    this.headlessModeEnabled = this.detectHeadlessMode();
+    this.headlessAlternativeMethod = null; // Will be set to 'offscreen' or 'xvfb' if available
+    this.lastHeadlessFrame = null; // Cache last rendered frame for headless mode
     this.setupIPCListeners();
+    this.detectHeadlessAlternatives();
+  }
+
+  /**
+   * Detect if running in headless mode
+   * @returns {boolean} True if in headless mode
+   */
+  detectHeadlessMode() {
+    // Check for headless environment indicators
+    const isHeadless = process.env.HEADLESS === 'true' ||
+                       process.env.DISPLAY === undefined ||
+                       process.argv.some(arg => arg.includes('headless'));
+
+    if (isHeadless) {
+      console.log('[ScreenshotManager] Headless mode detected');
+    }
+
+    return isHeadless;
+  }
+
+  /**
+   * Detect available headless screenshot alternatives
+   */
+  detectHeadlessAlternatives() {
+    if (!this.headlessModeEnabled) return;
+
+    // Check for xvfb availability
+    try {
+      execSync('which xvfb-run', { stdio: 'ignore' });
+      this.headlessAlternativeMethod = 'xvfb';
+      console.log('[ScreenshotManager] XVFB available as headless alternative');
+    } catch (e) {
+      // xvfb not available
+    }
+
+    // Check for offscreen rendering capability
+    if (this.mainWindow && this.mainWindow.webContents) {
+      this.headlessAlternativeMethod = this.headlessAlternativeMethod || 'offscreen';
+      console.log('[ScreenshotManager] Offscreen rendering available as headless alternative');
+    }
   }
 
   /**
@@ -121,6 +166,53 @@ class ScreenshotManager {
       quality = FORMAT_CONFIG[format]?.quality || 1.0
     } = options;
 
+    // For headless mode, use direct main process capture
+    if (this.headlessModeEnabled) {
+      try {
+        const image = await this.mainWindow.webContents.capturePage();
+
+        // Check if image is valid
+        if (image && !image.isEmpty && !image.isEmpty()) {
+          const dataUrl = image.toDataURL();
+          if (dataUrl && dataUrl.length > 100) {
+            return {
+              success: true,
+              data: dataUrl,
+              captureMethod: 'mainWindowDirect',
+              width: image.getSize().width,
+              height: image.getSize().height,
+              headlessMode: true
+            };
+          }
+        }
+
+        // Image was empty - try offscreen rendering if available
+        if (this.headlessAlternativeMethod === 'offscreen' && this.lastHeadlessFrame) {
+          return {
+            success: true,
+            data: this.lastHeadlessFrame,
+            captureMethod: 'offscreenCache',
+            headlessMode: true,
+            cached: true
+          };
+        }
+
+        return {
+          success: false,
+          error: 'Unable to capture screenshot in headless mode: webview has zero dimensions',
+          headlessMode: true,
+          suggestion: 'Ensure viewport dimensions are set or use GUI mode for screenshots'
+        };
+      } catch (error) {
+        return {
+          success: false,
+          error: `Headless screenshot capture failed: ${error.message}`,
+          headlessMode: true
+        };
+      }
+    }
+
+    // Non-headless mode: use IPC for screenshot
     const requestId = this.generateRequestId();
 
     return new Promise((resolve) => {
@@ -760,10 +852,61 @@ class ScreenshotManager {
   }
 
   /**
-   * Cleanup pending requests
+   * Cache the last rendered frame from webContents for headless fallback
+   * Called periodically or after page loads to maintain offscreen frame cache
+   * @param {Object} webContents - Electron webContents object
+   * @returns {Promise<boolean>} Success status
+   */
+  async cacheLastRenderedFrame(webContents) {
+    if (!this.headlessModeEnabled) return false;
+
+    try {
+      const image = await webContents.capturePage();
+      if (image && !image.isEmpty && !image.isEmpty()) {
+        this.lastHeadlessFrame = image.toDataURL();
+        console.log('[ScreenshotManager] Cached headless frame for fallback');
+        return true;
+      }
+    } catch (error) {
+      console.warn('[ScreenshotManager] Failed to cache frame:', error.message);
+    }
+
+    return false;
+  }
+
+  /**
+   * Set headless alternative method explicitly
+   * Useful for testing or when specific method is known to work
+   * @param {string} method - 'offscreen', 'xvfb', or null
+   */
+  setHeadlessAlternativeMethod(method) {
+    if (method === 'offscreen' || method === 'xvfb' || method === null) {
+      this.headlessAlternativeMethod = method;
+      console.log(`[ScreenshotManager] Headless alternative method set to: ${method || 'auto'}`);
+    }
+  }
+
+  /**
+   * Get headless mode status
+   * @returns {Object} Status information
+   */
+  getHeadlessModeStatus() {
+    return {
+      headlessModeEnabled: this.headlessModeEnabled,
+      alternativeMethod: this.headlessAlternativeMethod,
+      hasCachedFrame: !!this.lastHeadlessFrame,
+      recommendation: this.headlessModeEnabled ?
+        'For better screenshot quality in headless mode, consider: 1) Setting explicit viewport dimensions 2) Using xvfb-run wrapper 3) Configuring offscreen rendering' :
+        'Running in GUI mode - no special handling needed'
+    };
+  }
+
+  /**
+   * Cleanup pending requests and cached data
    */
   cleanup() {
     this.pendingRequests.clear();
+    this.lastHeadlessFrame = null;
   }
 }
 
@@ -887,5 +1030,11 @@ module.exports = {
   PII_PATTERNS,
   ANNOTATION_TYPES,
   validateAnnotation,
-  applyAnnotationDefaults
+  applyAnnotationDefaults,
+  // Export headless mode detection helper
+  detectHeadlessMode: () => {
+    return process.env.HEADLESS === 'true' ||
+           process.env.DISPLAY === undefined ||
+           process.argv.some(arg => arg.includes('headless'));
+  }
 };
