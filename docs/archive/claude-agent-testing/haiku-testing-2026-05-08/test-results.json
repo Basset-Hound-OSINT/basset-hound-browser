@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-08T21:23:23.794Z",
+  "timestamp": "2026-05-08T21:58:05.974Z",
   "model": "Claude Haiku 4.5",
   "scenarios": [
     {
@@ -12,42 +12,42 @@
     {
       "name": "Form Interaction",
       "status": "FAIL",
-      "duration": 1,
+      "duration": 197,
       "result": "Form filled successfully",
       "error": null
     },
     {
       "name": "Content Extraction",
       "status": "FAIL",
-      "duration": 127,
+      "duration": 143,
       "result": "Extracted 0 chars",
       "error": null
     },
     {
       "name": "Screenshot Capture",
       "status": "FAIL",
-      "duration": 66,
+      "duration": 164,
       "result": "Screenshot failed",
       "error": null
     },
     {
       "name": "Cookie Management",
       "status": "FAIL",
-      "duration": 989,
+      "duration": 40,
       "result": "Cookies set and retrieved",
       "error": null
     },
     {
       "name": "Multiple Tabs",
       "status": "PASS",
-      "duration": 1,
+      "duration": 288,
       "result": "Multiple tabs/navigation handled",
       "error": null
     },
     {
       "name": "JavaScript Execution",
       "status": "FAIL",
-      "duration": 0,
+      "duration": 13,
       "result": "Script executed: undefined",
       "error": null
     },
@@ -61,7 +61,7 @@
     {
       "name": "User Agent Rotation",
       "status": "FAIL",
-      "duration": 1,
+      "duration": 13,
       "result": "User agent rotated",
       "error": null
     },
@@ -77,59 +77,59 @@
     "total": 10,
     "passed": 1,
     "failed": 9,
-    "totalDuration": 1187,
-    "avgDuration": 118.7
+    "totalDuration": 860,
+    "avgDuration": 86
   },
   "performanceMetrics": [
     {
       "scenario": "Simple Navigation",
       "duration": 0,
-      "timestamp": "2026-05-08T21:23:23.808Z"
+      "timestamp": "2026-05-08T21:58:05.989Z"
     },
     {
       "scenario": "Form Interaction",
-      "duration": 1,
-      "timestamp": "2026-05-08T21:23:23.810Z"
+      "duration": 197,
+      "timestamp": "2026-05-08T21:58:06.191Z"
     },
     {
       "scenario": "Content Extraction",
-      "duration": 127,
-      "timestamp": "2026-05-08T21:23:23.938Z"
+      "duration": 143,
+      "timestamp": "2026-05-08T21:58:06.335Z"
     },
     {
       "scenario": "Screenshot Capture",
-      "duration": 66,
-      "timestamp": "2026-05-08T21:23:24.005Z"
+      "duration": 164,
+      "timestamp": "2026-05-08T21:58:06.500Z"
     },
     {
       "scenario": "Cookie Management",
-      "duration": 989,
-      "timestamp": "2026-05-08T21:23:24.995Z"
+      "duration": 40,
+      "timestamp": "2026-05-08T21:58:06.541Z"
     },
     {
       "scenario": "Multiple Tabs",
-      "duration": 1,
-      "timestamp": "2026-05-08T21:23:24.997Z"
+      "duration": 288,
+      "timestamp": "2026-05-08T21:58:06.830Z"
     },
     {
       "scenario": "JavaScript Execution",
-      "duration": 0,
-      "timestamp": "2026-05-08T21:23:24.998Z"
+      "duration": 13,
+      "timestamp": "2026-05-08T21:58:06.844Z"
     },
     {
       "scenario": "Proxy Configuration",
       "duration": 1,
-      "timestamp": "2026-05-08T21:23:25.000Z"
+      "timestamp": "2026-05-08T21:58:06.846Z"
     },
     {
       "scenario": "User Agent Rotation",
-      "duration": 1,
-      "timestamp": "2026-05-08T21:23:25.001Z"
+      "duration": 13,
+      "timestamp": "2026-05-08T21:58:06.859Z"
     },
     {
       "scenario": "Tor Integration",
       "duration": 1,
-      "timestamp": "2026-05-08T21:23:25.002Z"
+      "timestamp": "2026-05-08T21:58:06.861Z"
     }
   ]
 }
