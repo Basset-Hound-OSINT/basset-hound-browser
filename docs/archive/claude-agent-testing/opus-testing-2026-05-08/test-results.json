@@ -1,0 +1,300 @@
+{
+  "test_date": "2026-05-08T16:59:07.134613",
+  "total_scenarios": 10,
+  "passed": 8,
+  "failed": 2,
+  "pass_rate": 80.0,
+  "scenarios": [
+    {
+      "scenario_name": "Simple Navigation",
+      "scenario_number": 1,
+      "status": "PASS",
+      "duration_ms": 6088.043212890625,
+      "steps_completed": 3,
+      "results": [
+        {
+          "url": "example.com",
+          "navigation_success": false,
+          "page_title": "N/A",
+          "current_url": "https://stackoverflow.com/",
+          "page_links_count": 0,
+          "page_forms_count": 0,
+          "duration_ms": 2019.446611404419
+        },
+        {
+          "url": "google.com",
+          "navigation_success": true,
+          "page_title": "N/A",
+          "current_url": "https://example.com/",
+          "page_links_count": 0,
+          "page_forms_count": 0,
+          "duration_ms": 2033.40744972229
+        },
+        {
+          "url": "httpbin.org/html",
+          "navigation_success": true,
+          "page_title": "N/A",
+          "current_url": "https://www.google.com/?zx=1778273827605",
+          "page_links_count": 0,
+          "page_forms_count": 0,
+          "duration_ms": 2035.1707935333252
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Form Interaction",
+      "scenario_number": 2,
+      "status": "PASS",
+      "duration_ms": 4043.6782836914062,
+      "steps_completed": 5,
+      "results": [
+        {
+          "navigation_success": true,
+          "forms_found": 0,
+          "form_details": []
+        },
+        {
+          "email_fill_success": false
+        },
+        {
+          "name_fill_success": false
+        },
+        {
+          "submit_click_success": true
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Content Extraction",
+      "scenario_number": 3,
+      "status": "FAIL",
+      "duration_ms": 2044.4700717926025,
+      "steps_completed": 5,
+      "results": [
+        {
+          "links_extracted": 0,
+          "links_sample": [],
+          "images_extracted": 0,
+          "images_sample": [],
+          "text_content_length": 0,
+          "metadata": {}
+        }
+      ],
+      "errors": [
+        "all() takes exactly one argument (4 given)"
+      ],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Screenshot Capture",
+      "scenario_number": 4,
+      "status": "FAIL",
+      "duration_ms": 2047.9049682617188,
+      "steps_completed": 3,
+      "results": [
+        {
+          "element_screenshot_success": false
+        }
+      ],
+      "errors": [
+        "Full-page screenshot failed"
+      ],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Cookie Management",
+      "scenario_number": 5,
+      "status": "PASS",
+      "duration_ms": 2002.241611480713,
+      "steps_completed": 5,
+      "results": [
+        {
+          "cookies_retrieved": 0,
+          "cookies_sample": []
+        },
+        {
+          "cookie_jar_created": true
+        },
+        {
+          "cookies_cleared": false
+        },
+        {
+          "cookies_after_clear": 0
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Multiple Tabs",
+      "scenario_number": 6,
+      "status": "PASS",
+      "duration_ms": 3367.0921325683594,
+      "steps_completed": 13,
+      "results": [
+        {
+          "tab1_created": true,
+          "tab1_id": "tab1"
+        },
+        {
+          "tab2_created": true,
+          "tab2_id": "tab2"
+        },
+        {
+          "tab3_created": true,
+          "tab3_id": "tab3"
+        },
+        {
+          "tab_1_url": "https://example.com",
+          "tab_1_navigation_success": false,
+          "tab_1_title": "N/A"
+        },
+        {
+          "tab_2_url": "https://google.com",
+          "tab_2_navigation_success": true,
+          "tab_2_title": "N/A"
+        },
+        {
+          "tab_3_url": "https://github.com",
+          "tab_3_navigation_success": true,
+          "tab_3_title": "N/A"
+        },
+        {
+          "middle_tab_closed": false
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "JavaScript Execution",
+      "scenario_number": 7,
+      "status": "PASS",
+      "duration_ms": 2146.784543991089,
+      "steps_completed": 7,
+      "results": [
+        {
+          "page_title": "N/A",
+          "page_title_success": true
+        },
+        {
+          "link_count": "N/A",
+          "link_count_success": false
+        },
+        {
+          "user_agent": "N/A",
+          "user_agent_success": false
+        },
+        {
+          "screen_resolution": "N/A",
+          "screen_resolution_success": false
+        },
+        {
+          "page_height": "N/A",
+          "page_height_success": false
+        },
+        {
+          "current_timestamp": "N/A",
+          "current_timestamp_success": false
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Proxy Configuration",
+      "scenario_number": 8,
+      "status": "PASS",
+      "duration_ms": 1.4405250549316406,
+      "steps_completed": 4,
+      "results": [
+        {
+          "current_proxy": {},
+          "get_proxy_success": false
+        },
+        {
+          "set_proxy_attempt": false,
+          "proxy_type": "socks5"
+        },
+        {
+          "proxy_after_set": {},
+          "verify_proxy_success": false
+        },
+        {
+          "proxy_cleared": true
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "User Agent Rotation",
+      "scenario_number": 9,
+      "status": "PASS",
+      "duration_ms": 1036.0100269317627,
+      "steps_completed": 6,
+      "results": [
+        {
+          "initial_user_agent": "N/A",
+          "get_ua_success": true
+        },
+        {
+          "available_user_agents": 0,
+          "ua_categories": []
+        },
+        {
+          "set_random_ua_success": false,
+          "new_user_agent": "N/A"
+        },
+        {
+          "ua_verification_page_loaded": false,
+          "ua_in_response": false
+        },
+        {
+          "rotate_ua_success": false,
+          "second_user_agent": "N/A",
+          "ua_changed": false
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    },
+    {
+      "scenario_name": "Tor Integration",
+      "scenario_number": 10,
+      "status": "PASS",
+      "duration_ms": 2259.727716445923,
+      "steps_completed": 6,
+      "results": [
+        {
+          "tor_status_success": true,
+          "tor_enabled": false,
+          "tor_available": true
+        },
+        {
+          "get_tor_mode_success": true,
+          "current_tor_mode": "on"
+        },
+        {
+          "set_tor_mode_success": true,
+          "mode_set_to": "AUTO"
+        },
+        {
+          "verify_mode_success": true,
+          "verified_mode": "auto",
+          "mode_changed": false
+        },
+        {
+          "tor_connectivity_test": true,
+          "tor_check_page_loaded": true
+        }
+      ],
+      "errors": [],
+      "performance_notes": []
+    }
+  ]
+}

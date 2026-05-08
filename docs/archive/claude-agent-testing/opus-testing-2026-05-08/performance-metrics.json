@@ -1,0 +1,85 @@
+{
+  "test_date": "2026-05-08T16:59:07.136063",
+  "scenarios": [
+    {
+      "scenario": "Simple Navigation",
+      "status": "PASS",
+      "duration_ms": 6088.043212890625,
+      "steps_completed": 3,
+      "avg_step_duration_ms": 2029.3477376302083,
+      "errors_count": 0
+    },
+    {
+      "scenario": "Form Interaction",
+      "status": "PASS",
+      "duration_ms": 4043.6782836914062,
+      "steps_completed": 5,
+      "avg_step_duration_ms": 808.7356567382812,
+      "errors_count": 0
+    },
+    {
+      "scenario": "Content Extraction",
+      "status": "FAIL",
+      "duration_ms": 2044.4700717926025,
+      "steps_completed": 5,
+      "avg_step_duration_ms": 408.8940143585205,
+      "errors_count": 1
+    },
+    {
+      "scenario": "Screenshot Capture",
+      "status": "FAIL",
+      "duration_ms": 2047.9049682617188,
+      "steps_completed": 3,
+      "avg_step_duration_ms": 682.6349894205729,
+      "errors_count": 1
+    },
+    {
+      "scenario": "Cookie Management",
+      "status": "PASS",
+      "duration_ms": 2002.241611480713,
+      "steps_completed": 5,
+      "avg_step_duration_ms": 400.4483222961426,
+      "errors_count": 0
+    },
+    {
+      "scenario": "Multiple Tabs",
+      "status": "PASS",
+      "duration_ms": 3367.0921325683594,
+      "steps_completed": 13,
+      "avg_step_duration_ms": 259.007087120643,
+      "errors_count": 0
+    },
+    {
+      "scenario": "JavaScript Execution",
+      "status": "PASS",
+      "duration_ms": 2146.784543991089,
+      "steps_completed": 7,
+      "avg_step_duration_ms": 306.68350628444125,
+      "errors_count": 0
+    },
+    {
+      "scenario": "Proxy Configuration",
+      "status": "PASS",
+      "duration_ms": 1.4405250549316406,
+      "steps_completed": 4,
+      "avg_step_duration_ms": 0.36013126373291016,
+      "errors_count": 0
+    },
+    {
+      "scenario": "User Agent Rotation",
+      "status": "PASS",
+      "duration_ms": 1036.0100269317627,
+      "steps_completed": 6,
+      "avg_step_duration_ms": 172.66833782196045,
+      "errors_count": 0
+    },
+    {
+      "scenario": "Tor Integration",
+      "status": "PASS",
+      "duration_ms": 2259.727716445923,
+      "steps_completed": 6,
+      "avg_step_duration_ms": 376.6212860743205,
+      "errors_count": 0
+    }
+  ]
+}

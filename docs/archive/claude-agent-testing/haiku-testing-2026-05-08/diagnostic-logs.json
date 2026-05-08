@@ -1,0 +1,307 @@
+[
+  {
+    "timestamp": "2026-05-08T20:58:39.609Z",
+    "level": "info",
+    "message": "WebSocket connected"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.610Z",
+    "level": "debug",
+    "message": "Sending command: navigate"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.611Z",
+    "level": "debug",
+    "message": "Received message: {\"type\":\"status\",\"message\":\"connected\",\"clientId\":\"client-1778273919607-zsl38o49l\",\"authenticated\":t..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.611Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":1,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.611Z",
+    "level": "debug",
+    "message": "Command response: navigate = {\"id\":1,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.612Z",
+    "level": "debug",
+    "message": "Sending command: navigate"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.612Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":2,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.612Z",
+    "level": "debug",
+    "message": "Command response: navigate = {\"id\":2,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.612Z",
+    "level": "debug",
+    "message": "Sending command: fill"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.613Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":3,\"command\":\"fill\",\"success\":false,\"error\":\"Selector and value are required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.613Z",
+    "level": "debug",
+    "message": "Command response: fill = {\"id\":3,\"command\":\"fill\",\"success\":false,\"error\":\"Selector and value are required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.613Z",
+    "level": "debug",
+    "message": "Sending command: navigate"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.613Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":4,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.613Z",
+    "level": "debug",
+    "message": "Command response: navigate = {\"id\":4,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.613Z",
+    "level": "debug",
+    "message": "Sending command: extract"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.614Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":5,\"command\":\"extract\",\"success\":false,\"error\":\"Unknown command: extract\",\"recovery\":{\"error\":\"..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.614Z",
+    "level": "debug",
+    "message": "Command response: extract = {\"id\":5,\"command\":\"extract\",\"success\":false,\"error\":\"Unknown command: extract\",\"recovery\":{\"error\":\"..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.614Z",
+    "level": "debug",
+    "message": "Sending command: navigate"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.615Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":6,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.615Z",
+    "level": "debug",
+    "message": "Command response: navigate = {\"id\":6,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.615Z",
+    "level": "debug",
+    "message": "Sending command: screenshot"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.631Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":7,\"command\":\"screenshot\",\"success\":false,\"error\":\"Webview has zero dimensions - cannot capture..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.631Z",
+    "level": "debug",
+    "message": "Command response: screenshot = {\"id\":7,\"command\":\"screenshot\",\"success\":false,\"error\":\"Webview has zero dimensions - cannot capture..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.631Z",
+    "level": "debug",
+    "message": "Sending command: setCookie"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.632Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":8,\"command\":\"setCookie\",\"success\":false,\"error\":\"Unknown command: setCookie\",\"recovery\":{\"erro..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.632Z",
+    "level": "debug",
+    "message": "Command response: setCookie = {\"id\":8,\"command\":\"setCookie\",\"success\":false,\"error\":\"Unknown command: setCookie\",\"recovery\":{\"erro..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.632Z",
+    "level": "debug",
+    "message": "Sending command: getCookies"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.632Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":9,\"command\":\"getCookies\",\"success\":false,\"error\":\"Unknown command: getCookies\",\"recovery\":{\"er..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.632Z",
+    "level": "debug",
+    "message": "Command response: getCookies = {\"id\":9,\"command\":\"getCookies\",\"success\":false,\"error\":\"Unknown command: getCookies\",\"recovery\":{\"er..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.634Z",
+    "level": "debug",
+    "message": "Sending command: newTab"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.634Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":10,\"command\":\"newTab\",\"success\":false,\"error\":\"Unknown command: newTab\",\"recovery\":{\"error\":\"U..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.634Z",
+    "level": "debug",
+    "message": "Command response: newTab = {\"id\":10,\"command\":\"newTab\",\"success\":false,\"error\":\"Unknown command: newTab\",\"recovery\":{\"error\":\"U..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.634Z",
+    "level": "debug",
+    "message": "Sending command: list_tabs"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.635Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":11,\"command\":\"list_tabs\",\"success\":true,\"activeTabId\":\"tab-1778273826792-0z6wmp7n7\",\"count\":38..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.636Z",
+    "level": "debug",
+    "message": "Command response: list_tabs = {\"id\":11,\"command\":\"list_tabs\",\"success\":true,\"activeTabId\":\"tab-1778273826792-0z6wmp7n7\",\"count\":38..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.636Z",
+    "level": "debug",
+    "message": "Sending command: navigate"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.637Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":12,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.637Z",
+    "level": "debug",
+    "message": "Command response: navigate = {\"id\":12,\"command\":\"navigate\",\"success\":false,\"error\":\"URL is required\"}..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.637Z",
+    "level": "debug",
+    "message": "Sending command: execute"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.637Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":13,\"command\":\"execute\",\"success\":false,\"error\":\"Unknown command: execute\",\"recovery\":{\"error\":..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.637Z",
+    "level": "debug",
+    "message": "Command response: execute = {\"id\":13,\"command\":\"execute\",\"success\":false,\"error\":\"Unknown command: execute\",\"recovery\":{\"error\":..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.637Z",
+    "level": "debug",
+    "message": "Sending command: setProxy"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.638Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":14,\"command\":\"setProxy\",\"success\":false,\"error\":\"Unknown command: setProxy\",\"recovery\":{\"error..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.638Z",
+    "level": "debug",
+    "message": "Command response: setProxy = {\"id\":14,\"command\":\"setProxy\",\"success\":false,\"error\":\"Unknown command: setProxy\",\"recovery\":{\"error..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.638Z",
+    "level": "debug",
+    "message": "Sending command: get_proxy_status"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.638Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":15,\"command\":\"get_proxy_status\",\"success\":true,\"enabled\":true,\"currentProxy\":{\"host\":\"127.0.0...."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.638Z",
+    "level": "debug",
+    "message": "Command response: get_proxy_status = {\"id\":15,\"command\":\"get_proxy_status\",\"success\":true,\"enabled\":true,\"currentProxy\":{\"host\":\"127.0.0...."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.638Z",
+    "level": "debug",
+    "message": "Sending command: setUserAgent"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.639Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":16,\"command\":\"setUserAgent\",\"success\":false,\"error\":\"Unknown command: setUserAgent\",\"recovery\"..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.639Z",
+    "level": "debug",
+    "message": "Command response: setUserAgent = {\"id\":16,\"command\":\"setUserAgent\",\"success\":false,\"error\":\"Unknown command: setUserAgent\",\"recovery\"..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.639Z",
+    "level": "debug",
+    "message": "Sending command: get_user_agent_status"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.639Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":17,\"command\":\"get_user_agent_status\",\"success\":true,\"currentUserAgent\":null,\"enabledCategories..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.639Z",
+    "level": "debug",
+    "message": "Command response: get_user_agent_status = {\"id\":17,\"command\":\"get_user_agent_status\",\"success\":true,\"currentUserAgent\":null,\"enabledCategories..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.640Z",
+    "level": "debug",
+    "message": "Sending command: setTor"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.640Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":18,\"command\":\"setTor\",\"success\":false,\"error\":\"Unknown command: setTor\",\"recovery\":{\"error\":\"U..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.640Z",
+    "level": "debug",
+    "message": "Command response: setTor = {\"id\":18,\"command\":\"setTor\",\"success\":false,\"error\":\"Unknown command: setTor\",\"recovery\":{\"error\":\"U..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.640Z",
+    "level": "debug",
+    "message": "Sending command: status"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.640Z",
+    "level": "debug",
+    "message": "Received message: {\"id\":19,\"command\":\"status\",\"success\":true,\"status\":{\"clients\":3,\"port\":8765,\"ready\":true,\"recording..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.640Z",
+    "level": "debug",
+    "message": "Command response: status = {\"id\":19,\"command\":\"status\",\"success\":true,\"status\":{\"clients\":3,\"port\":8765,\"ready\":true,\"recording..."
+  },
+  {
+    "timestamp": "2026-05-08T20:58:39.642Z",
+    "level": "warn",
+    "message": "WebSocket closed"
+  },
+  {
+    "timestamp": "2026-05-08T20:58:40.142Z",
+    "level": "info",
+    "message": "Disconnected"
+  }
+]
