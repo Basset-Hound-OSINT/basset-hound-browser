@@ -5,7 +5,13 @@
  */
 
 const { app, ipcMain, BrowserWindow } = require('electron');
-const { autoUpdater } = require('electron-updater');
+let autoUpdater;
+try {
+  autoUpdater = require('electron-updater').autoUpdater;
+} catch (err) {
+  // Handle cases where app context is not available (headless mode)
+  autoUpdater = null;
+}
 const EventEmitter = require('events');
 const fs = require('fs');
 const path = require('path');
@@ -32,6 +38,9 @@ class UpdateManager extends EventEmitter {
   constructor(options = {}) {
     super();
 
+    // Check if app context is available (headless mode may not have it)
+    const isHeadless = !app || !app.getVersion;
+
     // Configuration options with defaults
     this.config = {
       autoDownload: options.autoDownload !== undefined ? options.autoDownload : false,
@@ -49,33 +58,48 @@ class UpdateManager extends EventEmitter {
 
     // Current state
     this.status = UPDATE_STATUS.IDLE;
-    this.currentVersion = app.getVersion();
+    this.currentVersion = isHeadless ? '0.0.0' : app.getVersion();
     this.updateInfo = null;
     this.downloadProgress = null;
     this.error = null;
     this.checkTimer = null;
+    this.isHeadless = isHeadless;
 
     // Version history for rollback support
-    this.versionHistoryPath = path.join(app.getPath('userData'), 'version-history.json');
-    this.versionHistory = this.loadVersionHistory();
+    if (!isHeadless) {
+      this.versionHistoryPath = path.join(app.getPath('userData'), 'version-history.json');
+      this.versionHistory = this.loadVersionHistory();
 
-    // Update history for tracking
-    this.updateHistoryPath = path.join(app.getPath('userData'), 'update-history.json');
-    this.updateHistory = this.loadUpdateHistory();
+      // Update history for tracking
+      this.updateHistoryPath = path.join(app.getPath('userData'), 'update-history.json');
+      this.updateHistory = this.loadUpdateHistory();
+    } else {
+      this.versionHistoryPath = null;
+      this.versionHistory = [];
+      this.updateHistoryPath = null;
+      this.updateHistory = [];
+    }
 
     // Reference to main window for IPC
     this.mainWindow = null;
 
-    // Initialize autoUpdater
-    this.initializeAutoUpdater();
+    // Initialize autoUpdater only if not in headless mode
+    if (!isHeadless && autoUpdater) {
+      this.initializeAutoUpdater();
+    }
 
-    console.log('[UpdateManager] Initialized with version:', this.currentVersion);
+    console.log('[UpdateManager] Initialized with version:', this.currentVersion, isHeadless ? '(headless mode)' : '');
   }
 
   /**
    * Initialize electron-updater with configuration and event handlers
    */
   initializeAutoUpdater() {
+    // Skip initialization if not available
+    if (!autoUpdater || this.isHeadless) {
+      return;
+    }
+
     // Configure autoUpdater
     autoUpdater.autoDownload = this.config.autoDownload;
     autoUpdater.autoInstallOnAppQuit = this.config.autoInstallOnAppQuit;

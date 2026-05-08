@@ -581,8 +581,8 @@ function configureHeadlessMode() {
   return true;
 }
 
-// Configure headless mode before app is ready
-const isHeadlessMode = configureHeadlessMode();
+// Headless mode will be configured in app.whenReady() callback
+let isHeadlessMode = false;
 
 // ==========================================
 // Tor Mode Configuration
@@ -2695,6 +2695,9 @@ function setupDownloadManagerEvents() {
 }
 
 app.whenReady().then(async () => {
+  // Configure headless mode now that app is ready
+  isHeadlessMode = configureHeadlessMode();
+
   // Initialize recovery system
   initializeRecoveryPaths();
   setupGlobalErrorHandlers();
