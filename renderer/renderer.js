@@ -397,6 +397,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.electronAPI) {
         window.electronAPI.addToHistory({ url: e.url, title: '' });
         window.electronAPI.updateTab(tabId, { url: e.url });
+
+        // Emit navigation-complete event to notify WebSocket server
+        const navigationData = {
+          tabId,
+          url: e.url,
+          timestamp: Date.now()
+        };
+        window.electronAPI.emitNavigationComplete(navigationData);
       }
     });
 

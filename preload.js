@@ -876,6 +876,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Get script execution history
   getScriptHistory: (options) => ipcRenderer.invoke('get-script-history', options),
+
+  // Navigation completion notification
+  emitNavigationComplete: (navigationData) => ipcRenderer.send('navigation-complete', navigationData),
 });
 
 // Bot evasion injections - override navigator.webdriver and other telltales
