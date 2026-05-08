@@ -1,43 +1,43 @@
 {
-  "test_date": "2026-05-08T16:59:07.134613",
+  "test_date": "2026-05-08T16:59:52.927690",
   "total_scenarios": 10,
-  "passed": 8,
-  "failed": 2,
-  "pass_rate": 80.0,
+  "passed": 9,
+  "failed": 1,
+  "pass_rate": 90.0,
   "scenarios": [
     {
       "scenario_name": "Simple Navigation",
       "scenario_number": 1,
       "status": "PASS",
-      "duration_ms": 6088.043212890625,
+      "duration_ms": 6099.7865200042725,
       "steps_completed": 3,
       "results": [
         {
           "url": "example.com",
           "navigation_success": false,
           "page_title": "N/A",
-          "current_url": "https://stackoverflow.com/",
+          "current_url": "https://example.com/",
           "page_links_count": 0,
           "page_forms_count": 0,
-          "duration_ms": 2019.446611404419
+          "duration_ms": 2019.364833831787
         },
         {
           "url": "google.com",
           "navigation_success": true,
           "page_title": "N/A",
-          "current_url": "https://example.com/",
+          "current_url": "https://www.google.com/?zx=1778273970450",
           "page_links_count": 0,
           "page_forms_count": 0,
-          "duration_ms": 2033.40744972229
+          "duration_ms": 2039.588212966919
         },
         {
           "url": "httpbin.org/html",
           "navigation_success": true,
           "page_title": "N/A",
-          "current_url": "https://www.google.com/?zx=1778273827605",
+          "current_url": "https://httpbin.org/html",
           "page_links_count": 0,
           "page_forms_count": 0,
-          "duration_ms": 2035.1707935333252
+          "duration_ms": 2040.816307067871
         }
       ],
       "errors": [],
@@ -47,7 +47,7 @@
       "scenario_name": "Form Interaction",
       "scenario_number": 2,
       "status": "PASS",
-      "duration_ms": 4043.6782836914062,
+      "duration_ms": 4042.895555496216,
       "steps_completed": 5,
       "results": [
         {
@@ -71,8 +71,8 @@
     {
       "scenario_name": "Content Extraction",
       "scenario_number": 3,
-      "status": "FAIL",
-      "duration_ms": 2044.4700717926025,
+      "status": "PASS",
+      "duration_ms": 2049.5834350585938,
       "steps_completed": 5,
       "results": [
         {
@@ -84,16 +84,14 @@
           "metadata": {}
         }
       ],
-      "errors": [
-        "all() takes exactly one argument (4 given)"
-      ],
+      "errors": [],
       "performance_notes": []
     },
     {
       "scenario_name": "Screenshot Capture",
       "scenario_number": 4,
       "status": "FAIL",
-      "duration_ms": 2047.9049682617188,
+      "duration_ms": 2041.0704612731934,
       "steps_completed": 3,
       "results": [
         {
@@ -101,7 +99,7 @@
         }
       ],
       "errors": [
-        "Full-page screenshot failed"
+        "Screenshot returned but no image data"
       ],
       "performance_notes": []
     },
@@ -109,7 +107,7 @@
       "scenario_name": "Cookie Management",
       "scenario_number": 5,
       "status": "PASS",
-      "duration_ms": 2002.241611480713,
+      "duration_ms": 2002.683401107788,
       "steps_completed": 5,
       "results": [
         {
@@ -133,7 +131,7 @@
       "scenario_name": "Multiple Tabs",
       "scenario_number": 6,
       "status": "PASS",
-      "duration_ms": 3367.0921325683594,
+      "duration_ms": 3375.066041946411,
       "steps_completed": 13,
       "results": [
         {
@@ -174,7 +172,7 @@
       "scenario_name": "JavaScript Execution",
       "scenario_number": 7,
       "status": "PASS",
-      "duration_ms": 2146.784543991089,
+      "duration_ms": 2041.3341522216797,
       "steps_completed": 7,
       "results": [
         {
@@ -209,7 +207,7 @@
       "scenario_name": "Proxy Configuration",
       "scenario_number": 8,
       "status": "PASS",
-      "duration_ms": 1.4405250549316406,
+      "duration_ms": 1.3957023620605469,
       "steps_completed": 4,
       "results": [
         {
@@ -235,12 +233,12 @@
       "scenario_name": "User Agent Rotation",
       "scenario_number": 9,
       "status": "PASS",
-      "duration_ms": 1036.0100269317627,
+      "duration_ms": 1075.7594108581543,
       "steps_completed": 6,
       "results": [
         {
           "initial_user_agent": "N/A",
-          "get_ua_success": true
+          "get_ua_success": false
         },
         {
           "available_user_agents": 0,
@@ -267,7 +265,7 @@
       "scenario_name": "Tor Integration",
       "scenario_number": 10,
       "status": "PASS",
-      "duration_ms": 2259.727716445923,
+      "duration_ms": 2216.594696044922,
       "steps_completed": 6,
       "results": [
         {
@@ -277,7 +275,7 @@
         },
         {
           "get_tor_mode_success": true,
-          "current_tor_mode": "on"
+          "current_tor_mode": "auto"
         },
         {
           "set_tor_mode_success": true,

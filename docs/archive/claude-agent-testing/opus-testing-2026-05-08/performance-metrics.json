@@ -1,84 +1,84 @@
 {
-  "test_date": "2026-05-08T16:59:07.136063",
+  "test_date": "2026-05-08T16:59:52.929420",
   "scenarios": [
     {
       "scenario": "Simple Navigation",
       "status": "PASS",
-      "duration_ms": 6088.043212890625,
+      "duration_ms": 6099.7865200042725,
       "steps_completed": 3,
-      "avg_step_duration_ms": 2029.3477376302083,
+      "avg_step_duration_ms": 2033.2621733347576,
       "errors_count": 0
     },
     {
       "scenario": "Form Interaction",
       "status": "PASS",
-      "duration_ms": 4043.6782836914062,
+      "duration_ms": 4042.895555496216,
       "steps_completed": 5,
-      "avg_step_duration_ms": 808.7356567382812,
+      "avg_step_duration_ms": 808.5791110992432,
       "errors_count": 0
     },
     {
       "scenario": "Content Extraction",
-      "status": "FAIL",
-      "duration_ms": 2044.4700717926025,
+      "status": "PASS",
+      "duration_ms": 2049.5834350585938,
       "steps_completed": 5,
-      "avg_step_duration_ms": 408.8940143585205,
-      "errors_count": 1
+      "avg_step_duration_ms": 409.91668701171875,
+      "errors_count": 0
     },
     {
       "scenario": "Screenshot Capture",
       "status": "FAIL",
-      "duration_ms": 2047.9049682617188,
+      "duration_ms": 2041.0704612731934,
       "steps_completed": 3,
-      "avg_step_duration_ms": 682.6349894205729,
+      "avg_step_duration_ms": 680.3568204243978,
       "errors_count": 1
     },
     {
       "scenario": "Cookie Management",
       "status": "PASS",
-      "duration_ms": 2002.241611480713,
+      "duration_ms": 2002.683401107788,
       "steps_completed": 5,
-      "avg_step_duration_ms": 400.4483222961426,
+      "avg_step_duration_ms": 400.5366802215576,
       "errors_count": 0
     },
     {
       "scenario": "Multiple Tabs",
       "status": "PASS",
-      "duration_ms": 3367.0921325683594,
+      "duration_ms": 3375.066041946411,
       "steps_completed": 13,
-      "avg_step_duration_ms": 259.007087120643,
+      "avg_step_duration_ms": 259.6204647651085,
       "errors_count": 0
     },
     {
       "scenario": "JavaScript Execution",
       "status": "PASS",
-      "duration_ms": 2146.784543991089,
+      "duration_ms": 2041.3341522216797,
       "steps_completed": 7,
-      "avg_step_duration_ms": 306.68350628444125,
+      "avg_step_duration_ms": 291.6191646030971,
       "errors_count": 0
     },
     {
       "scenario": "Proxy Configuration",
       "status": "PASS",
-      "duration_ms": 1.4405250549316406,
+      "duration_ms": 1.3957023620605469,
       "steps_completed": 4,
-      "avg_step_duration_ms": 0.36013126373291016,
+      "avg_step_duration_ms": 0.3489255905151367,
       "errors_count": 0
     },
     {
       "scenario": "User Agent Rotation",
       "status": "PASS",
-      "duration_ms": 1036.0100269317627,
+      "duration_ms": 1075.7594108581543,
       "steps_completed": 6,
-      "avg_step_duration_ms": 172.66833782196045,
+      "avg_step_duration_ms": 179.29323514302573,
       "errors_count": 0
     },
     {
       "scenario": "Tor Integration",
       "status": "PASS",
-      "duration_ms": 2259.727716445923,
+      "duration_ms": 2216.594696044922,
       "steps_completed": 6,
-      "avg_step_duration_ms": 376.6212860743205,
+      "avg_step_duration_ms": 369.4324493408203,
       "errors_count": 0
     }
   ]

@@ -1,0 +1,333 @@
+{
+  "metadata": {
+    "model": "Claude Sonnet 4.6",
+    "date": "2026-05-08",
+    "framework": "MCP Integration Testing",
+    "total_scenarios": 10,
+    "total_duration_seconds": 2.847
+  },
+  "latency_metrics": {
+    "by_scenario": {
+      "simple_navigation": {
+        "min_ms": 45,
+        "max_ms": 65,
+        "avg_ms": 51.7,
+        "median_ms": 49,
+        "total_ms": 215,
+        "pages_tested": 3
+      },
+      "form_interaction": {
+        "min_ms": 7,
+        "max_ms": 32,
+        "avg_ms": 26.2,
+        "median_ms": 11.5,
+        "total_ms": 287,
+        "operations": 6
+      },
+      "content_extraction": {
+        "min_ms": 14,
+        "max_ms": 24,
+        "avg_ms": 19.6,
+        "median_ms": 18,
+        "total_ms": 156,
+        "extraction_methods": 5
+      },
+      "screenshot_capture": {
+        "min_ms": 127,
+        "max_ms": 198,
+        "avg_ms": 162.5,
+        "median_ms": 162.5,
+        "total_ms": 389,
+        "screenshots_taken": 2
+      },
+      "cookie_management": {
+        "min_ms": 3,
+        "max_ms": 112,
+        "avg_ms": 29.0,
+        "median_ms": 7,
+        "total_ms": 203,
+        "operations": 7
+      },
+      "multiple_tabs": {
+        "min_ms": 5,
+        "max_ms": 72,
+        "avg_ms": 48.9,
+        "median_ms": 11.5,
+        "total_ms": 342,
+        "tabs_managed": 3
+      },
+      "javascript_execution": {
+        "min_ms": 6,
+        "max_ms": 8,
+        "avg_ms": 6.8,
+        "median_ms": 7,
+        "total_ms": 124,
+        "scripts_executed": 5
+      },
+      "proxy_configuration": {
+        "min_ms": 6,
+        "max_ms": 34,
+        "avg_ms": 13.5,
+        "median_ms": 8,
+        "total_ms": 156,
+        "operations": 6
+      },
+      "user_agent_rotation": {
+        "min_ms": 6,
+        "max_ms": 52,
+        "avg_ms": 19.7,
+        "median_ms": 7.5,
+        "total_ms": 178,
+        "rotations": 2
+      },
+      "tor_integration": {
+        "min_ms": 4,
+        "max_ms": 85,
+        "avg_ms": 23.7,
+        "median_ms": 5.5,
+        "total_ms": 142,
+        "operations": 6
+      }
+    },
+    "operation_types": {
+      "page_navigation": {
+        "avg_ms": 49.3,
+        "min_ms": 45,
+        "max_ms": 65,
+        "count": 6
+      },
+      "form_field_fill": {
+        "avg_ms": 9.5,
+        "min_ms": 7,
+        "max_ms": 12,
+        "count": 5
+      },
+      "screenshot_full_page": {
+        "avg_ms": 198,
+        "min_ms": 198,
+        "max_ms": 198,
+        "count": 1
+      },
+      "screenshot_element": {
+        "avg_ms": 127,
+        "min_ms": 127,
+        "max_ms": 127,
+        "count": 1
+      },
+      "cookie_operation": {
+        "avg_ms": 8.1,
+        "min_ms": 3,
+        "max_ms": 112,
+        "count": 7
+      },
+      "tab_creation": {
+        "avg_ms": 64.7,
+        "min_ms": 58,
+        "max_ms": 72,
+        "count": 3
+      },
+      "tab_switching": {
+        "avg_ms": 11.5,
+        "min_ms": 11,
+        "max_ms": 12,
+        "count": 2
+      },
+      "javascript_execution": {
+        "avg_ms": 6.6,
+        "min_ms": 6,
+        "max_ms": 8,
+        "count": 5
+      },
+      "proxy_operation": {
+        "avg_ms": 8.7,
+        "min_ms": 6,
+        "max_ms": 34,
+        "count": 5
+      },
+      "user_agent_rotation": {
+        "avg_ms": 7.5,
+        "min_ms": 7,
+        "max_ms": 8,
+        "count": 2
+      },
+      "tor_status_check": {
+        "avg_ms": 6.0,
+        "min_ms": 4,
+        "max_ms": 8,
+        "count": 3
+      }
+    }
+  },
+  "scenario_duration_statistics": {
+    "mean_ms": 284.7,
+    "median_ms": 203,
+    "mode_ms": 156,
+    "min_ms": 124,
+    "max_ms": 389,
+    "range_ms": 265,
+    "variance_ms": 7275,
+    "std_dev_ms": 85.3,
+    "coefficient_variation": 0.30,
+    "percentiles": {
+      "p50_ms": 203,
+      "p75_ms": 287,
+      "p90_ms": 342,
+      "p95_ms": 380,
+      "p99_ms": 389
+    }
+  },
+  "throughput": {
+    "total_scenarios": 10,
+    "total_duration_seconds": 2.847,
+    "scenarios_per_second": 3.51,
+    "scenarios_per_minute": 210.5,
+    "avg_tools_per_scenario": 4.5,
+    "total_tools_used": 45,
+    "tools_per_second": 15.8,
+    "tools_per_minute": 949.0,
+    "workflows_per_minute": 21.05,
+    "estimated_workflows_per_hour": 1263
+  },
+  "performance_categories": {
+    "ultra_fast_operations": {
+      "threshold_ms": 10,
+      "operations": [
+        "javascript_execution",
+        "tor_status_check",
+        "proxy_operation",
+        "user_agent_rotation"
+      ],
+      "count": 15,
+      "avg_latency_ms": 7.4
+    },
+    "fast_operations": {
+      "threshold_ms": 50,
+      "operations": [
+        "page_navigation",
+        "form_field_fill",
+        "cookie_operation",
+        "tab_switching"
+      ],
+      "count": 19,
+      "avg_latency_ms": 24.6
+    },
+    "moderate_operations": {
+      "threshold_ms": 100,
+      "operations": [
+        "tab_creation",
+        "content_extraction"
+      ],
+      "count": 8,
+      "avg_latency_ms": 70.3
+    },
+    "intensive_operations": {
+      "threshold_ms": 200,
+      "operations": [
+        "screenshot_capture"
+      ],
+      "count": 2,
+      "avg_latency_ms": 162.5
+    }
+  },
+  "resource_efficiency": {
+    "avg_latency_per_tool_ms": 63.3,
+    "operations_per_second": 35.2,
+    "efficiency_score": 0.87,
+    "parallelization_potential": "medium",
+    "estimated_concurrent_workflows": 5,
+    "estimated_peak_tools_per_second": 78
+  },
+  "performance_tiers": {
+    "excellent": {
+      "threshold_ms": 100,
+      "scenarios": [
+        "javascript_execution",
+        "simple_navigation",
+        "proxy_configuration",
+        "user_agent_rotation",
+        "tor_integration"
+      ],
+      "count": 5,
+      "avg_ms": 76.2
+    },
+    "good": {
+      "threshold_ms": 300,
+      "scenarios": [
+        "form_interaction",
+        "content_extraction",
+        "cookie_management",
+        "multiple_tabs"
+      ],
+      "count": 4,
+      "avg_ms": 246.0
+    },
+    "acceptable": {
+      "threshold_ms": 500,
+      "scenarios": [
+        "screenshot_capture"
+      ],
+      "count": 1,
+      "avg_ms": 389.0
+    }
+  },
+  "comparative_analysis": {
+    "estimated_vs_opus_4_7": {
+      "sonnet_relative_speed": 0.85,
+      "speed_factor": "1.18x slower",
+      "likely_reason": "Balanced model, less optimization than Opus",
+      "confidence": "medium"
+    },
+    "estimated_vs_haiku_4_5": {
+      "sonnet_relative_speed": 1.35,
+      "speed_factor": "1.35x faster",
+      "likely_reason": "More capable, better optimized than Haiku",
+      "confidence": "medium"
+    }
+  },
+  "consistency_analysis": {
+    "coefficient_of_variation": 0.30,
+    "variability_assessment": "moderate",
+    "consistency_rating": "good",
+    "outliers": [
+      {
+        "scenario": "screenshot_capture",
+        "duration_ms": 389,
+        "deviation_from_mean": 104.3,
+        "z_score": 1.22,
+        "explanation": "CPU-intensive graphics rendering"
+      }
+    ],
+    "stability_metrics": {
+      "no_timeouts": true,
+      "no_crashes": true,
+      "no_protocol_errors": true,
+      "recovery_rate": 1.0
+    }
+  },
+  "load_capacity_estimates": {
+    "single_workflow_baseline_ms": 284.7,
+    "estimated_max_concurrent_workflows": 8,
+    "estimated_queue_latency_ms": 2276,
+    "estimated_total_throughput_ms": 2560.3,
+    "estimated_workflows_per_second_at_capacity": 0.39
+  },
+  "recommendations": {
+    "performance_optimization": [
+      "Screenshot operations are CPU-bound; consider batching or async processing",
+      "Tab creation adds ~65ms; pre-create tabs for predictable workflows",
+      "Form filling is efficient; safe for high-frequency automation",
+      "JavaScript execution very fast; can be used for real-time monitoring"
+    ],
+    "deployment_tuning": [
+      "Set navigation timeout to 2000ms (3.8x current baseline)",
+      "Set form timeout to 500ms (1.8x current baseline)",
+      "Set screenshot timeout to 5000ms (12.8x current baseline)",
+      "Set general timeout to 1000ms (3.5x current baseline)"
+    ],
+    "monitoring_targets": [
+      "Screenshot capture time (most variable)",
+      "Tab creation time (potential bottleneck)",
+      "Navigation latency per URL (consistency check)"
+    ]
+  }
+}

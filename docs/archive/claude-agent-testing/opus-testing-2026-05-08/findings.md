@@ -1,39 +1,38 @@
 # MCP Integration Testing - Findings & Analysis
 
-**Test Date:** 2026-05-08 16:59:07
+**Test Date:** 2026-05-08 16:59:52
 
 ## Executive Summary
 
 Total Scenarios: 10
-Passed: 8
-Failed: 2
-Pass Rate: 80.0%
+Passed: 9
+Failed: 1
+Pass Rate: 90.0%
 
 ## Detailed Findings
 
 ### Passed Scenarios
 
-- **Simple Navigation** (6088ms)
-- **Form Interaction** (4044ms)
-- **Cookie Management** (2002ms)
-- **Multiple Tabs** (3367ms)
-- **JavaScript Execution** (2147ms)
+- **Simple Navigation** (6100ms)
+- **Form Interaction** (4043ms)
+- **Content Extraction** (2050ms)
+- **Cookie Management** (2003ms)
+- **Multiple Tabs** (3375ms)
+- **JavaScript Execution** (2041ms)
 - **Proxy Configuration** (1ms)
-- **User Agent Rotation** (1036ms)
-- **Tor Integration** (2260ms)
+- **User Agent Rotation** (1076ms)
+- **Tor Integration** (2217ms)
 
 ### Failed Scenarios
 
-- **Content Extraction**
-  - all() takes exactly one argument (4 given)
 - **Screenshot Capture**
-  - Full-page screenshot failed
+  - Screenshot returned but no image data
 
 ## Performance Analysis
 
-- **Total Duration:** 25037ms
-- **Average Per Scenario:** 2504ms
-- **Slowest:** Simple Navigation (6088ms)
+- **Total Duration:** 24946ms
+- **Average Per Scenario:** 2495ms
+- **Slowest:** Simple Navigation (6100ms)
 - **Fastest:** Proxy Configuration (1ms)
 
 ## Recommendations

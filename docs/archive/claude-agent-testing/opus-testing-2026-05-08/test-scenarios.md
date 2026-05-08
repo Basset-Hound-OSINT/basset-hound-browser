@@ -1,14 +1,14 @@
 # Basset Hound Browser MCP Integration Testing
 
-**Date:** 2026-05-08 16:59:07
+**Date:** 2026-05-08 16:59:52
 
-**Summary:** 8/10 scenarios passed (80.0%)
+**Summary:** 9/10 scenarios passed (90.0%)
 
 ## Scenario 1: Simple Navigation
 
 **Status:** PASS
 
-**Duration:** 6088ms
+**Duration:** 6100ms
 
 **Steps Completed:** 3
 
@@ -18,35 +18,35 @@
   "url": "example.com",
   "navigation_success": false,
   "page_title": "N/A",
-  "current_url": "https://stackoverflow.com/",
+  "current_url": "https://example.com/",
   "page_links_count": 0,
   "page_forms_count": 0,
-  "duration_ms": 2019.446611404419
+  "duration_ms": 2019.364833831787
 }
 - {
   "url": "google.com",
   "navigation_success": true,
   "page_title": "N/A",
-  "current_url": "https://example.com/",
+  "current_url": "https://www.google.com/?zx=1778273970450",
   "page_links_count": 0,
   "page_forms_count": 0,
-  "duration_ms": 2033.40744972229
+  "duration_ms": 2039.588212966919
 }
 - {
   "url": "httpbin.org/html",
   "navigation_success": true,
   "page_title": "N/A",
-  "current_url": "https://www.google.com/?zx=1778273827605",
+  "current_url": "https://httpbin.org/html",
   "page_links_count": 0,
   "page_forms_count": 0,
-  "duration_ms": 2035.1707935333252
+  "duration_ms": 2040.816307067871
 }
 
 ## Scenario 2: Form Interaction
 
 **Status:** PASS
 
-**Duration:** 4044ms
+**Duration:** 4043ms
 
 **Steps Completed:** 5
 
@@ -69,9 +69,9 @@
 
 ## Scenario 3: Content Extraction
 
-**Status:** FAIL
+**Status:** PASS
 
-**Duration:** 2044ms
+**Duration:** 2050ms
 
 **Steps Completed:** 5
 
@@ -86,15 +86,11 @@
   "metadata": {}
 }
 
-**Errors:**
-
-- all() takes exactly one argument (4 given)
-
 ## Scenario 4: Screenshot Capture
 
 **Status:** FAIL
 
-**Duration:** 2048ms
+**Duration:** 2041ms
 
 **Steps Completed:** 3
 
@@ -106,13 +102,13 @@
 
 **Errors:**
 
-- Full-page screenshot failed
+- Screenshot returned but no image data
 
 ## Scenario 5: Cookie Management
 
 **Status:** PASS
 
-**Duration:** 2002ms
+**Duration:** 2003ms
 
 **Steps Completed:** 5
 
@@ -136,7 +132,7 @@
 
 **Status:** PASS
 
-**Duration:** 3367ms
+**Duration:** 3375ms
 
 **Steps Completed:** 13
 
@@ -177,7 +173,7 @@
 
 **Status:** PASS
 
-**Duration:** 2147ms
+**Duration:** 2041ms
 
 **Steps Completed:** 7
 
@@ -238,7 +234,7 @@
 
 **Status:** PASS
 
-**Duration:** 1036ms
+**Duration:** 1076ms
 
 **Steps Completed:** 6
 
@@ -246,7 +242,7 @@
 
 - {
   "initial_user_agent": "N/A",
-  "get_ua_success": true
+  "get_ua_success": false
 }
 - {
   "available_user_agents": 0,
@@ -270,7 +266,7 @@
 
 **Status:** PASS
 
-**Duration:** 2260ms
+**Duration:** 2217ms
 
 **Steps Completed:** 6
 
@@ -283,7 +279,7 @@
 }
 - {
   "get_tor_mode_success": true,
-  "current_tor_mode": "on"
+  "current_tor_mode": "auto"
 }
 - {
   "set_tor_mode_success": true,
