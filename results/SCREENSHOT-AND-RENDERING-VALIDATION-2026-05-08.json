@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-05-08T23:04:09.921Z",
+  "tests": [
+    {
+      "name": "Navigate to example.com",
+      "passed": true,
+      "message": "Navigation successful",
+      "timestamp": "2026-05-08T23:04:11.171Z"
+    },
+    {
+      "name": "PNG screenshot",
+      "passed": true,
+      "message": "Captured 1440x150 PNG (12457 bytes)",
+      "details": {
+        "valid": true,
+        "format": "png",
+        "size": 12457,
+        "width": 1440,
+        "height": 150,
+        "headerValid": true
+      },
+      "timestamp": "2026-05-08T23:04:12.189Z"
+    },
+    {
+      "name": "JPEG screenshot",
+      "passed": true,
+      "message": "Captured JPEG (12457 bytes)",
+      "timestamp": "2026-05-08T23:04:12.209Z"
+    },
+    {
+      "name": "WebP screenshot",
+      "passed": true,
+      "message": "Captured WebP (12457 bytes)",
+      "timestamp": "2026-05-08T23:04:12.241Z"
+    },
+    {
+      "name": "Full page screenshot",
+      "passed": true,
+      "message": "Full page captured (12457 bytes)",
+      "details": {
+        "valid": true,
+        "format": "png",
+        "size": 12457,
+        "width": 1440,
+        "height": 150,
+        "headerValid": true
+      },
+      "timestamp": "2026-05-08T23:04:12.275Z"
+    },
+    {
+      "name": "Element screenshot",
+      "passed": true,
+      "message": "Element captured (11033 bytes)",
+      "timestamp": "2026-05-08T23:04:12.304Z"
+    },
+    {
+      "name": "Screenshot after navigation",
+      "passed": true,
+      "message": "Captured successfully",
+      "timestamp": "2026-05-08T23:04:14.484Z"
+    },
+    {
+      "name": "Invalid format rejection",
+      "message": "Did not reject invalid format",
+      "timestamp": "2026-05-08T23:04:14.509Z"
+    },
+    {
+      "name": "Invalid quality handling",
+      "passed": false,
+      "message": "Quality validation may have issues",
+      "timestamp": "2026-05-08T23:04:14.542Z"
+    },
+    {
+      "name": "Content visibility",
+      "passed": true,
+      "message": "Page appears rendered (12457 bytes)",
+      "details": {
+        "fileSize": 12457
+      },
+      "timestamp": "2026-05-08T23:04:16.843Z"
+    }
+  ],
+  "passed": 8,
+  "failed": 2,
+  "issues": [
+    {
+      "test": "Invalid format rejection",
+      "message": "Did not reject invalid format"
+    },
+    {
+      "test": "Invalid quality handling",
+      "message": "Quality validation may have issues"
+    }
+  ]
+}

@@ -472,17 +472,8 @@ class WebSocketServer {
         ssl: this.sslActive
       });
 
-      // Send connection status with auth requirement info
-      ws.send(JSON.stringify({
-        type: 'status',
-        message: 'connected',
-        clientId,
-        authenticated: ws.isAuthenticated,
-        authRequired: this.requireAuth,
-        ssl: this.sslActive,
-        protocol: this.getProtocol(),
-        connectionUrl: this.getConnectionUrl()
-      }));
+      // Connection status is available via status command, not sent automatically
+      // This prevents response format inconsistency where first message differs from command responses
 
       // Handle pong responses for heartbeat
       ws.on('pong', () => {
