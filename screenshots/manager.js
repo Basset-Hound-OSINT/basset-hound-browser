@@ -172,7 +172,8 @@ class ScreenshotManager {
         const image = await this.mainWindow.webContents.capturePage();
 
         // Check if image is valid
-        if (image && !image.isEmpty && !image.isEmpty()) {
+        const isEmpty = typeof image.isEmpty === 'function' ? image.isEmpty() : image.isEmpty;
+        if (image && !isEmpty) {
           const dataUrl = image.toDataURL();
           if (dataUrl && dataUrl.length > 100) {
             return {
@@ -862,7 +863,8 @@ class ScreenshotManager {
 
     try {
       const image = await webContents.capturePage();
-      if (image && !image.isEmpty && !image.isEmpty()) {
+      const isEmpty = typeof image.isEmpty === 'function' ? image.isEmpty() : image.isEmpty;
+      if (image && !isEmpty) {
         this.lastHeadlessFrame = image.toDataURL();
         console.log('[ScreenshotManager] Cached headless frame for fallback');
         return true;

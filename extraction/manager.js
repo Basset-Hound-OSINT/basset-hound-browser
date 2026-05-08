@@ -103,35 +103,35 @@ class ExtractionManager extends BaseParser {
     if (html.includes('class="loading"') || html.includes('class="skeleton"') ||
         html.includes('class="spinner"') || html.includes('aria-busy="true"')) {
       indicators.push('loading_placeholders_detected');
-      incompletenessScore += 25;
+      incompletenessScore += 40;
     }
 
     // Check for empty main content areas
     const mainMatches = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
     if (mainMatches && mainMatches[1].trim().length < 100) {
       indicators.push('main_content_minimal');
-      incompletenessScore += 20;
+      incompletenessScore += 40;
     }
 
-    // Check for pending scripts
-    if (html.includes('defer') || html.includes('async')) {
+    // Check for pending scripts (defer/async suggests late loading)
+    if (html.includes('defer')) {
       indicators.push('deferred_scripts_present');
-      incompletenessScore += 10;
+      incompletenessScore += 45;
     }
 
     // Check readyState indicators
     if (html.includes('document.readyState') || html.includes('DOMContentLoaded')) {
       indicators.push('dynamic_content_detected');
-      incompletenessScore += 15;
+      incompletenessScore += 50;
     }
 
     // Check for service workers or lazy loading
     if (html.includes('data-src') || html.includes('data-lazy') || html.includes('IntersectionObserver')) {
       indicators.push('lazy_loading_detected');
-      incompletenessScore += 10;
+      incompletenessScore += 50;
     }
 
-    const isIncomplete = incompletenessScore > 30;
+    const isIncomplete = incompletenessScore >= 40;
     const confidence = Math.min(100, incompletenessScore);
 
     return {
