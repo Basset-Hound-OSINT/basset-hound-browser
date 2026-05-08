@@ -256,48 +256,60 @@ class MultiPageManager extends EventEmitter {
   _setupViewListeners(pageId, view) {
     const webContents = view.webContents;
 
-    webContents.on('did-start-loading', () => {
-      const page = this.pages.get(pageId);
-      if (page) {
-        page.loading = true;
-        this.emit('page-loading-started', { pageId, url: page.url });
+    // Store listener references for cleanup
+    const listeners = {
+      didStartLoading: () => {
+        const page = this.pages.get(pageId);
+        if (page) {
+          page.loading = true;
+          this.emit('page-loading-started', { pageId, url: page.url });
+        }
+      },
+      didFinishLoad: () => {
+        const page = this.pages.get(pageId);
+        if (page) {
+          page.loading = false;
+          this.stats.navigationsCompleted++;
+          this.activeNavigations = Math.max(0, this.activeNavigations - 1);
+          this.emit('page-loaded', { pageId, url: webContents.getURL() });
+          this._processNavigationQueue();
+        }
+      },
+      didFailLoad: (event, errorCode, errorDescription, validatedURL) => {
+        const page = this.pages.get(pageId);
+        if (page) {
+          page.loading = false;
+          this.stats.navigationsFailed++;
+          this.activeNavigations = Math.max(0, this.activeNavigations - 1);
+          this.emit('page-load-failed', {
+            pageId,
+            url: validatedURL,
+            errorCode,
+            errorDescription
+          });
+          this._processNavigationQueue();
+        }
+      },
+      didNavigate: (event, url) => {
+        const page = this.pages.get(pageId);
+        if (page) {
+          page.url = url;
+          page.lastNavigated = Date.now();
+        }
       }
-    });
+    };
 
-    webContents.on('did-finish-load', () => {
-      const page = this.pages.get(pageId);
-      if (page) {
-        page.loading = false;
-        this.stats.navigationsCompleted++;
-        this.activeNavigations = Math.max(0, this.activeNavigations - 1);
-        this.emit('page-loaded', { pageId, url: webContents.getURL() });
-        this._processNavigationQueue();
-      }
-    });
+    // Attach listeners
+    webContents.on('did-start-loading', listeners.didStartLoading);
+    webContents.on('did-finish-load', listeners.didFinishLoad);
+    webContents.on('did-fail-load', listeners.didFailLoad);
+    webContents.on('did-navigate', listeners.didNavigate);
 
-    webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
-      const page = this.pages.get(pageId);
-      if (page) {
-        page.loading = false;
-        this.stats.navigationsFailed++;
-        this.activeNavigations = Math.max(0, this.activeNavigations - 1);
-        this.emit('page-load-failed', {
-          pageId,
-          url: validatedURL,
-          errorCode,
-          errorDescription
-        });
-        this._processNavigationQueue();
-      }
-    });
-
-    webContents.on('did-navigate', (event, url) => {
-      const page = this.pages.get(pageId);
-      if (page) {
-        page.url = url;
-        page.lastNavigated = Date.now();
-      }
-    });
+    // Store listeners on the view for later cleanup
+    if (!view.listeners) {
+      view.listeners = {};
+    }
+    view.listeners[pageId] = listeners;
   }
 
   /**
@@ -315,8 +327,22 @@ class MultiPageManager extends EventEmitter {
       this.activePageId = null;
     }
 
+    // Cleanup event listeners before destroying webContents
+    const webContents = page.view.webContents;
+    if (page.view.listeners && page.view.listeners[pageId]) {
+      const listeners = page.view.listeners[pageId];
+      webContents.removeListener('did-start-loading', listeners.didStartLoading);
+      webContents.removeListener('did-finish-load', listeners.didFinishLoad);
+      webContents.removeListener('did-fail-load', listeners.didFailLoad);
+      webContents.removeListener('did-navigate', listeners.didNavigate);
+      delete page.view.listeners[pageId];
+    }
+
+    // Remove all remaining listeners to ensure complete cleanup
+    webContents.removeAllListeners();
+
     // Destroy the view
-    page.view.webContents.destroy();
+    webContents.destroy();
 
     // Remove from pages map
     this.pages.delete(pageId);
@@ -561,14 +587,20 @@ class MultiPageManager extends EventEmitter {
    * Cleanup and shutdown
    */
   async shutdown() {
-    // Stop resource monitoring
+    // Close all pages (this will cleanup all event listeners)
+    await this.closeAllPages();
+
+    // Stop resource monitoring and clear its timer
     this.resourceMonitor.stop();
 
-    // Close all pages
-    await this.closeAllPages();
+    // Remove all event listeners from the resource monitor
+    this.resourceMonitor.removeAllListeners();
 
     // Clear rate limiters
     this.domainRateLimiters.clear();
+
+    // Remove all event listeners from this manager
+    this.removeAllListeners();
 
     this.emit('shutdown');
   }
