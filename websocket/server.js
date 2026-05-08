@@ -25,6 +25,7 @@ const { headlessManager, HEADLESS_PRESETS } = require('../headless/manager');
 const { WindowManager, WindowState } = require('../windows/manager');
 const { WindowPool, PoolEntryState } = require('../windows/pool');
 const { PluginManager, PLUGIN_STATE } = require('../plugins');
+const { ConnectionPool } = require('./connection-pool');
 
 // Logging and debugging
 const {
@@ -396,7 +397,7 @@ class WebSocketServer {
    */
   setSessionManager(manager) {
     this.sessionManager = manager;
-    console.log('[WebSocket] Session manager attached');
+    this.logger.info('[WebSocket] Session manager attached');
   }
 
   /**
@@ -405,7 +406,7 @@ class WebSocketServer {
    */
   setTabManager(manager) {
     this.tabManager = manager;
-    console.log('[WebSocket] Tab manager attached');
+    this.logger.info('[WebSocket] Tab manager attached');
   }
 
   start() {
@@ -417,10 +418,10 @@ class WebSocketServer {
         this.wss = new WebSocket.Server({ server: this.httpsServer });
         this.httpsServer.listen(this.port);
         this.sslActive = true;
-        console.log(`[WebSocket] SSL/TLS enabled with certificate: ${this.sslCertPath}`);
+        this.logger.info(`[WebSocket] SSL/TLS enabled with certificate: ${this.sslCertPath}`);
       } catch (error) {
-        console.error(`[WebSocket] Failed to load SSL certificates: ${error.message}`);
-        console.log('[WebSocket] Falling back to non-SSL mode');
+        this.logger.error(`[WebSocket] Failed to load SSL certificates: ${error.message}`);
+        this.logger.info('[WebSocket] Falling back to non-SSL mode');
         this.wss = new WebSocket.Server({ port: this.port });
         this.sslActive = false;
       }
@@ -430,7 +431,7 @@ class WebSocketServer {
       this.sslActive = false;
 
       if (this.sslEnabled && (!this.sslCertPath || !this.sslKeyPath)) {
-        console.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
+        this.logger.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
       }
     }
 
@@ -578,17 +579,59 @@ class WebSocketServer {
       });
 
       ws.on('close', () => {
-        this.clients.delete(ws);
-        this.authenticatedClients.delete(ws);
-        this.cleanupRateLimitData(ws.clientId);
-        this.logger.info(`Client disconnected: ${clientId}`);
+      ws.on('close', () => {
+        try {
+          // Remove from client sets
+          this.clients.delete(ws);
+          this.authenticatedClients.delete(ws);
+
+          // Cleanup rate limit data
+          this.cleanupRateLimitData(ws.clientId);
+
+          // Remove all event listeners to prevent memory leaks
+          ws.removeAllListeners();
+
+          // Clear client-specific properties
+          ws.clientId = null;
+          ws.isAlive = null;
+          ws.lastHeartbeat = null;
+          ws.isAuthenticated = null;
+
+          this.logger.info(`Client disconnected and cleaned up: ${clientId}`);
+        } catch (error) {
+          this.logger.error(`Error during client cleanup (${clientId}): ${error.message}`, { error });
+        }
       });
 
       ws.on('error', (error) => {
-        this.logger.error(`Client error (${clientId}): ${error.message}`, { error });
-        this.clients.delete(ws);
-        this.authenticatedClients.delete(ws);
-        this.cleanupRateLimitData(ws.clientId);
+        try {
+          this.logger.error(`Client error (${clientId}): ${error.message}`, { error });
+
+          // Remove from client sets
+          this.clients.delete(ws);
+          this.authenticatedClients.delete(ws);
+
+          // Cleanup rate limit data
+          this.cleanupRateLimitData(ws.clientId);
+
+          // Remove all event listeners
+          ws.removeAllListeners();
+
+          // Clear client-specific properties
+          ws.clientId = null;
+          ws.isAlive = null;
+          ws.lastHeartbeat = null;
+          ws.isAuthenticated = null;
+
+          // Attempt to close the connection if still open
+          if (ws.readyState === ws.OPEN) {
+            ws.close(1011, 'Internal server error');
+          }
+
+          this.logger.info(`Client error handled and cleaned up: ${clientId}`);
+        } catch (err) {
+          this.logger.error(`Error during error handling cleanup: ${err.message}`, { error: err });
+        }
       });
     });
 
@@ -651,16 +694,16 @@ class WebSocketServer {
     // Load CA certificate if provided (for client certificate verification)
     if (this.sslCaPath) {
       if (!fs.existsSync(this.sslCaPath)) {
-        console.warn(`[WebSocket] CA certificate file not found: ${this.sslCaPath}. Client verification disabled.`);
+        this.logger.warn(`[WebSocket] CA certificate file not found: ${this.sslCaPath}. Client verification disabled.`);
       } else {
         try {
           ca = fs.readFileSync(this.sslCaPath);
           sslOptions.ca = ca;
           sslOptions.requestCert = true;
           sslOptions.rejectUnauthorized = true;
-          console.log(`[WebSocket] Client certificate verification enabled with CA: ${this.sslCaPath}`);
+          this.logger.info(`[WebSocket] Client certificate verification enabled with CA: ${this.sslCaPath}`);
         } catch (error) {
-          console.warn(`[WebSocket] Failed to read CA certificate: ${error.message}. Client verification disabled.`);
+          this.logger.warn(`[WebSocket] Failed to read CA certificate: ${error.message}. Client verification disabled.`);
         }
       }
     }
@@ -769,11 +812,11 @@ class WebSocketServer {
         '-addext', `subjectAltName=DNS:${commonName},DNS:localhost,IP:127.0.0.1`
       ], { stdio: 'pipe' });
 
-      console.log(`[WebSocket] Self-signed certificate generated:`);
-      console.log(`  Certificate: ${certPath}`);
-      console.log(`  Private Key: ${keyPath}`);
-      console.log(`  Valid for: ${days} days`);
-      console.log(`  Common Name: ${commonName}`);
+      defaultLogger.info(`[WebSocket] Self-signed certificate generated:`);
+      defaultLogger.info(`  Certificate: ${certPath}`);
+      defaultLogger.info(`  Private Key: ${keyPath}`);
+      defaultLogger.info(`  Valid for: ${days} days`);
+      defaultLogger.info(`  Common Name: ${commonName}`);
 
       return {
         certPath,
@@ -790,11 +833,20 @@ class WebSocketServer {
    * Start heartbeat monitoring to detect dead connections
    */
   startHeartbeat() {
+    let cleanupCounter = 0;
+
     this.heartbeatLoop = setInterval(() => {
+      // Perform rate limit cleanup every 10 heartbeats (5 minute intervals with 30s heartbeat)
+      cleanupCounter++;
+      if (cleanupCounter >= 10) {
+        cleanupCounter = 0;
+        this.cleanupRateLimitData();
+      }
+
       this.clients.forEach((ws) => {
         if (!ws.isAlive) {
           // Connection failed to respond to ping
-          console.log(`[WebSocket] Client ${ws.clientId} failed heartbeat, terminating`);
+          this.logger.info(`[WebSocket] Client ${ws.clientId} failed heartbeat, terminating`);
           this.clients.delete(ws);
           this.authenticatedClients.delete(ws);
           this.cleanupRateLimitData(ws.clientId);
@@ -803,7 +855,7 @@ class WebSocketServer {
 
         // Check if client hasn't responded within timeout
         if (Date.now() - ws.lastHeartbeat > this.heartbeatTimeout) {
-          console.log(`[WebSocket] Client ${ws.clientId} heartbeat timeout, terminating`);
+          this.logger.info(`[WebSocket] Client ${ws.clientId} heartbeat timeout, terminating`);
           this.clients.delete(ws);
           this.authenticatedClients.delete(ws);
           this.cleanupRateLimitData(ws.clientId);
@@ -852,10 +904,10 @@ class WebSocketServer {
     if (this.validateToken(token)) {
       ws.isAuthenticated = true;
       this.authenticatedClients.add(ws);
-      console.log(`[WebSocket] Client ${ws.clientId} authenticated successfully`);
+      this.logger.info(`[WebSocket] Client ${ws.clientId} authenticated successfully`);
       return { success: true, message: 'Authentication successful' };
     } else {
-      console.log(`[WebSocket] Client ${ws.clientId} authentication failed`);
+      this.logger.info(`[WebSocket] Client ${ws.clientId} authentication failed`);
       return { success: false, error: 'Invalid token' };
     }
   }
@@ -867,7 +919,7 @@ class WebSocketServer {
   setAuthToken(token) {
     this.authToken = token;
     this.requireAuth = token !== null;
-    console.log(`[WebSocket] Auth token ${token ? 'set' : 'cleared'}, auth ${this.requireAuth ? 'enabled' : 'disabled'}`);
+    this.logger.info(`[WebSocket] Auth token ${token ? 'set' : 'cleared'}, auth ${this.requireAuth ? 'enabled' : 'disabled'}`);
   }
 
   /**
@@ -929,7 +981,7 @@ class WebSocketServer {
       data.burstCount++;
       data.lastRequest = now;
       const remaining = effectiveLimit - data.requestCount;
-      console.log(`[WebSocket] Client ${clientId} using burst allowance (${data.burstCount}/${this.burstAllowance})`);
+      this.logger.info(`[WebSocket] Client ${clientId} using burst allowance (${data.burstCount}/${this.burstAllowance})`);
       return {
         allowed: true,
         remaining,
@@ -940,7 +992,7 @@ class WebSocketServer {
     } else {
       // Rate limit exceeded
       const resetIn = this.rateLimitWindow - windowElapsed;
-      console.log(`[WebSocket] Client ${clientId} rate limited, reset in ${resetIn}ms`);
+      this.logger.info(`[WebSocket] Client ${clientId} rate limited, reset in ${resetIn}ms`);
       return {
         allowed: false,
         error: `Rate limit exceeded. Maximum ${this.maxRequestsPerMinute} requests per ${this.rateLimitWindow / 1000} seconds (plus ${this.burstAllowance} burst). Try again in ${Math.ceil(resetIn / 1000)} seconds.`,
@@ -1005,11 +1057,30 @@ class WebSocketServer {
   }
 
   /**
-   * Clean up rate limit data for a client
-   * @param {string} clientId - Client identifier
+   * Clean up rate limit data for a client or perform global cleanup
+   * @param {string} [clientId] - Client identifier (optional). If not provided, performs global cleanup
    */
   cleanupRateLimitData(clientId) {
-    this.rateLimitData.delete(clientId);
+    if (clientId) {
+      // Clean up specific client
+      this.rateLimitData.delete(clientId);
+    } else {
+      // Global cleanup: remove entries older than 2x the rate limit window
+      const now = Date.now();
+      const maxAge = this.rateLimitWindow * 2;
+      let cleanedCount = 0;
+
+      for (const [id, data] of this.rateLimitData.entries()) {
+        if (now - data.windowStart > maxAge) {
+          this.rateLimitData.delete(id);
+          cleanedCount++;
+        }
+      }
+
+      if (cleanedCount > 0) {
+        this.logger.debug(`[WebSocket] Rate limit cleanup: removed ${cleanedCount} old entries (age > ${maxAge}ms)`);
+      }
+    }
   }
 
   /**
@@ -1028,7 +1099,7 @@ class WebSocketServer {
     if (options.burstAllowance !== undefined) {
       this.burstAllowance = options.burstAllowance;
     }
-    console.log(`[WebSocket] Rate limiting ${enabled ? 'enabled' : 'disabled'} (max: ${this.maxRequestsPerMinute}/min, burst: ${this.burstAllowance})`);
+    this.logger.info(`[WebSocket] Rate limiting ${enabled ? 'enabled' : 'disabled'} (max: ${this.maxRequestsPerMinute}/min, burst: ${this.burstAllowance})`);
   }
 
   setupCommandHandlers() {
@@ -1044,10 +1115,10 @@ class WebSocketServer {
       try {
         autoModeResult = await proxyManager.handleAutoModeNavigation(url);
         if (autoModeResult.handled) {
-          console.log(`[Navigate] AUTO mode: ${autoModeResult.action} for ${url}`);
+          this.logger.info(`[Navigate] AUTO mode: ${autoModeResult.action} for ${url}`);
         }
       } catch (error) {
-        console.error('[Navigate] AUTO mode error:', error.message);
+        this.logger.error('[Navigate] AUTO mode error:', error.message);
       }
 
       // Check for .onion URL without Tor mode (only if not in AUTO mode or AUTO mode failed)
@@ -1151,7 +1222,7 @@ class WebSocketServer {
         // If webview capture failed due to headless mode, try capturing from main window
         // This captures the entire browser window including chrome, but works in headless mode
         if (result.needsMainProcessCapture || result.error?.includes('headless')) {
-          console.log('[WebSocket] Webview screenshot failed, attempting main window capture');
+          this.logger.debug('[WebSocket] Webview screenshot failed, attempting main window capture');
           try {
             const image = await this.mainWindow.webContents.capturePage();
             if (!image.isEmpty()) {
@@ -1169,12 +1240,12 @@ class WebSocketServer {
 
             // Main window capture also failed, try headless manager's offscreen frame
             if (this.headlessManager && this.headlessManager.offscreenRenderingEnabled) {
-              console.log('[WebSocket] Main window capture failed, attempting offscreen frame capture');
+              this.logger.debug('[WebSocket] Main window capture failed, attempting offscreen frame capture');
               const frameResult = this.headlessManager.captureFromLastFrame();
               if (frameResult.success) {
                 return frameResult;
               }
-              console.log('[WebSocket] Offscreen frame capture failed:', frameResult.error);
+              this.logger.debug('[WebSocket] Offscreen frame capture failed:', frameResult.error);
             }
 
             return {
@@ -1184,7 +1255,7 @@ class WebSocketServer {
           } catch (mainWindowError) {
             // Try headless manager's offscreen frame as last resort
             if (this.headlessManager && this.headlessManager.offscreenRenderingEnabled) {
-              console.log('[WebSocket] Main window capture threw error, attempting offscreen frame capture');
+              this.logger.debug('[WebSocket] Main window capture threw error, attempting offscreen frame capture');
               const frameResult = this.headlessManager.captureFromLastFrame();
               if (frameResult.success) {
                 return frameResult;
@@ -2338,7 +2409,7 @@ class WebSocketServer {
 
         // If webview capture failed due to headless mode, try fallbacks
         if (!result.success && (result.needsMainProcessCapture || result.error?.includes('headless') || result.error?.includes('empty'))) {
-          console.log('[WebSocket] Viewport screenshot failed, attempting main window capture');
+          this.logger.info('[WebSocket] Viewport screenshot failed, attempting main window capture');
 
           // Try main window capture
           try {
@@ -2357,12 +2428,12 @@ class WebSocketServer {
               }
             }
           } catch (mainWindowError) {
-            console.log('[WebSocket] Main window capture failed:', mainWindowError.message);
+            this.logger.info('[WebSocket] Main window capture failed:', mainWindowError.message);
           }
 
           // If still failed, try headless manager's offscreen frame
           if (!result.success && this.headlessManager && this.headlessManager.offscreenRenderingEnabled) {
-            console.log('[WebSocket] Attempting offscreen frame capture');
+            this.logger.info('[WebSocket] Attempting offscreen frame capture');
             const frameResult = this.headlessManager.captureFromLastFrame();
             if (frameResult.success) {
               result = frameResult;
@@ -2875,7 +2946,7 @@ class WebSocketServer {
           const torAdvanced = require('../proxy/tor-advanced');
           advancedTorManager = torAdvanced.advancedTorManager;
         } catch (error) {
-          console.error('[WebSocket] Failed to load AdvancedTorManager:', error.message);
+          this.logger.error('[WebSocket] Failed to load AdvancedTorManager:', error.message);
         }
       }
       return advancedTorManager;
@@ -8254,7 +8325,7 @@ class WebSocketServer {
         // If we had to retry and succeeded, include that info
         if (attemptCount > 0 && result.success) {
           result.retriedCount = attemptCount;
-          console.log(`[WebSocket] Command ${command} succeeded after ${attemptCount} retry(ies)`);
+          this.logger.info(`[WebSocket] Command ${command} succeeded after ${attemptCount} retry(ies)`);
         }
 
         return result;
@@ -8265,7 +8336,7 @@ class WebSocketServer {
         // Check if error is retryable and we have retries left
         if (canRetry && isRetryableError(error) && attemptCount <= maxRetries) {
           const delay = calculateRetryDelay(attemptCount - 1);
-          console.log(`[WebSocket] Command ${command} failed (attempt ${attemptCount}/${maxRetries + 1}), retrying in ${delay}ms: ${error.message}`);
+          this.logger.info(`[WebSocket] Command ${command} failed (attempt ${attemptCount}/${maxRetries + 1}), retrying in ${delay}ms: ${error.message}`);
           await sleep(delay);
           continue;
         }
@@ -8279,7 +8350,7 @@ class WebSocketServer {
     const recovery = generateRecoverySuggestion(command, lastError);
 
     // Log the failure
-    console.error(`[WebSocket] Command ${command} failed after ${attemptCount} attempt(s): ${lastError.message}`);
+    this.logger.error(`[WebSocket] Command ${command} failed after ${attemptCount} attempt(s): ${lastError.message}`);
 
     return {
       success: false,
@@ -8382,7 +8453,7 @@ class WebSocketServer {
         this.sslActive = false;
       }
 
-      console.log('[WebSocket] Server closed');
+      this.logger.info('[WebSocket] Server closed');
     }
   }
 }
