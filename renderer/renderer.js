@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       try {
-        const content = await webview.executeJavaScript(`
+        const result = await webview.executeJavaScript(`
           ({
             html: document.documentElement.outerHTML,
             text: document.body.innerText,
@@ -568,7 +568,14 @@ document.addEventListener('DOMContentLoaded', () => {
             url: window.location.href
           })
         `);
-        api.sendPageContentResponse({ success: true, content });
+        api.sendPageContentResponse({
+          success: true,
+          content: result.html,
+          html: result.html,
+          text: result.text,
+          title: result.title,
+          url: result.url
+        });
       } catch (error) {
         api.sendPageContentResponse({ success: false, error: error.message });
       }

@@ -8281,7 +8281,7 @@ class WebSocketServer {
    * @returns {Promise<Object>} Command result
    */
   async handleCommand(data, options = {}) {
-    const { command, params = {} } = data;
+    const { command, id, ...params } = data;
     const { enableRetry = true, maxRetries = ERROR_RECOVERY_CONFIG.maxRetries } = options;
 
     if (!command) {
