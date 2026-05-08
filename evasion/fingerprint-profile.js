@@ -291,7 +291,8 @@ class FingerprintProfile {
     this.rng = this._createSeededRandom(this.seed);
 
     // Determine platform
-    this.platformType = options.platform || this._randomChoice(['windows', 'macos', 'linux'], [0.7, 0.2, 0.1]);
+    // Priority: explicit option > detected system platform > random choice
+    this.platformType = options.platform || this._detectPlatform() || this._randomChoice(['windows', 'macos', 'linux'], [0.7, 0.2, 0.1]);
     this.platformConfig = PLATFORM_CONFIGS[this.platformType];
 
     // Determine timezone
@@ -333,6 +334,26 @@ class FingerprintProfile {
       hash = Math.sin(hash) * 10000;
       return hash - Math.floor(hash);
     };
+  }
+
+  /**
+   * Detect platform from process.platform
+   * Maps Node.js process.platform to browser platform names
+   * @private
+   * @returns {string|null} Platform name ('windows', 'macos', 'linux') or null if unrecognized
+   */
+  _detectPlatform() {
+    try {
+      const platformMap = {
+        'win32': 'windows',
+        'darwin': 'macos',
+        'linux': 'linux',
+      };
+      return platformMap[process.platform] || null;
+    } catch (e) {
+      // process.platform may not be available in all environments
+      return null;
+    }
   }
 
   /**
@@ -983,8 +1004,12 @@ class FingerprintProfile {
 
   /**
    * Create a profile optimized for a specific region
+   *
+   * @param {string} region - Region code (US, UK, EU, RU, JP, CN, AU)
+   * @param {Object} options - Optional profile options (platform, tier, etc.)
+   * @returns {FingerprintProfile} Profile optimized for the region
    */
-  static forRegion(region) {
+  static forRegion(region, options = {}) {
     const regionTimezones = {
       US: ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles'],
       UK: ['Europe/London'],
@@ -998,7 +1023,8 @@ class FingerprintProfile {
     const timezones = regionTimezones[region] || regionTimezones.US;
     const timezone = timezones[Math.floor(Math.random() * timezones.length)];
 
-    return new FingerprintProfile({ timezone });
+    // Merge timezone with any additional options provided
+    return new FingerprintProfile({ ...options, timezone });
   }
 }
 

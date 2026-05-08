@@ -357,41 +357,100 @@ class MouseMovementAI {
   /**
    * Generate scroll behavior
    *
+   * Generates realistic scroll patterns with:
+   * - 3-5 discrete scroll events per session
+   * - Randomized scroll distances (100-500px)
+   * - Realistic delays between scrolls (500-2000ms)
+   * - Scroll direction variation
+   * - Position tracking
+   *
    * @param {number} distance - Scroll distance in pixels
    * @param {string} direction - 'up' or 'down'
-   * @returns {Array} Scroll events with timing
+   * @returns {Array} Scroll events with complete properties
    */
   generateScrollBehavior(distance, direction = 'down') {
     const events = [];
     const sign = direction === 'down' ? 1 : -1;
+    const absoluteDistance = Math.abs(distance);
 
-    // Human scrolling tends to be in chunks
-    let remaining = Math.abs(distance);
-    let time = 0;
+    // Determine number of scroll events (3-5 for realistic session behavior)
+    const eventCount = 3 + Math.floor(this.profile.rng() * 3); // 3-5 events
 
-    while (remaining > 0) {
-      // Variable scroll amounts
-      const scrollAmount = Math.min(
-        remaining,
-        100 + Math.random() * 200 // 100-300 pixels per scroll
-      );
+    let currentPosition = 0;
+    let currentTime = 0;
+    let lastScrollX = 0;
+    let lastScrollY = 0;
 
-      // Variable timing between scrolls
-      const delay = 50 + Math.random() * 150;
+    // Track backward scrolls to ensure final position accuracy
+    let reversalScrolls = 0;
+
+    for (let i = 0; i < eventCount; i++) {
+      // Base scroll amount for this event
+      const remainingDistance = absoluteDistance - currentPosition;
+      let scrollAmount = Math.round(remainingDistance / (eventCount - i));
+
+      // Randomize scroll amount with some variation (80-120% of base)
+      const variation = 0.8 + (this.profile.rng() * 0.4);
+      scrollAmount = Math.round(scrollAmount * variation);
+
+      // Ensure we don't overshoot
+      scrollAmount = Math.min(scrollAmount, remainingDistance);
+
+      // Realistic delay between scrolls: 500-2000ms
+      const scrollDelay = 500 + (this.profile.rng() * 1500);
+      currentTime += scrollDelay;
+
+      // Occasionally reverse scroll slightly (realistic back-and-forth)
+      let deltaY = scrollAmount * sign;
+      if (i > 0 && this.profile.rng() < 0.15 && i < eventCount - 1 && reversalScrolls === 0) {
+        const reversalAmount = Math.round(scrollAmount * 0.2);
+        deltaY = -reversalAmount * sign; // Scroll back
+        currentPosition -= reversalAmount;
+        reversalScrolls++;
+      } else {
+        currentPosition += scrollAmount;
+      }
+
+      // Smooth scrolling duration (longer for larger scrolls)
+      const scrollDuration = Math.abs(scrollAmount) / 300 * 1000; // ~300px/second natural scroll speed
+
+      // Mouse position varies slightly with scroll (realistic behavior)
+      const scrollX = lastScrollX + (this.profile.rng() - 0.5) * 50;
+      const scrollY = lastScrollY + Math.abs(deltaY) * 0.5 + (this.profile.rng() - 0.5) * 20;
+      lastScrollX = scrollX;
+      lastScrollY = scrollY;
 
       events.push({
-        deltaY: scrollAmount * sign,
-        t: time,
+        timestamp: Date.now() + currentTime,
+        type: 'scroll',
+        x: Math.round(scrollX),
+        y: Math.round(scrollY),
+        deltaY: Math.round(deltaY),
+        duration: Math.round(scrollDuration),
+        t: currentTime,
+        position: currentPosition, // Track absolute scroll position
       });
 
-      remaining -= scrollAmount;
-      time += delay;
+      // Occasional longer pause (user reading content)
+      if (i < eventCount - 1 && this.profile.rng() < 0.25) {
+        const pauseDuration = 800 + (this.profile.rng() * 1200);
+        currentTime += pauseDuration;
+      }
 
-      // Occasional pause
-      if (Math.random() < 0.1) {
-        time += 200 + Math.random() * 500;
+      // If we're at the last event and haven't reached target, adjust the last event
+      if (i === eventCount - 1 && currentPosition < absoluteDistance) {
+        const finalGap = absoluteDistance - currentPosition;
+        if (finalGap > 0) {
+          // Adjust the last event to account for the gap instead of adding a new event
+          const lastEvent = events[events.length - 1];
+          lastEvent.deltaY += Math.round(finalGap * sign);
+          lastEvent.duration = Math.round(Math.abs(lastEvent.deltaY) / 300 * 1000);
+          lastEvent.position = absoluteDistance;
+        }
       }
     }
+
+    this.profile.recordAction();
 
     return events;
   }
