@@ -4,12 +4,14 @@
  * Tests for page monitoring and change detection functionality
  */
 
-const { PageMonitor, DETECTION_METHODS, CHANGE_TYPES, MONITOR_STATUS } = require('../../monitoring/page-monitor');
-
-// Mock Electron IPC
+// Mock Electron IPC - declare before mock
 const mockIpcMain = {
   on: jest.fn()
 };
+
+jest.mock('electron', () => ({
+  ipcMain: mockIpcMain
+}));
 
 // Mock main window
 const mockMainWindow = {
@@ -21,10 +23,7 @@ const mockMainWindow = {
   }
 };
 
-// Replace require for electron
-jest.mock('electron', () => ({
-  ipcMain: mockIpcMain
-}));
+const { PageMonitor, DETECTION_METHODS, CHANGE_TYPES, MONITOR_STATUS } = require('../../monitoring/page-monitor');
 
 describe('PageMonitor', () => {
   let monitor;

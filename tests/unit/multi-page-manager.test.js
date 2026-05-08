@@ -14,10 +14,9 @@
  * - Configuration updates
  */
 
-const { MultiPageManager, ResourceMonitor, PROFILES } = require('../../multi-page/multi-page-manager');
 const EventEmitter = require('events');
 
-// Mock BrowserView
+// Mock BrowserView - must be defined before jest.mock
 class MockWebContents extends EventEmitter {
   constructor() {
     super();
@@ -128,6 +127,8 @@ class MockMainWindow {
 jest.mock('electron', () => ({
   BrowserView: MockBrowserView
 }));
+
+const { MultiPageManager, ResourceMonitor, PROFILES } = require('../../multi-page/multi-page-manager');
 
 describe('PROFILES', () => {
   test('should have stealth profile', () => {

@@ -15,22 +15,16 @@
  * - Metadata enrichment
  */
 
-const {
-  ScreenshotManager,
-  FORMAT_CONFIG,
-  QUALITY_PRESETS,
-  PII_PATTERNS,
-  ANNOTATION_TYPES,
-  validateAnnotation,
-  applyAnnotationDefaults
-} = require('../../screenshots/manager');
-
-// Mock Electron IPC
+// Mock Electron IPC - declare before require
 const mockIpcMain = {
   on: jest.fn(),
   once: jest.fn(),
   removeListener: jest.fn()
 };
+
+jest.mock('electron', () => ({
+  ipcMain: mockIpcMain
+}));
 
 // Mock main window
 const createMockWindow = () => ({
@@ -42,9 +36,15 @@ const createMockWindow = () => ({
   }
 });
 
-jest.mock('electron', () => ({
-  ipcMain: mockIpcMain
-}));
+const {
+  ScreenshotManager,
+  FORMAT_CONFIG,
+  QUALITY_PRESETS,
+  PII_PATTERNS,
+  ANNOTATION_TYPES,
+  validateAnnotation,
+  applyAnnotationDefaults
+} = require('../../screenshots/manager');
 
 describe('ScreenshotManager', () => {
   let manager;
