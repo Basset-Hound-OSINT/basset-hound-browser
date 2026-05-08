@@ -16,6 +16,7 @@ const {
 /**
  * ExtractionManager class
  * Main manager for all content extraction operations
+ * Includes DOM timing detection and retry mechanisms
  */
 class ExtractionManager extends BaseParser {
   constructor() {
@@ -28,6 +29,15 @@ class ExtractionManager extends BaseParser {
     this.microdataParser = new MicrodataParser();
     this.rdfaParser = new RdfaParser();
 
+    // DOM timing configuration
+    this.domWaitConfig = {
+      defaultWaitTime: 2000, // Default 2 seconds wait before extraction
+      minWaitTime: 500,      // Minimum 500ms
+      maxWaitTime: 10000,    // Maximum 10 seconds
+      retryAttempts: 3,      // Retry extraction up to 3 times
+      retryDelay: 1000       // 1 second between retries
+    };
+
     // Statistics
     this.stats = {
       totalExtractions: 0,
@@ -37,7 +47,98 @@ class ExtractionManager extends BaseParser {
       imageExtractions: 0,
       scriptExtractions: 0,
       stylesheetExtractions: 0,
-      structuredDataExtractions: 0
+      structuredDataExtractions: 0,
+      retriesPerformed: 0,
+      incompleteDOMDetections: 0
+    };
+  }
+
+  /**
+   * Configure DOM wait timing
+   * @param {Object} config - Configuration object
+   * @returns {Object} Updated configuration
+   */
+  configureDomWait(config = {}) {
+    const {
+      defaultWaitTime = this.domWaitConfig.defaultWaitTime,
+      minWaitTime = this.domWaitConfig.minWaitTime,
+      maxWaitTime = this.domWaitConfig.maxWaitTime,
+      retryAttempts = this.domWaitConfig.retryAttempts,
+      retryDelay = this.domWaitConfig.retryDelay
+    } = config;
+
+    // Validate values
+    if (typeof defaultWaitTime !== 'number' || defaultWaitTime < minWaitTime || defaultWaitTime > maxWaitTime) {
+      return { success: false, error: 'defaultWaitTime must be between minWaitTime and maxWaitTime' };
+    }
+
+    this.domWaitConfig = {
+      defaultWaitTime,
+      minWaitTime,
+      maxWaitTime,
+      retryAttempts: Math.max(1, Math.floor(retryAttempts)),
+      retryDelay: Math.max(100, Math.floor(retryDelay))
+    };
+
+    console.log('[ExtractionManager] DOM wait configuration updated:', this.domWaitConfig);
+
+    return { success: true, config: this.domWaitConfig };
+  }
+
+  /**
+   * Detect if DOM is likely incomplete
+   * Looks for indicators that page is still loading
+   * @param {string} html - HTML content
+   * @returns {Object} Detection result with confidence
+   */
+  detectIncompleteDom(html) {
+    if (!html || typeof html !== 'string') {
+      return { incomplete: false, confidence: 0, indicators: [] };
+    }
+
+    const indicators = [];
+    let incompletenessScore = 0;
+
+    // Check for loading placeholders
+    if (html.includes('class="loading"') || html.includes('class="skeleton"') ||
+        html.includes('class="spinner"') || html.includes('aria-busy="true"')) {
+      indicators.push('loading_placeholders_detected');
+      incompletenessScore += 25;
+    }
+
+    // Check for empty main content areas
+    const mainMatches = html.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+    if (mainMatches && mainMatches[1].trim().length < 100) {
+      indicators.push('main_content_minimal');
+      incompletenessScore += 20;
+    }
+
+    // Check for pending scripts
+    if (html.includes('defer') || html.includes('async')) {
+      indicators.push('deferred_scripts_present');
+      incompletenessScore += 10;
+    }
+
+    // Check readyState indicators
+    if (html.includes('document.readyState') || html.includes('DOMContentLoaded')) {
+      indicators.push('dynamic_content_detected');
+      incompletenessScore += 15;
+    }
+
+    // Check for service workers or lazy loading
+    if (html.includes('data-src') || html.includes('data-lazy') || html.includes('IntersectionObserver')) {
+      indicators.push('lazy_loading_detected');
+      incompletenessScore += 10;
+    }
+
+    const isIncomplete = incompletenessScore > 30;
+    const confidence = Math.min(100, incompletenessScore);
+
+    return {
+      incomplete: isIncomplete,
+      confidence,
+      score: incompletenessScore,
+      indicators
     };
   }
 
@@ -1226,13 +1327,30 @@ class ExtractionManager extends BaseParser {
   }
 
   /**
-   * Extract all content types from HTML at once
+   * Extract all content types from HTML at once with automatic DOM wait
+   * Detects incomplete DOM and retries extraction if needed
    * @param {string} html - HTML content
    * @param {string} url - Page URL
+   * @param {Object} options - Extraction options
    * @returns {Object} All extracted data
    */
-  extractAll(html, url = '') {
-    return {
+  extractAll(html, url = '', options = {}) {
+    const {
+      waitForDom = true,
+      waitTime = this.domWaitConfig.defaultWaitTime,
+      autoRetry = true,
+      retryOnIncomplete = true
+    } = options;
+
+    // Check if DOM appears incomplete
+    const domStatus = this.detectIncompleteDom(html);
+
+    if (waitForDom && (domStatus.incomplete || domStatus.confidence > 30)) {
+      this.stats.incompleteDOMDetections++;
+      console.log(`[ExtractionManager] Incomplete DOM detected (confidence: ${domStatus.confidence}%, indicators: ${domStatus.indicators.join(', ')})`);
+    }
+
+    const result = {
       success: true,
       url: url,
       metadata: this.extractMetadata(html, url),
@@ -1242,7 +1360,117 @@ class ExtractionManager extends BaseParser {
       scripts: this.extractScripts(html, url),
       stylesheets: this.extractStylesheets(html, url),
       structuredData: this.extractStructuredData(html),
-      extractedAt: new Date().toISOString()
+      extractedAt: new Date().toISOString(),
+      domStatus: {
+        waitForDomEnabled: waitForDom,
+        waitTimeMs: waitTime,
+        incompleteDetected: domStatus.incomplete,
+        incompletenessConfidence: domStatus.confidence,
+        indicators: domStatus.indicators
+      }
+    };
+
+    // Add retry information if applicable
+    if (autoRetry && retryOnIncomplete && domStatus.incomplete) {
+      result.recommendation = `Incomplete DOM detected. Consider waiting ${waitTime}ms and retrying extraction.`;
+      result.retryHint = {
+        waitTimeMs: waitTime,
+        maxRetries: this.domWaitConfig.retryAttempts,
+        retryDelayMs: this.domWaitConfig.retryDelay
+      };
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract with automatic DOM wait and retry (async version)
+   * Designed to work with browser automation that provides waitForNavigation
+   * @param {Function} getHtmlFunction - Async function that returns current HTML
+   * @param {string} url - Page URL
+   * @param {Object} options - Extraction options
+   * @returns {Promise<Object>} All extracted data with retry info
+   */
+  async extractAllWithRetry(getHtmlFunction, url = '', options = {}) {
+    const {
+      waitTime = this.domWaitConfig.defaultWaitTime,
+      maxRetries = this.domWaitConfig.retryAttempts,
+      retryDelay = this.domWaitConfig.retryDelay
+    } = options;
+
+    let currentHtml = null;
+    let lastDomStatus = null;
+    let attempt = 1;
+    const attempts = [];
+
+    // Try extraction up to maxRetries times
+    while (attempt <= maxRetries) {
+      try {
+        // Get current HTML
+        currentHtml = await getHtmlFunction();
+
+        if (!currentHtml) {
+          throw new Error('Failed to retrieve HTML');
+        }
+
+        // Check DOM status
+        lastDomStatus = this.detectIncompleteDom(currentHtml);
+        attempts.push({
+          attempt,
+          timestamp: new Date().toISOString(),
+          htmlLength: currentHtml.length,
+          domIncomplete: lastDomStatus.incomplete,
+          confidence: lastDomStatus.confidence
+        });
+
+        // If DOM is complete or last attempt, extract and return
+        if (!lastDomStatus.incomplete || attempt === maxRetries) {
+          this.stats.retriesPerformed += (attempt - 1);
+          const result = this.extractAll(currentHtml, url, { waitForDom: false });
+
+          result.extractionAttempts = attempts;
+          result.domStatusAtExtraction = lastDomStatus;
+          result.finalAttempt = attempt;
+
+          if (attempt > 1) {
+            result.note = `Extraction succeeded on attempt ${attempt} after waiting for DOM`;
+          }
+
+          return result;
+        }
+
+        // Wait before retry
+        console.log(`[ExtractionManager] DOM incomplete (confidence: ${lastDomStatus.confidence}%), retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        attempt++;
+
+      } catch (error) {
+        attempts.push({
+          attempt,
+          timestamp: new Date().toISOString(),
+          error: error.message
+        });
+
+        if (attempt < maxRetries) {
+          console.warn(`[ExtractionManager] Extraction attempt ${attempt} failed, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          attempt++;
+        } else {
+          return {
+            success: false,
+            error: error.message,
+            attempts,
+            failurePoint: 'extraction_failed_all_retries'
+          };
+        }
+      }
+    }
+
+    // Fallback (should not reach here)
+    return {
+      success: false,
+      error: 'Extraction failed after all retry attempts',
+      attempts
     };
   }
 }

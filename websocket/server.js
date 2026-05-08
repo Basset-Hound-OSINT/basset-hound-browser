@@ -579,7 +579,6 @@ class WebSocketServer {
       });
 
       ws.on('close', () => {
-      ws.on('close', () => {
         try {
           // Remove from client sets
           this.clients.delete(ws);

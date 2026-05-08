@@ -155,6 +155,7 @@ function getAllUserAgents() {
 class UserAgentManager {
   constructor() {
     this.currentUserAgent = null;
+    this.previousUserAgent = null; // Track previous UA to prevent succession repeats
     this.userAgentList = [];
     this.rotationIndex = 0;
     this.rotationInterval = null;
@@ -163,6 +164,10 @@ class UserAgentManager {
     this.rotateAfterRequests = 0; // 0 = disabled
     this.enabledCategories = Object.values(UA_CATEGORIES);
     this.customUserAgents = [];
+    this.rotationHistory = []; // Track last N rotations for validation
+    this.maxHistoryLength = 100;
+    this.preventSuccessionRepeat = true; // Prevent same UA twice in a row
+    this.categoryHistory = []; // Track category rotation for diversity
   }
 
   /**
@@ -313,37 +318,109 @@ class UserAgentManager {
   }
 
   /**
-   * Rotate to the next user agent
+   * Rotate to the next user agent with validation
+   * Prevents same UA from appearing twice in succession
    * @param {BrowserWindow} mainWindow - Main browser window
+   * @param {Object} options - Rotation options
    * @returns {Object} - Result of the operation
    */
-  rotateUserAgent(mainWindow) {
+  rotateUserAgent(mainWindow, options = {}) {
+    const {
+      preventRepeat = this.preventSuccessionRepeat,
+      preferCategory = null // If set, prefer UA from this category
+    } = options;
+
     const userAgents = this.getEnabledUserAgents();
 
     if (userAgents.length === 0) {
       return { success: false, error: 'No user agents available' };
     }
 
-    let nextIndex;
-    if (this.rotationMode === 'random') {
-      nextIndex = Math.floor(Math.random() * userAgents.length);
-    } else {
-      nextIndex = (this.rotationIndex + 1) % userAgents.length;
+    // Need at least 2 UAs to prevent succession repeat
+    if (preventRepeat && userAgents.length === 1) {
+      return {
+        success: false,
+        error: 'Cannot prevent succession repeat with only 1 user agent. Add more user agents or disable preventRepeat.',
+        preventRepeatDisabled: true
+      };
+    }
+
+    let nextUserAgent = null;
+    let nextIndex = -1;
+    let attempts = 0;
+    const maxAttempts = 10; // Prevent infinite loops
+
+    // Try to select a UA that's not the same as the current one
+    while (attempts < maxAttempts) {
+      let candidateUAs = userAgents;
+
+      // If category preference is set, filter to that category first
+      if (preferCategory && USER_AGENTS[preferCategory]) {
+        candidateUAs = USER_AGENTS[preferCategory];
+      }
+
+      if (this.rotationMode === 'random') {
+        nextIndex = Math.floor(Math.random() * candidateUAs.length);
+        nextUserAgent = candidateUAs[nextIndex];
+      } else {
+        nextIndex = (this.rotationIndex + 1) % candidateUAs.length;
+        nextUserAgent = candidateUAs[nextIndex];
+      }
+
+      // Check if it's different from current UA
+      if (!preventRepeat || nextUserAgent !== this.currentUserAgent) {
+        break;
+      }
+
+      attempts++;
+    }
+
+    if (!nextUserAgent) {
+      return {
+        success: false,
+        error: 'Failed to select a valid user agent after multiple attempts',
+        attemptsNeeded: attempts
+      };
+    }
+
+    // Update history before setting new UA
+    this.previousUserAgent = this.currentUserAgent;
+    this.rotationHistory.push({
+      timestamp: Date.now(),
+      userAgent: nextUserAgent,
+      index: nextIndex,
+      mode: this.rotationMode
+    });
+
+    // Trim history
+    if (this.rotationHistory.length > this.maxHistoryLength) {
+      this.rotationHistory.shift();
+    }
+
+    // Update category history
+    const selectedCategory = this.detectUserAgentCategory(nextUserAgent);
+    if (selectedCategory) {
+      this.categoryHistory.push(selectedCategory);
+      if (this.categoryHistory.length > 20) {
+        this.categoryHistory.shift();
+      }
     }
 
     this.rotationIndex = nextIndex;
-    const nextUserAgent = userAgents[nextIndex];
-
     const result = this.setUserAgent(nextUserAgent, mainWindow);
+
     if (result.success) {
       this.requestCount = 0;
-      console.log(`[UserAgentManager] Rotated to user agent ${nextIndex + 1}/${userAgents.length}`);
+      console.log(`[UserAgentManager] Rotated to user agent ${nextIndex + 1}/${userAgents.length} (prevention: ${preventRepeat})`);
     }
 
     return {
       ...result,
       rotationIndex: nextIndex,
-      totalUserAgents: userAgents.length
+      totalUserAgents: userAgents.length,
+      preventedRepeat: preventRepeat,
+      previousUserAgent: this.previousUserAgent,
+      categorySelected: selectedCategory
     };
   }
 
@@ -520,6 +597,114 @@ class UserAgentManager {
                     userAgent.includes('iPhone') || userAgent.includes('iPad');
 
     return info;
+  }
+
+  /**
+   * Detect which category a user agent belongs to
+   * @param {string} userAgent - User agent string
+   * @returns {string|null} - Category key or null if not found
+   */
+  detectUserAgentCategory(userAgent) {
+    if (!userAgent || typeof userAgent !== 'string') return null;
+
+    for (const [category, agents] of Object.entries(USER_AGENTS)) {
+      if (agents.includes(userAgent)) {
+        return category;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get rotation history
+   * @param {number} limit - Number of entries to return
+   * @returns {Array} - Recent rotation history
+   */
+  getRotationHistory(limit = 10) {
+    return this.rotationHistory.slice(-limit).map(entry => ({
+      timestamp: new Date(entry.timestamp).toISOString(),
+      userAgent: entry.userAgent.substring(0, 50) + '...',
+      category: this.detectUserAgentCategory(entry.userAgent),
+      mode: entry.mode
+    }));
+  }
+
+  /**
+   * Get category distribution from rotation history
+   * @returns {Object} - Distribution of categories used
+   */
+  getCategoryDistribution() {
+    const distribution = {};
+
+    for (const category of this.categoryHistory) {
+      distribution[category] = (distribution[category] || 0) + 1;
+    }
+
+    // Calculate percentages
+    const total = this.categoryHistory.length;
+    for (const category in distribution) {
+      distribution[category] = {
+        count: distribution[category],
+        percentage: total > 0 ? ((distribution[category] / total) * 100).toFixed(2) + '%' : '0%'
+      };
+    }
+
+    return distribution;
+  }
+
+  /**
+   * Validate rotation consistency
+   * Checks for common issues in rotation setup
+   * @returns {Object} - Validation result with recommendations
+   */
+  validateRotation() {
+    const result = {
+      valid: true,
+      issues: [],
+      recommendations: []
+    };
+
+    // Check if enabled categories exist
+    if (this.enabledCategories.length === 0) {
+      result.issues.push('No categories enabled');
+      result.valid = false;
+    }
+
+    // Check if user agents available
+    const availableUAs = this.getEnabledUserAgents();
+    if (availableUAs.length === 0) {
+      result.issues.push('No user agents available from enabled categories');
+      result.valid = false;
+    }
+
+    // Check for succession repeat issue
+    if (this.preventSuccessionRepeat && availableUAs.length === 1) {
+      result.issues.push('Prevention of succession repeat is enabled but only 1 UA available');
+      result.recommendations.push('Either add more UAs or disable preventSuccessionRepeat');
+    }
+
+    // Check rotation mode
+    if (this.rotationMode !== 'sequential' && this.rotationMode !== 'random') {
+      result.issues.push(`Unknown rotation mode: ${this.rotationMode}`);
+      result.valid = false;
+    }
+
+    // Check category diversity
+    if (this.categoryHistory.length > 0) {
+      const distribution = this.getCategoryDistribution();
+      const categories = Object.keys(distribution);
+      if (categories.length === 1) {
+        result.recommendations.push('Only using one category for rotation - consider enabling more categories for diversity');
+      }
+    }
+
+    // Suggest improvements
+    if (this.rotationMode === 'sequential' && this.enabledCategories.length > 1) {
+      result.recommendations.push('Consider alternating between categories for more natural rotation patterns');
+    }
+
+    return result;
   }
 }
 

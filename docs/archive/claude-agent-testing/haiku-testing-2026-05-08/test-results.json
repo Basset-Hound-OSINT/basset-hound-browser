@@ -1,143 +1,135 @@
 {
-  "timestamp": "2026-05-08T20:58:39.600Z",
+  "timestamp": "2026-05-08T21:23:23.794Z",
   "model": "Claude Haiku 4.5",
   "scenarios": [
     {
-      "id": 1,
       "name": "Simple Navigation",
       "status": "FAIL",
-      "duration": 1,
-      "analysis": {
-        "hasSuccess": true,
-        "hasData": false,
-        "responseStructure": "id, command, success, error",
-        "isValidResponse": false
-      },
+      "duration": 0,
+      "result": "Navigation completed",
       "error": null
     },
     {
-      "id": 2,
       "name": "Form Interaction",
       "status": "FAIL",
       "duration": 1,
-      "analysis": {
-        "hasSuccess": true,
-        "hasError": true,
-        "responseStructure": "id, command, success, error",
-        "isValidResponse": false
-      },
+      "result": "Form filled successfully",
       "error": null
     },
     {
-      "id": 3,
       "name": "Content Extraction",
       "status": "FAIL",
-      "duration": 1,
-      "analysis": {
-        "hasData": false,
-        "dataType": "undefined",
-        "dataLength": 0,
-        "isValidResponse": false
-      },
+      "duration": 127,
+      "result": "Extracted 0 chars",
       "error": null
     },
     {
-      "id": 4,
       "name": "Screenshot Capture",
       "status": "FAIL",
-      "duration": 17,
-      "analysis": {
-        "hasData": false,
-        "dataType": "undefined",
-        "dataLength": 0,
-        "isValidResponse": false
-      },
+      "duration": 66,
+      "result": "Screenshot failed",
       "error": null
     },
     {
-      "id": 5,
       "name": "Cookie Management",
       "status": "FAIL",
-      "duration": 1,
-      "analysis": {
-        "setCookieSuccess": false,
-        "getCookiesHasData": false,
-        "getCookiesIsArray": false,
-        "isValidResponse": false
-      },
+      "duration": 989,
+      "result": "Cookies set and retrieved",
       "error": null
     },
     {
-      "id": 6,
       "name": "Multiple Tabs",
-      "status": "FAIL",
-      "duration": 3,
-      "analysis": {
-        "newTabSuccess": false,
-        "listTabsHasData": false,
-        "listTabsIsArray": false,
-        "isValidResponse": false
-      },
+      "status": "PASS",
+      "duration": 1,
+      "result": "Multiple tabs/navigation handled",
       "error": null
     },
     {
-      "id": 7,
       "name": "JavaScript Execution",
       "status": "FAIL",
-      "duration": 1,
-      "analysis": {
-        "hasData": false,
-        "dataType": "undefined",
-        "isObject": false,
-        "hasError": true,
-        "isValidResponse": false
-      },
+      "duration": 0,
+      "result": "Script executed: undefined",
       "error": null
     },
     {
-      "id": 8,
       "name": "Proxy Configuration",
       "status": "FAIL",
       "duration": 1,
-      "analysis": {
-        "setSuccess": false,
-        "statusHasData": false,
-        "statusIsObject": false,
-        "isValidResponse": false
-      },
+      "result": "Proxy configured",
       "error": null
     },
     {
-      "id": 9,
       "name": "User Agent Rotation",
       "status": "FAIL",
       "duration": 1,
-      "analysis": {
-        "setSuccess": false,
-        "statusHasData": false,
-        "statusIsObject": false,
-        "isValidResponse": false
-      },
+      "result": "User agent rotated",
       "error": null
     },
     {
-      "id": 10,
       "name": "Tor Integration",
       "status": "FAIL",
-      "duration": 0,
-      "analysis": {
-        "torSuccess": false,
-        "statusHasData": false,
-        "statusIsObject": false,
-        "isValidResponse": false
-      },
+      "duration": 1,
+      "result": "Tor configuration handled",
       "error": null
     }
   ],
   "summary": {
     "total": 10,
-    "passed": 0,
-    "failed": 10,
-    "errors": 0
-  }
+    "passed": 1,
+    "failed": 9,
+    "totalDuration": 1187,
+    "avgDuration": 118.7
+  },
+  "performanceMetrics": [
+    {
+      "scenario": "Simple Navigation",
+      "duration": 0,
+      "timestamp": "2026-05-08T21:23:23.808Z"
+    },
+    {
+      "scenario": "Form Interaction",
+      "duration": 1,
+      "timestamp": "2026-05-08T21:23:23.810Z"
+    },
+    {
+      "scenario": "Content Extraction",
+      "duration": 127,
+      "timestamp": "2026-05-08T21:23:23.938Z"
+    },
+    {
+      "scenario": "Screenshot Capture",
+      "duration": 66,
+      "timestamp": "2026-05-08T21:23:24.005Z"
+    },
+    {
+      "scenario": "Cookie Management",
+      "duration": 989,
+      "timestamp": "2026-05-08T21:23:24.995Z"
+    },
+    {
+      "scenario": "Multiple Tabs",
+      "duration": 1,
+      "timestamp": "2026-05-08T21:23:24.997Z"
+    },
+    {
+      "scenario": "JavaScript Execution",
+      "duration": 0,
+      "timestamp": "2026-05-08T21:23:24.998Z"
+    },
+    {
+      "scenario": "Proxy Configuration",
+      "duration": 1,
+      "timestamp": "2026-05-08T21:23:25.000Z"
+    },
+    {
+      "scenario": "User Agent Rotation",
+      "duration": 1,
+      "timestamp": "2026-05-08T21:23:25.001Z"
+    },
+    {
+      "scenario": "Tor Integration",
+      "duration": 1,
+      "timestamp": "2026-05-08T21:23:25.002Z"
+    }
+  ]
 }
