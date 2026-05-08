@@ -103,7 +103,7 @@ describe('ScreenshotManager - Headless Mode', () => {
       screenshotManager.lastHeadlessFrame = cachedFrameData;
 
       const mockImage = {
-        isEmpty: () => true
+        isEmpty: jest.fn(() => true)
       };
 
       mockMainWindow.webContents.capturePage.mockResolvedValueOnce(mockImage);
@@ -137,8 +137,8 @@ describe('ScreenshotManager - Headless Mode', () => {
       screenshotManager.headlessModeEnabled = true;
 
       const mockImage = {
-        isEmpty: () => false,
-        toDataURL: () => 'data:image/png;base64,cachedFrame'
+        isEmpty: jest.fn(() => false),
+        toDataURL: jest.fn(() => 'data:image/png;base64,cachedFrame')
       };
 
       mockMainWindow.webContents.capturePage.mockResolvedValueOnce(mockImage);
