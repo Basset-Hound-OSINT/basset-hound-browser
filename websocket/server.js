@@ -1088,31 +1088,55 @@ class WebSocketServer {
             return;
           }
 
+          // EDGE CASE FIX #4: Check concurrent operation limits per client
+          const concurrencyCheck = this.checkConcurrentOperations(ws.clientId);
+          if (!concurrencyCheck.allowed) {
+            ws.send(JSON.stringify({
+              id: data.id,
+              command: data.command,
+              success: false,
+              error: concurrencyCheck.error,
+              concurrencyLimited: true,
+              current: concurrencyCheck.current,
+              max: concurrencyCheck.max
+            }));
+            return;
+          }
+
           // Log command reception
           this.logger.debug(`Received command: ${data.command}`, { id: data.id, clientId: ws.clientId });
           this.debugManager.logWebSocket('command', data, ws.clientId);
 
-          // Start profiling timer for command execution
-          const timerName = `cmd:${data.command}:${data.id || Date.now()}`;
-          this.profiler.startTimer(timerName, { command: data.command, clientId: ws.clientId });
+          // Track operation for concurrency monitoring
+          const operationId = `${ws.clientId}:${data.id || Date.now()}`;
+          this.trackOperation(ws.clientId, operationId);
 
-          const response = await this.handleCommand(data);
+          try {
+            // Start profiling timer for command execution
+            const timerName = `cmd:${data.command}:${data.id || Date.now()}`;
+            this.profiler.startTimer(timerName, { command: data.command, clientId: ws.clientId });
 
-          // End profiling timer
-          const timing = this.profiler.endTimer(timerName);
+            const response = await this.handleCommand(data);
 
-          // Log response
-          this.logger.debug(`Command response: ${data.command}`, {
-            id: data.id,
-            success: response.success,
-            duration: timing ? timing.duration : null
-          });
-          this.debugManager.logWebSocket('response', { ...response, command: data.command, id: data.id }, ws.clientId);
-          ws.send(JSON.stringify({
-            id: data.id,
-            command: data.command,
-            ...response
-          }));
+            // End profiling timer
+            const timing = this.profiler.endTimer(timerName);
+
+            // Log response
+            this.logger.debug(`Command response: ${data.command}`, {
+              id: data.id,
+              success: response.success,
+              duration: timing ? timing.duration : null
+            });
+            this.debugManager.logWebSocket('response', { ...response, command: data.command, id: data.id }, ws.clientId);
+            ws.send(JSON.stringify({
+              id: data.id,
+              command: data.command,
+              ...response
+            }));
+          } finally {
+            // Always mark operation as complete
+            this.completeOperation(ws.clientId, operationId);
+          }
         } catch (error) {
           // EDGE CASE FIX #3: Malformed JSON recovery and detailed error reporting
           this.logger.error(`Error processing message: ${error.message}`, { error, message: message.toString().substring(0, 200) });
@@ -1153,6 +1177,9 @@ class WebSocketServer {
           // Cleanup rate limit data
           this.cleanupRateLimitData(ws.clientId);
 
+          // EDGE CASE FIX #5: Clean up any pending operations for this client
+          this.clientOperations.delete(ws.clientId);
+
           // Remove all event listeners to prevent memory leaks
           ws.removeAllListeners();
 
@@ -1178,6 +1205,9 @@ class WebSocketServer {
 
           // Cleanup rate limit data
           this.cleanupRateLimitData(ws.clientId);
+
+          // EDGE CASE FIX #5: Clean up any pending operations for this client
+          this.clientOperations.delete(ws.clientId);
 
           // Remove all event listeners
           ws.removeAllListeners();

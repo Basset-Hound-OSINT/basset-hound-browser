@@ -2818,7 +2818,10 @@ class AdvancedTorManager extends EventEmitter {
 }
 
 // Export
-const advancedTorManager = new AdvancedTorManager();
+// EDGE CASE FIX #1: Do NOT register exit handlers at module load time
+// This prevents uncaught exception handlers from firing during initialization
+// Exit handlers will be enabled when app.whenReady() is called
+const advancedTorManager = new AdvancedTorManager({ killOnExit: false });
 
 module.exports = {
   advancedTorManager,
