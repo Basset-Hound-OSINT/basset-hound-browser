@@ -173,9 +173,49 @@ docs/research/
 - Share working bypasses without permission
 - Test against protected e-commerce sites
 
+### Related Research Directories
+
+- **evasion-canvas-webgl/** - Canvas and WebGL fingerprinting evasion (Phase 2)
+- **session-coherence-analysis/** - Session validation and behavioral coherence (Phase 2)
+- **fingerprinting-deep-dives/** - Device fingerprinting analysis (Phase 1)
+- **osint-forensics/** - OSINT integration and forensic capture (Phase 1)
+- **detection-systems/** - Bot detection service analysis (Phase 1)
+- **competitor-analysis/** - Competitive tool analysis
+
+### Phase 2 Research Summary (May 7, 2026)
+
+**Canvas/WebGL Evasion Research**:
+- 5 Canvas evasion techniques documented
+- 5 WebGL evasion techniques + 15+ GPU profiles
+- Effectiveness improvements: 65%→82% (Canvas), 50%→90% (WebGL)
+- Detection service bypass: 80-90% combined
+
+**Session Coherence Analysis**:
+- 5-layer validation framework
+- Behavioral pattern requirements
+- Typing/mouse/scroll consistency analysis
+- Cross-request state validation
+
+### Phase 1 Research Summary (May 7, 2026)
+
+**Technology Detection**:
+- 1000+ technology signatures
+- Server-side detection patterns
+- Framework identification methodologies
+
+**Detection Systems Analysis**:
+- DataDome: 85,000+ customer-specific ML models
+- PerimeterX: 25% session coherence weight
+- Threat assessment and evasion pathways
+
+**OSINT Forensics**:
+- Passive intelligence gathering
+- Multi-source correlation
+- Forensic capture capabilities
+
 ---
 
-**Completed**: May 7, 2026  
-**For**: Basset Hound Browser v11.2.0+  
-**Status**: Ready for integration planning  
-**Next Steps**: Implement priority features, test against real systems, iterate based on results
+**Completed**: May 7-11, 2026  
+**For**: Basset Hound Browser v11.3.0  
+**Status**: Phases 1-2 Complete  
+**Next Steps**: Phase 3 - Advanced ML Integration & Extended Evasion

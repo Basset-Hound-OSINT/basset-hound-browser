@@ -196,6 +196,75 @@ See `/docs/archives/session_records/` for complete records of:
 
 ---
 
-**Current Status:** ✅ Production Ready (v11.2.0)  
-**Last Updated:** May 7, 2026  
-**Next Phase:** Phase 3 - Advanced ML Integration & Extended Evasion Techniques
+## Repository Structure
+
+### Documentation Organization
+```
+docs/
+├── INDEX.md                    - Main documentation index
+├── API-REFERENCE.md            - Complete API documentation
+├── SCOPE.md                    - Architectural boundaries
+├── ROADMAP.md                  - Project roadmap
+├── DEPLOYMENT.md               - Deployment guide
+├── README.md                   - Documentation overview
+├── deployment/                 - Deployment guides & reports
+├── deployment-guides/          - Quick start guides
+├── runbooks/                   - Operational runbooks
+├── monitoring/                 - Monitoring configuration
+├── optimization/               - Optimization documentation
+├── testing/                    - Testing documentation
+├── integration/                - Integration guides
+├── core/                       - Core architecture docs
+├── api/                        - API documentation
+├── analysis/                   - Analysis documentation
+├── findings/                   - Research findings
+├── research/                   - Research & analysis
+├── archive/                    - Archived documentation
+├── archives/                   - Session records & reports
+└── features/                   - Feature documentation
+```
+
+### Source Code Organization
+```
+src/
+├── main/
+│   ├── main.js                - Electron main process
+│   └── preload.js             - Electron preload
+├── agents/                    - Multi-agent orchestration
+├── analysis/                  - Technology detection
+├── authentication/            - Auth handling
+├── evasion/                   - Detection evasion
+├── forensics/                 - Forensic analysis
+├── proxy/                     - Proxy management
+├── recording/                 - Session recording
+├── session/                   - Profile management
+└── screenshots/               - Screenshot capture
+```
+
+### Test Organization
+```
+tests/
+├── INDEX.md                   - Test suite overview
+├── agents/                    - Agent testing
+├── analysis/                  - Analysis tests
+├── bot-detection/             - Bot detection tests
+├── deployment/                - Deployment tests
+├── e2e/                       - End-to-end tests
+├── evasion/                   - Evasion tests
+├── integration/               - Integration tests
+├── optimizations/             - Optimization tests
+├── profiling/                 - Performance profiling
+├── proxy/                     - Proxy tests
+├── results/                   - Test results & reports
+├── stress/                    - Stress testing
+├── unit/                      - Unit tests
+├── validation/                - Feature validation
+└── [root test files]          - Integration/performance tests
+```
+
+---
+
+**Current Status:** ✅ Production Ready (v11.3.0 - Phase 1 & 2 Complete)  
+**Last Updated:** May 11, 2026  
+**Next Phase:** Phase 3 - Advanced ML Integration & Extended Evasion Techniques  
+**Documentation Quality:** 100% - Complete directory organization and navigation
