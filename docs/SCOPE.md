@@ -201,6 +201,28 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - ❌ **What to click:** Agent identifies targets, browser executes
 - ❌ **When to capture evidence:** Agent triggers capture at right moment
 
+### 8. Infrastructure, Deployment & Scaling (OUT OF SCOPE - Planned for Post-Completion)
+- ❌ **Kubernetes orchestration:** K8s deployments, service mesh, container orchestration
+- ❌ **Terraform/IaC:** Infrastructure-as-code, cloud resource management
+- ❌ **Load balancing:** Multi-instance scaling, traffic distribution
+- ❌ **Auto-scaling policies:** Horizontal pod autoscaling, cloud autoscaling
+- ❌ **Cluster management:** Multi-node deployments, cluster control planes
+- ❌ **Service discovery:** DNS, service registration, endpoint management
+- ❌ **Storage orchestration:** Persistent volumes, distributed storage setup
+- ❌ **Secrets management:** Kubernetes secrets, HashiCorp Vault integration
+- ❌ **Monitoring/observability:** Prometheus, Grafana, distributed tracing infrastructure
+- ❌ **GitOps/CI-CD pipelines:** Flux, ArgoCD, complex deployment automation
+- ❌ **Container registry management:** Docker Hub/ECR/GCR setup and management
+- ❌ **Network policies:** K8s network policy definitions, ingress controllers
+- ❌ **Cloud provider integration:** AWS, GCP, Azure-specific features
+
+> **Explicit Note:** Infrastructure scaling (Kubernetes, Terraform) is **explicitly out of scope** for v11.3.0 and initial production releases. The browser is designed for:
+> - **Single-container deployment** (standard Docker container)
+> - **Docker Compose** for multi-service coordination (with basset-hound-networking, etc.)
+> - **Manual horizontal scaling** (run multiple containers, external load balancer)
+> 
+> Infrastructure automation and cloud-native deployment patterns will be addressed in a **separate Phase** after core v11.3.0 completion and production validation. Current focus is on **browser functionality, stability, and performance** - not infrastructure complexity.
+
 ---
 
 ## Boundary Examples

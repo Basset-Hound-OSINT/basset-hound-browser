@@ -1458,6 +1458,41 @@ The following items were analyzed but deferred. They can be addressed after inte
 
 ---
 
+## Infrastructure & Scaling - OUT OF SCOPE (For Now)
+
+### Explicit Scope Clarification
+
+The following infrastructure and deployment automation is **explicitly OUT OF SCOPE** for v11.3.0 and initial production releases:
+
+- ❌ **Kubernetes (K8s) orchestration** - Deployments, service mesh, container orchestration
+- ❌ **Terraform/IaC** - Infrastructure-as-code, cloud resource management  
+- ❌ **Auto-scaling policies** - Horizontal/vertical pod autoscaling
+- ❌ **Cloud-native deployment** - Cloud provider-specific features (AWS, GCP, Azure)
+- ❌ **Advanced networking** - Service discovery, network policies, service mesh
+- ❌ **Distributed systems** - Multi-node clusters, cluster management
+- ❌ **Secrets management** - Kubernetes secrets, Vault integration
+- ❌ **GitOps/CI-CD automation** - Flux, ArgoCD, automated deployments
+
+### Why Out of Scope Now
+
+**v11.3.0 Focus:** Browser functionality, stability, and performance
+- The browser is designed for **single-container deployment** (Docker)
+- Multi-instance scaling uses standard external load balancing (Nginx, HAProxy, cloud LB)
+- Docker Compose handles local multi-service coordination
+- Manual infrastructure decisions are simpler than complex automation
+
+### When This Will Change
+
+Infrastructure automation (Kubernetes, Terraform) will be addressed in a **separate Phase** after:
+1. ✅ v11.3.0 core functionality completion
+2. ✅ Production validation (24-48 hour monitoring)
+3. ✅ Integration testing with palletai and external systems
+4. ✅ Performance baseline establishment
+
+This "Phase 4" will focus on cloud-native patterns, automated scaling, and infrastructure-as-code.
+
+---
+
 ### What's Next
 
 1. **Integration Testing** - Test from palletai with real workflows
