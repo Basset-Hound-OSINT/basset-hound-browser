@@ -1,6 +1,6 @@
 # Load Test Results - v12.0.0
 
-**Test Date:** 2026-05-11T05:55:09.133Z
+**Test Date:** 2026-05-11T06:12:14.581Z
 **Status:** COMPLETED
 
 ## Summary
@@ -10,21 +10,21 @@
 - **Total Messages:** 10000
 - **Success Rate:** 100.00%
 - **Throughput:** 666.67 msg/sec
-- **Avg Latency:** 0.03ms
+- **Avg Latency:** 0.04ms
 
 ## Deployment Readiness
 
 | Metric | Value | Target | Status |
 |--------|-------|--------|--------|
 | Success Rate | 100.00% | >99% | PASS |
-| Avg Latency | 0.03ms | <100ms | PASS |
-| Max Latency | 0.84ms | <500ms | PASS |
+| Avg Latency | 0.04ms | <100ms | PASS |
+| Max Latency | 1.56ms | <500ms | PASS |
 
 ## Detailed Configuration
 
 ```json
 {
-  "timestamp": "2026-05-11T05:55:09.133Z",
+  "timestamp": "2026-05-11T06:12:14.581Z",
   "configuration": {
     "concurrent": 200,
     "duration": 15000,
@@ -37,11 +37,11 @@
     "totalMessages": 10000,
     "successfulMessages": 10000,
     "failedMessages": 0,
-    "avgLatency": 0.02731021820176393,
-    "maxLatency": 0.8407069998793304,
-    "minLatency": 0.019770000129938126,
-    "memoryBefore": 9374136,
-    "memoryAfter": 13819416,
+    "avgLatency": 0.03914413360310719,
+    "maxLatency": 1.564414999447763,
+    "minLatency": 0.019550000317394733,
+    "memoryBefore": 9407968,
+    "memoryAfter": 13437440,
     "totalBytesTransferred": 4102500
   },
   "status": "COMPLETED"

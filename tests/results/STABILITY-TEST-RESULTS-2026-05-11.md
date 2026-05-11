@@ -1,6 +1,6 @@
 # Stability Stress Test Results - v12.0.0
 
-**Test Date:** 2026-05-11T05:51:40.729Z
+**Test Date:** 2026-05-11T06:13:21.779Z
 **Status:** COMPLETED
 
 ## Summary
@@ -8,15 +8,15 @@
 - **Total Duration:** 0.02 hours
 - **Total Operations:** 504
 - **Avg Ops/Second:** 8.40
-- **Error Rate:** 8.13%
+- **Error Rate:** 12.10%
 - **Status:** WARNING
 
 ## Memory Analysis
 
-- **Baseline Heap:** 6MB
-- **Final Heap:** 9MB
-- **Growth:** 3 MB
-- **Growth Rate:** 179.98 MB/hour (Target: < 0.5 MB/hour)
+- **Baseline Heap:** 12MB
+- **Final Heap:** 10MB
+- **Growth:** -2 MB
+- **Growth Rate:** -119.99 MB/hour (Target: < 0.5 MB/hour)
 - **Status:** WARNING
 
 ## Detailed Metrics
@@ -27,31 +27,31 @@
     "totalDuration": "0.02 hours",
     "totalOperations": 504,
     "averageOpsPerSecond": "8.40",
-    "errorRate": "8.13%",
+    "errorRate": "12.10%",
     "status": "WARNING"
   },
   "memory": {
     "baseline": {
-      "heapUsed": 6,
-      "heapTotal": 23,
+      "heapUsed": 12,
+      "heapTotal": 22,
       "rss": 68
     },
     "final": {
-      "heapUsed": 9,
-      "heapTotal": 23,
-      "rss": 68
+      "heapUsed": 10,
+      "heapTotal": 22,
+      "rss": 71
     },
     "growth": {
-      "absolute": "3 MB",
-      "perHour": "179.98 MB/hour",
+      "absolute": "-2 MB",
+      "perHour": "-119.99 MB/hour",
       "target": "< 0.5 MB/hour",
       "status": "WARNING"
     },
     "ranges": {
-      "minHeap": "5 MB",
-      "maxHeap": "9 MB",
-      "avgHeap": "7.67 MB",
-      "variance": "4 MB"
+      "minHeap": "7 MB",
+      "maxHeap": "12 MB",
+      "avgHeap": "9.17 MB",
+      "variance": "5 MB"
     }
   },
   "operations": {
@@ -59,69 +59,69 @@
     "targetCount": 500,
     "coverage": "100.8%",
     "timing": {
-      "average": "58.24 ms",
-      "min": "10.26 ms",
-      "max": "109.66 ms"
+      "average": "58.71 ms",
+      "min": "10.46 ms",
+      "max": "109.78 ms"
     },
     "types": {
-      "screenshot": 167,
-      "extraction": 156,
-      "navigation": 181
+      "screenshot": 156,
+      "navigation": 173,
+      "extraction": 175
     }
   },
   "errors": {
-    "total": 41,
-    "rate": "8.13%",
+    "total": 61,
+    "rate": "12.10%",
     "details": [
       {
-        "operationId": 5,
+        "operationId": 20,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:40.833Z"
+        "timestamp": "2026-05-11T06:12:22.538Z"
       },
       {
-        "operationId": 14,
+        "operationId": 29,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:41.216Z"
+        "timestamp": "2026-05-11T06:12:22.893Z"
       },
       {
-        "operationId": 68,
+        "operationId": 48,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:43.271Z"
+        "timestamp": "2026-05-11T06:12:23.625Z"
       },
       {
-        "operationId": 72,
+        "operationId": 62,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:43.473Z"
+        "timestamp": "2026-05-11T06:12:24.077Z"
       },
       {
-        "operationId": 72,
+        "operationId": 81,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:43.473Z"
+        "timestamp": "2026-05-11T06:12:24.805Z"
       },
       {
-        "operationId": 90,
+        "operationId": 81,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:44.247Z"
+        "timestamp": "2026-05-11T06:12:24.805Z"
       },
       {
         "operationId": 94,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:44.394Z"
+        "timestamp": "2026-05-11T06:12:25.286Z"
       },
       {
-        "operationId": 108,
+        "operationId": 98,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:44.892Z"
+        "timestamp": "2026-05-11T06:12:25.427Z"
       },
       {
-        "operationId": 127,
+        "operationId": 102,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:45.603Z"
+        "timestamp": "2026-05-11T06:12:25.617Z"
       },
       {
-        "operationId": 127,
+        "operationId": 111,
         "error": "Invalid array length",
-        "timestamp": "2026-05-11T05:50:45.603Z"
+        "timestamp": "2026-05-11T06:12:25.969Z"
       }
     ]
   }
