@@ -492,6 +492,10 @@ class DynamicFingerprintProfile {
       ...Object.keys(profile2)
     ]);
 
+    if (keys.size === 0) {
+      return 1.0;  // Empty objects are identical
+    }
+
     let matches = 0;
     for (const key of keys) {
       if (profile1[key] === profile2[key]) {

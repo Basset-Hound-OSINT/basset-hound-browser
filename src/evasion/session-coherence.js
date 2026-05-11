@@ -117,7 +117,8 @@ class SessionCoherence {
 
     // Layer 3: Network Coherence
     if (interactionData.network) {
-      const networkResult = this.validateNetworkCoherence(session, interactionData.network);
+      const networkData = { ...interactionData.network, timestamp };
+      const networkResult = this.validateNetworkCoherence(session, networkData);
       interaction.violations.push(...networkResult.violations);
     }
 
@@ -134,7 +135,14 @@ class SessionCoherence {
     // Record interaction
     session.interactions.push(interaction);
 
-    // Update layer histories
+    // Track all violations in session
+    session.violations.push(...interaction.violations);
+
+    // Update coherence scores
+    if (interaction.coherenceValidation) {
+      session.coherenceScores.temporal = interaction.coherenceValidation.score;
+    }
+
     if (interactionData.fingerprint) {
       session.layers.temporal.history.push({
         timestamp,
