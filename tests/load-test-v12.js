@@ -312,7 +312,13 @@ class LoadTester {
     markdown += `| Max Latency | ${agg.maxLatency.toFixed(2)}ms | <500ms | ${agg.maxLatency < 500 ? 'PASS' : 'FAIL'} |\n\n`;
 
     markdown += '## Detailed Configuration\n\n';
-    markdown += '```json\n' + JSON.stringify(this.results, null, 2) + '\n```\n';
+    const safeResults = {
+      timestamp: this.results.timestamp,
+      configuration: this.results.configuration,
+      aggregated: this.results.aggregated,
+      status: this.results.status
+    };
+    markdown += '```json\n' + JSON.stringify(safeResults, null, 2) + '\n```\n';
 
     fs.writeFileSync(reportPath, markdown);
     console.log(`Results saved to: ${reportPath}\n`);
