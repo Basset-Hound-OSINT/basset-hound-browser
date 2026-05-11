@@ -6,6 +6,7 @@ const { execSync } = require('child_process');
 const { ipcMain } = require('electron');
 const { humanDelay, humanType, humanMouseMove, humanScroll } = require('../evasion/humanize');
 const { ScreenshotManager, validateAnnotation, applyAnnotationDefaults } = require('../screenshots/manager');
+const { CompressedScreenshotCache } = require('../screenshots/cache');
 const { RecordingManager, RecordingState } = require('../recording/manager');
 const keyboard = require('../input/keyboard');
 const mouse = require('../input/mouse');
@@ -757,9 +758,19 @@ class WebSocketServer {
     this.burstAllowance = options.burstAllowance || 10; // Allow short bursts above the limit
     this.rateLimitData = new Map(); // Track request counts per client
 
+    // EDGE CASE FIX #4: Per-client operation concurrency limits and tracking
+    // Prevents resource exhaustion from rapid concurrent operations
+    this.maxConcurrentOpsPerClient = options.maxConcurrentOpsPerClient || 20;
+    this.clientOperations = new Map(); // Maps clientId -> { count: number, operations: Set }
+    this.operationTimeout = options.operationTimeout || 120000; // 2 minutes
+
     // Initialize screenshot and recording managers
     this.screenshotManager = new ScreenshotManager(mainWindow);
     this.recordingManager = new RecordingManager(mainWindow);
+
+    // Initialize screenshot cache with compression (OPT-02)
+    const cacheDir = path.join(process.cwd(), '.basset-hound', 'screenshots');
+    this.screenshotCache = new CompressedScreenshotCache(cacheDir);
 
     // Managers for session and tab management (injected from main.js)
     this.sessionManager = options.sessionManager || null;
@@ -922,25 +933,56 @@ class WebSocketServer {
   }
 
   start() {
+    // WebSocket compression configuration (OPT-01)
+    const compressionConfig = {
+      perMessageDeflate: {
+        zlibDeflateOptions: {
+          chunkSize: 1024,
+          memLevel: 7,
+          level: 3  // Balance between compression ratio and CPU cost
+        },
+        zlibInflateOptions: {
+          chunkSize: 10 * 1024
+        },
+        clientNoContextTakeover: true,
+        serverNoContextTakeover: true,
+        serverMaxWindowBits: 10,
+        concurrencyLimit: 10,
+        threshold: 1024  // Only compress messages > 1KB
+      }
+    };
+
     // Determine if we should use SSL/TLS
     if (this.sslEnabled && this.sslCertPath && this.sslKeyPath) {
       try {
         const sslOptions = this._loadSslCertificates();
         this.httpsServer = https.createServer(sslOptions);
-        this.wss = new WebSocket.Server({ server: this.httpsServer });
+        this.wss = new WebSocket.Server({
+          server: this.httpsServer,
+          ...compressionConfig
+        });
         this.httpsServer.listen(this.port);
         this.sslActive = true;
         this.logger.info(`[WebSocket] SSL/TLS enabled with certificate: ${this.sslCertPath}`);
+        this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
       } catch (error) {
         this.logger.error(`[WebSocket] Failed to load SSL certificates: ${error.message}`);
         this.logger.info('[WebSocket] Falling back to non-SSL mode');
-        this.wss = new WebSocket.Server({ port: this.port });
+        this.wss = new WebSocket.Server({
+          port: this.port,
+          ...compressionConfig
+        });
         this.sslActive = false;
+        this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
       }
     } else {
       // Standard non-SSL WebSocket server
-      this.wss = new WebSocket.Server({ port: this.port });
+      this.wss = new WebSocket.Server({
+        port: this.port,
+        ...compressionConfig
+      });
       this.sslActive = false;
+      this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
 
       if (this.sslEnabled && (!this.sslCertPath || !this.sslKeyPath)) {
         this.logger.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
@@ -1072,12 +1114,33 @@ class WebSocketServer {
             ...response
           }));
         } catch (error) {
-          this.logger.error(`Error processing message: ${error.message}`, { error });
-          this.debugManager.logError(error, { clientId: ws.clientId });
+          // EDGE CASE FIX #3: Malformed JSON recovery and detailed error reporting
+          this.logger.error(`Error processing message: ${error.message}`, { error, message: message.toString().substring(0, 200) });
+          this.debugManager.logError(error, { clientId: ws.clientId, message: message.toString().substring(0, 200) });
+
+          // Determine error type and provide appropriate response
+          let errorCode = 'INTERNAL_ERROR';
+          let errorDetails = null;
+
+          if (error instanceof SyntaxError) {
+            errorCode = 'MALFORMED_JSON';
+            errorDetails = { parseError: error.message };
+          } else if (error.message.includes('Cannot read')) {
+            errorCode = 'INVALID_MESSAGE_FORMAT';
+            errorDetails = { missingField: 'command' };
+          }
+
+          // Send detailed error response to help client recovery
           ws.send(JSON.stringify({
             success: false,
-            error: error.message
+            error: error.message,
+            errorCode,
+            details: errorDetails,
+            // Include request echoing first 100 chars for debugging
+            requestSample: message.toString().substring(0, 100)
           }));
+
+          // Server continues to accept new commands (doesn't close connection)
         }
       });
 
@@ -1556,6 +1619,68 @@ class WebSocketServer {
       windowStart: data.windowStart,
       lastRequest: data.lastRequest
     };
+  }
+
+  /**
+   * EDGE CASE FIX #4: Check if client has exceeded concurrent operation limit
+   * Prevents resource exhaustion from rapid concurrent operations
+   */
+  checkConcurrentOperations(clientId) {
+    if (!this.clientOperations.has(clientId)) {
+      this.clientOperations.set(clientId, { count: 0, operations: new Set() });
+    }
+
+    const opData = this.clientOperations.get(clientId);
+    if (opData.count >= this.maxConcurrentOpsPerClient) {
+      return {
+        allowed: false,
+        error: `Maximum concurrent operations (${this.maxConcurrentOpsPerClient}) exceeded for this client`,
+        current: opData.count,
+        max: this.maxConcurrentOpsPerClient
+      };
+    }
+
+    return {
+      allowed: true,
+      current: opData.count,
+      max: this.maxConcurrentOpsPerClient
+    };
+  }
+
+  /**
+   * Track a new operation for a client
+   */
+  trackOperation(clientId, operationId) {
+    if (!this.clientOperations.has(clientId)) {
+      this.clientOperations.set(clientId, { count: 0, operations: new Set() });
+    }
+
+    const opData = this.clientOperations.get(clientId);
+    opData.count++;
+    opData.operations.add(operationId);
+
+    // Auto-cleanup operation after timeout
+    setTimeout(() => {
+      opData.operations.delete(operationId);
+      opData.count = Math.max(0, opData.count - 1);
+      if (opData.count === 0) {
+        this.clientOperations.delete(clientId);
+      }
+    }, this.operationTimeout);
+  }
+
+  /**
+   * Mark operation as complete (for explicit tracking)
+   */
+  completeOperation(clientId, operationId) {
+    if (this.clientOperations.has(clientId)) {
+      const opData = this.clientOperations.get(clientId);
+      opData.operations.delete(operationId);
+      opData.count = Math.max(0, opData.count - 1);
+      if (opData.count === 0) {
+        this.clientOperations.delete(clientId);
+      }
+    }
   }
 
   /**

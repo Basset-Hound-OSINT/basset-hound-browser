@@ -1,4 +1,15 @@
-const { app, BrowserWindow, ipcMain, session, dialog } = require('electron');
+// EDGE CASE FIX #2: Electron app may be undefined in CI/headless environments
+// This requires Electron to be running as the main process (via electron CLI)
+let { app, BrowserWindow, ipcMain, session, dialog } = require('electron');
+
+// Validate electron exports
+if (!app) {
+  console.error('[main.js] FATAL: Electron app not available. This must be run via: npm start or electron .');
+  console.error('[main.js] Current environment: DISPLAY=' + process.env.DISPLAY + ', NODE_ENV=' + process.env.NODE_ENV);
+  console.error('[main.js] Electron exports:', Object.keys(require('electron')));
+  process.exit(1);
+}
+
 const path = require('path');
 const fs = require('fs');
 const WebSocketServer = require('./websocket/server');
@@ -36,6 +47,17 @@ const { WindowPool, PoolEntryState } = require('./windows/pool');
 const { getUpdateManager, UPDATE_STATUS } = require('./updater/manager');
 const CertificateGenerator = require('./utils/cert-generator');
 const { ensureEmbeddedTor, checkTorAvailability, TorAutoSetup } = require('./utils/tor-auto-setup');
+const { initializeGCTuning } = require('./utils/gc-tuning');
+
+// ==========================================
+// Garbage Collection Tuning (OPT-07)
+// ==========================================
+const gcTuningResult = initializeGCTuning({
+  maxHeapSize: 512,  // MB
+  enableGCMonitoring: true,
+  enablePeriodicCleanup: true,
+  cleanupInterval: 60000  // 1 minute
+});
 
 // ==========================================
 // Configuration System
