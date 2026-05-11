@@ -470,6 +470,8 @@ class MultiLayerEvasionCoordinator {
    * Identify which layer detected (based on detection vector)
    */
   _identifyDetectedLayer(vector) {
+    if (!vector) return null; // Handle undefined/null vector
+
     const layerMap = {
       'ja3': 'tls',
       'ja4': 'tls',
