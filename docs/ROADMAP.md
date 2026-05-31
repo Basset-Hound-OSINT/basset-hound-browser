@@ -1,23 +1,21 @@
 # Basset Hound Browser - Product Roadmap
 
-**Last Updated:** May 11, 2026
-**Current Version:** 12.0.0
-**Status:** ✅ PRODUCTION-LIVE - v12.0.0 Deployed & Live
-**Session Record:** [2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md)
+**Last Updated:** May 31, 2026
+**Current Version:** 12.0.0 (Production Live)
+**Status:** ✅ PRODUCTION-LIVE - v12.0.0 Deployed & Stable
+**Latest Session Record:** [See Archives Index](archives/INDEX.md)
 
 ## Current Release: v12.0.0
 
-### May 11, 2026 - v12.0.0 Production Deployment Complete ✅
+### v12.0.0 Production Deployment ✅ (Complete May 11, 2026)
 - ✅ **Canary Deployment:** Validated and healthy (4+ hour monitoring)
 - ✅ **Progressive Rollout:** All 3 phases executed successfully
   - Phase 1: 10% traffic (1 instance) → PASS
   - Phase 2: 50% traffic (3 instances) → PASS
   - Phase 3: 100% production (5 instances) → COMPLETE
-- ✅ **Performance Exceeded:** Throughput +22-27%, Memory -60-80%, Latency 20-40%
-- ✅ **Repository Organized:** 29 INDEX files, 300+ docs navigable
-- ✅ **Documentation Complete:** 40+ deployment guides, monitoring systems, runbooks
-- ✅ **Production Status:** LIVE & STABLE with 99.7% confidence, LOW risk
-- **See:** [Session Record](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md) for complete details
+- ✅ **Performance:** Throughput +22-27%, Memory -60-80%, Latency improvements
+- ✅ **Production Status:** LIVE & STABLE - 99.7% confidence
+- **Details:** See [Session Records](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md)
 
 ---
 
@@ -79,6 +77,29 @@ Commands like `get_page_state`, `screenshot`, `get_content` require the page to 
 - 📄 See [findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md](findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md) for full details
 - 📄 See [findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md](findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md)
 - 📄 See [findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md](findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md) for Docker setup options
+
+---
+
+## Upcoming Releases
+
+### v12.1.0 - Platform Integrations & Enhanced QA (June 15, 2026)
+**Status:** Planning Complete | Development: May 31 - June 15
+- **Technology Detection Module** - 50+ tech detection with 95%+ accuracy
+- **Platform Integrations** - Shodan, Maltego, MISP, Censys, STIX/TAXII exports
+- **Forensic Evidence Export** - Chain of custody documentation, cryptographic manifests
+- **Advanced JavaScript Execution** - Sandbox + 10+ extraction payloads
+- **QA Sprint** - 27 npm packages updated, memory leak fixes, 95%+ test pass rate
+- **Details:** See [V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md](V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md)
+
+### v12.2.0 - Market Leadership & Forensic Excellence (July 15, 2026)
+**Status:** Strategic Plan Complete | Development: June 15 - July 15
+- **Forensic Certification** - ISO/IEC 27037 compliance pathway
+- **Multi-Target Monitoring** - Automated competitor monitoring with change detection
+- **Agent SDKs** - Native Python, JavaScript, TypeScript integrations
+- **Dark Web Support** - Enhanced .onion site monitoring and analysis
+- **Session Persistence** - 500+ concurrent requests per profile
+- **Performance:** 350-400+ msg/sec @ 200 concurrent, 500+ concurrent load test
+- **Details:** See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
 
 ---
 

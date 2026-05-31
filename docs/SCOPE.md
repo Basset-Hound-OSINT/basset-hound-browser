@@ -1,6 +1,6 @@
 # Basset Hound Browser - Project Scope Definition
 
-**Last Updated:** January 21, 2026
+**Last Updated:** May 31, 2026
 
 ---
 
@@ -201,7 +201,7 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - ❌ **What to click:** Agent identifies targets, browser executes
 - ❌ **When to capture evidence:** Agent triggers capture at right moment
 
-### 8. Infrastructure, Deployment & Scaling (OUT OF SCOPE - Planned for Post-Completion)
+### 8. Infrastructure, Deployment & Scaling (OUT OF SCOPE - Post-Project)
 - ❌ **Kubernetes orchestration:** K8s deployments, service mesh, container orchestration
 - ❌ **Terraform/IaC:** Infrastructure-as-code, cloud resource management
 - ❌ **Load balancing:** Multi-instance scaling, traffic distribution
@@ -216,12 +216,12 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 - ❌ **Network policies:** K8s network policy definitions, ingress controllers
 - ❌ **Cloud provider integration:** AWS, GCP, Azure-specific features
 
-> **Explicit Note:** Infrastructure scaling (Kubernetes, Terraform) is **explicitly out of scope** for v11.3.0 and initial production releases. The browser is designed for:
+> **Explicit Note:** Kubernetes and Terraform infrastructure scaling are **explicitly out of scope** for this project. The browser is designed for:
 > - **Single-container deployment** (standard Docker container)
-> - **Docker Compose** for multi-service coordination (with basset-hound-networking, etc.)
+> - **Docker Compose** for multi-service coordination (with basset-hound-networking)
 > - **Manual horizontal scaling** (run multiple containers, external load balancer)
 > 
-> Infrastructure automation and cloud-native deployment patterns will be addressed in a **separate Phase** after core v11.3.0 completion and production validation. Current focus is on **browser functionality, stability, and performance** - not infrastructure complexity.
+> Infrastructure automation (Kubernetes, Terraform) will be addressed in a **separate phase after core production deployment** is complete and operational. Current focus is **browser functionality, stability, and performance**.
 
 ---
 

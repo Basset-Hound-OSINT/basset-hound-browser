@@ -1,13 +1,14 @@
 # Basset Hound Browser - TODO
 
-**Last Updated:** May 11, 2026
-**Version:** 12.0.0
+**Last Updated:** May 31, 2026
+**Current Version:** 12.0.0 (Production Live)
+**Next Release:** v12.1.0 (June 15, 2026)
 
 ## Current Status
 
-**Project Status:** v12.0.0 Production Deployment Complete - ALL SYSTEMS LIVE
-**Deployment Status:** Progressive rollout complete (10% → 50% → 100%), 5 instances running, monitoring active
-**See:** [2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md)
+**Project Status:** v12.0.0 Production Live & Stable
+**Deployment Status:** 5 instances running, 99.7% confidence, LOW risk
+**Session Records:** [See Archives Index](archives/session_records/INDEX.md)
 
 ---
 
@@ -58,20 +59,50 @@
 - [x] User agent database management
 - [x] Comprehensive integration testing
 
-## v12.1.0 Planning (Next Release: May 25, 2026)
+## v12.1.0 Production Deployment (June 15, 2026 Target)
 
-### Optimization Sprint 2 ✅ (See `/docs/archives/` for details)
-- [ ] WebSocket compression (target: 70-90% reduction)
-- [ ] Screenshot cache optimization (target: 80-90% memory reduction)
-- [ ] Garbage collection tuning (target: 0MB/hour growth)
-- [ ] Session pool expansion (target: 2000+ profiles)
+### Development & QA (May 31 - June 15)
+- [ ] Technology Detection Module implementation (50+ tech signatures)
+- [ ] Platform Integrations (Shodan, Maltego, MISP, Censys, STIX/TAXII)
+- [ ] Forensic Evidence Export with chain of custody
+- [ ] Advanced JavaScript Execution (10+ extraction payloads)
+- [ ] npm Package Updates (27 deprecated packages)
+- [ ] Memory Leak Resolution (RateLimitAdapter)
+- [ ] Comprehensive Test Suite (95%+ pass target)
 
-### v12.1.0 Release Planning ✅
-- [x] Requirements defined
-- [x] Specification complete (see `/docs/PHASE-3-SPECIFICATION.md`)
-- [ ] Implementation (scheduled for May 11-25, 2026)
-- [ ] Testing and validation
-- [ ] Release May 25, 2026
+### Staging Validation (June 10-15)
+- [ ] Deploy to staging environment
+- [ ] Run full test suite (1,810+ unit tests)
+- [ ] Load testing (200+ concurrent)
+- [ ] Integration testing with dependent systems
+- [ ] Security review and sign-off
+
+### Production Deployment (June 15)
+- [ ] Execute canary deployment (5% traffic)
+- [ ] Progressive rollout (25% → 50% → 100%)
+- [ ] 4+ hour production monitoring
+- [ ] Success criteria validation
+
+**Details:** See [V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md](V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md)
+
+## v12.2.0 Development Planning (July 15, 2026 Target)
+
+### Feature Implementation (June 15 - July 15)
+- [ ] Forensic Excellence Module - ISO/IEC 27037 compliance
+- [ ] Multi-Target Monitoring - Competitor change detection
+- [ ] Agent SDKs - Python, JavaScript, TypeScript
+- [ ] Dark Web Monitoring - Enhanced .onion support
+- [ ] Session Persistence - 500+ concurrent requests
+- [ ] Performance Optimization - 350-400+ msg/sec target
+- [ ] Extended load testing - 500+ concurrent connections
+
+### Market Positioning & Certification
+- [ ] ISO/IEC 27037 audit process kickoff
+- [ ] Law enforcement pilot program setup (3+ programs)
+- [ ] Corporate competitive intelligence customer onboarding (10+)
+- [ ] Revenue forecasting for $1-3M ARR target
+
+**Details:** See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
 
 ---
 
