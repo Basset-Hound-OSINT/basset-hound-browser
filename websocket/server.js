@@ -8753,6 +8753,23 @@ class WebSocketServer {
     const { registerExtractionCommands } = require('./commands/extraction-commands');
     registerExtractionCommands(this, this.mainWindow);
 
+    // Register competitor monitoring service (Phase 26)
+    const { MonitoringService } = require('../src/monitoring/monitoring-service');
+    const { registerCompetitorMonitoringCommands } = require('./commands/competitor-monitoring-commands');
+
+    // Initialize monitoring service
+    const monitoringService = new MonitoringService({
+      dataDir: this.dataDir || './data/monitoring',
+      enableAutoCheck: true,
+      checkInterval: 3600000 // 1 hour default
+    });
+
+    // Register commands with the service
+    registerCompetitorMonitoringCommands(this.commandHandlers, monitoringService);
+
+    // Store reference for cleanup
+    this.monitoringService = monitoringService;
+
     // ==========================================
     // Auto-Update Commands
     // ==========================================
@@ -9169,6 +9186,12 @@ class WebSocketServer {
       this.wss = null;
       this.authenticatedClients.clear();
       this.rateLimitData.clear();
+
+      // Stop monitoring service if running
+      if (this.monitoringService) {
+        this.monitoringService.stop();
+        this.monitoringService = null;
+      }
 
       // Close HTTPS server if SSL was active
       if (this.httpsServer) {
