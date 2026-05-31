@@ -146,10 +146,8 @@ class AlertDispatcher extends EventEmitter {
       }
     }
 
-    // Record alert
-    if (anySucceeded) {
-      this.recordSentAlert(alertHash);
-    }
+    // Record alert for deduplication (regardless of success)
+    this.recordSentAlert(alertHash);
 
     this.emit('alert-sent', {
       monitorId,

@@ -1,26 +1,27 @@
 # Basset Hound Browser - Documentation Index
 
-**Last Updated:** May 7, 2026  
-**Current Version:** 11.2.0 (Phase 2 Complete)
+**Last Updated:** May 31, 2026  
+**Current Version:** 12.0.0 (Production Live)  
+**Navigation Approach:** Lean docs with session record references for detailed context
 
 ---
 
 ## Quick Navigation
 
-### 📋 Phase 2 Completion (May 7, 2026)
-- **[Phase 2 Completion Summary](PHASE-2-COMPLETION-SUMMARY-2026-05-07.md)** - Complete overview of all 8 tracks, research agents, and results
-- **[Session Record - Phase 2](archives/session_records/2026-05-07_PHASE-2-COMPLETION.md)** - Detailed session record with decisions, discoveries, and next steps
-- **[Phase 2 Research Guides](research/)** - Canvas/WebGL evasion research and session coherence analysis
+### 🚀 Current Status: v12.0.0 Production Live (May 11, 2026)
+- **[Roadmap](ROADMAP.md)** - Full project roadmap with v12.0.0, v12.1.0, v12.2.0 planning
+- **[TODO](TODO.md)** - Action items for v12.1.0 (June 15) and v12.2.0 (July 15)
+- **[Session Records](archives/session_records/INDEX.md)** - Complete chronological list of all work sessions
 
-### 📋 Phase 1 Completion (May 7, 2026)
-- **[Phase 1 Session Record](archives/session_records/2026-05-07_PHASE-1-AUTONOMOUS-EXECUTION.md)** - Technology detection, behavioral simulation, device fingerprinting
-- **[Phase 1 Research](research/)** - Fingerprinting deep dives, detection systems analysis, OSINT forensics
+### 📋 Recent Session Records
+- **May 31:** [v12.1.0 Waves 1-9 Complete](archives/session_records/2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md) - All 4 features delivered, 9 waves, 35,000+ lines
+- **May 11:** [v12.0.0 Production Deployment](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md) - Canary + progressive rollout
+- **May 8:** [v11.3.0 Final Validation](archives/session_records/2026-05-08_V11.3.0-FINAL-VALIDATION-COMPLETE.md) - 92.9% pass rate achieved
 
 ### 📋 Core Documentation
-- **[API Reference](API-REFERENCE.md)** - Complete WebSocket API documentation (164 commands)
-- **[Deployment Guide](DEPLOYMENT.md)** - Docker deployment, configuration, troubleshooting
-- **[Architecture & Scope](SCOPE.md)** - Architectural boundaries and design principles
-- **[Roadmap](ROADMAP.md)** - Full project roadmap with phase history
+- **[API Reference](API-REFERENCE.md)** - WebSocket API (164 commands) for browser control
+- **[Deployment Guide](DEPLOYMENT-GUIDE.md)** - Docker deployment and troubleshooting
+- **[Architecture & Scope](SCOPE.md)** - Boundaries and design principles
 
 ---
 
@@ -34,17 +35,19 @@
 - **[OSINT Forensics](research/osint-forensics/)** - OSINT integration and forensic capture
 
 ### 📁 Session Records (`/archives/session_records/`)
-- **[2026-05-07_PHASE-2-COMPLETION.md](archives/session_records/2026-05-07_PHASE-2-COMPLETION.md)** - Phase 2 completion session record
-- **[2026-05-07_PHASE-1-AUTONOMOUS-EXECUTION.md](archives/session_records/2026-05-07_PHASE-1-AUTONOMOUS-EXECUTION.md)** - Phase 1 execution session record
-- **[2026-05-07_v11.2.0_Enhancement_Complete.md](archives/session_records/2026-05-07_v11.2.0_Enhancement_Complete.md)** - v11.2.0 enhancement completion
+**See [Session Records Index](archives/session_records/INDEX.md) for complete chronological list**
+
+Key Sessions:
+- **May 11:** [v12.0.0 Production Deployment Complete](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md)
+- **May 8:** [v11.3.0 Final Validation Complete](archives/session_records/2026-05-08_V11.3.0-FINAL-VALIDATION-COMPLETE.md)
+- **May 7:** [Phase 2 Completion](archives/session_records/2026-05-07_PHASE-2-COMPLETION.md)
 
 ### 📁 Archived Documentation (`/archives/`)
-- **[Proposals](archives/proposals/)** - Strategic proposals and planning documents
-- **[Validations](archives/validations/)** - Production validation reports and deployment readiness
-- **[Test Results](archives/test-results/)** - Comprehensive test reports and integration summaries
+- **[Archives Index](archives/INDEX.md)** - Navigate all archived materials
+- **[Proposals](archives/proposals/)** - Strategic proposals and planning
 - **[Reports](archives/reports/)** - Completion reports and research summaries
-- **[Optimization](archives/optimization/)** - Cost optimization analysis and guides
-- **[Reference](archives/reference/)** - Quick reference cards and summary documents
+- **[Validations](archives/validations/)** - Production validation reports
+- **[Test Results](archives/test-results/)** - Test reports and integration summaries
 
 ---
 
@@ -139,31 +142,40 @@
 - Multi-agent orchestration framework
 - **Result:** 8 modules, 10,500+ lines, 325+ tests, 100% pass rate, 85-90% effectiveness
 
-### 📋 Phase 3: Advanced ML Integration (Future)
-- ML-based audio pattern generation
-- Browser extension evasion
-- Behavioral prediction with ML models
-- Advanced session fatigue simulation
-- Custom GPU simulation
-- Passive fingerprinting resistance
+### ✅ v12.0.0: Production Deployment (May 11, 2026)
+- Full production deployment and monitoring
+- 99.7% confidence level, LOW risk
+- Performance targets exceeded (+22-27% throughput, -60-80% memory)
+
+### 📋 v12.1.0: Platform Integrations (June 15, 2026)
+- Technology Detection (50+ tech signatures)
+- Platform Integrations (Shodan, Maltego, MISP, Censys)
+- Forensic Evidence Export with chain of custody
+- See [V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md](V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md)
+
+### 📋 v12.2.0: Market Leadership (July 15, 2026)
+- Forensic Excellence with ISO/IEC 27037 certification
+- Multi-Target Monitoring with change detection
+- Agent SDKs (Python, JS, TypeScript)
+- See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
 
 ---
 
-## Support & Resources
+## Documentation Navigation
 
-### Documentation Files
-- `README.md` - Project overview and features
-- `ROADMAP.md` - Full roadmap with phase history
-- `API-REFERENCE.md` - Complete WebSocket API documentation
-- `SCOPE.md` - Architectural boundaries and scope
-- `DEPLOYMENT.md` - Deployment and configuration guide
+### For Project Overview
+- **[ROADMAP.md](ROADMAP.md)** - Full roadmap with v12.0.0, v12.1.0, v12.2.0
+- **[SCOPE.md](SCOPE.md)** - Architectural boundaries and design principles
+- **[API-REFERENCE.md](API-REFERENCE.md)** - Complete WebSocket API (164 commands)
 
-### Research Guides
-See `/docs/research/` for detailed guides on:
-- Canvas and WebGL fingerprinting bypass techniques
-- Session coherence validation frameworks
-- Detection system analysis and evasion pathways
-- Fingerprinting methodologies and deep dives
+### For Development Work
+- **[Session Records Index](archives/session_records/INDEX.md)** - All work session logs
+- **[Archives Index](archives/INDEX.md)** - All archived materials by type
+- **[Research Guides](research/)** - Technical deep dives and analysis
+
+### For Deployment
+- **[DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)** - Docker and troubleshooting
+- **[TODO.md](TODO.md)** - Current action items and planning
 - OSINT integration and forensic analysis
 
 ### Session Records

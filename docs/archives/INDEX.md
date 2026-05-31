@@ -1,18 +1,20 @@
 # Documentation Archives - Index
 
-**Last Updated:** May 11, 2026  
-**Purpose:** Navigate all archived documentation from development sessions
+**Last Updated:** May 31, 2026  
+**Purpose:** Navigate all archived documentation from development sessions  
+**Navigation:** Lean approach - main docs reference session records for detailed context
 
 ---
 
 ## Quick Navigation
 
-### Session Records (Complete Work Logs)
-- [May 8-9: v11.3.0 Final Validation](session_records/2026-05-08_V11.3.0-FINAL-VALIDATION-COMPLETE.md) - Final validation showing 92.9% pass rate, production ready
-- [May 8-9: v11.3.0 Implementation Complete](session_records/2026-05-08_V11.3.0-IMPLEMENTATION-COMPLETE.md) - Comprehensive implementation with 4 agents, 15 improvements
-- [May 8: v11.3.0 Implementation Session](session_records/2026-05-08_V11.3.0-IMPLEMENTATION-SESSION.md) - Real-time progress tracking during implementation
-- [May 7: Phase 2 Completion](session_records/2026-05-07_PHASE-2-COMPLETION.md) - Bot evasion framework completion, 325+ tests
-- [May 7: Phase 1 Autonomous Execution](session_records/2026-05-07_PHASE-1-AUTONOMOUS-EXECUTION.md) - 4 development tracks, 8,500+ lines, 141+ tests
+### 📋 Session Records - Complete Index
+**See [session_records/INDEX.md](session_records/INDEX.md) for full chronological list and quick navigation**
+
+Recent Key Sessions:
+- **May 31:** [Waves 1-9 Complete Orchestration](session_records/2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md) - v12.1.0 development, 35,000+ lines, 9 waves
+- **May 11:** [v12.0.0 Production Deployment Complete](session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md) - Full rollout with all phases
+- **May 8:** [v11.3.0 Final Validation](session_records/2026-05-08_V11.3.0-FINAL-VALIDATION-COMPLETE.md) - 92.9% pass rate, production ready
 
 ### Deployment Logs
 - [deployment-logs/CONTINUOUS-DEPLOYMENT-CYCLE-COMPLETE-2026-05-08.md](deployment-logs/CONTINUOUS-DEPLOYMENT-CYCLE-COMPLETE-2026-05-08.md) - Complete cycle from 66.7% → 92.9% pass rate

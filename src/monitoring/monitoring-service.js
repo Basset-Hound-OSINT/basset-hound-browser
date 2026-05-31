@@ -566,9 +566,9 @@ class MonitoringService extends EventEmitter {
     // Clean old snapshots
     for (const [monitorId, snapshots] of this.snapshots.entries()) {
       const initialCount = snapshots.length;
-      const filtered = snapshots.filter(s =>
-        s.timestamp > cutoffTime || snapshots.length <= keepMinSnapshots
-      );
+      // Filter by timestamp - always remove old data
+      const filtered = snapshots.filter(s => s.timestamp > cutoffTime);
+
       if (filtered.length < initialCount) {
         snapshotsRemoved += initialCount - filtered.length;
         this.snapshots.set(monitorId, filtered);

@@ -20,6 +20,37 @@ Basset Hound Browser is a **browser automation tool** designed to be controlled 
 
 ---
 
+## Development Timeline Philosophy
+
+### Dates are Planning Guides, Not Deadlines
+
+Timeline targets (June 15 v12.1.0, July 15 v12.2.0, etc.) exist to inform planning and communicate expected delivery windows to stakeholders. They are **not constraints on development velocity**.
+
+- **Early delivery accelerates progress:** If features are ready before a target date, we deploy immediately—waiting serves no one
+- **Extended timelines focus on quality:** If work requires more time beyond the target date, we continue working until the job is complete
+- **Dates inform stakeholders, not developers:** Timelines help us communicate with external teams about when they can expect capabilities, but they don't dictate when we stop working
+
+### Continuous Development Model
+
+Basset Hound Browser operates under a **continuous development philosophy**:
+
+- **Work continues as long as improvements are identified.** There is no "waiting for the next sprint" or pausing at calendar milestones
+- **Each completion triggers identification of next work.** As soon as one feature is done and deployed, we identify and begin the next set of improvements
+- **Autonomous agent cycles continue indefinitely.** Wave 10, Wave 11, Wave 12... continue as long as the project is active and improvements exist
+- **Quality gates, not calendar events, determine readiness.** A feature is deployed when it meets quality standards—whether that's on schedule or ahead of it
+
+### Key Principle
+
+> **When there's work to be done, we do it. Dates help us communicate timelines to stakeholders, but actual delivery is driven by completion of work, not calendar events.**
+
+This approach means:
+- **Predictable velocity:** External teams can rely on consistent delivery
+- **Rapid feedback cycles:** Features ship as soon as they're ready
+- **No artificial delays:** Calendar alignment doesn't override technical readiness
+- **Stakeholder clarity:** Published timelines set expectations without constraining technical execution
+
+---
+
 ## In Scope ✅
 
 ### 1. Browser Automation
