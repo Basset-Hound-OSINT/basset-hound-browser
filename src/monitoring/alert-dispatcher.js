@@ -502,7 +502,7 @@ class AlertDispatcher extends EventEmitter {
    * @returns {string} Alert summary
    */
   generateAlertSummary(alertData) {
-    const { monitorName, url, changeType, severity, changes } = alertData;
+    const { monitorName, url, changeType, severity, changes = {} } = alertData;
 
     let summary = `Change detected on ${monitorName} (${url}):\n`;
     summary += `Type: ${changeType}\n`;
