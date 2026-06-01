@@ -8,6 +8,7 @@ const https = require('https');
 const http = require('http');
 const crypto = require('crypto');
 const EventEmitter = require('events');
+const WebhookURLValidator = require('./webhook-url-validator'); // SECURITY FIX: Webhook validation
 
 /**
  * Alert Severity Levels
@@ -41,7 +42,7 @@ class AlertDispatcher extends EventEmitter {
       maxRetries: options.maxRetries || 3,
       retryDelay: options.retryDelay || 5000,
       timeout: options.timeout || 10000,
-      deduplicationWindow: options.deduplicationWindow || 3600000, // 1 hour
+      deduplicationWindow: options.deduplicationWindow || 300000, // SECURITY FIX: Reduced from 3600000 to 5 minutes
       enableRateLimit: options.enableRateLimit !== false,
       maxAlertsPerHour: options.maxAlertsPerHour || 100,
       smtpConfig: options.smtpConfig || null,
@@ -54,6 +55,12 @@ class AlertDispatcher extends EventEmitter {
 
     // Rate limiting
     this.alertCount = new Map();
+
+    // SECURITY FIX: Initialize webhook URL validator
+    this.webhookValidator = new WebhookURLValidator({
+      requireHttps: options.requireHttpsWebhooks !== false,
+      maxWebhooksPerHour: options.maxWebhooksPerHour || 100
+    });
   }
 
   /**
@@ -207,6 +214,28 @@ class AlertDispatcher extends EventEmitter {
   async sendWebhookAlert(message, webhookUrl) {
     return new Promise((resolve, reject) => {
       try {
+        // SECURITY FIX: Validate webhook URL before sending
+        const urlValidation = this.webhookValidator.validateWebhookURL(webhookUrl);
+        if (!urlValidation.valid) {
+          return resolve({
+            success: false,
+            error: `Invalid webhook URL: ${urlValidation.error}`,
+            reason: urlValidation.reason,
+            method: 'webhook'
+          });
+        }
+
+        // SECURITY FIX: Check rate limiting
+        const rateCheckResult = this.webhookValidator.checkRateLimit(urlValidation.hostname);
+        if (!rateCheckResult.allowed) {
+          return resolve({
+            success: false,
+            error: rateCheckResult.error,
+            method: 'webhook',
+            rateLimited: true
+          });
+        }
+
         const url = new URL(webhookUrl);
         const isHttps = url.protocol === 'https:';
         const client = isHttps ? https : http;

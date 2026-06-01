@@ -1,0 +1,44 @@
+# Wave 13 QA: Regression Test Report
+Date: May 31, 2026
+
+## Status
+Full regression test suite: RUNNING IN BACKGROUND
+Expected completion: Within 10 minutes
+
+## Scope
+- All 316+ existing test files in /tests directory
+- Core functionality validation
+- No regressions expected (performance fixes are low-risk)
+- Memory, CPU, latency baseline comparison
+
+## What We're Testing
+1. Core WebSocket API commands
+2. Bot evasion features
+3. Session management
+4. Profile handling
+5. Proxy integration
+6. Device fingerprinting
+7. Authentication
+8. Network operations
+9. Screenshot capture
+10. Data extraction
+
+## Expected Outcome
+- Zero regressions from Wave 13 changes
+- All existing tests should pass
+- Memory usage within baseline
+- Latency within baseline
+- CPU usage within baseline
+
+## Baseline Metrics (from v12.0.0)
+- Test Pass Rate: 92.3% (316/342)
+- Memory: 1.15% of available
+- Latency P99: 1.7ms
+- Throughput: 285 msg/sec (200 concurrent)
+
+## Will Update Report When Complete
+- Final pass/fail counts
+- Any new regressions discovered
+- Comparison with v12.0.0 baseline
+- Recommendation for deployment
+

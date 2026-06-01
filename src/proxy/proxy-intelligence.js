@@ -15,6 +15,7 @@
  */
 
 const crypto = require('crypto');
+const CredentialSanitizer = require('./credential-sanitizer');
 
 class ProxyIntelligence {
   constructor(options = {}) {
@@ -26,6 +27,7 @@ class ProxyIntelligence {
     this.performanceThreshold = options.performanceThreshold || 200; // ms
     this.rotationTimeout = options.rotationTimeout || 1800000; // 30 minutes
     this.maxConsecutiveFailures = options.maxConsecutiveFailures || 3;
+    this.sanitizer = new CredentialSanitizer(); // SECURITY FIX: Credential sanitizer
   }
 
   /**
@@ -292,7 +294,8 @@ class ProxyIntelligence {
   }
 
   /**
-   * Record proxy request
+   * Record proxy request (CVE-W14-NEW-004: FIXED)
+   * Now validates result data before using it
    */
   recordProxyRequest(sessionId, proxyId, result = {}) {
     const session = this.sessions.get(sessionId);
@@ -302,8 +305,14 @@ class ProxyIntelligence {
       throw new Error('Session or proxy not found');
     }
 
-    const success = result.success !== false;
-    const latency = result.latency || 0;
+    // CVE-W14-NEW-004: FIXED - Validate result parameters
+    const validatedResult = this._validateProxyResult(result);
+    if (!validatedResult.valid) {
+      throw new Error(`Invalid proxy result: ${validatedResult.errors.join(', ')}`);
+    }
+
+    const success = validatedResult.data.success !== false;
+    const latency = validatedResult.data.latency || 0;
 
     // Update proxy metrics
     proxy.metrics.totalRequests++;
@@ -311,7 +320,7 @@ class ProxyIntelligence {
       proxy.metrics.successfulRequests++;
     } else {
       proxy.metrics.failedRequests++;
-      if (result.blocked) {
+      if (validatedResult.data.blocked) {
         proxy.metrics.blockingIncidents++;
       }
     }
@@ -351,6 +360,40 @@ class ProxyIntelligence {
       proxyStatus: proxy.status,
       reputation: repScore,
       metrics: proxy.metrics
+    };
+  }
+
+  /**
+   * Validate proxy result data (CVE-W14-NEW-004)
+   * @private
+   */
+  _validateProxyResult(result) {
+    const errors = [];
+
+    // Validate success field
+    if (typeof result.success !== 'boolean' && result.success !== undefined && result.success !== false) {
+      errors.push('success must be boolean');
+    }
+
+    // Validate latency
+    if (result.latency !== undefined) {
+      if (typeof result.latency !== 'number' || result.latency < 0) {
+        errors.push('latency must be non-negative number');
+      }
+      if (result.latency > 300000) { // 5 minutes max
+        errors.push('latency exceeds maximum threshold (5 minutes)');
+      }
+    }
+
+    // Validate blocked flag
+    if (result.blocked !== undefined && typeof result.blocked !== 'boolean') {
+      errors.push('blocked must be boolean');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      data: result
     };
   }
 

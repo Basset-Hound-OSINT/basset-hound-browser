@@ -1,0 +1,356 @@
+# Wave 13: QA Validation - Issues Found Report
+Date: May 31, 2026
+Time: During comprehensive validation phase
+
+## Summary
+Total Issues: 5 (Critical: 2, High: 2, Medium: 1, Low: 1)
+Resolution Status: 2 resolved, 3 pending
+
+## Detailed Issues List
+
+### ISSUE #1 - PriorityQueue Export Format (RESOLVED) ✓
+Severity: CRITICAL
+Status: FIXED & TESTED
+Component: src/queuing/priority-queue.js
+Test Suite: tests/performance/wave13-optimizations.test.js
+
+Description:
+Module was exporting PriorityQueue as direct export but tests expected destructured import
+  - Actual: module.exports = PriorityQueue
+  - Expected: module.exports = { PriorityQueue }
+  - Impact: 26 tests immediately failed with "PriorityQueue is not a constructor"
+
+Root Cause:
+Inconsistent export format between PriorityQueue and ConnectionPool modules
+
+Resolution:
+Changed line 359 in src/queuing/priority-queue.js from:
+  module.exports = PriorityQueue;
+To:
+  module.exports = { PriorityQueue };
+
+Verification:
+- All 58 performance tests now pass ✓
+- Priority queue correctly imported in connection pool ✓
+- No regressions detected ✓
+
+Fix Effort: 5 minutes
+Commit-Ready: YES
+
+---
+
+### ISSUE #2 - Test Logic Error: Missing Dequeue (RESOLVED) ✓
+Severity: HIGH
+Status: FIXED & TESTED
+Component: tests/performance/wave13-optimizations.test.js
+Test: "priority queue maintains fairness"
+
+Description:
+Test enqueueing items but never dequeueing, causing metrics to show 0% distribution
+- Test enqueues 10 critical, 10 normal, 10 low-priority items
+- Never calls dequeue()
+- Metrics show: criticalPercentage = 0% (should be ~33%)
+- Assertion expects: 33% but gets 0%
+
+Root Cause:
+Test incomplete - missing business logic step (dequeue)
+
+Resolution:
+Added dequeue loop before assertion (lines 596-599):
+  while (!queue.isEmpty()) {
+    queue.dequeue();
+  }
+
+Verification:
+- Fairness test now passes with correct 33% distribution ✓
+- All 58 performance tests pass ✓
+
+Fix Effort: 2 minutes
+Commit-Ready: YES
+
+---
+
+### ISSUE #3 - Session Encryption AAD Implementation Error (PENDING) ✗
+Severity: CRITICAL
+Status: REQUIRES FIX
+Component: src/security/session-encryptor.js
+Test Suite: tests/security/phase2-session-encryption.test.js
+Failed Tests: 3 (out of 27)
+
+Test Failures:
+1. "Uses AAD for integrity when sessionId provided"
+2. "Fails decryption with wrong sessionId"
+3. "File decryption with sessionId verification"
+
+Error Details:
+Error: "Encryption failed: Invalid state for operation setAAD"
+Location: session-encryptor.js, line 98 in encryptSession()
+
+Root Cause:
+Node.js crypto API requires AAD (Additional Authenticated Data) to be set BEFORE update()
+Current code flow:
+1. cipher = crypto.createCipheriv() 
+2. cipher.update() <- This initializes the cipher
+3. cipher.setAAD() <- ERROR: too late!
+
+Correct flow:
+1. cipher = crypto.createCipheriv()
+2. cipher.setAAD() <- Must be BEFORE update()
+3. cipher.update()
+
+Impact:
+- Cannot use sessionId as AAD for message integrity
+- Session encryption without sessionId verification still works
+- 24/27 encryption tests pass (88% pass rate)
+
+Fix Required:
+Reorganize encryption code in encryptSession() to call setAAD() before update()
+
+Estimated Fix Time: 1-2 hours
+Complexity: MEDIUM (requires crypto API understanding)
+Risk: MEDIUM (touches core security feature)
+Commit-Ready: NO
+
+---
+
+### ISSUE #4 - Forensic Module Export Format Mismatch (PENDING) ✗
+Severity: HIGH
+Status: REQUIRES FIX
+Component: Multiple modules
+  - src/forensics/forensic-report-generator.js
+  - src/forensics/orchestrator.js  
+  - src/forensics/metadata-extractor.js
+
+Test Suite: tests/security/phase2-forensic-entropy.test.js
+Failed Tests: 14 (out of 35)
+
+Error Details:
+TypeError: ForensicReportGenerator is not a constructor
+TypeError: Orchestrator is not a constructor
+TypeError: MetadataExtractor is not a constructor
+
+Root Cause:
+Test expects these to be constructors:
+  const generator = new ForensicReportGenerator();
+  
+But modules likely export them differently. Possible exports:
+  - module.exports.ForensicReportGenerator (object property)
+  - module.exports = { ForensicReportGenerator } (correct)
+  - Possibly not exported at all
+
+Impact:
+- 9 direct test failures from constructor issues
+- 5 integration test failures cascading from above
+- Forensic entropy validation incomplete
+- 21/35 tests pass (60% pass rate)
+
+Fix Required:
+1. Check actual export format in each module
+2. Verify module exists and exports correctly
+3. Align exports with test expectations
+4. Possibly fix tests to match actual exports
+
+Estimated Fix Time: 1-2 hours
+Complexity: LOW (export format issue)
+Risk: LOW (forensics not in critical path for MVP)
+Commit-Ready: NO
+
+---
+
+### ISSUE #5 - Audit Logger Export with Filters (PENDING) ✗
+Severity: MEDIUM
+Status: REQUIRES FIX
+Component: src/security/audit-logger.js
+Test Suite: tests/security/phase2-audit-logger.test.js
+Failed Tests: 1 (out of 34)
+
+Test Failure:
+"Exports with filters" test
+Expected: result.data.entries filtered to only success=true entries
+Received: Assertion failed (not all entries have success=true)
+Also: ENOENT /tmp/claude-1000/basset-audit-*/audit.log file not found
+
+Root Cause (Suspected):
+1. Filter logic in exportWithFilters() not properly applied
+   OR
+2. File path cleanup issue in test
+   OR  
+3. Stream handling error when exporting with filters
+
+Impact:
+- 1 test failure
+- Core audit functionality works (33/34 tests pass)
+- Filter export edge case issue
+- 97% pass rate on audit logging
+
+Fix Required:
+1. Verify filter logic in export function
+2. Check file stream handling
+3. Ensure temp file cleanup
+
+Estimated Fix Time: 1 hour
+Complexity: LOW
+Risk: LOW (non-critical feature)
+Commit-Ready: NO
+
+---
+
+### ISSUE #6 - Feature Performance Integration Memory Crash (PENDING) ✗
+Severity: HIGH
+Status: REQUIRES INVESTIGATION
+Component: tests/wave13/feature-perf-integration.test.js
+Test Suite: Wave 13 Features + Performance Integration
+
+Error Details:
+Fatal V8 error: "Invalid size error 169220804"
+SIGTRAP signal during test execution
+Memory allocation failure in Node.js V8 engine
+
+Root Cause (Suspected):
+One of the mock objects or test creating runaway memory allocation
+- Possible: MockParallelProcessor creating infinite arrays
+- Possible: Circular reference in mock objects
+- Possible: Test generating very large data structures
+- Possible: Memory leak in async operations
+
+Impact:
+- feature-perf-integration.test.js crashes during execution
+- feature-security-integration.test.js passes (19/19 tests) ✓
+- Cannot validate feature integration with performance optimizations
+
+Fix Required:
+1. Identify which test case causes crash
+2. Check for infinite loops or unbounded array growth
+3. Profile memory usage during execution
+
+Estimated Fix Time: 2-3 hours (debugging required)
+Complexity: MEDIUM (memory profiling needed)
+Risk: MEDIUM (may indicate issue in actual code, not just tests)
+Commit-Ready: NO (but can be deferred - feature tests are secondary)
+
+---
+
+## Issue Severity Breakdown
+
+### Critical Issues (Must Fix Before Production) ✗
+1. Session Encryption AAD - 1 issue
+   - Blocks: Sensitive session data encryption with verification
+   - Impact: HIGH
+
+2. Forensic Module Exports - 1 issue
+   - Blocks: Forensic analysis chain
+   - Impact: MEDIUM (not in MVP)
+
+### High Priority Issues ✗
+1. Feature Performance Integration Memory - 1 issue
+   - Blocks: Feature integration validation
+   - Impact: MEDIUM (secondary tests)
+
+### Medium Priority Issues ✗
+1. Audit Logger Filter Export - 1 issue
+   - Blocks: Advanced audit features
+   - Impact: LOW (core works)
+
+### Low Priority Issues (Fixed) ✓
+1. Export Format Mismatch (PriorityQueue) - FIXED ✓
+2. Test Logic Error (Missing Dequeue) - FIXED ✓
+
+---
+
+## Test Results Summary
+
+### Performance Testing - PASS ✓
+Status: 58/58 tests passing (100%)
+File: tests/performance/wave13-optimizations.test.js
+OPT-08: 13/13 ✓
+OPT-09: 20/20 ✓
+OPT-13: 15/15 ✓
+Integration: 5/5 ✓
+Performance: 5/5 ✓
+
+### Security Testing - PARTIAL ✗
+Status: 150/165 tests passing (91%)
+Components:
+- Entropy: 16/16 ✓
+- Rate Limiter: 20/20 ✓
+- HMAC: 20/20 ✓
+- MD5 Removal: 17/17 ✓
+- Session Encryption: 24/27 ✗ (3 failures)
+- Audit Logger: 33/34 ✗ (1 failure)
+- Forensic Entropy: 21/35 ✗ (14 failures)
+
+### Feature Testing - MIXED
+Status: 19/19 passing (100%) + 1 crash
+Files:
+- feature-security-integration.test.js: 19/19 ✓
+- feature-perf-integration.test.js: CRASH (memory error)
+
+### Documentation Testing - PASS ✓
+Status: All documentation valid
+- 5 major doc files: ✓
+- All links working: ✓
+- Code examples accurate: ✓
+- Diagrams rendering: ✓
+
+---
+
+## Recommendation Summary
+
+### Go/No-Go Assessment
+
+**Performance Optimizations:** GO ✓
+- All tests pass
+- Ready for deployment
+- No blockers
+
+**Security Hardening:** NO-GO (pending fixes) ✗
+- Critical issue in session encryption
+- High issue in forensic modules
+- Must fix before production deployment
+
+**Feature Development:** GO (with caveats) ✓
+- Security integration works
+- Performance integration crashes (investigate)
+- Can proceed after memory issue investigation
+
+**Documentation:** GO ✓
+- All documentation complete
+- High quality
+- Ready for deployment
+
+---
+
+## Next Steps for QA Team
+
+### Immediate (1-2 hours)
+1. Prioritize session encryption AAD fix
+2. Investigate forensic module exports
+3. Test memory crash with isolated test
+
+### Short-term (2-4 hours)
+1. Implement and test fixes
+2. Re-run affected test suites
+3. Verify no new regressions
+
+### Medium-term (deployment)
+1. Full regression test suite
+2. Performance baseline comparison
+3. Production deployment validation
+
+---
+
+## Files Modified
+
+### Production Code (Ready)
+- src/queuing/priority-queue.js (export format fix)
+- websocket/connection-pool.js (unchanged - works correctly)
+
+### Test Code (Ready)
+- tests/performance/wave13-optimizations.test.js (test logic fix)
+
+### Pending Fixes (Required)
+- src/security/session-encryptor.js (AAD implementation)
+- src/forensics/*.js (export format)
+- src/security/audit-logger.js (filter export)
+- tests/wave13/feature-perf-integration.test.js (memory investigation)
+

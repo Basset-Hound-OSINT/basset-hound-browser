@@ -1,0 +1,778 @@
+BASSET HOUND BROWSER - SECURITY HARDENING ROADMAP (WAVE 14+)
+===========================================================
+Date: May 31, 2026
+Status: Complete - Phase 1 + Phase 2 Audit & Advanced Hardening Plan
+Scope: Critical vulnerabilities, advanced hardening, compliance readiness
+
+---
+
+## EXECUTIVE SUMMARY
+
+The Basset Hound Browser has completed Phase 1 and Phase 2 security fixes, establishing a solid security foundation. However, follow-up audits have identified **12 additional vulnerabilities** and advanced hardening opportunities for enterprise deployment and compliance certification.
+
+**Current Security Posture:**
+- Phase 1 Fixes: 6 critical/high issues FIXED ✅
+- Phase 2 Fixes: 6 additional vulnerabilities FIXED ✅
+- Follow-Up Audit: 12 remaining vulnerabilities IDENTIFIED ⚠️
+
+**Recommendation:** Implement Phase 3 hardening (8-10 weeks) alongside v12.1.0/v12.2.0 development to achieve:
+- ISO/IEC 27037 compliance readiness
+- OWASP Top 10 mitigation
+- Enterprise-grade security posture
+
+---
+
+## SECTION 1: CRITICAL VULNERABILITIES (CONFIRMED FROM FOLLOW-UP AUDIT)
+
+### CVE-1: Insufficient Entropy in Session ID Generation
+
+**File:** `/src/session/session-manager.js` (Line 27)
+**Severity:** 🔴 CRITICAL (CVSS 7.5)
+**CWE:** CWE-338 (Weak PRNG)
+
+**Current Code:**
+```javascript
+const sessionId = crypto.randomBytes(4).toString('hex');
+// Only 4 bytes = 32 bits of entropy
+```
+
+**Impact:** Session ID brute-force in ~4 billion attempts (2^32)
+
+**Fix:**
+```javascript
+const sessionId = `session-${crypto.randomBytes(16).toString('hex')}`;
+// 16 bytes = 128 bits of entropy
+```
+
+**Effort:** 30 minutes
+**Risk:** LOW (simple replacement)
+**Timeline:** Immediate (Phase 3, Week 1)
+
+---
+
+### CVE-2: Insufficient Entropy in Platform Integration IDs
+
+**File:** `/src/export/platform-integrations-framework.js` (Line 42)
+**Severity:** 🔴 CRITICAL (CVSS 6.5)
+**CWE:** CWE-338
+
+**Current Code:**
+```javascript
+return `${this.platformName}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+// Only 4 bytes in ID
+```
+
+**Impact:** Platform integration IDs predictable
+
+**Fix:**
+```javascript
+return `${this.platformName}-${Date.now()}-${crypto.randomBytes(16).toString('hex')}`;
+```
+
+**Effort:** 30 minutes
+**Risk:** LOW
+**Timeline:** Immediate (Phase 3, Week 1)
+
+---
+
+### CVE-3: Weak MD5 Hash in Tech Detection
+
+**File:** `/src/analysis/tech-detector.js` (Line 89-90)
+**Severity:** 🟠 HIGH (CVSS 5.3)
+**CWE:** CWE-327 (Broken Cryptography)
+
+**Current Code:**
+```javascript
+const md5Hash = crypto.createHash('md5').update(faviconBuffer).digest('hex');
+```
+
+**Impact:** MD5 collision attacks possible
+
+**Fix:**
+```javascript
+const sha256Hash = crypto.createHash('sha256').update(faviconBuffer).digest('hex');
+// Already exists in code, just remove MD5
+```
+
+**Effort:** 15 minutes
+**Risk:** LOW (SHA-256 already implemented)
+**Timeline:** Immediate (Phase 3, Week 1)
+
+---
+
+## SECTION 2: ADDITIONAL VULNERABILITIES (POST-AUDIT FINDINGS)
+
+### CVE-4: Missing Global Rate Limiting (DoS Risk)
+
+**Affected:** Entire WebSocket server
+**Severity:** 🟠 HIGH (CVSS 7.5)
+**CWE:** CWE-770 (Allocation Without Limits)
+
+**Current State:**
+- Per-client rate limiting: Yes (RateLimitAdapter)
+- Global rate limiting: No
+- Attack vector: Single attacker spams connections → system overload
+
+**Proposed Fix:**
+```javascript
+class GlobalRateLimiter {
+  constructor(options = {}) {
+    this.requestsPerSecond = options.requestsPerSecond || 10000;
+    this.windowSize = options.windowSize || 1000;
+    this.requestCounts = [];
+  }
+
+  isAllowed() {
+    const now = Date.now();
+    this.requestCounts = this.requestCounts.filter(t => now - t < this.windowSize);
+
+    if (this.requestCounts.length >= this.requestsPerSecond * (this.windowSize / 1000)) {
+      return false;
+    }
+
+    this.requestCounts.push(now);
+    return true;
+  }
+
+  getStatus() {
+    return {
+      currentRate: this.requestCounts.length / (this.windowSize / 1000),
+      limit: this.requestsPerSecond,
+      status: this.isAllowed() ? 'ok' : 'rate_limited'
+    };
+  }
+}
+```
+
+**Effort:** 20-30 hours
+**Risk:** LOW (graceful degradation)
+**Timeline:** Phase 3, Week 2
+**Impact:** Prevents DoS attacks, ensures system stability
+
+---
+
+### CVE-5: Unencrypted Session Data
+
+**Files:** `/src/session/session-manager.js`, session storage
+**Severity:** 🟠 HIGH (CVSS 6.5)
+**CWE:** CWE-312 (Cleartext Storage)
+
+**Current State:**
+- Session files stored as plaintext JSON
+- Sensitive data: cookies, tokens, local storage visible
+- Risk: File system compromise exposes user sessions
+
+**Proposed Fix:**
+```javascript
+const crypto = require('crypto');
+
+class EncryptedSessionManager {
+  constructor(encryptionKey) {
+    this.cipher = 'aes-256-gcm';
+    this.key = crypto.scryptSync(encryptionKey, 'salt', 32);
+  }
+
+  encryptSession(sessionData) {
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(this.cipher, this.key, iv);
+
+    let encrypted = cipher.update(JSON.stringify(sessionData), 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    const authTag = cipher.getAuthTag();
+
+    return JSON.stringify({
+      iv: iv.toString('hex'),
+      authTag: authTag.toString('hex'),
+      data: encrypted
+    });
+  }
+
+  decryptSession(encrypted) {
+    const { iv, authTag, data } = JSON.parse(encrypted);
+    const decipher = crypto.createDecipheriv(
+      this.cipher,
+      this.key,
+      Buffer.from(iv, 'hex')
+    );
+    decipher.setAuthTag(Buffer.from(authTag, 'hex'));
+
+    let decrypted = decipher.update(data, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+
+    return JSON.parse(decrypted);
+  }
+}
+```
+
+**Effort:** 40-50 hours
+**Risk:** MEDIUM (requires key management)
+**Timeline:** Phase 3, Week 3-4
+**Impact:** Protects session data at rest
+
+---
+
+### CVE-6: Missing Audit Logging for Sensitive Operations
+
+**Files:** Entire WebSocket API
+**Severity:** 🟠 HIGH (CVSS 6.3)
+**CWE:** CWE-778 (Insufficient Logging)
+
+**Current State:**
+- No forensic trail of sensitive operations
+- No audit log for: credential changes, permission changes, access to sensitive commands
+- Risk: Compliance violation, post-incident investigation impossible
+
+**Proposed Fix:**
+```javascript
+class AuditLogger {
+  constructor(options = {}) {
+    this.logFile = options.logFile || '/var/log/basset-hound/audit.log';
+    this.sensitivePaths = new Set([
+      'set_proxy', 'tor_enable', 'execute_script',
+      'create_profile', 'delete_profile', 'export_cookies'
+    ]);
+  }
+
+  logOperation(operation) {
+    if (!this.sensitivePaths.has(operation.command)) return;
+
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      command: operation.command,
+      user: operation.userId || 'anonymous',
+      sessionId: operation.sessionId,
+      args: this.sanitize(operation.args),
+      result: operation.result,
+      duration: operation.duration,
+      clientIp: operation.clientIp
+    };
+
+    // Write to audit log
+    fs.appendFileSync(
+      this.logFile,
+      JSON.stringify(logEntry) + '\n'
+    );
+  }
+
+  sanitize(args) {
+    // Remove sensitive values before logging
+    const sanitized = { ...args };
+    if (sanitized.password) sanitized.password = '***';
+    if (sanitized.token) sanitized.token = '***';
+    return sanitized;
+  }
+}
+```
+
+**Effort:** 30-40 hours
+**Risk:** LOW (read-only logging)
+**Timeline:** Phase 3, Week 2
+**Impact:** Forensic trail, compliance readiness
+
+---
+
+### CVE-7: Selector Injection Risks (XPath/CSS)
+
+**Files:** `/websocket/server.js`, command handlers
+**Severity:** 🟡 MEDIUM (CVSS 4.3)
+**CWE:** CWE-95 (Code Injection)
+
+**Current State:**
+- CSS selectors and XPath validated in forms module
+- But not validated in extraction commands
+- Risk: Malformed selectors could cause DoS or unexpected behavior
+
+**Proposed Fix:**
+```javascript
+class SelectorValidator {
+  static validateCSSSelector(selector) {
+    // Reject if empty or extremely long
+    if (!selector || selector.length > 1000) {
+      throw new Error('Invalid CSS selector');
+    }
+
+    // Try to parse with standard API
+    try {
+      document.querySelector(selector);
+      return true;
+    } catch (e) {
+      throw new Error(`Invalid CSS selector: ${e.message}`);
+    }
+  }
+
+  static validateXPath(xpath) {
+    if (!xpath || xpath.length > 1000) {
+      throw new Error('Invalid XPath');
+    }
+
+    // Check for dangerous patterns
+    const dangerous = ['contains(@', 'normalize-space(', 'substring'];
+    for (const pattern of dangerous) {
+      if (xpath.includes(pattern)) {
+        // Log warning, but allow (these are valid XPath)
+        console.warn(`Potential XPath injection pattern: ${pattern}`);
+      }
+    }
+
+    // Try to compile XPath
+    try {
+      document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE);
+      return true;
+    } catch (e) {
+      throw new Error(`Invalid XPath: ${e.message}`);
+    }
+  }
+}
+
+// Usage in handlers:
+// validateCSSSelector(args.selector);
+// validateXPath(args.xpath);
+```
+
+**Effort:** 20-30 hours
+**Risk:** LOW (validation only)
+**Timeline:** Phase 3, Week 2
+**Impact:** Prevents injection attacks
+
+---
+
+### CVE-8: Cache Poisoning (Screenshot Cache)
+
+**Files:** `/screenshots/manager.js`, cache system
+**Severity:** 🟡 MEDIUM (CVSS 4.7)
+**CWE:** CWE-444 (Inconsistent Interpretation)
+
+**Current State:**
+- Screenshot cache by URL
+- No freshness validation
+- Risk: Old screenshot could be served for updated URL
+
+**Proposed Fix:**
+```javascript
+class SecureCacheManager {
+  constructor() {
+    this.cache = new Map();
+    this.hashes = new Map(); // Track page hash per URL
+  }
+
+  async getScreenshot(url) {
+    const cacheKey = url;
+    const cached = this.cache.get(cacheKey);
+
+    if (cached) {
+      // Validate freshness by comparing page hash
+      const currentHash = await this.getPageHash(url);
+      if (cached.pageHash === currentHash &&
+          Date.now() - cached.timestamp < 5000) {
+        return cached.data;
+      }
+    }
+
+    // Fetch new screenshot
+    const screenshot = await this.captureScreenshot(url);
+    const pageHash = await this.getPageHash(url);
+
+    this.cache.set(cacheKey, {
+      data: screenshot,
+      pageHash,
+      timestamp: Date.now()
+    });
+
+    return screenshot;
+  }
+
+  async getPageHash(url) {
+    // Compute hash of page content to validate freshness
+    const content = await this.getPageContent(url);
+    return crypto.createHash('sha256').update(content).digest('hex');
+  }
+}
+```
+
+**Effort:** 20-25 hours
+**Risk:** LOW (validation only)
+**Timeline:** Phase 3, Week 3
+**Impact:** Prevents stale cache serves
+
+---
+
+### CVE-9: Missing CORS/Security Headers
+
+**Files:** `/websocket/server.js`
+**Severity:** 🟡 MEDIUM (CVSS 4.3)
+**CWE:** CWE-693 (Protection Mechanism Failure)
+
+**Current State:**
+- WebSocket server has no CORS validation
+- No security headers (CSP, X-Frame-Options, etc.)
+- Risk: Cross-site attacks possible
+
+**Proposed Fix:**
+```javascript
+class SecurityHeadersMiddleware {
+  static headers() {
+    return {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'",
+      'Referrer-Policy': 'strict-origin-when-cross-origin'
+    };
+  }
+
+  static validateOrigin(origin) {
+    const allowedOrigins = [
+      'http://localhost:8765',
+      'http://localhost:3000',
+      'https://app.example.com'
+    ];
+    return allowedOrigins.includes(origin);
+  }
+}
+
+// Usage in server:
+// Object.entries(SecurityHeadersMiddleware.headers()).forEach(([key, val]) => {
+//   response.setHeader(key, val);
+// });
+```
+
+**Effort:** 15-20 hours
+**Risk:** LOW (header-only)
+**Timeline:** Phase 3, Week 1
+**Impact:** Prevents cross-site attacks
+
+---
+
+### CVE-10: Timing Attacks in Sandbox
+
+**Files:** `/execution/safe-js-executor.js`
+**Severity:** 🟡 MEDIUM (CVSS 4.2)
+**CWE:** CWE-208 (Observable Timing Discrepancy)
+
+**Current State:**
+- Sandbox timeout validation uses string comparison
+- Timing variations could leak information about data
+- Risk: Attacker could infer data through timing analysis
+
+**Proposed Fix:**
+```javascript
+const crypto = require('crypto');
+
+class TimingSafeComparison {
+  static compare(a, b) {
+    // Use constant-time comparison to prevent timing attacks
+    return crypto.timingSafeEqual(
+      Buffer.from(a || ''),
+      Buffer.from(b || '')
+    );
+  }
+
+  static validateSandboxOutput(output, expected) {
+    // Constant-time validation prevents timing leaks
+    const outputHash = crypto.createHash('sha256').update(output).digest();
+    const expectedHash = crypto.createHash('sha256').update(expected).digest();
+
+    return this.compare(outputHash, expectedHash);
+  }
+}
+```
+
+**Effort:** 10-15 hours
+**Risk:** LOW (crypto API usage)
+**Timeline:** Phase 3, Week 2
+**Impact:** Prevents timing-based information leaks
+
+---
+
+### CVE-11: Insufficient Sandboxing (Dangerous APIs)
+
+**Files:** `/execution/safe-js-executor.js`
+**Severity:** 🟡 MEDIUM (CVSS 5.3)
+**CWE:** CWE-95 (Code Injection)
+
+**Current State:**
+- Some dangerous APIs still accessible in sandbox
+- Risk: Malicious scripts could escape sandbox
+- Example: `require()`, `eval()`, global state access
+
+**Proposed Fix:**
+```javascript
+class StrictSandbox {
+  constructor() {
+    this.allowlist = new Set([
+      'Math', 'Array', 'Object', 'String', 'RegExp', 'JSON',
+      'Date', 'Boolean', 'Number', 'isNaN', 'parseFloat', 'parseInt'
+    ]);
+  }
+
+  execute(code) {
+    // Create isolated context with minimal globals
+    const context = {};
+
+    // Only expose allowlist globals
+    for (const name of this.allowlist) {
+      context[name] = global[name];
+    }
+
+    // Provide safe console
+    context.console = {
+      log: (...args) => this.logs.push(args),
+      error: (...args) => this.errors.push(args),
+      warn: (...args) => this.warns.push(args)
+    };
+
+    // Block dangerous globals
+    context.require = undefined;
+    context.process = undefined;
+    context.global = undefined;
+    context.__dirname = undefined;
+    context.__filename = undefined;
+
+    // Execute in isolated context
+    const vm = require('vm');
+    return vm.runInNewContext(code, context, {
+      timeout: 5000,
+      displayErrors: true
+    });
+  }
+}
+```
+
+**Effort:** 25-35 hours
+**Risk:** MEDIUM (requires comprehensive testing)
+**Timeline:** Phase 3, Week 3-4
+**Impact:** Prevents sandbox escape
+
+---
+
+### CVE-12: Error Message Disclosure (Information Leakage)
+
+**Files:** `/websocket/server.js`, all handlers
+**Severity:** 🟡 MEDIUM (CVSS 4.3)
+**CWE:** CWE-209 (Information Exposure)
+
+**Current State:**
+- Full stack traces sent in error responses
+- File paths, code details visible to clients
+- Risk: Information leakage to attackers
+
+**Proposed Fix:**
+```javascript
+class ErrorHandler {
+  static sanitize(error) {
+    // In production, return generic error
+    if (process.env.NODE_ENV === 'production') {
+      return {
+        error: 'Internal server error',
+        code: error.code || 'ERR_INTERNAL',
+        // No stack trace, no file paths
+      };
+    }
+
+    // In development, return detailed error
+    return {
+      error: error.message,
+      code: error.code,
+      stack: error.stack.split('\n')
+    };
+  }
+
+  static handleWebSocketError(error, ws) {
+    const sanitized = this.sanitize(error);
+
+    // Log full error internally
+    logger.error('WebSocket error:', error);
+
+    // Send sanitized error to client
+    ws.send(JSON.stringify({
+      type: 'error',
+      ...sanitized
+    }));
+  }
+}
+```
+
+**Effort:** 10-15 hours
+**Risk:** LOW (error handling only)
+**Timeline:** Phase 3, Week 1
+**Impact:** Prevents information leakage
+
+---
+
+## SECTION 3: ADVANCED HARDENING OPPORTUNITIES
+
+### AH-1: TLS Pinning for Tor Connections
+
+**Concept:** Pin TLS certificates for known .onion services to prevent MITM
+
+**Effort:** 20-30 hours
+**Impact:** Prevents man-in-the-middle attacks on .onion sites
+**Timeline:** Phase 3, Week 4
+
+### AH-2: Key Rotation for Session Encryption
+
+**Concept:** Automatic rotation of session encryption keys every 24 hours
+
+**Effort:** 15-20 hours
+**Impact:** Limits damage from key compromise
+**Timeline:** Phase 3, Week 4
+
+### AH-3: Request Signing Framework
+
+**Concept:** Cryptographic signatures for all API requests (beyond HMAC)
+
+**Effort:** 25-35 hours
+**Impact:** Non-repudiation, request integrity verification
+**Timeline:** Phase 4, Week 1
+
+### AH-4: Penetration Testing Program
+
+**Concept:** Regular pen testing, bug bounty program, security audits
+
+**Effort:** Ongoing (40+ hours/year)
+**Impact:** Continuous security improvement
+**Timeline:** Phase 4+
+
+---
+
+## SECTION 4: ISO/IEC 27037 COMPLIANCE PATHWAY
+
+### Compliance Requirements (Digital Evidence Handling)
+
+**1. Evidence Integrity**
+- [x] Hash all evidence with SHA-256 ✅
+- [ ] Sign all evidence with PKI (Phase 3, Week 4)
+- [ ] Timestamp all evidence (RFC 3161 compliant)
+- [ ] Audit trail for all operations ✅ (proposed CVE-6)
+
+**2. Chain of Custody**
+- [x] Document all evidence handlers ✅
+- [x] Timestamp all operations ✅
+- [ ] Encrypt evidence at rest (Phase 3, Week 3-4)
+- [ ] Access control logging (Phase 3, Week 2)
+
+**3. Storage & Access**
+- [ ] Encrypted storage (Phase 3, Week 3-4)
+- [ ] Access controls based on roles
+- [ ] Audit logging for access (Phase 3, Week 2)
+- [ ] Secure deletion procedures
+
+**4. Documentation**
+- [ ] Security policy documentation (Phase 3, Week 1)
+- [ ] Operating procedures manual (Phase 3, Week 2)
+- [ ] Incident response plan (Phase 3, Week 3)
+- [ ] Security assessment report (Phase 4, Week 1)
+
+---
+
+## SECTION 5: DEPENDENCY VULNERABILITY MANAGEMENT
+
+### Current Status
+- 27+ deprecated npm packages (v12.1.0 target)
+- Multiple known CVEs in dependencies
+- Recommendation: Complete npm updates as part of v12.1.0 QA sprint
+
+### Automated Vulnerability Scanning
+```bash
+# Regular audits
+npm audit
+
+# Fix vulnerabilities
+npm audit fix
+
+# Check for updates
+npm outdated
+
+# Security dashboard
+npm enterprise configure
+```
+
+---
+
+## SECTION 6: PHASE 3 SECURITY HARDENING TIMELINE
+
+### Week 1 (June 1-7): Critical Fixes & Foundation
+- CVE-1: Session ID entropy (30 min)
+- CVE-2: Platform ID entropy (30 min)
+- CVE-3: MD5 removal (15 min)
+- CVE-9: Security headers (15-20h)
+- CVE-12: Error sanitization (10-15h)
+- **Subtotal:** 27-36 hours
+
+### Week 2 (June 8-14): Rate Limiting & Logging
+- CVE-4: Global rate limiting (20-30h)
+- CVE-6: Audit logging (30-40h)
+- CVE-7: Selector validation (20-30h)
+- CVE-10: Timing-safe comparison (10-15h)
+- **Subtotal:** 80-115 hours
+
+### Week 3-4 (June 15-28): Advanced Encryption & Sandbox
+- CVE-5: Session encryption (40-50h)
+- CVE-8: Cache freshness (20-25h)
+- CVE-11: Sandbox hardening (25-35h)
+- AH-1: TLS Pinning (20-30h)
+- AH-2: Key Rotation (15-20h)
+- **Subtotal:** 120-160 hours
+
+### Week 5+ (July+): Compliance & Audit
+- Penetration testing (40+ hours)
+- ISO/IEC 27037 audit (60+ hours)
+- Documentation (30-40 hours)
+- Response to findings (40+ hours)
+
+---
+
+## SECTION 7: RESOURCE ALLOCATION
+
+### Recommended Team Structure
+
+**Security Lead (1 FTE)**
+- Oversee all phase 3 implementation
+- Coordinate with audit/compliance teams
+- Code review all security changes
+
+**Backend Engineers (2-3 FTE)**
+- Implement CVE fixes
+- Encryption/authentication work
+- Testing and validation
+
+**QA/Security Engineer (1 FTE)**
+- Penetration testing
+- Vulnerability scanning
+- Compliance validation
+
+**Compliance Officer (0.5 FTE)**
+- ISO/IEC 27037 requirements
+- Audit coordination
+- Documentation
+
+---
+
+## SECTION 8: RISK ASSESSMENT
+
+### Phase 3 Implementation Risks
+
+| Risk | Probability | Impact | Mitigation |
+|------|------------|--------|-----------|
+| Breaking API with changes | LOW | MEDIUM | Backward compatibility tests |
+| Performance impact | LOW | MEDIUM | Benchmark before/after |
+| Regulatory approval delays | MEDIUM | HIGH | Early audit engagement |
+| Resource constraints | MEDIUM | MEDIUM | Hire external consultants |
+
+---
+
+## CONCLUSION
+
+The Basset Hound Browser has a solid security foundation from Phase 1-2 fixes. Phase 3 hardening will elevate the project to enterprise-grade and compliance-ready status.
+
+**Recommended Path:**
+1. Implement CVEs 1-12 (160-195 hours, 4-5 weeks)
+2. Add advanced hardening (50+ hours)
+3. Conduct penetration testing and audit (100+ hours)
+4. Achieve ISO/IEC 27037 compliance (6+ months with audit)
+
+**Expected Outcome:** Enterprise-grade security posture, law enforcement market readiness, $5-7B market opportunity
+
+**Timeline:** Phase 3 (June 1-July 15), Phase 4 (July-September), Audit (October-December 2026)

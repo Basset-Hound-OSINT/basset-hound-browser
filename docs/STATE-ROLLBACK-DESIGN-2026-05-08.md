@@ -3,6 +3,51 @@
 **Version:** 1.0  
 **Status:** Design & Implementation Complete
 
+## Session State Machine (v12.1.0)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle: Browser Started
+    
+    Idle --> Active: Command Received
+    Active --> PreSnapshot: Take Snapshot
+    PreSnapshot --> Validating: Validate Request
+    
+    Validating -->|Validation Failed| RollingBack: Rollback Required
+    Validating -->|Validation Passed| Executing: Execute Command
+    
+    Executing -->|Execution Failed| RollingBack: Execution Failed
+    Executing -->|Execution Succeeded| PostSnapshot: Update Snapshot
+    
+    RollingBack --> Restored: Restore Previous State
+    Restored --> Idle: Ready for Next Command
+    
+    PostSnapshot --> Cleaning: Cleanup Resources
+    Cleaning --> Idle: Ready for Next Command
+    
+    Idle --> [*]: Browser Shutdown
+    
+    note right of PreSnapshot
+        Capture state before
+        any modifications
+    end note
+    
+    note right of Validating
+        Check HMAC, input types,
+        path traversal, etc.
+    end note
+    
+    note right of Executing
+        Run command with
+        resource limits
+    end note
+    
+    note right of RollingBack
+        Restore from snapshot
+        within 50ms
+    end note
+```
+
 ## Problem Statement
 
 The WebSocket server modifies application state through commands (navigate, set_proxy, set_local_storage, etc.) before validation completes. If validation fails after state changes, there is no rollback mechanism to restore the previous state, leading to state corruption and inconsistent browser behavior.

@@ -8,6 +8,7 @@
 
 const https = require('https');
 const http = require('http');
+const crypto = require('crypto');
 
 class ResidentialProxyManager {
   constructor(options = {}) {
@@ -111,7 +112,9 @@ class ResidentialProxyManager {
 
     switch (this.rotationMode) {
       case 'random':
-        this.currentProxyIndex = Math.floor(Math.random() * this.proxyPool.length);
+        // CVE-W14-NEW-002: FIXED - Use cryptographically secure RNG instead of Math.random()
+        const randomValue = crypto.randomBytes(4).readUInt32BE(0);
+        this.currentProxyIndex = randomValue % this.proxyPool.length;
         proxy = this.proxyPool[this.currentProxyIndex];
         break;
 
@@ -492,10 +495,11 @@ class ResidentialProxyManager {
   }
 
   /**
-   * Generate unique proxy ID
+   * Generate unique proxy ID (CVE-W14-NEW-001: FIXED)
+   * Uses cryptographically secure random bytes instead of Math.random()
    */
   generateProxyId() {
-    return `proxy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `proxy_${crypto.randomBytes(16).toString('hex')}`;
   }
 
   /**

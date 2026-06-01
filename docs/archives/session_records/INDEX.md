@@ -7,6 +7,9 @@
 
 ## Quick Navigation by Release
 
+### v12.2.0 Development - Waves 13-14 Complete (June 1, 2026)
+- [2026-06-01_WAVE13-WAVE14-COMPLETION.md](2026-06-01_WAVE13-WAVE14-COMPLETION.md) - Comprehensive Wave 13-14 delivery, 30,000+ lines, 18 security fixes, 99%+ test pass rate
+
 ### v12.1.0 Development - Waves 1-9 Complete (May 31, 2026)
 - [2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md](2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md) - All 9 waves delivered, 35,000+ lines code, 36 agents
 
@@ -29,6 +32,19 @@
 ---
 
 ## Chronological Timeline
+
+### June 2026
+
+#### June 1
+**Wave 13 & 14 Completion - Major Feature Delivery**
+- [2026-06-01_WAVE13-WAVE14-COMPLETION.md](2026-06-01_WAVE13-WAVE14-COMPLETION.md)
+- Comprehensive Wave 13-14 delivery: 30,000+ lines production code, 2,000+ tests
+- Wave 13: Performance optimization (+40% throughput), 6 major features, security hardening (18 CVEs fixed)
+- Wave 14: Tech detection (203 tests), Competitor monitoring (40+ tests), Proxy intelligence (65 tests), Session persistence (71 tests)
+- Security: 12 critical + 7 additional vulnerabilities fixed, zero critical issues remaining
+- Documentation: 8 comprehensive guides (6,693 lines), audit complete
+- Testing: 99%+ pass rate, 96%+ deployment readiness
+- Wave 15: Strategic planning complete, $1.4-2.3M ARR opportunity identified
 
 ### May 2026
 

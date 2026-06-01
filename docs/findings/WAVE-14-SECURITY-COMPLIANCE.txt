@@ -1,0 +1,487 @@
+================================================================================
+WAVE 14 SECURITY COMPLIANCE ASSESSMENT
+Phase 1 Security Framework Alignment
+Date: June 1, 2026
+================================================================================
+
+EXECUTIVE SUMMARY
+================================================================================
+Wave 14 features add 1,200+ lines of code with significant security gaps.
+Features do NOT comply with Phase 1 security framework requirements.
+
+Overall Compliance Score: 15% (1.5/6 major requirements met)
+Risk Level: HIGH - Deployment without fixes not recommended
+
+CRITICAL GAPS:
+- ❌ No command-level authorization (0/4 features protected)
+- ❌ No input validation with JSON schema
+- ❌ No HMAC message authentication
+- ❌ Missing path traversal prevention
+- ⚠️  Insufficient data sanitization
+
+================================================================================
+COMPLIANCE MATRIX: WAVE 14 vs PHASE 1 FRAMEWORK
+================================================================================
+
+REQUIREMENT 1: COMMAND-LEVEL AUTHORIZATION
+Status: ❌ NOT IMPLEMENTED
+Expected: All commands require authorization check via CommandAuthorizer
+Found: Zero authorization checks in Wave 14 code
+
+Affected Features:
+- Technology Detection Engine
+  └─ No authorization for: detect(), detectVulnerabilities()
+
+- Competitor Monitoring Service
+  └─ No authorization for: addMonitor(), startMonitoring(), getChanges()
+
+- Proxy Intelligence
+  └─ No authorization for: registerProxy(), getBestProxy(), recordProxyRequest()
+
+- Session Persistence
+  └─ No authorization for: createSession(), restoreFromSnapshot(), branchSession()
+
+Current Code:
+  const result = detector.detect(pageData);  // ❌ No auth check
+  const changes = changeDetector.detectChanges(snap1, snap2);  // ❌ No auth
+  const proxy = intel.registerProxy(address);  // ❌ No auth
+
+Required Implementation:
+  const authCheck = authorizer.canExecute(clientId, 'add_monitor');
+  if (!authCheck.allowed) return { error: authCheck.error };
+
+  const authCheck = authorizer.canExecute(clientId, 'restore_session');
+  if (!authCheck.allowed) return { error: authCheck.error };
+
+Permission Levels Needed:
+  Level 0 (Public):
+    - get_technologies (read detection results)
+
+  Level 1 (Authenticated):
+    - list_monitors (view monitoring config)
+    - get_changes (view change detection results)
+    - list_proxies (view proxy configuration)
+    - list_sessions (view session metadata)
+
+  Level 2 (Admin):
+    - add_monitor (create monitor)
+    - delete_monitor (remove monitor)
+    - configure_proxy (set proxy intelligence)
+    - create_session (new persistent session)
+
+  Level 3 (SuperAdmin):
+    - restore_session (restore from checkpoint)
+    - branch_session (create A/B test branches)
+    - record_failure (trigger recovery)
+
+Effort to Implement: 3-4 hours
+Blocker: YES - Required for v12.2.0 release
+
+---
+
+REQUIREMENT 2: INPUT VALIDATION WITH JSON SCHEMA
+Status: ⚠️  PARTIALLY IMPLEMENTED (Needs SchemaValidator)
+Expected: All inputs validated via SchemaValidator with comprehensive schemas
+Found: Ad-hoc validation, missing schema enforcement
+
+Affected Features:
+- Technology Detection
+  Input: pageData { html, headers, url, maxResults, minConfidence }
+  Current: Basic type checks only
+  Required: Full JSON schema validation
+  Missing: html size limits, header injection prevention, URL validation
+
+- Competitor Monitoring
+  Input: monitor config { url, changeTreshold, alertConfig, snapshotHistory }
+  Current: Zero validation
+  Required: URL validation, numeric bounds, email/webhook URL validation
+  Missing: URL schemes, alert config fields, dedup window bounds
+
+- Proxy Intelligence
+  Input: proxy { address, provider, geoLocation, credentials }
+  Current: String assigned without validation
+  Required: IP:port validation, provider enum validation, geo code validation
+  Missing: Credential format validation, address parsing
+
+- Session Persistence
+  Input: session { metadata, deviceProfile, proxyConfig, cookies, headers }
+  Current: Objects assigned without validation
+  Required: Field type validation, key name validation, data type checks
+  Missing: Snapshot size limits, state data sanitization
+
+Schemas Needed:
+
+  monitor {
+    url (required, string, URL format, https required)
+    changeTreshold (required, number, 0-100)
+    alertConfig {
+      enableEmail (boolean),
+      emailAddresses (array of email, max 10),
+      enableWebhook (boolean),
+      webhookUrl (string, URL format, https required, no internal IPs),
+      enableSlack (boolean),
+      slackWebhookUrl (string, URL format, https required)
+    }
+    snapshotHistoryLimit (number, 1-100)
+  }
+
+  proxy {
+    address (required, string, format: "IP:port", validate IP is routable)
+    provider (enum: "residential", "datacenter", "vpn", "mobile")
+    geoLocation (string, 2-letter country code)
+    type (enum: "residential", "datacenter", "vpn", "mobile")
+  }
+
+  session {
+    metadata (object, values string only, no nested objects)
+    deviceProfile (object, validated fields only)
+    cookies (object, max 50 entries, values string only)
+    localStorage (object, max 5MB total)
+  }
+
+  restore_snapshot {
+    sessionId (required, string, UUID format)
+    snapshotId (required, string, UUID format)
+  }
+
+Effort to Implement: 6-8 hours
+Blocker: YES - Required before v12.1.0
+
+---
+
+REQUIREMENT 3: JAVASCRIPT EXECUTION TIMEOUT PROTECTION
+Status: ✅ NOT APPLICABLE
+Expected: All JS execution protected via SafeJavaScriptExecutor
+Found: Wave 14 features don't execute arbitrary JavaScript
+
+Wave 14 Components:
+- Technology Detection: Uses regex patterns only (safe)
+- Competitor Monitoring: DOM parsing via JSDOM (should add timeout)
+- Proxy Intelligence: No JS execution
+- Session Persistence: No JS execution
+
+Action: ⚠️  Add timeout to JSDOM parsing in change-detector.js
+  const previousDom = new JSDOM(previousHtml, { timeout: 5000 });
+  const currentDom = new JSDOM(currentHtml, { timeout: 5000 });
+
+Effort: 1 hour
+Blocker: No (but recommended)
+
+---
+
+REQUIREMENT 4: HMAC MESSAGE AUTHENTICATION
+Status: ❌ NOT IMPLEMENTED
+Expected: All messages signed with HMAC-SHA256 via HMACSignerMessage
+Found: Zero message authentication in Wave 14
+
+Affected Operations:
+- add_monitor request/response
+  Current: Plain JSON over WebSocket
+  Required: HMAC envelope with signature, timestamp, nonce
+
+- get_changes request/response
+  Current: Plain JSON
+  Required: Signed envelope
+
+- configure_proxy request/response
+  Current: Plain JSON
+  Required: Signed envelope, credential redaction
+
+- restore_session request/response
+  Current: Plain JSON
+  Required: Signed envelope, ownership verification
+
+Implementation Pattern:
+
+  // Client side:
+  const envelope = signer.createAuthenticatedMessage({
+    command: 'add_monitor',
+    url: 'https://example.com',
+    changeTreshold: 5
+  });
+  ws.send(JSON.stringify(envelope));
+
+  // Server side:
+  const verification = signer.verifyMessage(envelope);
+  if (!verification.valid) {
+    return { error: 'Message verification failed' };
+  }
+  const data = verification.data;
+  processCommand(data);
+
+Envelope Format:
+  {
+    payload: { command, params },
+    signature: "hex-string",
+    timestamp: 1717000000000,
+    nonce: "random-hex-string"
+  }
+
+Benefits:
+- Prevents tampering with commands
+- Detects replay attacks (via timestamp)
+- Ensures message integrity
+- Detects man-in-the-middle
+
+Effort to Implement: 4-5 hours
+Blocker: YES (for v12.2.0 enterprise release)
+
+---
+
+REQUIREMENT 5: PATH TRAVERSAL PREVENTION
+Status: ⚠️  PARTIALLY IMPLEMENTED
+Expected: All file operations use PathValidator.validatePath()
+Found: Session persistence creates directories without safe directory enforcement
+
+Affected Code:
+
+  // Current (unsafe):
+  ensureStorageDir() {
+    if (!fs.existsSync(this.storageDir)) {
+      fs.mkdirSync(this.storageDir, { recursive: true });  // ❌ User-supplied path
+    }
+  }
+
+  // Should be (safe):
+  ensureStorageDir() {
+    const result = PathValidator.ensureSafeDir('sessions', appBaseDir);
+    if (!result.success) throw new Error(result.error);
+    this.storageDir = result.path;  // ~.basset-hound/sessions/
+  }
+
+Safe Directory Structure:
+  ~.basset-hound/
+    ├── sessions/          (session files)
+    ├── snapshots/         (monitoring snapshots)
+    ├── screenshots/       (captured images)
+    ├── recordings/        (session recordings)
+    └── exports/           (data exports)
+
+All session files must be stored under:
+  $HOME/.basset-hound/sessions/
+
+Validation Rules:
+- No path traversal (../ not allowed)
+- No symlinks
+- No absolute paths
+- Reject paths with null bytes
+- Filenames sanitized of special chars
+
+Affected Methods:
+  - SessionPersistence.ensureStorageDir()
+  - SessionPersistence.saveSession()
+  - SessionPersistence.saveSnapshot()
+  - MonitoringService (if storing snapshots)
+
+Effort to Implement: 2-3 hours
+Blocker: YES - Critical for file security
+
+---
+
+REQUIREMENT 6: SENSITIVE DATA CLEANING AND MASKING
+Status: ❌ INSUFFICIENT IMPLEMENTATION
+Expected: All sensitive data masked via DataCleaner before output/logging
+Found: Credentials logged in plaintext, no data sanitization
+
+Sensitive Data in Wave 14:
+
+1. Proxy Credentials
+   Current: "address": "user:password@proxy.com:8080"  ❌
+   Required: "address": "proxy.com:8080" (mask creds)  ✅
+
+2. Session Cookies
+   Current: "cookies": { "session_token": "abc123def456..." }  ❌
+   Required: "cookies": { "session_token": "abc...456" }  ✅
+
+3. Geographic Location
+   Current: Exposed in session history  ⚠️
+   Required: Mask specific locations, aggregate only  ⚠️
+
+4. Alert Payloads
+   Current: Full change data including URLs, details  ⚠️
+   Required: Summarized changes without full data  ✅
+
+5. Version Strings
+   Current: Full version in detection output  ⚠️
+   Required: Version string validation + escaping  ✅
+
+Implementation:
+
+  // Before returning monitor config:
+  const response = dataCleaner.sanitizeObject(monitor);
+  // Masks: webhook URLs (partial), API keys, credentials
+
+  // Before logging errors:
+  const safeError = dataCleaner.sanitizeError(error);
+  // Masks: paths, credentials, internal IPs
+
+  // Before sending alert:
+  const safeMessage = dataCleaner.sanitizeObject(alertData);
+  // Masks: API keys, credentials, sensitive details
+
+Masking Rules:
+  Password/Secret         → "***"
+  Token/API Key           → "sk_l...abc123"
+  Cookie Value            → "abc...123"
+  URL with Credentials    → Strip creds
+  Email Address           → "u***@example.com"
+  Phone Number            → "****-123-4567"
+  Session ID              → "sess...4ab"
+  Proxy Address           → "1.2.3.4:8080" (no creds)
+
+Effort to Implement: 4-5 hours
+Blocker: YES - Data leakage risk
+
+================================================================================
+INTEGRATION CHECKLIST: PHASE 1 → WAVE 14
+================================================================================
+
+[ ] 1. Import Phase 1 modules into wave 14 files
+    - src/detection/detector.js
+    - src/monitoring/monitoring-service.js
+    - src/monitoring/alert-dispatcher.js
+    - src/proxy/proxy-intelligence.js
+    - src/sessions/session-persistence.js
+
+[ ] 2. Initialize framework components in WebSocket server
+    const authorizer = new CommandAuthorizer();
+    const validator = new SchemaValidator();
+    const pathValidator = PathValidator;
+    const dataCleaner = DataCleaner;
+    const signer = new HMACSignerMessage(process.env.HMAC_SECRET);
+
+[ ] 3. Apply authorizer to Wave 14 command handlers
+    For each command:
+      const authCheck = authorizer.canExecute(clientId, command);
+      if (!authCheck.allowed) return error;
+
+[ ] 4. Add JSON schema validation for Wave 14 inputs
+    For each command:
+      const validation = validator.validate(command, params);
+      if (!validation.valid) return validation.error;
+      const validParams = validation.data;
+
+[ ] 5. Implement HMAC authentication for Wave 14 messages
+    - Client: Wrap request in envelope
+    - Server: Verify envelope before processing
+    - Client: Verify signed response
+
+[ ] 6. Add path traversal prevention for session persistence
+    - Use PathValidator.ensureSafeDir('sessions')
+    - Store all sessions under ~/.basset-hound/sessions/
+    - Validate all file paths
+
+[ ] 7. Integrate DataCleaner into all outputs
+    - Sanitize monitor configurations before returning
+    - Sanitize error messages before sending
+    - Sanitize alert payloads before dispatch
+    - Mask credentials in all contexts
+
+[ ] 8. Add command authorization levels
+    - define levels for all Wave 14 commands
+    - Set default permission level per user role
+    - Document required permissions for each feature
+
+[ ] 9. Test integration with security test suite
+    npm test tests/security/
+    npm test tests/wave14/security-audit.test.js
+
+[ ] 10. Deploy to staging and validate
+    - Run penetration tests
+    - Verify all auth checks working
+    - Verify all inputs validated
+    - Verify all outputs sanitized
+
+================================================================================
+TIMELINE TO COMPLIANCE
+================================================================================
+
+PHASE 1 (Before v12.1.0 Deployment) - 12-15 hours
+  Week 1 (2-4 days):
+    - Add input validation schemas (6-8h)
+    - Add path traversal prevention (2-3h)
+    - Sanitize proxy credentials (2-3h)
+
+PHASE 2 (Before v12.2.0 Deployment) - 15-18 hours
+  Week 2-3 (5-7 days):
+    - Integrate CommandAuthorizer (3-4h)
+    - Implement HMAC authentication (4-5h)
+    - Add data sanitization throughout (4-5h)
+    - Re-test with security suite (2-3h)
+
+PHASE 3 (Post-Release Hardening) - 8-10 hours
+  Week 4+:
+    - Session encryption at rest (4h)
+    - Advanced reputation validation (2h)
+    - Comprehensive audit logging (2h)
+
+TOTAL EFFORT: 35-43 hours
+Target Completion: July 15, 2026
+
+================================================================================
+RISK ASSESSMENT
+================================================================================
+
+DEPLOYMENT RISK: HIGH
+- Can deploy v12.1.0 with P0 fixes (10.5h) + validation (6-8h)
+- Cannot deploy v12.2.0 without all compliance measures (25-35h)
+- Enterprise customers cannot use without HMAC + auth (requires Phase 2)
+
+MITIGATION:
+1. Implement P0 fixes immediately (10.5h)
+2. Implement Phase 1 integration in parallel (25h)
+3. Add enterprise feature flag for compliance-mode
+4. Require manual authorization for monitoring service access
+
+BLOCKERS:
+- Command authorization (required for multi-user safety)
+- Input validation (required for API security)
+- Path traversal prevention (required for file security)
+- HMAC authentication (required for message integrity)
+
+================================================================================
+APPROVAL GATES
+================================================================================
+
+Before v12.1.0 Release:
+[ ] All P0 vulnerabilities fixed
+[ ] Input validation schemas implemented
+[ ] Path traversal prevention activated
+[ ] Credential masking implemented
+[ ] Security test suite: 45/45 passing
+[ ] Code review: Security team sign-off
+
+Before v12.2.0 Release:
+[ ] CommandAuthorizer integrated for all Wave 14 features
+[ ] HMAC message authentication active
+[ ] Data sanitization complete
+[ ] Comprehensive audit logging
+[ ] Permission levels defined and tested
+[ ] Enterprise security requirements met
+
+================================================================================
+COMPLIANCE SUMMARY
+================================================================================
+
+REQUIREMENT                              STATUS    EFFORT  BLOCKER
+────────────────────────────────────────────────────────────────
+1. Command-Level Authorization           ❌        4h      YES
+2. Input Validation (JSON Schema)         ⚠️        8h      YES
+3. JS Execution Timeout                   ✅        1h      NO
+4. HMAC Message Authentication            ❌        5h      YES
+5. Path Traversal Prevention              ⚠️        3h      YES
+6. Sensitive Data Cleaning                ❌        5h      YES
+────────────────────────────────────────────────────────────────
+TOTAL                                               26h
+
+CURRENT COMPLIANCE: 15% (1/6 requirements met)
+REQUIRED FOR RELEASE: 100% (6/6 requirements met)
+
+================================================================================
+APPROVAL: This report documents security gaps requiring remediation.
+DO NOT DEPLOY to production without completing Phases 1 and 2.
+
+Prepared by: Security Audit Team
+Date: June 1, 2026
+Classification: Internal - Security
+================================================================================

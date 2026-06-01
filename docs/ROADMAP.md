@@ -80,6 +80,66 @@ Commands like `get_page_state`, `screenshot`, `get_content` require the page to 
 
 ---
 
+## Feature Dependency Tree (v12.1.0)
+
+```mermaid
+graph TD
+    A["Core Browser<br/>Engine"] --> B["WebSocket API<br/>164 Commands"]
+    A --> C["Evasion Framework<br/>85-90% Bypass"]
+    
+    B --> D["Navigation &<br/>Interaction"]
+    B --> E["Data Extraction"]
+    B --> F["File Operations"]
+    
+    C --> G["Fingerprinting<br/>Spoofing"]
+    C --> H["Behavioral<br/>Simulation"]
+    C --> I["Session<br/>Management"]
+    
+    D --> J["Technology<br/>Detection<br/>v12.1.0 NEW"]
+    E --> J
+    E --> K["Forensic Evidence<br/>Export<br/>v12.1.0 NEW"]
+    
+    F --> L["Platform<br/>Integrations<br/>v12.1.0 NEW"]
+    K --> L
+    
+    G --> M["Security<br/>Framework<br/>v12.1.0 NEW"]
+    H --> M
+    I --> M
+    
+    F --> N["Path Traversal<br/>Prevention<br/>v12.1.0"]
+    M --> N
+    
+    B --> O["Screenshot &<br/>Recording"]
+    O --> P["Parallel<br/>Processing<br/>v12.1.0 NEW"]
+    
+    B --> Q["Priority<br/>Queue<br/>v12.1.0 NEW"]
+    
+    style A fill:#bbdefb
+    style B fill:#c8e6c9
+    style C fill:#fff9c4
+    style D fill:#f8bbd0
+    style E fill:#f8bbd0
+    style F fill:#f8bbd0
+    style J fill:#ffccbc
+    style K fill:#ffccbc
+    style L fill:#ffccbc
+    style M fill:#ffccbc
+    style N fill:#ffccbc
+    style O fill:#d1c4e9
+    style P fill:#ffccbc
+    style Q fill:#ffccbc
+```
+
+**Legend:**
+- Blue: Core infrastructure
+- Green: API layer (164 commands)
+- Yellow: Evasion framework
+- Pink: Feature families
+- Orange: v12.1.0 Wave 12 new features
+- Purple: Screenshot system
+
+---
+
 ## Upcoming Releases
 
 ### v12.1.0 - Platform Integrations & Enhanced QA (June 15, 2026)

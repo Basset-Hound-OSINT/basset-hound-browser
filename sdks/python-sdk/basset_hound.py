@@ -530,6 +530,251 @@ class BassetAgent:
         return links.data if links.success else []
 
 
+# ===========================
+# Wave 14: Tech Detection
+# ===========================
+
+    async def identify_cms(self, html: Optional[str] = None) -> Response:
+        """
+        Identify CMS technologies on current page
+
+        Args:
+            html: Optional HTML content (uses current page if not provided)
+
+        Returns:
+            Response with identified CMS technologies
+        """
+        params = {}
+        if html:
+            params['html'] = html
+        return await self._send_command('identify_cms', params)
+
+    async def identify_analytics(self, html: Optional[str] = None) -> Response:
+        """
+        Identify analytics and tracking technologies on current page
+
+        Args:
+            html: Optional HTML content (uses current page if not provided)
+
+        Returns:
+            Response with identified analytics technologies
+        """
+        params = {}
+        if html:
+            params['html'] = html
+        return await self._send_command('identify_analytics', params)
+
+
+# ===========================
+# Wave 14: Competitor Monitoring
+# ===========================
+
+    async def add_monitor(self, url: str, name: str, frequency: str = 'daily',
+                         alerts: Optional[Dict] = None) -> Response:
+        """Add a website to monitor"""
+        return await self._send_command('add_monitor', {
+            'url': url,
+            'name': name,
+            'frequency': frequency,
+            'alerts': alerts or {}
+        })
+
+    async def remove_monitor(self, monitor_id: str) -> Response:
+        """Remove a monitored website"""
+        return await self._send_command('remove_monitor', {'monitor_id': monitor_id})
+
+    async def update_monitor(self, monitor_id: str, updates: Dict) -> Response:
+        """Update monitor configuration"""
+        return await self._send_command('update_monitor', {
+            'monitor_id': monitor_id,
+            **updates
+        })
+
+    async def get_monitor(self, monitor_id: str) -> Response:
+        """Get monitor details"""
+        return await self._send_command('get_monitor', {'monitor_id': monitor_id})
+
+    async def list_monitors(self, filter_: Optional[Dict] = None) -> Response:
+        """List all monitors"""
+        return await self._send_command('list_monitors', filter_ or {})
+
+    async def pause_monitor(self, monitor_id: str) -> Response:
+        """Pause monitoring"""
+        return await self._send_command('pause_monitor', {'monitor_id': monitor_id})
+
+    async def resume_monitor(self, monitor_id: str) -> Response:
+        """Resume monitoring"""
+        return await self._send_command('resume_monitor', {'monitor_id': monitor_id})
+
+    async def check_monitor(self, monitor_id: str) -> Response:
+        """Run check on monitor"""
+        return await self._send_command('check_monitor', {'monitor_id': monitor_id})
+
+    async def get_monitor_changes(self, monitor_id: str) -> Response:
+        """Get change history"""
+        return await self._send_command('get_monitor_changes', {'monitor_id': monitor_id})
+
+    async def get_monitor_snapshots(self, monitor_id: str) -> Response:
+        """Get page snapshots"""
+        return await self._send_command('get_monitor_snapshots', {'monitor_id': monitor_id})
+
+    async def get_monitor_stats(self, monitor_id: str) -> Response:
+        """Get monitor statistics"""
+        return await self._send_command('get_monitor_stats', {'monitor_id': monitor_id})
+
+    async def start_monitoring_service(self) -> Response:
+        """Start the monitoring service"""
+        return await self._send_command('start_monitoring_service', {})
+
+    async def stop_monitoring_service(self) -> Response:
+        """Stop the monitoring service"""
+        return await self._send_command('stop_monitoring_service', {})
+
+    async def pause_monitoring_service(self) -> Response:
+        """Pause the monitoring service"""
+        return await self._send_command('pause_monitoring_service', {})
+
+    async def resume_monitoring_service(self) -> Response:
+        """Resume the monitoring service"""
+        return await self._send_command('resume_monitoring_service', {})
+
+    async def get_monitoring_service_status(self) -> Response:
+        """Get service status"""
+        return await self._send_command('get_monitoring_service_status', {})
+
+    async def get_monitoring_service_stats(self) -> Response:
+        """Get service statistics"""
+        return await self._send_command('get_monitoring_service_stats', {})
+
+    async def configure_monitor_alerts(self, monitor_id: str, alerts: Dict) -> Response:
+        """Configure alerts for a monitor"""
+        return await self._send_command('configure_monitor_alerts', {
+            'monitor_id': monitor_id,
+            'alerts': alerts
+        })
+
+    async def run_monitor_check(self, monitor_id: str) -> Response:
+        """Run manual check"""
+        return await self._send_command('run_monitor_check', {'monitor_id': monitor_id})
+
+    async def export_monitors(self) -> Response:
+        """Export all monitors"""
+        return await self._send_command('export_monitors', {})
+
+    async def import_monitors(self, data: Dict, merge: bool = False) -> Response:
+        """Import monitors"""
+        return await self._send_command('import_monitors', {
+            'data': data,
+            'merge': merge
+        })
+
+    async def cleanup_monitoring_data(self, days_old: int = 30) -> Response:
+        """Cleanup old monitoring data"""
+        return await self._send_command('cleanup_monitoring_data', {'days_old': days_old})
+
+    async def clear_all_monitors(self) -> Response:
+        """Clear all monitors"""
+        return await self._send_command('clear_all_monitors', {})
+
+
+# ===========================
+# Wave 14: Proxy Intelligence
+# ===========================
+
+    async def get_proxy_reputation(self, proxy_address: str, session_id: Optional[str] = None) -> Response:
+        """Get proxy reputation and health score"""
+        return await self._send_command('get_proxy_reputation', {
+            'proxy_address': proxy_address,
+            'session_id': session_id
+        })
+
+    async def set_geo_lock(self, country: Optional[str] = None, region: Optional[str] = None,
+                          latitude: Optional[float] = None, longitude: Optional[float] = None) -> Response:
+        """Set geographic lock for consistency"""
+        return await self._send_command('set_geo_lock', {
+            'country': country,
+            'region': region,
+            'latitude': latitude,
+            'longitude': longitude
+        })
+
+    async def get_proxy_analytics(self, session_id: Optional[str] = None, aggregate: bool = False) -> Response:
+        """Get proxy analytics and performance metrics"""
+        return await self._send_command('get_proxy_analytics', {
+            'session_id': session_id,
+            'aggregate': aggregate
+        })
+
+
+# ===========================
+# Wave 14: Session Checkpoints & Branching
+# ===========================
+
+    async def create_session_checkpoint(self, label: str = '', description: str = '') -> Response:
+        """Create a checkpoint of current session state"""
+        return await self._send_command('create_session_checkpoint', {
+            'label': label,
+            'description': description
+        })
+
+    async def rollback_to_checkpoint(self, checkpoint_id: str) -> Response:
+        """Rollback to a specific checkpoint"""
+        return await self._send_command('rollback_to_checkpoint', {
+            'checkpoint_id': checkpoint_id
+        })
+
+    async def list_checkpoints(self) -> Response:
+        """List all available checkpoints"""
+        return await self._send_command('list_checkpoints', {})
+
+    async def get_checkpoint_details(self, checkpoint_id: str) -> Response:
+        """Get checkpoint details"""
+        return await self._send_command('get_checkpoint_details', {
+            'checkpoint_id': checkpoint_id
+        })
+
+    async def delete_checkpoint(self, checkpoint_id: str) -> Response:
+        """Delete a checkpoint"""
+        return await self._send_command('delete_checkpoint', {
+            'checkpoint_id': checkpoint_id
+        })
+
+    async def branch_session(self, label: str = '') -> Response:
+        """Create a session branch"""
+        return await self._send_command('branch_session', {'label': label})
+
+    async def list_branches(self) -> Response:
+        """List active branches"""
+        return await self._send_command('list_branches', {})
+
+    async def merge_branch(self) -> Response:
+        """Merge current branch"""
+        return await self._send_command('merge_branch', {})
+
+    async def detect_failure(self) -> Response:
+        """Detect failures in session"""
+        return await self._send_command('detect_failure', {})
+
+    async def get_recovery_strategies(self, failure_type: Optional[str] = None) -> Response:
+        """Get recovery strategies"""
+        return await self._send_command('get_recovery_strategies', {
+            'failure_type': failure_type
+        })
+
+    async def resume_session(self, checkpoint_id: str) -> Response:
+        """Resume session from checkpoint"""
+        return await self._send_command('resume_session', {
+            'checkpoint_id': checkpoint_id
+        })
+
+    async def export_checkpoint(self, checkpoint_id: str, format_: str = 'json') -> Response:
+        """Export checkpoint"""
+        return await self._send_command('export_checkpoint', {
+            'checkpoint_id': checkpoint_id,
+            'format': format_
+        })
+
+
 # Example usage
 async def example_basic_navigation():
     """Example: Basic navigation and content extraction"""

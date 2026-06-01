@@ -136,18 +136,18 @@ class TechDetector {
 
   /**
    * Favicon hash analysis - match against known favicon hashes
+   * Uses SHA256 only (MD5 is cryptographically broken)
    */
   async detectByFavicon(faviconBuffer) {
     const detections = [];
     if (!faviconBuffer) return detections;
 
-    const md5Hash = crypto.createHash('md5').update(faviconBuffer).digest('hex');
     const sha256Hash = crypto.createHash('sha256').update(faviconBuffer).digest('hex');
 
     for (const [techId, tech] of Object.entries(this.signatures)) {
       if (!tech.favicon) continue;
 
-      if (tech.favicon.md5 === md5Hash || tech.favicon.sha256 === sha256Hash) {
+      if (tech.favicon.sha256 === sha256Hash) {
         detections.push({
           id: techId,
           name: tech.name,
@@ -155,8 +155,8 @@ class TechDetector {
           confidence: 95,
           method: 'FAVICON_HASH',
           evidence: {
-            hashType: tech.favicon.md5 === md5Hash ? 'MD5' : 'SHA256',
-            hash: tech.favicon.md5 === md5Hash ? md5Hash : sha256Hash
+            hashType: 'SHA256',
+            hash: sha256Hash
           }
         });
       }

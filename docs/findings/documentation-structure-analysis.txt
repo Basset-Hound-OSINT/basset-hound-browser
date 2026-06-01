@@ -1,0 +1,664 @@
+DOCUMENTATION STRUCTURE & ORGANIZATION ANALYSIS
+Date: June 1, 2026
+Status: COMPREHENSIVE ANALYSIS COMPLETE
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+
+Current Documentation Structure: ORGANIC BUT DISORGANIZED
+- 19 subdirectories created organically over development cycles
+- 557 total markdown files across /docs and project root
+- Most files are research/session records, not user-facing docs
+- Navigation is unclear; discoverability is poor
+
+KEY FINDING: Documentation exists but is scattered, duplicated, and hard to find.
+Users cannot easily discover features, understand architecture, or find examples.
+
+RECOMMENDATION: Implement structured documentation organization with clear
+navigation paths for Developers, Operations, and Integrators.
+
+================================================================================
+SECTION 1: CURRENT DIRECTORY STRUCTURE
+================================================================================
+
+/docs/ (2,436 KB, 19 subdirectories)
+├── findings/ (500+ files) - Analysis reports, audit findings
+├── archives/ (600+ files) - Old session records, archived docs
+├── features/ (18 files) - Feature guides (mostly outdated)
+├── integration/ (7 files) - Integration guides (incomplete)
+├── research/ (100+ files) - Research documents
+├── core/ - Core system documentation
+├── api/ - API-specific docs
+├── deployment/ - Deployment guides
+├── monitoring/ - Monitoring-related docs
+├── operations/ - Operational runbooks
+├── security/ - Security documentation
+├── testing/ - Testing guides
+├── optimization/ - Performance optimization docs
+├── phase-3/ - Phase 3 planning
+├── runbooks/ - Operational runbooks
+├── reporting/ - Report templates
+├── suggestions/ - Feature suggestions
+└── [other subdirectories] - Various specialized docs
+
+PROBLEM: Users cannot quickly locate what they need. No clear navigation hierarchy.
+
+================================================================================
+SECTION 2: DOCUMENTATION TYPE INVENTORY
+================================================================================
+
+BY TYPE:
+- Research Documents: 150+ files (analysis, deep dives)
+- Session Records: 100+ files (chronological work logs)
+- API Reference: 5 files (partially complete)
+- Feature Guides: 20 files (outdated, incomplete)
+- Operational Guides: 15 files (scattered, not indexed)
+- Code Examples: Embedded in test files, scattered across docs
+- Architecture: 5 files (out of date with Wave 14)
+- Security: 10 files (audit reports, compliance)
+
+BY AUDIENCE:
+- For Developers: 60 files (scattered, hard to find)
+- For Operations: 40 files (incomplete, not organized)
+- For Integrators: 15 files (missing most Wave 14 integration guides)
+- For Researchers: 150+ files (well-organized)
+
+PROBLEM: Good research/analysis content, but poor user-facing documentation.
+Research documents are thorough but not actionable for end users.
+
+================================================================================
+SECTION 3: NAVIGATION & DISCOVERABILITY
+================================================================================
+
+NAVIGATION PATHS (Current):
+1. README.md → INDEX.md → Various scattered docs
+2. docs/API-REFERENCE.md → 164 commands (no structure)
+3. docs/ROADMAP.md → Planning docs (not user guides)
+4. No clear path to: feature guides, integration docs, operational runbooks
+
+SEARCH & DISCOVERABILITY:
+✅ Well-organized: Session Records (INDEX.md exists)
+✅ Well-organized: Archive (INDEX.md exists)
+✅ Well-organized: Research (subfolders by topic)
+❌ Poorly organized: API documentation (flat list of commands)
+❌ Poorly organized: Feature guides (scattered across multiple files)
+❌ Poorly organized: Integration guides (empty /integration/ directory)
+❌ Poorly organized: Operational runbooks (multiple locations)
+
+EXAMPLE PROBLEM:
+User wants to: "Set up Competitor Monitoring"
+- No dedicated guide exists
+- Information scattered across:
+  - WAVE14-SECURITY-AUDIT-INDEX.md
+  - wave14-execution-plan.txt
+  - websocket/server.js (code comments)
+  - Test files (integration tests)
+- User must read: 4 documents + source code = 1-2 hours of research
+
+EXAMPLE SOLUTION:
+Direct path to /docs/features/COMPETITOR-MONITORING.md with:
+- Setup instructions
+- Configuration options
+- API examples
+- Troubleshooting
+- Links to related docs
+
+================================================================================
+SECTION 4: NAVIGATION STRUCTURE COMPARISON
+================================================================================
+
+CURRENT STRUCTURE (Disorganized):
+README.md
+└── INDEX.md
+    ├── ROADMAP.md
+    ├── API-REFERENCE.md (flat command list)
+    ├── DEPLOYMENT-GUIDE.md
+    ├── SCOPE.md
+    └── [scattered navigation to other docs]
+
+RECOMMENDED STRUCTURE (Organized):
+README.md
+└── /docs/INDEX.md (central hub)
+    ├── GETTING STARTED
+    │   ├── QUICK-START.md
+    │   ├── INSTALLATION.md
+    │   └── FIRST-REQUEST.md
+    ├── FEATURES
+    │   ├── TECHNOLOGY-DETECTION.md
+    │   ├── COMPETITOR-MONITORING.md
+    │   ├── SESSION-PERSISTENCE.md
+    │   └── PROXY-INTELLIGENCE.md
+    ├── API REFERENCE
+    │   ├── API-OVERVIEW.md
+    │   ├── AUTHENTICATION.md
+    │   ├── WebSocket Commands
+    │   │   ├── Navigation (10 commands)
+    │   │   ├── Content (10 commands)
+    │   │   ├── Evasion (20 commands)
+    │   │   └── [organized by category]
+    │   └── Error Handling.md
+    ├── INTEGRATION
+    │   ├── PYTHON-SDK.md
+    │   ├── JAVASCRIPT-SDK.md
+    │   ├── PALLETAI.md
+    │   └── CLAUDE-API.md
+    ├── OPERATIONS
+    │   ├── DEPLOYMENT.md
+    │   ├── SCALING.md
+    │   ├── MONITORING.md
+    │   └── TROUBLESHOOTING.md
+    ├── ARCHITECTURE
+    │   ├── SYSTEM-OVERVIEW.md
+    │   ├── COMPONENTS.md
+    │   ├── DATA-FLOW.md
+    │   └── WAVE-14-ADDITIONS.md
+    ├── SECURITY
+    │   ├── SECURITY-GUIDELINES.md
+    │   ├── KNOWN-VULNERABILITIES.md
+    │   └── COMPLIANCE.md
+    ├── ROADMAP.md
+    └── FAQ.md
+
+================================================================================
+SECTION 5: MERMAID DIAGRAMS - COVERAGE ANALYSIS
+================================================================================
+
+CURRENT DIAGRAMS:
+✅ API-REFERENCE.md - WebSocket command lifecycle (1 diagram)
+✅ Several docs - Basic architecture diagrams
+
+MISSING DIAGRAMS:
+❌ Wave 14 feature architecture (Competitor Monitoring data flow)
+❌ Session Persistence state machine (checkpoint→branch→merge)
+❌ Technology Detection pipeline (HTML → Detection → Confidence)
+❌ Proxy Intelligence rotation strategies (reputation-based)
+❌ API command categories (grouped by function)
+❌ System integration architecture (Browser ← WebSocket ← External Agents)
+❌ Deployment architecture (Docker, scaling, monitoring)
+❌ Error recovery flow (failure detection → strategy selection → recovery)
+
+RECOMMENDED DIAGRAMS (9 new):
+1. Wave 14 Feature Overview (all 4 features in context)
+2. Technology Detection Pipeline
+3. Competitor Monitoring Service Architecture
+4. Session Persistence State Machine
+5. Proxy Intelligence Rotation Engine
+6. API Command Organization (by category)
+7. System Integration Architecture
+8. Deployment Architecture (Docker)
+9. Error Recovery & Rollback Flow
+
+================================================================================
+SECTION 6: CODE EXAMPLES & LOCATION
+================================================================================
+
+WHERE EXAMPLES EXIST:
+✅ /tests/integration/ - Full integration examples (but test syntax, not user-friendly)
+✅ /tests/wave14/ - Wave 14 feature examples (same issue)
+✅ /docs/QUICKSTART-V12.1.0-2026-05-31.md - detect_technologies examples
+✅ /docs/V12.1.0-FEATURES-INDEX-2026-05-31.md - Basic examples
+✅ /docs/findings/WAVE14-PHASE2-QUICKSTART.md - Feature overview with code
+
+WHERE EXAMPLES ARE MISSING:
+❌ No Competitor Monitoring API examples
+❌ No Session Persistence workflow examples
+❌ No Proxy Intelligence geo-lock examples
+❌ No error handling examples
+❌ No Python SDK examples
+❌ No JavaScript client examples
+❌ No integration workflow examples (palletai, Claude API)
+
+PROBLEM: Examples are scattered across test files and quick-start docs.
+Users must decipher test syntax to understand actual usage.
+
+================================================================================
+SECTION 7: DOCUMENTATION FILES INVENTORY
+================================================================================
+
+MASTER INDEX FILES:
+- /README.md (main entry point)
+- /docs/INDEX.md (navigation hub)
+- /docs/findings/ (50+ audit/analysis reports)
+- /docs/archives/ (600+ old files)
+
+API DOCUMENTATION:
+- /docs/API-REFERENCE.md (164 commands, Wave 12 only)
+- /docs/api/INDEX.md (5 files, incomplete)
+
+FEATURE DOCUMENTATION:
+- /docs/features/ (18 files, mostly outdated)
+  - automation.md, blocking.md, cookies.md, devtools.md, etc.
+  - No Wave 14 features
+
+INTEGRATION DOCUMENTATION:
+- /docs/integration/ (7 files)
+  - architecture.md, automation-strategy.md, pentesting.md
+  - No SDK guides, no platform integration guides
+
+DEPLOYMENT & OPERATIONS:
+- /docs/DEPLOYMENT-GUIDE.md (main guide)
+- /docs/deployment/ (multiple deployment-related files)
+- /docs/operations/ (operational runbooks)
+- /docs/runbooks/ (operational procedures)
+
+RESEARCH & ANALYSIS:
+- /docs/research/ (100+ deep-dive documents)
+- /docs/findings/ (500+ analysis reports)
+- /docs/archives/ (600+ old files)
+
+ROADMAP & PLANNING:
+- /docs/ROADMAP.md (main roadmap)
+- /docs/phase-3/ (Phase 3 planning)
+- Multiple strategic planning documents
+
+TOTAL: 557 markdown files across project
+- User-facing docs: ~150 files
+- Research/analysis: ~200 files
+- Archive/old: ~200 files
+- Findings/audit: ~50 files
+- Planning: ~30 files
+
+================================================================================
+SECTION 8: DISCOVERABILITY TESTING
+================================================================================
+
+TEST: "Find documentation for Competitor Monitoring feature"
+
+START: /README.md
+- Wave 14 mentioned: ❌ No
+- No link to Competitor Monitoring
+
+NEXT: /docs/INDEX.md
+- Competitor Monitoring mentioned: ❌ No
+- Features section exists but doesn't include Wave 14
+
+NEXT: /docs/API-REFERENCE.md
+- Competitor Monitoring commands: ❌ Not listed (Wave 14 not documented)
+
+NEXT: Search for "competitor_monitoring"
+- Results: /WAVE-14-SECURITY-AUDIT-INDEX.md, wave14-execution-plan.txt
+- Still no feature guide
+
+NEXT: /websocket/server.js (source code)
+- Found: 23 competitor monitoring command handlers
+- User had to read source code instead of docs
+
+RESULT: **FAILED** - No clear path to documentation
+Time to find information: 45+ minutes
+Must read: 3 documents + source code
+
+================================================================================
+TEST: "Find API documentation for detect_technologies command"
+
+START: /README.md
+- detect_technologies mentioned: ❌ Not in main doc
+
+NEXT: /docs/API-REFERENCE.md
+- Found: 1 line "| detect_technologies | Detect all technologies on page |"
+- No parameters, no examples, no error codes
+
+NEXT: /docs/QUICKSTART-V12.1.0-2026-05-31.md
+- Found: Basic example with parameters
+
+RESULT: **PARTIAL** - Located but incomplete
+Information found: Command name, basic parameters
+Information missing: Return values, error codes, advanced options
+Time to find: 10 minutes
+Had to read: 2 documents
+
+================================================================================
+SECTION 9: DOCUMENTATION QUALITY METRICS
+================================================================================
+
+API-REFERENCE.md:
+- Lines of documentation: 1,200+
+- Commands documented: 164 (Wave 12 only)
+- Commands per line: 0.14 (very sparse)
+- Examples: Yes, but minimal
+- Return types documented: Partial
+- Error codes documented: Partial
+- Grade: C+ (complete but lacks depth)
+
+DEPLOYMENT-GUIDE.md:
+- Lines of documentation: 400+
+- Coverage: General Docker setup
+- Scaling section: Missing
+- Troubleshooting: Minimal
+- Performance tuning: Missing
+- Grade: C (adequate for basic setup, incomplete for production)
+
+README.md:
+- Lines of documentation: 500+
+- Feature overview: Yes
+- Links to detailed docs: Yes
+- Navigation clarity: Medium (scattered links)
+- Grade: B- (good overview, needs better navigation)
+
+Feature Guides (/docs/features/):
+- Quality: C to C+ (detailed but outdated)
+- Wave 14 coverage: 0%
+- Examples: Embedded in some files
+- Grade: C- (outdated, incomplete for Wave 14)
+
+Integration Guides (/docs/integration/):
+- Quality: B (well-written but incomplete)
+- Wave 14 SDK guides: 0%
+- Examples: Minimal
+- Grade: C+ (architecture good, SDKs missing)
+
+Overall Documentation Grade: **C** (Adequate but needs improvement)
+
+================================================================================
+SECTION 10: PROBLEMS IDENTIFIED
+================================================================================
+
+PROBLEM 1: Navigation is Implicit, Not Explicit
+- Issue: Users must know to go to /docs/INDEX.md to find navigation
+- Fix: Add navigation breadcrumbs to all docs, create structured index
+
+PROBLEM 2: Wave 14 Features Are Not Documented
+- Issue: 4 major Wave 14 features have no feature guides
+- Impact: Developers cannot learn how to use new features
+- Fix: Create 4 dedicated feature guides with examples
+
+PROBLEM 3: API Documentation is Sparse
+- Issue: Commands listed but not documented (parameters, returns, errors)
+- Impact: API unusable without reading source code or tests
+- Fix: Expand API-REFERENCE.md with complete parameter/return documentation
+
+PROBLEM 4: No SDK Documentation
+- Issue: Python and JavaScript SDKs exist (implied) but not documented
+- Impact: Developers must write raw WebSocket code
+- Fix: Create Python SDK and JavaScript SDK guides
+
+PROBLEM 5: Examples Are in Test Files
+- Issue: Code examples exist but in test syntax, scattered across tests/
+- Impact: Users must decipher test code to learn API
+- Fix: Extract examples into dedicated documentation with clear syntax
+
+PROBLEM 6: Integration Guides Missing
+- Issue: No guides for palletai, Claude API, or external platforms
+- Impact: Integration teams cannot discover integration patterns
+- Fix: Create 4 integration guides with architecture diagrams
+
+PROBLEM 7: Operational Documentation is Scattered
+- Issue: Deployment, scaling, monitoring docs are in multiple locations
+- Impact: Operations teams cannot find relevant docs quickly
+- Fix: Consolidate into /docs/operations/ with clear organization
+
+PROBLEM 8: Architecture Documentation is Out of Date
+- Issue: No Wave 14 system architecture documentation
+- Impact: New developers cannot understand Wave 14 systems
+- Fix: Create /docs/ARCHITECTURE.md with Wave 14 components and data flow
+
+PROBLEM 9: Search is Difficult
+- Issue: 557 files across multiple directories, no search index
+- Impact: Users resort to grep/search tools instead of browsing docs
+- Fix: Create documentation search index and site map
+
+PROBLEM 10: No Troubleshooting Guide
+- Issue: Known issues and solutions not centralized
+- Impact: Users spend time debugging instead of learning from docs
+- Fix: Create TROUBLESHOOTING.md with common issues and solutions
+
+================================================================================
+SECTION 11: RECOMMENDED ORGANIZATIONAL CHANGES
+================================================================================
+
+IMMEDIATE CHANGES (Week 1):
+1. Update /docs/INDEX.md with Wave 14 features
+2. Create /docs/QUICK-START.md pointing to right docs
+3. Add navigation breadcrumbs to top of all docs
+4. Create /docs/features/README.md with index of all features
+
+SHORT-TERM CHANGES (Week 2-3):
+5. Create 4 feature guides in /docs/features/
+6. Create 4 integration guides in /docs/integration/
+7. Expand /docs/API-REFERENCE.md with Wave 14 commands
+8. Create /docs/operations/README.md with clear operational navigation
+
+MEDIUM-TERM CHANGES (Week 4):
+9. Consolidate scattered operational docs into /docs/operations/
+10. Create /docs/ARCHITECTURE.md with Wave 14 systems
+11. Create /docs/TROUBLESHOOTING.md with common issues
+12. Add Mermaid diagrams to key documentation
+
+LONG-TERM CHANGES (Post-v12.2.0):
+13. Implement documentation search (Algolia, local search, etc.)
+14. Consider documentation site generator (Hugo, Docusaurus, etc.)
+15. Archive old session records to /docs/archives/session-records-OLD/
+16. Implement documentation versioning for v12.0.0, v12.1.0, v12.2.0
+
+================================================================================
+SECTION 12: MERMAID DIAGRAM RECOMMENDATIONS
+================================================================================
+
+DIAGRAM 1: Wave 14 Features Overview
+- Shows: Technology Detection, Competitor Monitoring, Session Persistence, Proxy Intelligence
+- Location: /docs/features/README.md or /docs/INDEX.md
+- Purpose: Help users understand available features
+
+DIAGRAM 2: Technology Detection Pipeline
+```
+Input (HTML/Headers)
+  → Signature Matching
+  → Version Fingerprinting
+  → Confidence Scoring
+  → Output (Technologies + Versions)
+```
+Location: /docs/features/TECHNOLOGY-DETECTION.md
+
+DIAGRAM 3: Competitor Monitoring Service
+```
+Config (targets, checks, schedules)
+  → Monitor Engine
+  → Change Detection
+  → Alert System
+  → Webhook/Report
+```
+Location: /docs/features/COMPETITOR-MONITORING.md
+
+DIAGRAM 4: Session Persistence State Machine
+```
+Active Session
+  → Checkpoint Created
+    → Branch A → Merge back
+    → Branch B → Rollback
+    → Branch C → Continue
+```
+Location: /docs/features/SESSION-PERSISTENCE.md
+
+DIAGRAM 5: Proxy Intelligence Rotation
+```
+Reputation Score
+  → Geo Lock (geographic consistency)
+  → Rotation Strategy (round-robin, random, reputation-based)
+  → Health Check
+  → Analytics
+```
+Location: /docs/features/PROXY-INTELLIGENCE.md
+
+DIAGRAM 6: API Command Organization
+```
+Commands (164 total)
+├── Navigation (10)
+├── Content Extraction (15)
+├── Screenshots (8)
+├── Technology Detection (10)
+├── Competitor Monitoring (23)
+├── Session Management (12)
+└── [others...]
+```
+Location: /docs/API-REFERENCE.md
+
+DIAGRAM 7: System Integration Architecture
+```
+External Agent (palletai/Claude)
+  ↓ WebSocket (JSON)
+Basset Hound Browser
+  ├── WebSocket Server (8765)
+  ├── Command Handlers (164 commands)
+  ├── Feature Engines (Detection, Monitoring, Sessions, Proxy)
+  └── Browser Engine (Electron)
+```
+Location: /docs/ARCHITECTURE.md
+
+DIAGRAM 8: Docker Deployment Architecture
+```
+Host Machine
+├── Docker Image (basset-hound:v12.2.0)
+│   ├── Node.js + Electron
+│   ├── WebSocket Server
+│   ├── All Feature Engines
+│   └── Configuration
+├── Port Mapping (8765 → 8765)
+├── Volume Mounts (config, logs)
+└── Health Checks
+```
+Location: /docs/operations/DEPLOYMENT.md
+
+DIAGRAM 9: Error Recovery & Rollback
+```
+Error Detected
+  → Analyze Failure Type
+    → Session Error → Resume Session
+    → State Error → Rollback to Checkpoint
+    → Connection Error → Retry with Backoff
+    → Unknown → Get Recovery Strategies
+```
+Location: /docs/operations/TROUBLESHOOTING.md
+
+================================================================================
+SECTION 13: CONTENT ORGANIZATION BY AUDIENCE
+================================================================================
+
+FOR DEVELOPERS:
+Essential Documents:
+1. /docs/QUICK-START.md - First steps
+2. /docs/API-REFERENCE.md - Full command reference
+3. /docs/features/* - Feature guides
+4. /docs/integration/PYTHON-SDK.md - Python SDK
+5. /docs/integration/JAVASCRIPT-SDK.md - JavaScript SDK
+
+Optional Documents:
+6. /docs/ARCHITECTURE.md - System design
+7. /docs/research/ - Deep technical dives
+
+FOR OPERATIONS:
+Essential Documents:
+1. /docs/DEPLOYMENT-GUIDE.md - Initial setup
+2. /docs/operations/SCALING.md - Scaling guide
+3. /docs/operations/MONITORING.md - Monitoring setup
+4. /docs/operations/TROUBLESHOOTING.md - Troubleshooting
+
+Optional Documents:
+5. /docs/ROADMAP.md - Future planning
+6. /docs/security/ - Security considerations
+
+FOR INTEGRATORS:
+Essential Documents:
+1. /docs/features/* - Feature guides
+2. /docs/integration/PALLETAI.md - palletai integration
+3. /docs/integration/CLAUDE-API.md - Claude API integration
+4. /docs/ARCHITECTURE.md - System design
+
+Optional Documents:
+5. /docs/API-REFERENCE.md - Full API details
+6. /docs/research/ - Technical deep dives
+
+FOR RESEARCHERS:
+Essential Documents:
+1. /docs/research/ - All research documents
+2. /docs/findings/ - Analysis reports
+3. /docs/ROADMAP.md - Strategic direction
+
+================================================================================
+SECTION 14: INFORMATION ARCHITECTURE (IA) MAP
+================================================================================
+
+CURRENT IA: Star topology (all docs link to INDEX.md)
+PROBLEM: No hierarchy, all documents at same level
+
+RECOMMENDED IA: Tree topology with clear hierarchy
+
+Root: /README.md
+├── Documentation Hub: /docs/INDEX.md
+│   ├── Getting Started
+│   │   ├── QUICK-START.md
+│   │   ├── INSTALLATION.md
+│   │   └── FIRST-API-CALL.md
+│   ├── Features
+│   │   ├── TECHNOLOGY-DETECTION.md
+│   │   ├── COMPETITOR-MONITORING.md
+│   │   ├── SESSION-PERSISTENCE.md
+│   │   └── PROXY-INTELLIGENCE.md
+│   ├── API Reference
+│   │   ├── OVERVIEW.md
+│   │   ├── AUTHENTICATION.md
+│   │   ├── [Organized Commands]
+│   │   └── ERROR-CODES.md
+│   ├── Integration
+│   │   ├── PYTHON-SDK.md
+│   │   ├── JAVASCRIPT-SDK.md
+│   │   ├── PALLETAI.md
+│   │   └── CLAUDE-API.md
+│   ├── Operations
+│   │   ├── DEPLOYMENT.md
+│   │   ├── SCALING.md
+│   │   ├── MONITORING.md
+│   │   └── TROUBLESHOOTING.md
+│   ├── Architecture
+│   │   ├── SYSTEM-OVERVIEW.md
+│   │   ├── COMPONENTS.md
+│   │   └── WAVE-14-ADDITIONS.md
+│   ├── Security
+│   │   ├── GUIDELINES.md
+│   │   ├── KNOWN-ISSUES.md
+│   │   └── COMPLIANCE.md
+│   ├── Research
+│   │   └── [Deep Dives]
+│   ├── FAQ.md
+│   └── ROADMAP.md
+└── /docs/archives/ (Old content)
+    └── [session-records, old-docs]
+
+================================================================================
+CONCLUSION
+================================================================================
+
+STRUCTURE ASSESSMENT: D+ (Organic but Disorganized)
+
+STRENGTHS:
++ Research and analysis documents are well-organized
++ Good use of subdirectories and topic separation
++ Archives are cleanly maintained
++ Many detailed guides exist (just scattered)
+
+WEAKNESSES:
+- No clear user navigation path
+- Wave 14 features not represented in documentation structure
+- API documentation is sparse (listed but not detailed)
+- Integration guides missing for all major platforms
+- Examples embedded in test files, not in user docs
+- No clear audience-focused documentation paths
+
+QUICK WINS (Can implement in 2-3 hours):
+1. Update INDEX.md with Wave 14 features
+2. Create QUICK-START.md with clear paths
+3. Add breadcrumb navigation to all docs
+4. Create features/README.md and integration/README.md
+
+MAJOR WORK (Implement in 20+ hours):
+1. Create 4 feature guides
+2. Create 4 integration guides
+3. Expand API reference with Wave 14 commands
+4. Create operational guides
+5. Add Mermaid diagrams throughout
+
+RECOMMENDATION: Implement structured hierarchy (recommended IA) to improve
+discoverability and user experience for all three audiences.
+
+================================================================================
+END ANALYSIS
+================================================================================

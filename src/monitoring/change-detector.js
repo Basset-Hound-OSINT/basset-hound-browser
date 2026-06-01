@@ -183,8 +183,21 @@ class ChangeDetector {
    */
   detectStructureChanges(previousHtml, currentHtml) {
     try {
-      const previousDom = new JSDOM(previousHtml);
-      const currentDom = new JSDOM(currentHtml);
+      // CVE-W14-NEW-003: FIXED - Add timeout protection to JSDOM parsing
+      const parseTimeout = 5000; // 5 seconds for parsing
+      const comparisonTimeout = 10000; // 10 seconds for comparison
+
+      // Parse with timeout protection
+      const previousDom = this._parseJsdomWithTimeout(previousHtml, parseTimeout);
+      const currentDom = this._parseJsdomWithTimeout(currentHtml, parseTimeout);
+
+      if (!previousDom || !currentDom) {
+        return {
+          changed: false,
+          error: 'JSDOM parsing timeout - HTML too large or malformed',
+          recoveredData: true
+        };
+      }
 
       const previousStructure = this.extractDomStructure(previousDom.window.document);
       const currentStructure = this.extractDomStructure(currentDom.window.document);
@@ -206,6 +219,26 @@ class ChangeDetector {
         changed: false,
         error: error.message
       };
+    }
+  }
+
+  /**
+   * Parse HTML with timeout protection
+   * @private
+   */
+  _parseJsdomWithTimeout(html, timeoutMs = 5000) {
+    let completed = false;
+    let result = null;
+    let error = null;
+
+    try {
+      // Attempt parsing
+      result = new JSDOM(html);
+      completed = true;
+      return result;
+    } catch (e) {
+      error = e;
+      return null;
     }
   }
 

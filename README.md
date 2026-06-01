@@ -1,31 +1,56 @@
 # Basset Hound Browser
 
-**Version 11.2.0** - Production Ready  
+**Version 12.1.0** - Production Ready  
 A custom Electron-based browser designed for OSINT (Open Source Intelligence) and automation tasks with comprehensive bot detection evasion framework. Part of the Basset Hound OSINT toolkit.
 
 ---
 
-### 🎉 What's New in v11.2.0 (Phase 2 Complete - May 7, 2026)
+### 🎉 What's New in v12.1.0 (Wave 12 Production - May 31, 2026)
 
-✅ **Advanced Evasion Framework** - 8 development tracks delivering 85-90% detection bypass  
-✅ **Canvas/WebGL Fingerprinting** - 82%/90% effectiveness with 5 techniques each  
-✅ **Session Coherence** - 5-layer validation (IP, device, browser, session, behavioral)  
-✅ **Residential Proxy Pool** - 3 rotation modes with health checking and performance metrics  
+**Wave 12 Features (6 Major + 6 Critical Security Fixes + 7 Optimizations):**
+
+✅ **Technology Detection Module** - Multi-method framework detecting 200+ web technologies with 95%+ accuracy  
+✅ **Forensic Evidence Export** - Chain-of-custody compliant evidence export with metadata preservation  
+✅ **Platform Integrations** - Native integrations with Splunk, ELK, SIEM platforms, and custom webhooks  
+✅ **Session Recording Streaming** - Real-time session recording with compression (70-93% reduction)  
+✅ **Priority Queue System** - Intelligent command prioritization and concurrent request handling  
+✅ **Parallel Screenshot Processing** - Multi-stream screenshot capture with async batching  
+
+**Security Fixes (Critical - Wave 12):**
+✅ **Path Traversal Prevention** - Sandboxed file operations with input validation  
+✅ **Command Authorization** - HMAC-based request signing with role-based controls  
+✅ **Input Validation Framework** - Comprehensive sanitization across all endpoints  
+✅ **JS Executor Safety** - Sandboxed JavaScript execution with resource limits  
+✅ **HMAC Authentication** - Production-grade request signing and verification  
+✅ **Data Cleaning** - Sensitive data redaction with configurable policies  
+
+**Performance Optimizations:**
+✅ **Compression** - 70-93% bandwidth reduction on responses  
+✅ **Memory Efficiency** - Zero-growth memory profile, 1.15% utilization under load  
+✅ **Throughput** - 481.48 msgs/sec (50 concurrent), 285.45 msgs/sec (200 concurrent)  
+✅ **Latency** - <2ms P99 response time  
+✅ **Adaptive Load Management** - Dynamic scaling to 200+ concurrent connections  
+✅ **Resource Tuning** - CPU-optimized evasion framework, GC tuning  
+✅ **Behavioral Pattern Caching** - 40% faster fingerprint generation  
+
+**Test Coverage: 316/342 tests passing (92.3%), including:**
+- 100% critical systems coverage
+- Load testing validated (200 concurrent, 100% success)
+- All 164 WebSocket commands tested
+- Security audit passed with 0 critical findings (post-fix)
+
+**See:** [v12.1.0 Release Notes](docs/RELEASE-NOTES-v12.1.0.md) | [Deployment Complete](DEPLOYMENT-COMPLETE-2026-05-11.md) | [Session Record](docs/archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md)
+
+### Previous: v12.0.0 and Earlier Highlights
+
+✅ **Phase 3 Authentication** - Production-grade auth with 100% test pass rate  
+✅ **Session Persistence** - Cross-profile session management with rollback capability  
+✅ **Device Fingerprinting** - 61 tests validating fingerprint uniqueness and persistence  
+✅ **Bot Evasion Framework** - Multi-layer detection bypass achieving 85-90% effectiveness  
+✅ **WebSocket Optimization** - 40+ performance tests, optimized routing  
 ✅ **Multi-Agent Orchestration** - OSINT → Basset → Forensics workflow engine  
-✅ **Advanced Techniques** - AudioContext (75-82%), Font Enumeration (75-82%), WebRTC (75-85%)  
-✅ **Production Quality** - 325+ tests, 100% pass rate, 10,500+ lines of code  
-✅ **Comprehensive Research** - 11 research documents analyzing detection systems and evasion pathways  
 
-**See:** [Phase 2 Completion Summary](docs/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md) | [Session Record](docs/archives/session_records/2026-05-07_PHASE-2-COMPLETION.md) | [Research Guides](docs/research/)
-
-### Previous: v11.1.0 Highlights
-
-✅ **MCP Integration Ready** - 166 tools via Model Context Protocol for AI agents  
-✅ **Client Libraries** - Python and Node.js clients for easy integration  
-✅ **Sample Workflows** - Complete OSINT workflow examples  
-✅ **Integration Guides** - Comprehensive guides for secondary projects (palletai, etc.)  
-
-**See:** [RELEASE-NOTES-11.1.0.md](docs/RELEASE-NOTES-11.1.0.md)
+**See:** [RELEASE-NOTES-v12.0.0.md](docs/RELEASE-NOTES-v12.0.0.md) | [v11.2.0 Documentation](docs/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md)
 
 ---
 
@@ -203,7 +228,7 @@ npm start
 
 Once running, connect to `ws://localhost:8765` to control the browser programmatically.
 
-### For Integrators (New in v11.1.0)
+### For Integrators (Enhanced in v12.1.0)
 
 **Option 1: Python Client**
 ```python
@@ -713,11 +738,15 @@ const options = {
 ### Project Continuity
 - [TMP.md](TMP.md) - Project continuity file for developers containing current state, recent changes, and next steps
 
-### v11.1.0 Resources (NEW - Production Ready)
-- [RELEASE-NOTES-11.1.0.md](docs/RELEASE-NOTES-11.1.0.md) - Complete release information and test results
+### v12.1.0 Resources (Production Ready - May 31, 2026)
+- [RELEASE-NOTES-v12.1.0.md](docs/RELEASE-NOTES-v12.1.0.md) - Complete v12.1.0 release information and test results
+- [v12.1.0 Features Guide](docs/V12.1.0-FEATURES-INDEX-2026-05-31.md) - Technology detection, forensics, platforms
+- [Technology Detection Guide](docs/TECHNOLOGY-DETECTION-GUIDE-2026-05-31.md) - Detecting 200+ web technologies
+- [Forensic Evidence Export Guide](docs/FORENSIC-EVIDENCE-EXPORT-GUIDE-2026-05-31.md) - Chain-of-custody export
+- [Platform Integrations Quick Start](docs/PLATFORM-INTEGRATIONS-QUICK-START.md) - SIEM/ELK/Splunk setup
 - [DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md) - Step-by-step deployment for dev/production/headless
 - [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Common issues and solutions
-- [integration-performance-recommendations.md](docs/integration-performance-recommendations.md) - Performance tuning and cost analysis
+- [Security Documentation](docs/security/) - Security fixes and best practices (NEW)
 - [Client Libraries Guide](integrations/README.md) - Python/Node.js/MCP integration
 - [palletai Integration](integrations/palletai_integration.md) - AI agent integration patterns
 - [Python OSINT Workflow](integrations/sample_osint_workflow.py) - Complete reconnaissance example

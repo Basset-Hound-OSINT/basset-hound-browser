@@ -446,16 +446,23 @@ describe('Session Persistence & Recovery', () => {
     });
 
     test('should calculate average requests per snapshot', () => {
-      const session = persistence.createSession();
+      // Create new persistence with large snapshotInterval to avoid auto-snapshots
+      const SessionPersistence = require('../../src/sessions/session-persistence');
+      const testPersistence = new SessionPersistence({
+        storageDir: testStorageDir + '-avg',
+        snapshotInterval: 100 // Large interval to prevent auto-snapshots during test
+      });
+
+      const session = testPersistence.createSession();
 
       for (let i = 0; i < 20; i++) {
-        persistence.recordRequest(session.id);
+        testPersistence.recordRequest(session.id);
       }
 
-      persistence.takeSnapshot(session.id);
-      persistence.takeSnapshot(session.id);
+      testPersistence.takeSnapshot(session.id);
+      testPersistence.takeSnapshot(session.id);
 
-      const stats = persistence.getSessionStats(session.id);
+      const stats = testPersistence.getSessionStats(session.id);
 
       expect(stats.avgRequestsPerSnapshot).toBe(10); // 20 requests / 2 snapshots
     });

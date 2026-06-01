@@ -453,9 +453,10 @@ class Orchestrator extends EventEmitter {
 
   /**
    * Helper: Generate unique execution ID
+   * Uses 16 bytes (128 bits) of entropy for security
    */
   generateExecutionId() {
-    return `exec_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `exec_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
   }
 
   /**
@@ -475,4 +476,4 @@ class Orchestrator extends EventEmitter {
   }
 }
 
-module.exports = Orchestrator;
+module.exports = { Orchestrator };

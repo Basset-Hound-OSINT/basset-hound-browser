@@ -820,6 +820,15 @@ class WebSocketServer {
     // Update manager for auto-updates
     this.updateManager = options.updateManager || null;
 
+    // Proxy intelligence managers (Wave 14)
+    this.proxyIntelligence = options.proxyIntelligence || null;
+    this.geoConsistencyEngine = options.geoConsistencyEngine || null;
+    this.reputationScorer = options.reputationScorer || null;
+    this.proxyAnalytics = options.proxyAnalytics || null;
+
+    // Monitor manager (Wave 14)
+    this.monitorManager = options.monitorManager || null;
+
     // Initialize Memory Manager (use global singleton or provided instance)
     this.memoryManager = options.memoryManager || memoryManager;
     this.memoryManager.setWebSocketServer(this);
@@ -6840,6 +6849,107 @@ class WebSocketServer {
       return this.technologyManager.searchTechnologies(params.query, params.options);
     };
 
+    // Wave 14: Specialized tech detection commands
+    this.commandHandlers.identify_cms = async (params) => {
+      if (!this.technologyManager) {
+        return { success: false, error: 'Technology manager not available', recovery: generateRecoverySuggestion('identify_cms', null, 'technologyManager') };
+      }
+
+      // Get page content if not provided
+      let pageData = params;
+      if (!params.html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            (() => {
+              return {
+                url: window.location.href,
+                html: document.documentElement.outerHTML
+              };
+            })()
+          `);
+          pageData = { ...result, ...params };
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      try {
+        // Filter for CMS-specific technologies
+        const fullDetection = await this.technologyManager.detectTechnologies(pageData);
+        if (!fullDetection.success) {
+          return fullDetection;
+        }
+
+        // Filter to CMS category only
+        const cmsCategories = ['CMS', 'cms', 'Content Management System'];
+        const cmsTechs = fullDetection.technologies.filter(tech => {
+          const categories = tech.categories || [];
+          return cmsCategories.some(cat => categories.includes(cat)) ||
+                 cmsCategories.some(cat => categories.some(c => c.includes(cat)));
+        });
+
+        return {
+          success: true,
+          cms: cmsTechs,
+          detectionCount: cmsTechs.length,
+          totalDetected: fullDetection.totalDetected,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'CMS identification failed: ' + error.message };
+      }
+    };
+
+    this.commandHandlers.identify_analytics = async (params) => {
+      if (!this.technologyManager) {
+        return { success: false, error: 'Technology manager not available', recovery: generateRecoverySuggestion('identify_analytics', null, 'technologyManager') };
+      }
+
+      // Get page content if not provided
+      let pageData = params;
+      if (!params.html && this.mainWindow) {
+        try {
+          const result = await this.mainWindow.webContents.executeJavaScript(`
+            (() => {
+              return {
+                url: window.location.href,
+                html: document.documentElement.outerHTML
+              };
+            })()
+          `);
+          pageData = { ...result, ...params };
+        } catch (error) {
+          return { success: false, error: 'Failed to get page content: ' + error.message };
+        }
+      }
+
+      try {
+        // Filter for analytics-specific technologies
+        const fullDetection = await this.technologyManager.detectTechnologies(pageData);
+        if (!fullDetection.success) {
+          return fullDetection;
+        }
+
+        // Filter to Analytics category
+        const analyticsCategories = ['Analytics', 'analytics', 'Tracking', 'tracking'];
+        const analyticsTechs = fullDetection.technologies.filter(tech => {
+          const categories = tech.categories || [];
+          return analyticsCategories.some(cat => categories.includes(cat)) ||
+                 analyticsCategories.some(cat => categories.some(c => c.includes(cat)));
+        });
+
+        return {
+          success: true,
+          analytics: analyticsTechs,
+          detectionCount: analyticsTechs.length,
+          totalDetected: fullDetection.totalDetected,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Analytics identification failed: ' + error.message };
+      }
+    };
+
     // ==========================================
     // Content Extraction Commands
     // ==========================================
@@ -8767,8 +8877,532 @@ class WebSocketServer {
     // Register commands with the service
     registerCompetitorMonitoringCommands(this.commandHandlers, monitoringService);
 
+    // Wave 14: Register command aliases for standard naming scheme
+    // Monitor management (8)
+    this.commandHandlers.add_monitor = this.commandHandlers.add_competitor_monitor;
+    this.commandHandlers.remove_monitor = this.commandHandlers.remove_competitor_monitor;
+    this.commandHandlers.update_monitor = this.commandHandlers.update_competitor_monitor;
+    this.commandHandlers.get_monitor = this.commandHandlers.get_competitor_monitor;
+    this.commandHandlers.list_monitors = this.commandHandlers.list_competitor_monitors;
+    this.commandHandlers.pause_monitor = this.commandHandlers.pause_competitor_monitor;
+    this.commandHandlers.resume_monitor = this.commandHandlers.resume_competitor_monitor;
+    this.commandHandlers.check_monitor = this.commandHandlers.check_competitor_monitor;
+
+    // Change history (3)
+    this.commandHandlers.get_monitor_changes = this.commandHandlers.get_competitor_changes;
+    this.commandHandlers.get_monitor_snapshots = this.commandHandlers.get_competitor_snapshots;
+    this.commandHandlers.get_monitor_stats = this.commandHandlers.get_competitor_stats;
+
+    // Service control (6)
+    this.commandHandlers.start_monitoring_service = this.commandHandlers.start_competitor_monitoring;
+    this.commandHandlers.stop_monitoring_service = this.commandHandlers.stop_competitor_monitoring;
+    this.commandHandlers.pause_monitoring_service = this.commandHandlers.pause_competitor_monitoring;
+    this.commandHandlers.resume_monitoring_service = this.commandHandlers.resume_competitor_monitoring;
+    this.commandHandlers.get_monitoring_service_status = this.commandHandlers.get_competitor_monitoring_status;
+    this.commandHandlers.get_monitoring_service_stats = this.commandHandlers.get_competitor_monitoring_stats;
+
+    // Configuration (6)
+    this.commandHandlers.configure_monitor_alerts = this.commandHandlers.configure_competitor_alerts;
+    this.commandHandlers.run_monitor_check = this.commandHandlers.run_competitor_monitoring_checks;
+    this.commandHandlers.export_monitors = this.commandHandlers.export_competitor_monitoring_data;
+    this.commandHandlers.import_monitors = this.commandHandlers.import_competitor_monitoring_config;
+    this.commandHandlers.cleanup_monitoring_data = this.commandHandlers.cleanup_competitor_monitoring_data;
+    this.commandHandlers.clear_all_monitors = this.commandHandlers.clear_all_competitor_monitors;
+
     // Store reference for cleanup
     this.monitoringService = monitoringService;
+
+    // ==========================================
+    // Wave 14: Proxy Intelligence Commands
+    // ==========================================
+
+    // Get proxy reputation score and health metrics
+    this.commandHandlers.get_proxy_reputation = async (params) => {
+      if (!this.proxyIntelligence && !this.reputationScorer) {
+        return { success: false, error: 'Proxy intelligence not available' };
+      }
+
+      const { proxy_address, session_id } = params;
+      if (!proxy_address) {
+        return { success: false, error: 'Proxy address is required' };
+      }
+
+      try {
+        let reputation = null;
+
+        // Try reputationScorer first, then proxyIntelligence
+        if (this.reputationScorer) {
+          reputation = this.reputationScorer.getReputation(proxy_address);
+        } else if (this.proxyIntelligence) {
+          const session = session_id ? this.proxyIntelligence.createProxySession(session_id) : null;
+          const proxy = { address: proxy_address };
+          reputation = this.proxyIntelligence.scoreProxy(proxy, session);
+        }
+
+        return {
+          success: true,
+          proxy_address,
+          reputation: reputation || {},
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to get proxy reputation: ' + error.message };
+      }
+    };
+
+    // Set geographic lock to enforce consistency
+    this.commandHandlers.set_geo_lock = async (params) => {
+      if (!this.geoConsistencyEngine) {
+        return { success: false, error: 'Geo consistency engine not available' };
+      }
+
+      const { country, region, latitude, longitude, enforce = true } = params;
+
+      if (!country && !latitude) {
+        return { success: false, error: 'Country code or coordinates required' };
+      }
+
+      try {
+        const geoLock = {
+          country: country || null,
+          region: region || null,
+          coordinates: latitude && longitude ? { latitude, longitude } : null,
+          enforce,
+          createdAt: new Date().toISOString()
+        };
+
+        // Store geo lock in engine
+        if (this.geoConsistencyEngine.setGeoLock) {
+          await this.geoConsistencyEngine.setGeoLock(geoLock);
+        }
+
+        return {
+          success: true,
+          geoLock,
+          message: `Geo lock applied to ${country || 'specified region'}`
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to set geo lock: ' + error.message };
+      }
+    };
+
+    // Get proxy analytics and performance metrics
+    this.commandHandlers.get_proxy_analytics = async (params) => {
+      if (!this.proxyAnalytics && !this.proxyIntelligence) {
+        return { success: false, error: 'Proxy analytics not available' };
+      }
+
+      const { session_id, aggregate = false } = params;
+
+      try {
+        let analytics = null;
+
+        if (this.proxyAnalytics) {
+          analytics = this.proxyAnalytics.getAnalytics(session_id, aggregate);
+        } else if (this.proxyIntelligence && session_id) {
+          analytics = this.proxyIntelligence.getSessionIntelligence(session_id);
+        } else if (this.proxyIntelligence) {
+          analytics = this.proxyIntelligence.getProxyPoolStats();
+        }
+
+        return {
+          success: true,
+          analytics: analytics || {},
+          sessionId: session_id,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to get proxy analytics: ' + error.message };
+      }
+    };
+
+    // ==========================================
+    // Wave 14: Session Checkpoint & Branching Commands
+    // ==========================================
+
+    // Create a checkpoint of the current session state
+    this.commandHandlers.create_session_checkpoint = async (params) => {
+      const { label = '', description = '' } = params;
+
+      try {
+        const checkpointId = `checkpoint-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        // Capture current state
+        const currentUrl = this.mainWindow?.webContents?.getURL() || '';
+        const snapshot = {
+          id: checkpointId,
+          label,
+          description,
+          timestamp: Date.now(),
+          stateData: {
+            type: 'session_checkpoint',
+            currentUrl,
+            checkpointTime: new Date().toISOString()
+          },
+          metadata: {
+            label,
+            description
+          }
+        };
+
+        // Save snapshot in state manager
+        this.stateManager.saveSnapshot(checkpointId, snapshot);
+
+        return {
+          success: true,
+          checkpointId,
+          label,
+          timestamp: snapshot.timestamp,
+          message: `Checkpoint "${label}" created successfully`
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to create checkpoint: ' + error.message };
+      }
+    };
+
+    // Rollback to a specific checkpoint
+    this.commandHandlers.rollback_to_checkpoint = async (params) => {
+      const { checkpoint_id } = params;
+
+      if (!checkpoint_id) {
+        return { success: false, error: 'checkpoint_id is required' };
+      }
+
+      try {
+        const restored = await this.stateManager.restoreSnapshot(checkpoint_id);
+
+        if (!restored) {
+          return { success: false, error: `Checkpoint ${checkpoint_id} not found or restoration failed` };
+        }
+
+        return {
+          success: true,
+          checkpointId: checkpoint_id,
+          message: 'Session rolled back to checkpoint',
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to rollback to checkpoint: ' + error.message };
+      }
+    };
+
+    // List all available checkpoints
+    this.commandHandlers.list_checkpoints = async (params) => {
+      try {
+        const snapshots = this.stateManager.listSnapshots();
+        const checkpoints = snapshots
+          .filter(s => s.stateData && s.stateData.type === 'session_checkpoint')
+          .map(s => ({
+            id: s.id,
+            label: s.metadata?.label || '',
+            description: s.metadata?.description || '',
+            timestamp: s.timestamp,
+            createdAt: new Date(s.timestamp).toISOString()
+          }))
+          .sort((a, b) => b.timestamp - a.timestamp);
+
+        return {
+          success: true,
+          checkpoints,
+          total: checkpoints.length,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to list checkpoints: ' + error.message };
+      }
+    };
+
+    // Get details about a specific checkpoint
+    this.commandHandlers.get_checkpoint_details = async (params) => {
+      const { checkpoint_id } = params;
+
+      if (!checkpoint_id) {
+        return { success: false, error: 'checkpoint_id is required' };
+      }
+
+      try {
+        const snapshots = this.stateManager.listSnapshots();
+        const checkpoint = snapshots.find(s => s.id === checkpoint_id);
+
+        if (!checkpoint) {
+          return { success: false, error: `Checkpoint ${checkpoint_id} not found` };
+        }
+
+        return {
+          success: true,
+          checkpoint: {
+            id: checkpoint.id,
+            label: checkpoint.metadata?.label || '',
+            description: checkpoint.metadata?.description || '',
+            timestamp: checkpoint.timestamp,
+            createdAt: new Date(checkpoint.timestamp).toISOString(),
+            stateData: checkpoint.stateData
+          }
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to get checkpoint details: ' + error.message };
+      }
+    };
+
+    // Delete a checkpoint
+    this.commandHandlers.delete_checkpoint = async (params) => {
+      const { checkpoint_id } = params;
+
+      if (!checkpoint_id) {
+        return { success: false, error: 'checkpoint_id is required' };
+      }
+
+      try {
+        this.stateManager.discardSnapshot(checkpoint_id);
+
+        return {
+          success: true,
+          checkpointId: checkpoint_id,
+          message: 'Checkpoint deleted successfully'
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to delete checkpoint: ' + error.message };
+      }
+    };
+
+    // Create a session branch (transaction)
+    this.commandHandlers.branch_session = async (params) => {
+      const { label = '' } = params;
+
+      try {
+        const branchId = this.stateManager.beginTransaction();
+
+        // Create a checkpoint at branch start
+        const checkpointId = `branch-start-${branchId}`;
+        const snapshot = {
+          id: checkpointId,
+          label: `Branch: ${label}`,
+          timestamp: Date.now(),
+          stateData: {
+            type: 'session_branch',
+            branchId
+          },
+          metadata: {
+            branchId,
+            label
+          }
+        };
+        this.stateManager.saveSnapshot(checkpointId, snapshot);
+
+        return {
+          success: true,
+          branchId,
+          label,
+          checkpointId,
+          message: `Session branch "${label}" created`,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to create branch: ' + error.message };
+      }
+    };
+
+    // List active branches
+    this.commandHandlers.list_branches = async (params) => {
+      try {
+        const transactionDepth = this.stateManager.transactionStack.length;
+        const branches = this.stateManager.transactionStack.map((tx, idx) => ({
+          index: idx,
+          id: tx.id,
+          depth: idx + 1,
+          snapshotCount: tx.snapshots.length,
+          startedAt: new Date(tx.startTime).toISOString()
+        }));
+
+        return {
+          success: true,
+          branches,
+          activeCount: transactionDepth,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to list branches: ' + error.message };
+      }
+    };
+
+    // Merge a branch (commit transaction)
+    this.commandHandlers.merge_branch = async (params) => {
+      try {
+        const committed = this.stateManager.commitTransaction();
+
+        if (!committed) {
+          return { success: false, error: 'No active branch to merge' };
+        }
+
+        return {
+          success: true,
+          message: 'Branch merged and committed successfully',
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to merge branch: ' + error.message };
+      }
+    };
+
+    // Detect failures in current session
+    this.commandHandlers.detect_failure = async (params) => {
+      try {
+        // Check for common failure indicators
+        let failures = [];
+
+        // Check console for errors
+        try {
+          const logs = await this.mainWindow?.webContents?.executeJavaScript(`
+            (() => {
+              const errors = window.__browserConsoleErrors || [];
+              return { errorCount: errors.length, recentErrors: errors.slice(-5) };
+            })()
+          `) || { errorCount: 0 };
+
+          if (logs.errorCount > 0) {
+            failures.push({
+              type: 'console_error',
+              severity: 'warning',
+              count: logs.errorCount,
+              description: 'JavaScript errors detected in console'
+            });
+          }
+        } catch (e) {
+          // Silently ignore if console access fails
+        }
+
+        // Check network errors
+        try {
+          const networkStatus = await this.mainWindow?.webContents?.executeJavaScript(`
+            (() => {
+              const failedRequests = window.__networkErrors || [];
+              return { count: failedRequests.length, requests: failedRequests.slice(-3) };
+            })()
+          `) || { count: 0 };
+
+          if (networkStatus.count > 0) {
+            failures.push({
+              type: 'network_error',
+              severity: 'warning',
+              count: networkStatus.count,
+              description: 'Network request failures detected'
+            });
+          }
+        } catch (e) {
+          // Silently ignore if network access fails
+        }
+
+        return {
+          success: true,
+          hasFailures: failures.length > 0,
+          failures,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to detect failures: ' + error.message };
+      }
+    };
+
+    // Get recovery strategies
+    this.commandHandlers.get_recovery_strategies = async (params) => {
+      const { failure_type } = params;
+
+      try {
+        const strategies = {
+          console_error: [
+            { strategy: 'reload_page', description: 'Reload the current page to clear errors' },
+            { strategy: 'navigate_back', description: 'Navigate back to previous page' },
+            { strategy: 'rollback_checkpoint', description: 'Rollback to last checkpoint' }
+          ],
+          network_error: [
+            { strategy: 'rotate_proxy', description: 'Rotate to different proxy' },
+            { strategy: 'wait_and_retry', description: 'Wait and retry the request' },
+            { strategy: 'switch_network', description: 'Switch to different network' },
+            { strategy: 'rollback_checkpoint', description: 'Rollback to last checkpoint' }
+          ],
+          timeout_error: [
+            { strategy: 'increase_timeout', description: 'Increase operation timeout' },
+            { strategy: 'navigate_back', description: 'Navigate back and retry' },
+            { strategy: 'retry_operation', description: 'Retry failed operation' }
+          ]
+        };
+
+        const applicableStrategies = failure_type && strategies[failure_type] ?
+          strategies[failure_type] :
+          Object.values(strategies).flat();
+
+        return {
+          success: true,
+          strategies: applicableStrategies,
+          failureType: failure_type,
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to get recovery strategies: ' + error.message };
+      }
+    };
+
+    // Resume session from checkpoint
+    this.commandHandlers.resume_session = async (params) => {
+      const { checkpoint_id, recovery_strategy } = params;
+
+      if (!checkpoint_id) {
+        return { success: false, error: 'checkpoint_id is required' };
+      }
+
+      try {
+        const restored = await this.stateManager.restoreSnapshot(checkpoint_id);
+
+        if (!restored) {
+          return { success: false, error: `Could not restore from checkpoint ${checkpoint_id}` };
+        }
+
+        return {
+          success: true,
+          checkpointId: checkpoint_id,
+          recoveryStrategy: recovery_strategy,
+          message: 'Session resumed from checkpoint',
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to resume session: ' + error.message };
+      }
+    };
+
+    // Export checkpoint for external use
+    this.commandHandlers.export_checkpoint = async (params) => {
+      const { checkpoint_id, format = 'json' } = params;
+
+      if (!checkpoint_id) {
+        return { success: false, error: 'checkpoint_id is required' };
+      }
+
+      try {
+        const snapshots = this.stateManager.listSnapshots();
+        const checkpoint = snapshots.find(s => s.id === checkpoint_id);
+
+        if (!checkpoint) {
+          return { success: false, error: `Checkpoint ${checkpoint_id} not found` };
+        }
+
+        let exportedData = {
+          id: checkpoint.id,
+          label: checkpoint.metadata?.label || '',
+          description: checkpoint.metadata?.description || '',
+          timestamp: checkpoint.timestamp,
+          stateData: checkpoint.stateData
+        };
+
+        return {
+          success: true,
+          checkpoint: exportedData,
+          format,
+          exportedAt: new Date().toISOString()
+        };
+      } catch (error) {
+        return { success: false, error: 'Failed to export checkpoint: ' + error.message };
+      }
+    };
 
     // ==========================================
     // Auto-Update Commands

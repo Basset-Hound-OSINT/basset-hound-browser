@@ -235,10 +235,11 @@ class PlatformIntegration {
 
   /**
    * Generate unique ID for exports
+   * Uses 16 bytes (128 bits) of entropy for platform IDs
    * @private
    */
   _generateId() {
-    return `${this.platformName}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+    return `${this.platformName}-${Date.now()}-${crypto.randomBytes(16).toString('hex')}`;
   }
 
   /**

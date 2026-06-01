@@ -243,21 +243,12 @@ class MetadataExtractor {
 
   /**
    * Generate multiple hash types for chain of custody
+   * Note: MD5 removed due to cryptographic vulnerability (CWE-327)
    */
   generateHashes(buffer) {
     const hashes = {};
 
-    // MD5 (for legacy compatibility)
-    const md5 = crypto.createHash('md5');
-    md5.update(buffer);
-    hashes.md5 = md5.digest('hex');
-
-    // SHA-1 (for compatibility)
-    const sha1 = crypto.createHash('sha1');
-    sha1.update(buffer);
-    hashes.sha1 = sha1.digest('hex');
-
-    // SHA-256 (primary for forensic verification)
+    // SHA-256 (primary for forensic verification and security)
     const sha256 = crypto.createHash('sha256');
     sha256.update(buffer);
     hashes.sha256 = sha256.digest('hex');
@@ -583,10 +574,8 @@ class MetadataExtractor {
           <span class="label">Extraction Time:</span> ${metadata.file.timestamp}
         </div>
 
-        <h2>Cryptographic Hashes (Chain of Custody)</h2>
+        <h2>Cryptographic Hash (Chain of Custody)</h2>
         <div class="hash-table">
-          <div><strong>MD5:</strong> ${metadata.file.hash.md5}</div>
-          <div><strong>SHA-1:</strong> ${metadata.file.hash.sha1}</div>
           <div><strong>SHA-256:</strong> ${metadata.file.hash.sha256}</div>
         </div>
 
@@ -665,4 +654,4 @@ class MetadataExtractor {
   }
 }
 
-module.exports = new MetadataExtractor();
+module.exports = MetadataExtractor;

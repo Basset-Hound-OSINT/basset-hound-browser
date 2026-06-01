@@ -1,0 +1,177 @@
+# Wave 13: Security Hardening - Validation Report
+Date: May 31, 2026
+
+## Test Results Summary
+Status: PARTIAL FAILURE
+Total Tests: 165
+Passed: 150
+Failed: 15
+Duration: 0.92s
+
+## Test Breakdown by Security Module
+
+### 1. phase2-entropy.test.js - ALL PASS ✓
+Tests: 16/16 passed
+Status: PASS ✓
+Coverage:
+- Session ID entropy (16-byte/128-bit minimum): ✓
+- Platform ID entropy: ✓
+- Entropy distribution uniformity: ✓
+- Brute force resistance validation: ✓
+- Timing attack resistance: ✓
+
+### 2. phase2-global-rate-limiter.test.js - ALL PASS ✓
+Tests: 20/20 passed
+Status: PASS ✓
+Coverage:
+- Request rate limiting enforcement: ✓
+- Resource unit limits: ✓
+- Connection limit enforcement: ✓
+- Rate limit reset mechanism: ✓
+- Statistics and client tracking: ✓
+- Command resource cost mapping: ✓
+
+### 3. phase2-hmac-enforcement.test.js - ALL PASS ✓
+Tests: 20/20 passed
+Status: PASS ✓
+Coverage:
+- Production environment HMAC requirements: ✓
+- Non-production flexibility: ✓
+- HMAC configuration validation: ✓
+- Message integrity protection: ✓
+- Logging and monitoring: ✓
+- Non-bypass enforcement: ✓
+
+### 4. phase2-md5-removal.test.js - ALL PASS ✓
+Tests: 17/17 passed
+Status: PASS ✓
+Coverage:
+- SHA256-only favicon hashing: ✓
+- No MD5 field in output: ✓
+- Hash algorithm strength validation: ✓
+- Backward compatibility: ✓
+- Migration validation: ✓
+
+### 5. phase2-session-encryption.test.js - PARTIAL FAILURE ✗
+Tests: 27 run, 24/27 passed, 3/27 failed
+Status: FAILURE
+Failed Tests:
+1. ✗ Uses AAD for integrity when sessionId provided
+2. ✗ Fails decryption with wrong sessionId
+3. ✗ File decryption with sessionId verification
+
+Error Details:
+- Error: "Encryption failed: Invalid state for operation setAAD"
+- Location: src/security/session-encryptor.js, line 98
+- Issue: AAD (Additional Authenticated Data) cannot be set AFTER cipheriv is created
+- Root Cause: Node.js crypto API requires AAD to be set BEFORE update()
+
+### 6. phase2-audit-logger.test.js - PARTIAL FAILURE ✗
+Tests: 34 run, 33/34 passed, 1/34 failed
+Status: FAILURE
+Failed Test:
+1. ✗ Exports with filters
+
+Error Details:
+- Assertion failure: Expected filter to correctly exclude non-matching entries
+- File stream error: ENOENT /tmp/claude-1000/basset-audit-*/audit.log
+- Root Cause: Filter logic not properly applying or temp file cleanup issue
+
+### 7. phase2-forensic-entropy.test.js - CRITICAL FAILURE ✗
+Tests: 35 run, 21/35 passed, 14/35 failed
+Status: FAILURE
+Failed Tests (Constructor Issues):
+1. ✗ ForensicReportGenerator is not a constructor
+2. ✗ Orchestrator is not a constructor
+3. ✗ MetadataExtractor is not a constructor
+
+Error Analysis:
+- 4 failures due to ForensicReportGenerator import/export mismatch
+- 3 failures due to Orchestrator import/export mismatch
+- 2 failures due to MetadataExtractor import/export mismatch
+- 5 integration test failures cascading from constructor issues
+
+Root Cause: Likely incorrect module exports (destructuring vs direct export mismatch)
+
+## Critical Issues Found
+
+### Issue 1: Session Encryption - AAD Implementation Error
+Severity: HIGH
+Location: src/security/session-encryptor.js, line 96
+Description: AAD (Additional Authenticated Data) is being set AFTER cipher initialization
+Code Context: cipher.setAAD() called after cipher.update()
+Impact: Cannot use sessionId as AAD for message integrity verification
+Fix Required: 
+  1. Reorganize encryption code to setAAD BEFORE update()
+  2. Or remove AAD feature if not critical to design
+Expected Fix Time: 1-2 hours
+
+### Issue 2: Forensic Module Export Format
+Severity: HIGH
+Location: Multiple forensic modules (ForensicReportGenerator, Orchestrator, MetadataExtractor)
+Description: Test expects constructor but module likely exports differently
+Impact: 9 tests cannot run, 5 integration tests fail as cascade
+Examples:
+  - const generator = new ForensicReportGenerator(); -> TypeError
+  - const orchestrator = new Orchestrator(); -> TypeError
+  - const extractor = new MetadataExtractor(); -> TypeError
+Fix Required:
+  1. Verify actual export format in each module
+  2. Align with test expectations (constructor vs object property)
+  3. Update imports or exports for consistency
+Expected Fix Time: 1-2 hours
+
+### Issue 3: Audit Logger - Filter Export Functionality
+Severity: MEDIUM
+Location: src/security/audit-logger.js or tests/security/phase2-audit-logger.test.js
+Description: Export with filters test failing with file stream error
+Impact: 1 test failure, but audit logger core functionality passes
+Possible Causes:
+  1. Filter logic not properly applied
+  2. Temp file cleanup issue
+  3. Stream handling in export function
+Expected Fix Time: 1 hour
+
+## Security Passing Rate
+- Module-level: 4/7 passed (57%)
+- Test-level: 150/165 passed (91%)
+- Critical systems: 5/7 passed (71%)
+
+## Passing Security Features
+✓ Session ID entropy (128-bit minimum verified)
+✓ Platform ID entropy 
+✓ Global rate limiting (per-IP enforcement working)
+✓ HMAC enforcement (production requirement validated)
+✓ MD5 removal (SHA256-only confirmed)
+✓ Audit logging (core functionality working)
+✓ Entropy validation (old vs new comparison working)
+
+## Failing Security Features
+✗ Session encryption with AAD
+✗ Forensic report generation
+✗ Orchestrator execution tracking
+✗ Metadata extraction (export issues)
+✗ Audit logger export with filters
+
+## Blockers for Production Deployment
+These issues must be resolved before production:
+1. Session encryption AAD (CRITICAL) - encrypts sensitive session data
+2. Forensic modules (HIGH) - affects forensic analysis chain
+3. Audit logger filters (MEDIUM) - affects audit functionality
+
+## Recommended Next Steps
+1. Fix session encryption AAD implementation (1-2 hours)
+2. Fix forensic module exports (1-2 hours)
+3. Fix audit logger export filters (1 hour)
+4. Re-run all security tests to confirm fixes
+5. Run full regression test suite
+
+## Test Execution Commands
+npm test tests/security/phase2-entropy.test.js
+npm test tests/security/phase2-global-rate-limiter.test.js
+npm test tests/security/phase2-hmac-enforcement.test.js
+npm test tests/security/phase2-md5-removal.test.js
+npm test tests/security/phase2-session-encryption.test.js
+npm test tests/security/phase2-audit-logger.test.js
+npm test tests/security/phase2-forensic-entropy.test.js
+

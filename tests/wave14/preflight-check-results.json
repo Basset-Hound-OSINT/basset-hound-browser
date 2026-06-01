@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-06-01T04:33:33.248Z",
+  "checks": {
+    "nodeVersion": {
+      "check": "Node.js Version",
+      "required": "14.0.0+",
+      "actual": "v18.20.8",
+      "status": "PASS"
+    },
+    "diskSpace": {
+      "check": "Disk Space",
+      "required": "50 GB",
+      "actual": "116.33 GB",
+      "status": "PASS"
+    },
+    "systemResources": {
+      "check": "System Resources",
+      "cpus": {
+        "required": 4,
+        "actual": 16,
+        "status": "PASS"
+      },
+      "memory": {
+        "required": 8,
+        "actual": "31.28",
+        "free": "12.68",
+        "status": "PASS"
+      }
+    },
+    "npmModules": {
+      "check": "NPM Modules",
+      "required": [
+        "ws",
+        "perf_hooks"
+      ],
+      "status": "PASS"
+    },
+    "testScripts": {
+      "check": "Test Scripts",
+      "required": [
+        "phase1-baseline-comparison.js",
+        "phase2-extended-campaign.js",
+        "phase3-feature-performance.js",
+        "test-executor.js"
+      ],
+      "status": "PASS"
+    },
+    "websocketServer": {
+      "check": "WebSocket Server",
+      "status": "PASS",
+      "message": "Connected to localhost:8765"
+    }
+  },
+  "passed": 6,
+  "failed": 0,
+  "warnings": 0
+}

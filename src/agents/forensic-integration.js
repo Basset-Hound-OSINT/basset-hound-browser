@@ -446,16 +446,18 @@ class ForensicIntegration {
 
   /**
    * Generate unique evidence ID
+   * Uses 16 bytes (128 bits) of entropy for security
    */
   generateEvidenceId() {
-    return `evt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `evt_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
   }
 
   /**
    * Generate unique custody ID
+   * Uses 16 bytes (128 bits) of entropy for security
    */
   generateCustodyId() {
-    return `coc_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    return `coc_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
   }
 
   /**

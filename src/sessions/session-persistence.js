@@ -43,8 +43,9 @@ class SessionPersistence {
 
   /**
    * Create a new session with persistence enabled
+   * SECURITY FIX: Added userId parameter for access control
    */
-  createSession(sessionData = {}) {
+  createSession(sessionData = {}, userId = null) {
     const sessionId = crypto.randomBytes(16).toString('hex');
 
     const session = {
@@ -56,6 +57,7 @@ class SessionPersistence {
       status: 'active', // active, paused, recovered, failed
       failureInfo: null,
       parentSessionId: null,
+      userId: userId || 'default-user', // SECURITY FIX: Track session owner
       metadata: sessionData.metadata || {},
       deviceProfile: sessionData.deviceProfile || null,
       proxyConfig: sessionData.proxyConfig || null,
@@ -145,9 +147,31 @@ class SessionPersistence {
   }
 
   /**
-   * Recover session from snapshot (restore state)
+   * SECURITY FIX: Verify user has access to session
+   * @private
    */
-  restoreFromSnapshot(sessionId, snapshotId = null) {
+  _verifySessionAccess(sessionId, userId, operation = 'read') {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${sessionId}`);
+    }
+
+    // Check ownership
+    if (session.userId && session.userId !== userId && userId !== 'admin') {
+      throw new Error(`Unauthorized: User ${userId} cannot ${operation} session ${sessionId}`);
+    }
+
+    return session;
+  }
+
+  /**
+   * Recover session from snapshot (restore state)
+   * SECURITY FIX: Added userId parameter for access control
+   */
+  restoreFromSnapshot(sessionId, snapshotId = null, userId = null) {
+    // SECURITY FIX: Verify access before restoring
+    const session = this._verifySessionAccess(sessionId, userId || 'default-user', 'restore');
+
     const snapshots = this.sessionSnapshots.get(sessionId) || [];
 
     if (snapshots.length === 0) {
@@ -161,11 +185,6 @@ class SessionPersistence {
 
     if (!snapshot) {
       throw new Error(`Snapshot not found: ${snapshotId}`);
-    }
-
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session not found: ${sessionId}`);
     }
 
     // Restore state
@@ -280,6 +299,7 @@ class SessionPersistence {
       status: 'active',
       failureInfo: null,
       parentSessionId: sessionId,
+      userId: session.userId, // SECURITY FIX: Propagate ownership to branch
       branchName: branchName || `branch-${branchId.slice(0, 8)}`,
       metadata: {
         ...session.metadata,
@@ -311,16 +331,27 @@ class SessionPersistence {
 
   /**
    * Merge branch results back to parent (combine learnings)
+   * SECURITY FIX: Added userId parameter and authorization checks
    */
-  mergeBranch(branchSessionId, mergeData = {}) {
+  mergeBranch(branchSessionId, mergeData = {}, userId = null) {
     const branchSession = this.sessions.get(branchSessionId);
     if (!branchSession || !branchSession.parentSessionId) {
       throw new Error(`Invalid branch session: ${branchSessionId}`);
     }
 
+    // SECURITY FIX: Verify access to branch session
+    if (branchSession.userId && branchSession.userId !== (userId || 'default-user') && userId !== 'admin') {
+      throw new Error(`Unauthorized: User cannot merge branch session`);
+    }
+
     const parentSession = this.sessions.get(branchSession.parentSessionId);
     if (!parentSession) {
       throw new Error(`Parent session not found: ${branchSession.parentSessionId}`);
+    }
+
+    // SECURITY FIX: Verify access to parent session
+    if (parentSession.userId && parentSession.userId !== (userId || 'default-user') && userId !== 'admin') {
+      throw new Error(`Unauthorized: User cannot merge into parent session`);
     }
 
     // Merge metadata and learnings
@@ -332,7 +363,9 @@ class SessionPersistence {
         requestCount: branchSession.requestCount,
         status: branchSession.status,
         snapshotCount: branchSession.snapshotCount
-      }
+      },
+      mergedBy: userId || 'default-user', // SECURITY FIX: Track who merged
+      mergedAt: Date.now() // SECURITY FIX: Track when merge occurred
     };
 
     // Update parent metadata

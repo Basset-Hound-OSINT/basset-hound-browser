@@ -1,0 +1,632 @@
+WAVE 14 FEATURE DEPENDENCY ANALYSIS
+====================================
+Date: May 31, 2026
+Status: Strategic Analysis Complete
+Audience: Engineering Leadership, Product Management
+
+EXECUTIVE SUMMARY
+=================
+
+Wave 14 execution success depends on clear identification of critical path features
+and their interdependencies. This analysis identifies:
+
+1. Three critical-path features that MUST execute in sequence
+2. Seven dependent features that can start only after critical path completes
+3. Eight parallel-track features that can execute simultaneously
+4. Resource sequencing strategy for 6-8 FTE team
+
+Critical Insight: Session Persistence is the architectural linchpin blocking
+Competitor Monitoring Service ($600K-$1.2M ARR).
+
+
+PART 1: FEATURE CRITICALITY MATRIX
+===================================
+
+TIER 1: CRITICAL PATH (Sequential Execution Required)
+------------------------------------------------------
+
+Feature 1: Technology Detection Module (v12.1.0)
+---
+ID: FEAT-TECH-DETECTION-V12.1
+Timeline: Jun 1-10, 2026 (Critical Path START)
+Effort: 60-80 hours
+Criticality: BLOCKING - v12.1.0 cannot release without this
+Success Metric: 50+ technology signatures, 95%+ accuracy
+
+Dependencies:
+  - NONE (can start immediately)
+
+Blocks:
+  - Forensic Evidence Export (can start in parallel at 60% complete)
+  - Platform Integrations (needs 80%+ complete)
+  - v12.1.0 Release Gate (must be 100% complete)
+
+Why Critical:
+  - v12.1.0 release deadline is June 15 (15 days away)
+  - Market differentiation: competitors require manual analysis tools
+  - Customer expectation: tech stack detection is table-stakes OSINT feature
+  - Enterprise feature parity: missing vs Wappalyzer is visible gap
+
+Risk if Delayed:
+  - v12.1.0 slips to late June → v12.2.0 cascades to late July
+  - Market leadership window closes (competitors are building similar)
+  - Customer acquisition stalls (tech detection is initial interest)
+
+---
+
+Feature 2: Session Persistence & Recovery (v12.2.0)
+---
+ID: FEAT-SESSION-PERSIST-V12.2
+Timeline: Jun 29 - Jul 13, 2026 (Critical Path MIDDLE)
+Effort: 70-100 hours
+Criticality: BLOCKING - Competitor Monitoring cannot function without this
+Success Metric: 500+ concurrent requests, checkpoint/restore working
+
+Dependencies:
+  - v12.1.0 must be complete (timeline sequential)
+  - Session coherence framework EXISTS (v12.0.0) ✅
+  - Requires 2 full-time engineers for complex state management
+
+Blocks:
+  - Competitor Monitoring Service (cannot start until 100% complete)
+  - Multi-session orchestration features (v12.3.0+)
+  - Extended campaign functionality (weeks/months of monitoring)
+
+Why Critical:
+  - Architectural prerequisite: monitoring requires persistent session state
+  - Market enabler: competitors can only do sequential investigations
+  - Revenue blocker: without this, monitoring service is impossible
+  - Technical risk: most complex feature in Wave 14 (state management)
+
+Risk if Delayed:
+  - Competitor Monitoring slips to Q3 2026 (loses Q2 market window)
+  - Revenue generation pushed 6-8 weeks (impacts Q3 ARR)
+  - Customer pilots pushed to August+ (slower GTM)
+  - Technical debt: incomplete state recovery hampers later features
+
+---
+
+Feature 3: Competitor Monitoring Service (v12.2.0)
+---
+ID: FEAT-MONITORING-SERVICE-V12.2
+Timeline: Jul 13-27, 2026 (Critical Path END)
+Effort: 100-140 hours
+Criticality: REVENUE GENERATING - $600K-$1.2M ARR potential
+Success Metric: 100+ concurrent monitoring targets, <5min alert latency
+
+Dependencies:
+  - Session Persistence (must be 100% complete)
+  - Performance optimization (Wave 13 Phase 2, must be complete)
+  - Multi-target orchestration (from v12.2.0 earlier work)
+
+Blocks:
+  - Customer pilots (10-20 enterprise customers waiting)
+  - Market launches (enterprise sales campaign)
+  - ARR recognition (Q3 2026 financial results)
+
+Why Critical:
+  - First revenue-generating feature in Wave 14+
+  - Market timing: competitive intelligence is high-demand (Q3 2026)
+  - Customer validation: early pilots provide market feedback
+  - Business case: $600K-$1.2M ARR unblocks hiring/scaling
+
+Risk if Delayed:
+  - Enterprise deals slip 2-4 weeks (typical sales cycle)
+  - Competitive response: Shodan, Maltego build equivalent services
+  - Market window closes: peak demand is Q3 (mid-year reporting cycles)
+  - Opportunity cost: high-value features pushed to Q4
+
+---
+
+CRITICAL PATH DEPENDENCY GRAPH
+---
+
+Jun 1-10:     Technology Detection ──────────────┐
+              (v12.1.0 CRITICAL)                 │
+                                                  │
+Jun 15:       v12.1.0 RELEASE ←──────────────────┘
+              (Forensic Evidence, Platform APIs)
+              │
+              │ (2-week parallel work)
+              │
+Jun 29-Jul 13:Session Persistence ────────────────┐
+              (v12.2.0 CRITICAL)                  │
+              │                                    │
+              └─(requires 2 engineers)─ Agent SDKs (Jun 22-Jul 6)
+                                                  │
+Jul 13-27:    Competitor Monitoring ←────────────┘
+              (REVENUE FEATURE)
+              │
+              └─ Customer Pilots (Aug 1+)
+                 $600K-$1.2M ARR
+
+Total Critical Path: 20 weeks (Jun 1 - Dec 31)
+  - Phase 1 (Tech Det): 1 week (Jun 1-10)
+  - Phase 2 (Session Persist): 2 weeks (Jun 29-Jul 13)
+  - Phase 3 (Monitoring): 2 weeks (Jul 13-27)
+  - Phase 4 (Market): 12+ weeks (Aug 1 onward)
+
+---
+
+TIER 2: DEPENDENT FEATURES (Start after Critical Path Reaches Checkpoints)
+-----------
+
+Feature 4: Forensic Evidence Export (v12.1.0)
+---
+ID: FEAT-FORENSIC-EXPORT-V12.1
+Timeline: Jun 1-15, 2026 (Parallel with Tech Detection)
+Effort: 25-35 hours
+Criticality: HIGH - v12.1.0 release requirement
+Prerequisite: Technology Detection ≥60% complete
+Start Date: Jun 3 (parallel with Tech Detection week 2)
+
+Benefit: Chain of custody documentation, cryptographic manifests
+  → Enables ISO/IEC 27037 compliance path
+  → Enterprise/law enforcement credibility
+
+---
+
+Feature 5: Platform Integrations (v12.1.0)
+---
+ID: FEAT-PLATFORM-INTEG-V12.1
+Timeline: Jun 10-15, 2026 (Late parallel)
+Effort: 20-30 hours
+Criticality: MEDIUM - v12.1.0 completeness requirement
+Prerequisite: Technology Detection ≥80% complete
+
+Integrations: Shodan, Maltelo, MISP, Censys, STIX/TAXII
+  → Eliminates external workflow steps
+  → Improves investigation speed by 20-30%
+
+---
+
+Feature 6: Device Fingerprinting Database (v12.2.0)
+---
+ID: FEAT-FINGERPRINT-DB-V12.2
+Timeline: Jun 15-29, 2026 (Pre-Session Persist)
+Effort: 40-60 hours
+Criticality: MEDIUM - Session Persistence enabler
+Prerequisite: v12.1.0 must be complete
+
+Component: 200+ realistic device profiles across platforms
+  → Improves evasion effectiveness (85% → 90-95%)
+  → Essential for extended monitoring sessions (weeks without detection)
+
+---
+
+Feature 7: Agent SDKs - Python, JavaScript, TypeScript (v12.2.0)
+---
+ID: PLAT-AGENT-SDKS-V12.2
+Timeline: Jun 22 - Jul 6, 2026 (Weeks 4-5 of v12.2.0)
+Effort: 60-80 hours
+Criticality: HIGH - Market leadership positioning
+Prerequisite: Session Persistence ≥50% started
+
+Benefit: First-mover advantage in $10B+ AI agent market
+  → Default OSINT substrate for Claude API
+  → Attracts 100-1000 developers
+  → Anthropic partnership potential
+
+Note: Can start mid-Session Persist work (non-blocking parallel)
+
+---
+
+Feature 8: ISO/IEC 27037 Certification Path (v12.2.0)
+---
+ID: PLAT-ISO27037-CERT-V12.2
+Timeline: Jun 15 - Oct 31, 2026 (6-month audit cycle)
+Effort: 80-120 hours (implementation) + 60+ (audit)
+Criticality: HIGH - Law enforcement market enabler ($1-2M ARR)
+Prerequisite: Forensic Evidence Export must be complete
+
+Timeline:
+  - Jun 15-Jul 15: Implementation (40-50h)
+  - Jul 20: Audit kickoff
+  - Oct-Dec: Formal audit process
+  - Jan 2027: Certification decision
+
+ROI: $1-2M ARR from 5-15 government agencies
+
+---
+
+TIER 3: PARALLEL-TRACK FEATURES (Run Simultaneously, No Critical Path Dependency)
+------------------
+
+Feature 9: Security Phase 3 Hardening
+---
+ID: SEC-PHASE3-HARDENING
+Timeline: Jun 1 - Jul 15, 2026 (Parallel)
+Effort: 160-195 hours distributed
+Criticality: MEDIUM - Enterprise credibility
+Independence: Can run completely in parallel
+
+Components:
+  - 12 CVE fixes (entropy, crypto, headers, error sanitization)
+  - Advanced hardening (TLS pinning, key rotation, audit logging)
+  - Compliance readiness
+
+Quick wins: CVE-1 to CVE-3 (26 hours, eliminates 5 vulnerabilities)
+
+---
+
+Feature 10: Documentation Phase 1 (SDK Docs, Content Update)
+---
+ID: DOC-PHASE1-MODERNIZATION
+Timeline: Jun 1 - Jul 30, 2026 (Parallel)
+Effort: 110-140 hours
+Criticality: MEDIUM - Customer onboarding, support efficiency
+Independence: Can run completely in parallel
+
+Scope:
+  - Update v11.x → v12.x version references
+  - Create SDK documentation (Python, JavaScript, TypeScript)
+  - Improve navigation and organization
+
+ROI: 30% faster customer onboarding, 25-40% support reduction
+
+---
+
+Feature 11: Wave 13 Phase 2 Optimization Completion
+---
+ID: OPT-WAVE13-PHASE2
+Timeline: Jun 1-3, 2026 (Immediate)
+Effort: 10-13 hours
+Criticality: HIGH - Unblocks feature development
+Independence: Can complete immediately
+
+Components:
+  - OPT-13 DOM Cache integration (4-5h)
+  - OPT-08 Parallel Screenshots (6-8h)
+  - Combined load testing (2-3h)
+
+Expected: 285 → 400+ msg/sec (+40% throughput)
+
+---
+
+Feature 12: Behavioral Pattern Animation Library (v12.2.0)
+---
+ID: FEAT-BEHAVIOR-ANIMATION-V12.2
+Timeline: Jun 15-29, 2026 (Parallel)
+Effort: 30-40 hours
+Criticality: MEDIUM - Evasion framework enhancement
+Independence: Parallel with Session Persistence
+
+Component: Extended behavioral patterns (scrolling, clicking, form submission)
+  → Improves evasion effectiveness
+  → Enables multi-hour monitoring sessions without detection
+
+---
+
+Feature 13: Proxy Intelligence Strategy (v12.2.0)
+---
+ID: FEAT-PROXY-INTELLIGENCE-V12.2
+Timeline: Jul 1-15, 2026 (Late parallel)
+Effort: 20-30 hours
+Criticality: LOW - Enhancement feature
+Independence: Parallel, non-blocking
+
+Component: Integration with GeoIP databases for proxy matching
+  → Improves geographic consistency for evasion
+  → Enables location-based monitoring strategies
+
+
+PART 2: RESOURCE SEQUENCING STRATEGY
+=====================================
+
+TEAM COMPOSITION: 6-8 FTE (June-August)
+---
+
+Engineering Team (5 FTE):
+
+1. Performance Lead (1.0 FTE)
+   - Responsible: Wave 13 Phase 2 completion (Jun 1-3)
+   - Then: Monitoring service performance tuning
+   - Then: Infrastructure scaling (Aug+)
+
+2. Backend Engineer #1 (1.0 FTE)
+   - Weeks 1-2 (Jun 1-10): Technology Detection development
+   - Weeks 3-4 (Jun 15-29): Agent SDK implementation
+   - Weeks 5-6 (Jun 29-Jul 13): Session Persistence (lead)
+   - Weeks 7-9 (Jul 13-Aug 3): Competitor Monitoring (lead)
+
+3. Backend Engineer #2 (1.0 FTE)
+   - Weeks 1-2 (Jun 1-10): Forensic Evidence Export
+   - Weeks 3-4 (Jun 15-29): Platform Integrations
+   - Weeks 5-6 (Jun 29-Jul 13): Session Persistence (support)
+   - Weeks 7-9 (Jul 13-Aug 3): Competitor Monitoring (support)
+
+4. Security Engineer (1.0 FTE)
+   - Parallel: Security Phase 3 hardening (CVE fixes, encryption)
+   - Quarterly: ISO/IEC 27037 documentation & compliance
+
+5. QA Engineer (1.0 FTE)
+   - Parallel: Testing across all features
+   - Critical: Load testing for Session Persistence & Monitoring
+   - Release: Regression testing before each milestone
+
+Support Team (1-2 FTE):
+
+6. Technical Writer (1.0 FTE)
+   - Parallel: Documentation Phase 1 (SDK docs, content updates)
+   - Ongoing: Feature documentation as delivered
+   - Quarterly: User guide updates
+
+7. Product Manager (0.5 FTE)
+   - Feature definition and prioritization
+   - Stakeholder communication
+   - Customer feedback integration
+
+8. Compliance Officer (0.5 FTE, Contractor)
+   - ISO/IEC 27037 audit preparation
+   - Legal/regulatory documentation
+   - Enterprise sales support (3-month engagement)
+
+---
+
+WEEKLY ALLOCATION EXAMPLE
+---
+
+Week 1 (Jun 1-7):
+  - Backend #1: Technology Detection (60-80 hours)
+  - Backend #2: Forensic Evidence (25-35 hours)
+  - Performance Lead: Wave 13 Phase 2 (10-13 hours)
+  - Security: CVE fixes #1-3 (27-36 hours)
+  - QA: Integration testing
+  - Writer: SDK documentation kickoff
+  Total: 150-180 person-hours
+
+Week 2 (Jun 8-14):
+  - Backend #1: Technology Detection completion, platform integ start
+  - Backend #2: Forensic Evidence completion, platform integ support
+  - Performance: Monitoring preparation
+  - Security: Hardening week 2 (encryption)
+  - QA: v12.1.0 release validation
+  Total: 140-170 person-hours
+
+Week 5 (Jun 29-Jul 5):
+  - Backend #1: Session Persistence (lead, 30+ hours)
+  - Backend #2: Session Persistence (support, 15+ hours)
+  - Agent SDK: Start parallel (Eng #1 or contractor, 15+ hours)
+  - Security: Compliance documentation
+  - QA: Session Persistence integration tests
+  Total: 150-180 person-hours
+
+---
+
+DEPENDENCY ENFORCEMENT RULES
+---
+
+1. Technology Detection must reach 100% before v12.1.0 release (Jun 15)
+2. Session Persistence must reach 100% before Monitoring starts (Jul 13)
+3. Agent SDKs can start when Session Persistence ≥50% (not blocking)
+4. Security, Documentation run parallel (never block critical path)
+5. Monitoring cannot start until Session Persistence ≥100%
+
+Rule Violation Impact:
+  - Tech Detection slip 1 week → v12.1.0 slips → v12.2.0 cascades 2+ weeks
+  - Session Persist slip 1 week → Monitoring slips 1 week → Q3 ARR -$50-100K
+  - Any critical path slip >3 days requires executive escalation
+
+
+PART 3: EXECUTION SEQUENCE WITH TIMELINE
+==========================================
+
+CRITICAL PATH EXECUTION SCHEDULE
+---
+
+Jun 1-3: WAVE 13 PHASE 2 COMPLETION (Performance Foundation)
+  - Complete OPT-13 DOM Cache integration (4-5h)
+  - Complete OPT-08 Parallel Screenshots (6-8h)
+  - Run load tests (2-3h)
+  - Expected: 285 → 400+ msg/sec
+  - Unblocks: All feature development requiring higher throughput
+  - Owner: Performance Lead
+  - Gate: Must achieve 400+ msg/sec before Jun 4
+
+Jun 1-10: TECHNOLOGY DETECTION (v12.1.0 Critical Path START)
+  - Implement 50+ technology signatures (35-45h)
+  - Create platform integration API (15h)
+  - Test suite (80-100 tests) (15-20h)
+  - Documentation (5h)
+  - Owner: Backend Engineer #1
+  - Gate: 95%+ accuracy required, 50+ signatures minimum
+
+Jun 1-15: FORENSIC EVIDENCE EXPORT (v12.1.0 Parallel)
+  - Chain of custody documentation (15h)
+  - Cryptographic manifest generation (10h)
+  - Testing and validation (10h)
+  - Owner: Backend Engineer #2
+  - Gate: Must support ISO/IEC 27037 requirements
+
+Jun 10-15: PLATFORM INTEGRATIONS (v12.1.0 Late Parallel)
+  - Shodan, Maltego, MISP, Censys APIs (20-30h)
+  - STIX/TAXII export (10h)
+  - Testing (10h)
+  - Owner: Backend Engineers #1 & #2 (25% each)
+  - Gate: All integrations functional
+
+Jun 15: v12.1.0 RELEASE
+  - Gate: Technology Detection + Forensic Evidence + Platform Integ 100%
+  - Impact: Unblocks v12.2.0 feature development
+  - Deployment: Staging Jun 15, Production Jun 17
+
+Jun 15-29: PLATFORM ENHANCEMENT FEATURES (v12.2.0 Prep)
+  - Device Fingerprinting Database (40-60h) - Backend #2
+  - Behavioral Pattern Animation (30-40h) - Backend #1
+  - Agent SDK specifications finalization (10h) - Backend #1
+  - Security Phase 3 Week 2-3 (120-160h) - Security Engineer
+  - Owner: Multiple
+  - Gate: Device fingerprinting ≥200 profiles
+
+Jun 22 - Jul 6: AGENT SDKS (v12.2.0 Parallel, Weeks 4-5)
+  - Python SDK (20-25h)
+  - JavaScript SDK (20-25h)
+  - TypeScript definitions (20-30h)
+  - Integration examples (5-10h)
+  - Owner: Backend Engineer #1 or Contractor
+  - Gate: All SDKs functional, documentation complete
+  - Note: Starts before Session Persistence complete (parallel work)
+
+Jun 29 - Jul 13: SESSION PERSISTENCE & RECOVERY (v12.2.0 Critical Path MIDDLE)
+  - Checkpoint system (30-40h) - Backend #1
+  - Recovery mechanism (25-35h) - Backend #1
+  - State coordination (15-20h) - Backend #2
+  - Testing (120-150 tests) (20-25h) - QA Engineer
+  - Integration testing (10h) - Multiple
+  - Owner: Backend Engineers #1 & #2 (lead #1)
+  - Gate: 500+ concurrent requests supported, <10MB checkpoints
+  - Impact: Unblocks Competitor Monitoring
+
+Jul 13-27: COMPETITOR MONITORING SERVICE (v12.2.0 Critical Path END)
+  - Multi-target orchestration (50-70h) - Backend #1
+  - Change detection system (20-30h) - Backend #1
+  - Alert system (20-30h) - Backend #2
+  - Dashboard (20-30h) - Frontend
+  - Testing (20-30h) - QA Engineer
+  - Owner: Backend Engineers #1 & #2
+  - Gate: 100+ concurrent targets, <5min alert latency
+  - Impact: Revenue generation, customer pilots
+
+Jul 15: v12.2.0 RELEASE
+  - Gate: Session Persistence + Competitor Monitoring + Agent SDKs 100%
+  - Deployment: Staging Jul 15, Production Jul 17
+  - Impact: $600K-$1.2M ARR potential unlocked
+
+Aug 1+: MARKET LAUNCH & CUSTOMER ACQUISITION
+  - 10-20 competitor monitoring customer pilots
+  - Enterprise sales (6-month sales cycle)
+  - ISO/IEC 27037 audit process (continues through Q4)
+  - Performance optimization (Wave 15)
+
+---
+
+TIMELINE VISUALIZATION
+---
+
+```
+Jun 1-10:    Technology Detection ████████████ (60-80h)
+Jun 1-15:    Forensic Evidence    ██████░░░░░░ (25-35h)
+Jun 10-15:   Platform Integ       ████░░░░░░░░ (20-30h)
+             Security Phase 3     ████████░░░░ (160-195h, distributed)
+             Documentation        ████████░░░░ (110-140h, distributed)
+
+Jun 15-29:   Device FP Database   ██████░░░░░░ (40-60h)
+Jun 15-29:   Behavior Animation   █████░░░░░░░ (30-40h)
+
+Jun 22-Jul6: Agent SDKs           ████████░░░░ (60-80h)
+
+Jun 29-Jul13:Session Persistence  ████████████ (70-100h)
+
+Jul 13-27:   Competitor Monitor   ████████████ (100-140h)
+
+Jul 15:      v12.2.0 RELEASE ✅
+Aug 1+:      Market Launch & ARR Generation
+```
+
+---
+
+CRITICAL PATH SUMMARY
+---
+
+Must Complete in Sequence:
+  1. Wave 13 Phase 2 (Jun 1-3) → Unblocks all development
+  2. Technology Detection (Jun 1-10) → v12.1.0 requirement
+  3. v12.1.0 Release (Jun 15) → Market & credibility
+  4. Session Persistence (Jun 29-Jul 13) → Monitoring prerequisite
+  5. Competitor Monitoring (Jul 13-27) → Revenue generation
+  6. v12.2.0 Release (Jul 15) → Market leadership
+
+Can Run in Parallel:
+  - Forensic Evidence Export (parallel with Tech Detection)
+  - Platform Integrations (late parallel with Tech Detection)
+  - Security Phase 3 (fully parallel)
+  - Documentation Phase 1 (fully parallel)
+  - Device Fingerprinting (parallel with Session Persistence prep)
+  - Behavioral Animation (parallel with Session Persistence prep)
+  - Agent SDKs (parallel with Session Persistence 50%+)
+
+Total Duration: 20 weeks (Jun 1 - Dec 31 for market launch)
+Critical Path Duration: 7 weeks (Jun 1 - Jul 15)
+
+
+PART 4: RISK DEPENDENCIES
+==========================
+
+SINGLE POINTS OF FAILURE
+---
+
+Risk 1: Technology Detection Delays
+  Impact: v12.1.0 slips 1-2 weeks → cascades to v12.2.0
+  Probability: MEDIUM (60-80 hours, scope well-defined)
+  Mitigation: Allocate 2 engineers if estimates miss
+  Escalation: If <50% complete by Jun 7, activate contingency
+
+Risk 2: Session Persistence Complexity
+  Impact: v12.2.0 slips 3-4 weeks → loses Q3 market window
+  Probability: MEDIUM-HIGH (complex state management)
+  Mitigation: Start with MVP approach (fewer concurrent requests)
+  Escalation: If <50% complete by Jul 7, reduce monitoring scope
+
+Risk 3: Resource Constraints
+  Impact: Features delayed, quality compromised
+  Probability: MEDIUM (market demand for other features)
+  Mitigation: Protect 5 FTE allocation with executive commitment
+  Escalation: Hire contractors for low-priority features
+
+Risk 4: Integration Complexity (Monitoring + Session)
+  Impact: Combined system instability, delay to market
+  Probability: LOW (architecture documented, framework exists)
+  Mitigation: Early integration testing (week 4-5)
+  Escalation: Reduce feature scope, delay v12.3.0 features
+
+
+DEPENDENCY GRAPH RULES
+---
+
+Forward Dependencies (blocking):
+  Tech Detection (100%) → v12.1.0 Release
+  v12.1.0 Release → Session Persistence Start
+  Session Persistence (100%) → Competitor Monitoring Start
+  Competitor Monitoring (100%) → v12.2.0 Release
+
+Backward Dependencies (enabling):
+  v12.1.0 Release ← Tech Detection, Forensic Evidence, Platform Integ
+  Session Persistence ← Wave 13 Phase 2 (performance foundation)
+  Competitor Monitoring ← Session Persistence, Performance Optimization
+
+Parallel Dependencies (non-blocking):
+  Security Phase 3 (parallel, never critical)
+  Documentation Phase 1 (parallel, never critical)
+  Agent SDKs (parallel after Session Persist ≥50%)
+
+Mutual Dependencies (coordinate timing):
+  Agent SDKs + Session Persistence (non-blocking but coordinated)
+  Competitor Monitoring + Performance (must coordinate load testing)
+
+---
+
+CONCLUSION
+==========
+
+Wave 14 success requires strict discipline on the critical path:
+
+1. Technology Detection (Jun 1-10) → Must hit 95% accuracy gate
+2. Session Persistence (Jun 29-Jul 13) → Must hit 500-concurrent gate
+3. Competitor Monitoring (Jul 13-27) → Must hit 100-target gate
+
+Parallel features (Security, Documentation) provide buffer for resource flexibility
+but do NOT impact critical path timeline.
+
+Resource allocation strategy emphasizes:
+  - Backend #1 on critical path features (Tech Det → Session Persist → Monitoring)
+  - Backend #2 on dependent features (Forensic Export → Platform Integ → Support)
+  - Performance Lead on foundation (Wave 13 → tuning for Monitoring)
+  - QA on integration testing (especially Session Persist + Monitoring)
+  - Security & Documentation on parallel tracks (never block releases)
+
+Executive Decision: Commit 7 FTE for 12 weeks with strict gate enforcement.
+
+--
+Status: ANALYSIS COMPLETE
+Confidence: VERY HIGH (95%)
+Next Step: Resource allocation approval + kickoff Jun 1

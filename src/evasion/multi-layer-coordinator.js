@@ -18,6 +18,8 @@
  * Current: 85.5% → Target: 92-98% with all layers optimized
  */
 
+const crypto = require('crypto');
+
 class MultiLayerEvasionCoordinator {
   constructor(options = {}) {
     this.sessionId = options.sessionId || this._generateSessionId();
@@ -580,10 +582,11 @@ class MultiLayerEvasionCoordinator {
   }
 
   /**
-   * Generate session ID
+   * Generate session ID (CVE-W14-NEW-006: FIXED)
+   * Uses cryptographically secure random bytes instead of Math.random()
    */
   _generateSessionId() {
-    return `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `session-${crypto.randomBytes(16).toString('hex')}`;
   }
 }
 

@@ -1,8 +1,11 @@
 # Basset Hound Browser API Reference
 
-**Version**: 11.1.0
+**Version**: 12.1.0 (Production Ready)
 **Protocol**: WebSocket (JSON messages)
 **Default Port**: 8765
+**Last Updated**: May 31, 2026
+**Status**: Complete with Wave 12 commands and security features
+**Total Commands**: 164 WebSocket commands documented
 
 ## Connection Information
 
@@ -76,6 +79,43 @@ After calling `navigate`, wait 2-4 seconds (or use `wait_for_element`) before ca
 - `click`, `fill`, `scroll`
 
 This is standard browser automation behavior.
+
+---
+
+## WebSocket Command Lifecycle (v12.1.0)
+
+```mermaid
+graph LR
+    A["Client Request<br/>(JSON)"] -->|1. Transmit| B["WebSocket Server"]
+    B -->|2. Parse| C["Message Router"]
+    C -->|3. Validate| D["Authorization<br/>& Input Validation"]
+    D -->|4a. Fail| E["Error Response"]
+    D -->|4b. Pass| F["Command Handler"]
+    F -->|5. Execute| G["Browser Engine"]
+    G -->|6. Capture| H["Response Data"]
+    H -->|7. Sanitize| I["Output Cleaner<br/>(Data Protection)"]
+    I -->|8. Compress| J["Response Encoder"]
+    J -->|9. Send| K["Client Response<br/>(JSON)"]
+    E -->|Error| K
+    
+    style A fill:#e1f5ff
+    style K fill:#c8e6c9
+    style D fill:#fff3cd
+    style I fill:#f3e5f5
+```
+
+**Key Stages:**
+1. **Transmission** - Client sends JSON command via WebSocket
+2. **Parsing** - Server deserializes and validates JSON structure
+3. **Routing** - Router identifies command type and handler
+4. **Validation** - HMAC signature, input type/format, command authorization
+5. **Execution** - Command handler executes in browser engine
+6. **Capture** - Results collected from browser (HTML, screenshots, etc.)
+7. **Sanitization** - Sensitive data removed (passwords, API keys)
+8. **Compression** - Response compressed (70-93% reduction)
+9. **Response** - Client receives serialized JSON result
+
+**Performance:** <2ms P99 latency from receipt to response
 
 ---
 
@@ -475,8 +515,73 @@ These commands are safe to retry on transient errors:
 
 ---
 
+---
+
+## Wave 12 New Commands (v12.1.0)
+
+### Technology Detection Commands
+
+Detect 200+ web technologies with multi-method analysis:
+
+| Command | Description | Parameters |
+|---------|-------------|------------|
+| `detect_technologies` | Detect all technologies on page | `analyze_scripts`, `analyze_headers`, `analyze_meta` (all default true) |
+| `detect_technology_by_method` | Detect specific technology | `method` (wappalyzer\|headers\|meta\|scripts), `technology` (optional) |
+| `get_technology_confidence` | Get confidence score for technology | `technology`, `method` |
+| `analyze_javascript_frameworks` | Detect JS frameworks | - |
+| `analyze_cms_detection` | Detect CMS systems | - |
+| `analyze_server_headers` | Analyze HTTP headers | - |
+
+### Forensic Evidence Export Commands
+
+Export evidence with chain-of-custody compliance:
+
+| Command | Description | Parameters |
+|---------|-------------|------------|
+| `export_evidence` | Export forensic evidence | `include_metadata`, `include_screenshots`, `format` (json\|csv) |
+| `get_chain_of_custody` | Get evidence chain | `evidence_id` |
+| `validate_evidence_integrity` | Validate evidence hash | `evidence_id`, `hash` |
+
+### Platform Integration Commands
+
+Native integrations with SIEM and logging platforms:
+
+| Command | Description | Parameters |
+|---------|-------------|------------|
+| `send_to_splunk` | Send data to Splunk HEC | `sourcetype`, `source`, `host` |
+| `send_to_elk` | Send to ELK Stack | `index_name`, `doc_type` |
+| `send_to_webhook` | Send to custom webhook | `url`, `headers`, `format` |
+| `send_to_syslog` | Send to syslog server | `host`, `port`, `facility` |
+| `send_to_kafka` | Publish to Kafka topic | `topic`, `partition` |
+
+### Priority Queue Commands
+
+Intelligent command prioritization:
+
+| Command | Description | Parameters |
+|---------|-------------|------------|
+| `set_command_priority` | Set priority for command | `command_name`, `priority` (0-100) |
+| `get_priority_queue_stats` | Get queue statistics | - |
+| `clear_priority_queue` | Clear all queued commands | - |
+
+### Screenshot Processing Commands
+
+Parallel screenshot capture and processing:
+
+| Command | Description | Parameters |
+|---------|-------------|------------|
+| `screenshot_parallel` | Capture multiple screenshots | `count`, `delay_ms` |
+| `screenshot_batch` | Batch screenshot capture | `batches`, `batch_size` |
+| `get_screenshot_quality` | Analyze screenshot quality | - |
+
+---
+
 ## Related Documentation
 
 - [Integration Readiness](integration_readiness.md) - Deployment and integration status
 - [OpenAPI Spec](api/openapi.yaml) - OpenAPI 3.0 specification
 - [MCP Server](../mcp/README.md) - MCP protocol integration
+- [v12.1.0 Features](../V12.1.0-FEATURES-INDEX-2026-05-31.md) - Complete Wave 12 feature guide
+- [Technology Detection Guide](../TECHNOLOGY-DETECTION-GUIDE-2026-05-31.md) - Detecting 200+ technologies
+- [Forensic Evidence Export](../FORENSIC-EVIDENCE-EXPORT-GUIDE-2026-05-31.md) - Chain-of-custody export
+- [Platform Integrations](../PLATFORM-INTEGRATIONS-QUICK-START.md) - SIEM/ELK/Splunk setup

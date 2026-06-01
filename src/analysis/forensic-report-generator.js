@@ -27,7 +27,7 @@ class ForensicReportGenerator {
    */
   generateReport(data) {
     const report = {
-      id: crypto.randomBytes(8).toString('hex'),
+      id: crypto.randomBytes(16).toString('hex'),
       timestamp: new Date().toISOString(),
       title: data.title || 'Forensic Investigation Report',
       metadata: {
@@ -139,7 +139,7 @@ class ForensicReportGenerator {
     // Evidence preservation
     if (data.session) {
       chain.preserved_evidence.push({
-        evidence_id: crypto.randomBytes(4).toString('hex'),
+        evidence_id: crypto.randomBytes(16).toString('hex'),
         type: 'session_recording',
         description: 'Complete investigation session recording',
         hash: data.session.hash || 'N/A',
@@ -149,7 +149,7 @@ class ForensicReportGenerator {
 
     if (data.screenshots && data.screenshots.length > 0) {
       chain.preserved_evidence.push({
-        evidence_id: crypto.randomBytes(4).toString('hex'),
+        evidence_id: crypto.randomBytes(16).toString('hex'),
         type: 'screenshots',
         count: data.screenshots.length,
         description: `${data.screenshots.length} screenshot(s) captured`,
@@ -159,7 +159,7 @@ class ForensicReportGenerator {
 
     if (data.siteAnalysis) {
       chain.preserved_evidence.push({
-        evidence_id: crypto.randomBytes(4).toString('hex'),
+        evidence_id: crypto.randomBytes(16).toString('hex'),
         type: 'site_analysis',
         description: 'Deep site analysis with technology detection',
         timestamp: new Date().toISOString()
@@ -168,7 +168,7 @@ class ForensicReportGenerator {
 
     if (data.metadata) {
       chain.preserved_evidence.push({
-        evidence_id: crypto.randomBytes(4).toString('hex'),
+        evidence_id: crypto.randomBytes(16).toString('hex'),
         type: 'metadata_extraction',
         description: 'File metadata extraction results',
         hash: data.metadata.file?.hash?.sha256 || 'N/A',
@@ -178,7 +178,7 @@ class ForensicReportGenerator {
 
     if (data.network) {
       chain.preserved_evidence.push({
-        evidence_id: crypto.randomBytes(4).toString('hex'),
+        evidence_id: crypto.randomBytes(16).toString('hex'),
         type: 'network_forensics',
         description: `Network analysis: ${data.network.total_requests || 0} requests`,
         timestamp: new Date().toISOString()
@@ -605,4 +605,4 @@ class ForensicReportGenerator {
   }
 }
 
-module.exports = new ForensicReportGenerator();
+module.exports = ForensicReportGenerator;

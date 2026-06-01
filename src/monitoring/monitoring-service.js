@@ -6,10 +6,17 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const EventEmitter = require('events');
 const { MonitorManager, MONITOR_STATUS } = require('./monitor-manager');
 const { ChangeDetector } = require('./change-detector');
 const { AlertDispatcher } = require('./alert-dispatcher');
+
+// CVE-W14-NEW-007: Size limits for security
+const SIZE_LIMITS = {
+  SNAPSHOT: 50 * 1024 * 1024,        // 50 MB max per snapshot
+  MONITOR_DATA: 100 * 1024 * 1024    // 100 MB max per monitor
+};
 
 /**
  * Service Status
@@ -268,6 +275,23 @@ class MonitoringService extends EventEmitter {
       // Create snapshot
       const currentSnapshot = this.changeDetector.createSnapshot(captureData);
 
+      // CVE-W14-NEW-007: FIXED - Validate snapshot size before storage
+      const sizeValidation = this._validateSnapshotSize(currentSnapshot);
+      if (!sizeValidation.valid) {
+        this.emit('error', {
+          monitorId,
+          type: 'snapshot-validation-failed',
+          error: sizeValidation.error,
+          size: sizeValidation.size
+        });
+
+        return {
+          success: false,
+          error: `Snapshot validation failed: ${sizeValidation.error}`,
+          monitorId
+        };
+      }
+
       // Get previous snapshot
       const snapshots = this.snapshots.get(monitorId) || [];
       const previousSnapshot = snapshots[snapshots.length - 1];
@@ -455,7 +479,8 @@ class MonitoringService extends EventEmitter {
   }
 
   /**
-   * Load snapshots from disk
+   * Load snapshots from disk (CVE-W14-NEW-007: FIXED)
+   * Includes size validation to prevent DoS attacks
    * @returns {void}
    */
   loadSnapshots() {
@@ -469,14 +494,64 @@ class MonitoringService extends EventEmitter {
       for (const file of files) {
         if (file.endsWith('.json')) {
           const filePath = path.join(snapshotDir, file);
+          const stats = fs.statSync(filePath);
+
+          // CVE-W14-NEW-007: Check file size before reading
+          if (stats.size > SIZE_LIMITS.SNAPSHOT) {
+            this.emit('error', {
+              type: 'snapshot-size-exceeded',
+              file,
+              size: stats.size,
+              limit: SIZE_LIMITS.SNAPSHOT
+            });
+            continue;
+          }
+
           const data = fs.readFileSync(filePath, 'utf-8');
+
+          // Validate parsed data
           const snapshots = JSON.parse(data);
+          if (!Array.isArray(snapshots)) {
+            this.emit('error', {
+              type: 'invalid-snapshot-format',
+              file
+            });
+            continue;
+          }
+
           const monitorId = file.replace('.json', '');
           this.snapshots.set(monitorId, snapshots);
         }
       }
     } catch (error) {
       this.emit('error', { type: 'snapshot-load-failed', error });
+    }
+  }
+
+  /**
+   * Validate snapshot size before storage (CVE-W14-NEW-007)
+   * @private
+   */
+  _validateSnapshotSize(snapshot) {
+    if (!snapshot) {
+      return { valid: false, error: 'Snapshot is null' };
+    }
+
+    try {
+      const serialized = JSON.stringify(snapshot);
+      const sizeBytes = Buffer.byteLength(serialized, 'utf-8');
+
+      if (sizeBytes > SIZE_LIMITS.SNAPSHOT) {
+        return {
+          valid: false,
+          error: `Snapshot exceeds size limit: ${sizeBytes} > ${SIZE_LIMITS.SNAPSHOT}`,
+          size: sizeBytes
+        };
+      }
+
+      return { valid: true, sizeBytes };
+    } catch (error) {
+      return { valid: false, error: error.message };
     }
   }
 

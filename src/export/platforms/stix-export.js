@@ -3,6 +3,7 @@
  * Export findings in STIX 2.1 format for incident response
  */
 
+const crypto = require('crypto');
 const { PlatformIntegration } = require('../platform-integrations-framework');
 
 class STIXExport extends PlatformIntegration {
@@ -284,15 +285,28 @@ class STIXExport extends PlatformIntegration {
   }
 
   /**
-   * Generate UUID v4
+   * Generate UUID v4 (CVE-W14-NEW-005: FIXED)
+   * Uses Node.js crypto.randomUUID() for secure UUID generation
    * @private
    */
   _generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    // Use Node.js built-in crypto.randomUUID() (available in Node.js 15.7+)
+    if (crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+
+    // Fallback for older Node versions - use secure random bytes
+    const bytes = crypto.randomBytes(16);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // Set version to 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // Set variant to RFC 4122
+
+    return [
+      bytes.slice(0, 4).toString('hex'),
+      bytes.slice(4, 6).toString('hex'),
+      bytes.slice(6, 8).toString('hex'),
+      bytes.slice(8, 10).toString('hex'),
+      bytes.slice(10, 16).toString('hex')
+    ].join('-');
   }
 
   /**

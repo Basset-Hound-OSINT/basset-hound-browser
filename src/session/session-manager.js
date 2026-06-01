@@ -19,9 +19,10 @@ class SessionManager {
 
   /**
    * Create new session
+   * Uses 16 bytes (128 bits) of entropy for session IDs
    */
   createSession(options = {}) {
-    const sessionId = crypto.randomBytes(16).toString('hex');
+    const sessionId = `session-${crypto.randomBytes(16).toString('hex')}`;
 
     const session = {
       id: sessionId,
