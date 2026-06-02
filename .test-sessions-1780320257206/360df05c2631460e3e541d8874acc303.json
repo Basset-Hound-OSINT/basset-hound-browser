@@ -1,0 +1,18 @@
+{
+  "id": "360df05c2631460e3e541d8874acc303",
+  "createdAt": 1780320257206,
+  "updatedAt": 1780320257206,
+  "requestCount": 0,
+  "snapshotCount": 0,
+  "status": "active",
+  "failureInfo": null,
+  "parentSessionId": null,
+  "userId": "default-user",
+  "metadata": {},
+  "deviceProfile": null,
+  "proxyConfig": null,
+  "cookies": {},
+  "localStorage": {},
+  "sessionStorage": {},
+  "headers": {}
+}

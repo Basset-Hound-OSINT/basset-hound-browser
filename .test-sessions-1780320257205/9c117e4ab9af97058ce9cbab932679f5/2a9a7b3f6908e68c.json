@@ -1,0 +1,16 @@
+{
+  "id": "2a9a7b3f6908e68c",
+  "sessionId": "9c117e4ab9af97058ce9cbab932679f5",
+  "timestamp": 1780320257205,
+  "requestCount": 0,
+  "state": {
+    "cookies": {},
+    "localStorage": {},
+    "sessionStorage": {},
+    "headers": {}
+  },
+  "metadata": {
+    "type": "checkpoint",
+    "action": "data_accessed"
+  }
+}

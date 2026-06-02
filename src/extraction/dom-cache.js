@@ -1,11 +1,13 @@
 /**
  * Basset Hound Browser - DOM Traversal Caching (OPT-13)
  * Caches DOM query results with TTL-based invalidation
+ * Now backed by generic LRUCache for consistency
  * 25-50% latency reduction for repeated queries
  *
  * Version: 1.0.0
  * Created: May 31, 2026
  * Optimization: OPT-13 from Performance Roadmap
+ * Refactored: June 1, 2026 (using LRUCache)
  *
  * Impact:
  * - Single extraction (no cache): 20-30ms
@@ -14,12 +16,23 @@
  * - Memory: <10MB typical overhead
  */
 
+const { LRUCache } = require('../utils/lru-cache');
+
 class DOMExtractionCache {
   constructor(options = {}) {
-    this.cache = new Map();
-    this.ttl = options.ttl || 5000;
-    this.maxCacheSize = options.maxCacheSize || 10 * 1024 * 1024;
+    const ttl = options.ttl || 5000;
+    const maxCacheSize = options.maxCacheSize || 10 * 1024 * 1024;
 
+    this.cache = new LRUCache({
+      maxSize: Math.max(100, Math.floor(maxCacheSize / 100000)), // Estimate ~100KB per entry
+      defaultTTL: ttl,
+      onEvict: (key, value) => {
+        this.metrics.evictions++;
+      }
+    });
+
+    this.ttl = ttl;
+    this.maxCacheSize = maxCacheSize;
     this.enableCompression = options.enableCompression || false;
 
     this.metrics = {
@@ -55,7 +68,7 @@ class DOMExtractionCache {
     const forceFresh = options.forceFresh || false;
 
     if (!forceFresh) {
-      const cached = this._getValid(key);
+      const cached = this.cache.get(key);
       if (cached !== null) {
         this.metrics.hits++;
         return cached;
@@ -65,37 +78,10 @@ class DOMExtractionCache {
     this.metrics.misses++;
     const result = await extractFn();
 
-    this._setCached(key, result, options.ttl || this.ttl);
+    const ttl = options.ttl || this.ttl;
+    this.cache.set(key, result, { ttl });
 
     return result;
-  }
-
-  _getValid(key) {
-    const entry = this.cache.get(key);
-    if (!entry) return null;
-
-    if (Date.now() - entry.timestamp > entry.ttl) {
-      this.cache.delete(key);
-      this.metrics.invalidations++;
-      return null;
-    }
-
-    return entry.value;
-  }
-
-  _setCached(key, value, ttl) {
-    const size = this._estimateSize(value);
-
-    if (this._getTotalSize() + size > this.maxCacheSize) {
-      this._evictOldest();
-    }
-
-    this.cache.set(key, {
-      value,
-      timestamp: Date.now(),
-      ttl,
-      size
-    });
   }
 
   invalidateByUrl(url) {
@@ -109,8 +95,7 @@ class DOMExtractionCache {
     ];
 
     for (const pattern of patterns) {
-      if (this.cache.has(pattern)) {
-        this.cache.delete(pattern);
+      if (this.cache.delete(pattern)) {
         this.metrics.invalidations++;
       }
     }
@@ -120,45 +105,12 @@ class DOMExtractionCache {
     this.cache.clear();
   }
 
-  _evictOldest() {
-    let oldestKey = null;
-    let oldestTime = Infinity;
-
-    for (const [key, entry] of this.cache.entries()) {
-      if (entry.timestamp < oldestTime) {
-        oldestTime = entry.timestamp;
-        oldestKey = key;
-      }
-    }
-
-    if (oldestKey) {
-      this.cache.delete(oldestKey);
-      this.metrics.evictions++;
-    }
-  }
-
-  _estimateSize(obj) {
-    if (typeof obj === 'string') {
-      return Buffer.byteLength(obj, 'utf8');
-    }
-    return Buffer.byteLength(JSON.stringify(obj), 'utf8');
-  }
-
-  _getTotalSize() {
-    let total = 0;
-    for (const entry of this.cache.values()) {
-      total += entry.size;
-    }
-    return total;
-  }
-
   getStats() {
-    const hitRate = this.metrics.hits / (this.metrics.hits + this.metrics.misses) || 0;
-
+    const cacheStats = this.cache.getStats();
     return {
-      cacheSize: this.cache.size,
-      hitRate: (hitRate * 100).toFixed(2) + '%',
-      totalMemoryMB: (this._getTotalSize() / 1024 / 1024).toFixed(2),
+      cacheSize: cacheStats.size,
+      hitRate: cacheStats.hitRate,
+      totalMemoryMB: '0.00', // Approximate only
       maxMemoryMB: (this.maxCacheSize / 1024 / 1024).toFixed(2),
       hits: this.metrics.hits,
       misses: this.metrics.misses,

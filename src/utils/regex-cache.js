@@ -1,6 +1,7 @@
 /**
  * Regex Pattern Cache - OPT-1
  * Caches compiled RegExp objects to avoid recompilation
+ * Now backed by generic LRUCache for consistency
  *
  * Problem: Recompiling 37+ patterns per detection cycle (8-12% throughput loss)
  * Solution: Cache compiled patterns with LRU eviction
@@ -11,14 +12,21 @@
  * - Memory overhead: <1MB typical
  *
  * Created: June 1, 2026
+ * Refactored: June 1, 2026 (using LRUCache)
  */
+
+const { LRUCache } = require('./lru-cache');
 
 class RegexCache {
   constructor(maxPatterns = 100) {
-    this.cache = new Map();
+    this.cache = new LRUCache({
+      maxSize: maxPatterns,
+      defaultTTL: null, // No expiration for regex patterns
+      onEvict: (key) => {
+        // Optional logging for evictions
+      }
+    });
     this.maxPatterns = maxPatterns;
-    this.hits = 0;
-    this.misses = 0;
   }
 
   /**
@@ -37,16 +45,10 @@ class RegexCache {
     const key = `${pattern}::${flags}`;
 
     // Check cache
-    if (this.cache.has(key)) {
-      this.hits++;
-      // Move to end (LRU)
-      const regex = this.cache.get(key);
-      this.cache.delete(key);
-      this.cache.set(key, regex);
-      return regex;
+    const cached = this.cache.get(key);
+    if (cached !== null) {
+      return cached;
     }
-
-    this.misses++;
 
     // Compile new regex
     try {
@@ -54,12 +56,6 @@ class RegexCache {
 
       // Add to cache
       this.cache.set(key, regex);
-
-      // Evict oldest if over limit
-      if (this.cache.size > this.maxPatterns) {
-        const firstKey = this.cache.keys().next().value;
-        this.cache.delete(firstKey);
-      }
 
       return regex;
     } catch (error) {
@@ -74,24 +70,13 @@ class RegexCache {
    */
   clear() {
     this.cache.clear();
-    this.hits = 0;
-    this.misses = 0;
   }
 
   /**
    * Get cache statistics
    */
   getStats() {
-    const total = this.hits + this.misses;
-    const hitRate = total > 0 ? (this.hits / total * 100).toFixed(2) : 0;
-    return {
-      size: this.cache.size,
-      maxPatterns: this.maxPatterns,
-      hits: this.hits,
-      misses: this.misses,
-      hitRate: `${hitRate}%`,
-      total
-    };
+    return this.cache.getStats();
   }
 }
 

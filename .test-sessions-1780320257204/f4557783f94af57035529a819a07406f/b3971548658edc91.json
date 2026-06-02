@@ -1,0 +1,17 @@
+{
+  "id": "b3971548658edc91",
+  "sessionId": "f4557783f94af57035529a819a07406f",
+  "timestamp": 1780320257205,
+  "requestCount": 50,
+  "state": {
+    "cookies": {},
+    "localStorage": {},
+    "sessionStorage": {},
+    "headers": {}
+  },
+  "metadata": {
+    "type": "automatic",
+    "triggerRequest": 50,
+    "requestData": {}
+  }
+}
