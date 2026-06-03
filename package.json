@@ -58,7 +58,7 @@
     "jest-environment-node": "^29.7.0",
     "jest-junit": "^16.0.0",
     "jsdom": "^26.1.0",
-    "spectron": "^10.0.1"
+    "spectron": "^19.0.0"
   },
   "jest": {
     "testEnvironment": "node",

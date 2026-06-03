@@ -23,8 +23,13 @@ class DOMExtractionCache {
     const ttl = options.ttl || 5000;
     const maxCacheSize = options.maxCacheSize || 10 * 1024 * 1024;
 
+    // Determine if maxCacheSize is in bytes (small values) or item count (large values)
+    // For byte-based mode: estimate 50 bytes per cache entry as minimum
+    const isByteBased = maxCacheSize < 10000;
+    const maxItems = isByteBased ? Math.max(2, Math.floor(maxCacheSize / 50)) : Math.max(100, Math.floor(maxCacheSize / 100000));
+
     this.cache = new LRUCache({
-      maxSize: Math.max(100, Math.floor(maxCacheSize / 100000)), // Estimate ~100KB per entry
+      maxSize: maxItems,
       defaultTTL: ttl,
       onEvict: (key, value) => {
         this.metrics.evictions++;
@@ -34,6 +39,7 @@ class DOMExtractionCache {
     this.ttl = ttl;
     this.maxCacheSize = maxCacheSize;
     this.enableCompression = options.enableCompression || false;
+    this.isByteBased = isByteBased;
 
     this.metrics = {
       hits: 0,
@@ -105,12 +111,52 @@ class DOMExtractionCache {
     this.cache.clear();
   }
 
+  invalidateByUrlPattern(pattern) {
+    const regex = new RegExp(pattern);
+    let invalidated = 0;
+
+    for (const key of this.cache.keys()) {
+      if (regex.test(key)) {
+        if (this.cache.delete(key)) {
+          this.metrics.invalidations++;
+          invalidated++;
+        }
+      }
+    }
+
+    return invalidated;
+  }
+
+  _estimateSize(value) {
+    if (typeof value === 'string') {
+      return value.length * 2; // UTF-16 estimation
+    }
+    if (Array.isArray(value)) {
+      return value.reduce((sum, item) => sum + this._estimateSize(item), 24);
+    }
+    if (typeof value === 'object' && value !== null) {
+      return Object.values(value).reduce((sum, item) => sum + this._estimateSize(item), 24);
+    }
+    return 8; // Primitive types
+  }
+
+  _getTotalSize() {
+    let total = 0;
+    for (const key of this.cache.keys()) {
+      const value = this.cache.get(key);
+      if (value !== null) {
+        total += this._estimateSize(key) + this._estimateSize(value);
+      }
+    }
+    return total;
+  }
+
   getStats() {
     const cacheStats = this.cache.getStats();
     return {
       cacheSize: cacheStats.size,
       hitRate: cacheStats.hitRate,
-      totalMemoryMB: '0.00', // Approximate only
+      totalMemoryMB: (this._getTotalSize() / 1024 / 1024).toFixed(2),
       maxMemoryMB: (this.maxCacheSize / 1024 / 1024).toFixed(2),
       hits: this.metrics.hits,
       misses: this.metrics.misses,
@@ -121,6 +167,13 @@ class DOMExtractionCache {
 
   clear() {
     this.cache.clear();
+    this.metrics = {
+      hits: 0,
+      misses: 0,
+      invalidations: 0,
+      evictions: 0,
+      totalMemory: 0
+    };
   }
 }
 

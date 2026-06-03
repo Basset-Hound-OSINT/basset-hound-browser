@@ -26,6 +26,13 @@ test-user-data*/
 *.log
 **/test-certs*/
 
+# Test session & temporary test data
+tmp_tests/
+.test-sessions*
+test-sessions/
+.test-scratch*
+tests/tmp/
+
 # IDE
 .vscode/
 .idea/

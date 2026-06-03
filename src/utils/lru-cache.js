@@ -259,10 +259,18 @@ class LRUCache {
   }
 
   /**
-   * Get cache size
+   * Get cache size (property getter)
    * @returns {number} Number of items in cache
    */
-  size() {
+  get size() {
+    return this.cache.size;
+  }
+
+  /**
+   * Get cache size (method form for backward compatibility)
+   * @returns {number} Number of items in cache
+   */
+  getSize() {
     return this.cache.size;
   }
 
