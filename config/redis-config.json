@@ -1,0 +1,19 @@
+{
+  "sentinels": [
+    {
+      "host": "127.0.0.1",
+      "port": 26379
+    }
+  ],
+  "name": "mymaster",
+  "minConnections": 5,
+  "maxConnections": 50,
+  "acquireTimeoutMillis": 30000,
+  "idleTimeoutMillis": 600000,
+  "connectionTimeoutMillis": 5000,
+  "healthCheckInterval": 10000,
+  "circuitBreakerThreshold": 5,
+  "circuitBreakerResetTimeout": 60000,
+  "sessionTTL": 86400,
+  "password": null
+}

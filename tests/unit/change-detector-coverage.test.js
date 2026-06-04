@@ -4,7 +4,7 @@
  * Tests all change types, diff algorithms, error conditions, and edge cases
  */
 
-const ChangeDetector = require('../../src/monitoring/change-detector');
+const { ChangeDetector } = require('../../src/monitoring/change-detector');
 
 describe('ChangeDetector - Comprehensive Coverage', () => {
   let detector;

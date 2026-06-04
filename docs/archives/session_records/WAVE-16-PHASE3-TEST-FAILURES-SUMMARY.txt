@@ -1,0 +1,233 @@
+WAVE 16 PHASE 3 - TEST FAILURES QUICK REFERENCE
+================================================
+
+Date: June 4, 2026
+Total Test Suites: 4
+Total Tests: 155
+Passed: 144 (92.9%)
+Failed: 11 (7.1%)
+
+FAILURES BY COMPONENT
+=====================
+
+1. API GATEWAY (29/30 passing)
+   ✓ Test Suite: tests/api/gateway.test.js
+   ✗ Failing Test: "should record request metrics"
+   ✗ Error: average_latency not greater than 0
+   ✗ File: tests/api/gateway.test.js:370
+   Status: LOW PRIORITY - Timing assertion issue
+
+
+2. SERVICE MESH CONTROLLER (30/33 passing)
+   ✓ Test Suite: tests/mesh/mesh-controller.test.js
+   
+   ✗ Failing Test 1: "should open circuit breaker after failures"
+   ✗ Error: expected allowed to be false (got true)
+   ✗ File: tests/mesh/mesh-controller.test.js:120
+   ✗ Issue: Circuit breaker state not persisting after open call
+   Status: MEDIUM PRIORITY - State management broken
+   
+   ✗ Failing Test 2: "should include circuit breaker states"
+   ✗ Error: "Destination rule test-service not found"
+   ✗ File: src/mesh/mesh-controller.js:151
+   ✗ Issue: Test setup order - need destination rule before circuit breaker
+   Status: LOW PRIORITY - Test order issue
+   
+   ✗ Failing Test 3: "should emit circuitBreaker opened event"
+   ✗ Error: Exceeded timeout of 60000 ms for done() callback
+   ✗ File: tests/mesh/mesh-controller.test.js:413
+   ✗ Issue: circuitBreaker:opened event never emitted
+   Status: MEDIUM PRIORITY - Event emission missing
+
+
+3. DISTRIBUTED TRACER (27/32 passing)
+   ✓ Test Suite: tests/observability/tracing.test.js
+   
+   ✗ Failing Test 1: "should end a span"
+   ✗ Error: duration not greater than 0 (got 0)
+   ✗ File: tests/observability/tracing.test.js:98
+   ✗ Issue: Span duration = 0 due to synchronous execution timing
+   Status: MEDIUM PRIORITY - Timing precision issue
+   
+   ✗ Failing Test 2: "should emit span ended event"
+   ✗ Error: duration not greater than 0 (got 0)
+   ✗ File: tests/observability/tracing.test.js:133
+   ✗ Issue: Same as above - span duration timing
+   Status: MEDIUM PRIORITY - Timing precision issue
+   
+   ✗ Failing Test 3: "should calculate trace duration"
+   ✗ Error: trace duration not greater than 0 (got 0)
+   ✗ File: tests/observability/tracing.test.js:265
+   ✗ Issue: Trace duration = 0 (same cause as span duration)
+   Status: MEDIUM PRIORITY - Timing precision issue
+   
+   ✗ Failing Test 4: "should emit export error event"
+   ✗ Error: Exceeded timeout of 60000 ms for done() callback
+   ✗ File: tests/observability/tracing.test.js:391
+   ✗ Issue: export:error event not emitted on failure
+   Status: LOW PRIORITY - Error event emission missing
+
+
+4. METRICS & LOGGING (58/60 passing)
+   ✓ Test Suite: tests/observability/metrics-logging.test.js
+   
+   ✗ Failing Test 1: "should aggregate metrics over time window"
+   ✗ Error: Cannot read properties of null (reading 'count')
+   ✗ File: tests/observability/metrics-logging.test.js:220
+   ✗ Issue: aggregateMetrics() returns null - time-series not populated
+   Status: MEDIUM PRIORITY - Time-series population issue
+   
+   ✗ Failing Test 2: "should calculate percentiles"
+   ✗ Error: Cannot read properties of null (reading 'percentile95')
+   ✗ File: tests/observability/metrics-logging.test.js:234
+   ✗ Issue: Depends on test #1 - aggregateMetrics() returns null
+   Status: MEDIUM PRIORITY - Depends on time-series fix
+   
+   ✗ Failing Test 3: "should log debug message"
+   ✗ Error: expected logger.logs.length to be 1 (got 0)
+   ✗ File: tests/observability/metrics-logging.test.js:357
+   ✗ Issue: Debug logs filtered out because log level defaults to 'info'
+   Status: LOW PRIORITY - Test setup issue
+
+
+SEVERITY BREAKDOWN
+==================
+
+CRITICAL (Production-blocking): 1
+  - Issue #5: Span duration = 0 (timing precision)
+
+HIGH (Feature-breaking): 3
+  - Issue #2: Circuit breaker state persistence
+  - Issue #3: Circuit breaker event emission
+  - Issue #8: Metrics time-series aggregation
+
+MEDIUM (Functionality-degraded): 4
+  - Issue #1: Gateway metrics recording
+  - Issue #4: Mesh status setup order
+  - Issue #6: Trace duration (depends on #5)
+  - Issue #9: Percentile calculation (depends on #8)
+
+LOW (Edge cases/Test setup): 2
+  - Issue #7: Export error event emission
+  - Issue #10: Debug log level filtering
+
+
+ISSUE DETAILS WITH FIXES
+========================
+
+ISSUE #1: Gateway Metrics Recording (LOW)
+  File: src/api/gateway.js:523-528
+  Problem: average_latency remains 0 in test
+  Root Cause: Timing assertion fails despite calculation working
+  Fix: Ensure latency tracked correctly, check timing in test
+  Time to Fix: 15 minutes
+
+ISSUE #2: Circuit Breaker State Persistence (MEDIUM)
+  File: src/mesh/mesh-controller.js:148-171
+  Problem: _openCircuitBreaker() doesn't update state
+  Root Cause: State update not saved to circuitBreakers map
+  Fix: Implement state transition in _openCircuitBreaker():
+    const breaker = this.circuitBreakers.get(service);
+    if (breaker) breaker.state = 'open';
+  Time to Fix: 10 minutes
+
+ISSUE #3: Circuit Breaker Event Emission (MEDIUM)
+  File: src/mesh/mesh-controller.js (no _openCircuitBreaker implementation)
+  Problem: circuitBreaker:opened event not emitted
+  Root Cause: No event emission in open logic
+  Fix: Add to _openCircuitBreaker():
+    this.emit('circuitBreaker:opened', { service, breaker });
+  Time to Fix: 5 minutes
+
+ISSUE #4: Mesh Status Setup Order (LOW)
+  File: tests/mesh/mesh-controller.test.js:368
+  Problem: Test tries to configure circuit breaker without destination rule
+  Root Cause: Test setup order - need rule before circuit breaker
+  Fix: Create destination rule before calling configureCircuitBreaker()
+  Time to Fix: 5 minutes
+
+ISSUE #5: Span Duration = 0 (CRITICAL)
+  File: src/observability/tracer.js:135-136
+  Problem: span.duration = endTime - startTime results in 0ms
+  Root Cause: Both times from same millisecond (synchronous execution)
+  Fix: Use performance.now() for microsecond precision:
+    const startTime = performance.now();
+    // ... operation ...
+    const endTime = performance.now();
+    span.duration = endTime - startTime; // Now in microseconds
+  Time to Fix: 15 minutes
+
+ISSUE #6: Trace Duration = 0 (MEDIUM)
+  File: src/observability/tracer.js:163-164
+  Problem: Trace duration = 0
+  Root Cause: Same as Issue #5
+  Fix: Fix Issue #5, then this auto-resolves
+  Time to Fix: 0 minutes (automatic)
+
+ISSUE #7: Export Error Event (LOW)
+  File: src/observability/tracer.js (_exportBatch method)
+  Problem: export:error event not emitted
+  Root Cause: Error handling doesn't emit event
+  Fix: In _exportBatch error handler:
+    this.emit('export:error', { error: err.message });
+  Time to Fix: 10 minutes
+
+ISSUE #8: Metrics Time-Series Aggregation (MEDIUM)
+  File: src/observability/metrics.js:146-150
+  Problem: aggregateMetrics() returns null
+  Root Cause: _initializeTimeSeries() called but not _recordTimeSeries() on operations
+  Fix: Call this._recordTimeSeries(name, metric.value) in:
+    - incrementCounter() after line 150
+    - setGauge() after line 174
+    - observeHistogram() after line 207
+    - observeSummary() after line 239
+  Time to Fix: 20 minutes
+
+ISSUE #9: Percentile Calculation (MEDIUM)
+  File: src/observability/metrics.js:378-379
+  Problem: Cannot calculate percentiles (null from aggregateMetrics)
+  Root Cause: Depends on Issue #8
+  Fix: Fix Issue #8 first
+  Time to Fix: 0 minutes (automatic)
+
+ISSUE #10: Debug Log Level (LOW)
+  File: src/observability/logging.js:70-72
+  Problem: Debug logs not recorded
+  Root Cause: Logger defaults to 'info' level, filters debug (level 0 < 1)
+  Fix: Test should call logger.setLogLevel('debug') before testing
+  Time to Fix: 5 minutes
+
+
+ESTIMATED TOTAL FIX TIME: 4-6 hours
+
+1. Critical fix (Issue #5): 15 min
+2. High-priority fixes (Issues #2, #3, #8): 35 min
+3. Medium fixes (Issues #1, #4, #6, #7, #9): 45 min
+4. Low fixes (Issue #10): 5 min
+5. Re-run tests and validation: 30-45 min
+
+
+NEXT STEPS
+==========
+
+1. Apply fixes in this order:
+   - Issue #5 (critical, blocks duration metrics)
+   - Issue #8 (high, breaks aggregation)
+   - Issue #2 & #3 (high, breaks circuit breaker)
+   - Issues #1, #4, #6, #7, #9, #10 (medium/low)
+
+2. After each fix:
+   - Run affected test suite
+   - Verify related tests now pass
+   - Check for new failures
+
+3. Final validation:
+   - Run full test suite: npm test
+   - Verify all 155 tests pass
+   - Check performance metrics
+   - Document changes in commit message
+
+4. Update memory:
+   - Update MEMORY.md with fixes applied
+   - Document issue resolution
+   - Update Wave 16 Phase 3 status

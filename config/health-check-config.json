@@ -1,0 +1,9 @@
+{
+  "checkInterval": 5000,
+  "memoryThreshold": 0.8,
+  "diskThreshold": 0.8,
+  "criticalComponents": [
+    "database",
+    "redis"
+  ]
+}

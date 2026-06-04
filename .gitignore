@@ -26,10 +26,10 @@ test-user-data*/
 *.log
 **/test-certs*/
 
-# Test session & temporary test data
+# Test session & temporary test data (consolidated)
+test-sessions/
 tmp_tests/
 .test-sessions*
-test-sessions/
 .test-scratch*
 tests/tmp/
 

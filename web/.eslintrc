@@ -1,0 +1,18 @@
+{
+  "extends": ["react-app"],
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "react/prop-types": "off",
+    "react/react-in-jsx-scope": "off",
+    "no-case-declarations": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["src/**/__tests__/**/*"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

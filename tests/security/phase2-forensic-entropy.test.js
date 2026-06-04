@@ -6,7 +6,7 @@
 
 const ForensicReportGenerator = require('../../src/analysis/forensic-report-generator');
 const ForensicIntegration = require('../../src/agents/forensic-integration');
-const { Orchestrator } = require('../../src/agents/orchestrator');
+const Orchestrator = require('../../src/agents/orchestrator');
 const crypto = require('crypto');
 
 describe('Security Phase 2: Forensic Entropy', () => {

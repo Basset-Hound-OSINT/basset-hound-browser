@@ -1,0 +1,13 @@
+{
+  "host": "localhost",
+  "port": 5432,
+  "database": "basset_hound",
+  "user": "postgres",
+  "password": "",
+  "minConnections": 10,
+  "maxConnections": 100,
+  "idleTimeoutMillis": 30000,
+  "connectionTimeoutMillis": 10000,
+  "queryTimeoutMillis": 30000,
+  "healthCheckInterval": 30000
+}

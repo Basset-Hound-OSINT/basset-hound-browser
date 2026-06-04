@@ -5,9 +5,9 @@
  */
 
 const TechnologyDetectionEngine = require('../../src/detection/detector');
-const ChangeDetector = require('../../src/monitoring/change-detector');
+const { ChangeDetector } = require('../../src/monitoring/change-detector');
 const ReputationScorer = require('../../src/proxy/reputation-scorer');
-const MonitorManager = require('../../src/monitoring/monitor-manager');
+const { MonitorManager } = require('../../src/monitoring/monitor-manager');
 const SessionPersistence = require('../../src/sessions/session-persistence');
 const fs = require('fs');
 const path = require('path');

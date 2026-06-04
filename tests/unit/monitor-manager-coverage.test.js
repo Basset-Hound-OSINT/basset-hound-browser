@@ -4,7 +4,7 @@
  * Tests CRUD operations, persistence, import/export, filtering, and bulk operations
  */
 
-const MonitorManager = require('../../src/monitoring/monitor-manager');
+const { MonitorManager } = require('../../src/monitoring/monitor-manager');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');

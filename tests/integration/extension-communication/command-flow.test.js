@@ -60,7 +60,7 @@ async function testNavigateCommandFlow() {
   let navigationParams = null;
   server.registerHandler('navigate', async (params) => {
     navigationParams = params;
-    return { success: true, url: params.url, loaded: true };
+    return { success: true, result: { url: params.url, loaded: true } };
   });
 
   const testUrl = 'https://example.com/test-page';
@@ -95,7 +95,7 @@ async function testFillFormCommandFlow() {
   let formParams = null;
   server.registerHandler('fill_form', async (params) => {
     formParams = params;
-    return { success: true, filled: Object.keys(params.fields) };
+    return { success: true, result: { filled: Object.keys(params.fields) } };
   });
 
   const fields = {

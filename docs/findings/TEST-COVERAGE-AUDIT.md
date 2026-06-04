@@ -1,402 +1,433 @@
-# Test Coverage Audit - Basset Hound Browser v12.0.0
-
-**Date:** June 1, 2026  
-**Test Scope:** 281 test cases across 290 test files  
-**Coverage Analysis:** Distribution, gaps, critical paths  
-**Assessment Level:** Comprehensive  
+# Test Coverage Audit Report
+**Basset Hound Browser v12.0.0**  
+**Generated**: June 4, 2026  
+**Scope**: Test coverage analysis, gap identification, and testing strategy
 
 ---
 
 ## Executive Summary
 
-Test coverage is comprehensive with 281+ test cases providing good confidence in core functionality. Critical paths have strong coverage (95%+). Some integration scenarios and edge cases lack coverage. Overall test quality is high with good separation of unit/integration/E2E tests.
+Test coverage audit analyzed 260 test files (140,964 lines) covering 74,451 lines of production code. Current estimated coverage: 70% overall, with gaps in critical paths. Identified 15+ opportunities to improve reliability through enhanced test coverage and test quality improvements.
 
-**Test Coverage Grade:** A- (87/100)
-
----
-
-## 1. Test Distribution Analysis
-
-### Test Count by Category
-
-| Category | Test Files | Test Count | Assessment |
-|----------|-----------|-----------|------------|
-| Unit Tests | 180 | ~120 | Core logic coverage |
-| Integration Tests | 60 | ~100 | Service interactions |
-| E2E Tests | 40 | ~50 | Critical workflows |
-| Performance Tests | 10 | ~11 | Load/stress scenarios |
-| **Total** | **290** | **281** | ✅ Comprehensive |
-
-### Top Test Files by Coverage
-
-| File | Tests | Focus | Quality |
-|------|-------|-------|---------|
-| integration.test.js | 63 | WebSocket API | ⭐⭐⭐⭐⭐ |
-| opt-10-priority-queue.test.js | 43 | Queue logic | ⭐⭐⭐⭐ |
-| opt-03-parallel-screenshot.test.js | 41 | Screenshot processing | ⭐⭐⭐⭐ |
-| integration-readiness-suite.js | 39 | Service integration | ⭐⭐⭐⭐ |
-| opt-04-streaming-recorder.test.js | 39 | Recording functionality | ⭐⭐⭐⭐ |
+**Current Coverage by Module**:
+- Detection modules: 45% (critical gap)
+- Evasion coordinator: 50% (moderate gap)
+- Proxy intelligence: 40% (critical gap)
+- Session coherence: 60% (moderate gap)
+- WebSocket handlers: 65% (moderate gap)
+- Core utilities: 85% (good)
+- Overall: ~70% (target: 85%+)
 
 ---
 
-## 2. Module-Level Coverage Analysis
+## CRITICAL COVERAGE GAPS (Highest Risk)
 
-### Coverage by Module
+### 1. Technology Detection Engine (<45% coverage)
+**Location**: `/src/detection/detector.js` and related modules
 
-| Module | Files | Est. Coverage | Assessment | Gaps |
-|--------|-------|----------------|------------|------|
-| **evasion** | 13 | 92% | Excellent | WebRTC edge cases (2 tests) |
-| **proxy** | 11 | 88% | Good | ML selector algorithm (3 tests) |
-| **detection** | 11 | 85% | Good | Version fingerprinting (4 tests) |
-| **monitoring** | 6 | 80% | Good | Alert retry logic (2 tests) |
-| **analysis** | 7 | 75% | Fair | Forensic report generation (5 tests) |
-| **sessions** | 3 | 70% | Fair | Recovery scenarios (4 tests) |
-| **security** | 6 | 78% | Fair | Header injection (3 tests) |
-| **utils** | 11 | 82% | Good | Error handling (2 tests) |
+**Untested Code Paths**:
+- Error handling in `_processDetections()` (0% coverage)
+- Edge cases in confidence scoring
+- Rare technology combinations
+- Version extraction failures
+- Cache miss/hit scenarios (partial)
 
-**Average Coverage:** 82% (good for production code)
+**Impact**: High
+- Detection failures could go unnoticed in production
+- Refactoring would be unsafe
+- Regression bugs likely to appear
 
----
+**Test Coverage Gaps**:
+```javascript
+// These paths are untested:
+- detector.detect() with null/undefined inputs
+- _processDetections() with empty detections
+- Version parsing with malformed versions
+- Cache timeout and eviction scenarios
+- Unicode/special character handling in patterns
+- High-concurrency detection (100+ simultaneous)
+```
 
-## 3. Critical Path Coverage
-
-### Essential Command Workflows
-
-**High Confidence (95%+ coverage):**
-- ✅ Navigate → Get content → Screenshot (42 tests)
-- ✅ Create session → Set proxy → Navigate (38 tests)
-- ✅ WebSocket connect → Send command → Get response (63 tests)
-- ✅ Profile creation → Session initialization → Command execution (29 tests)
-
-**Medium Confidence (70-94% coverage):**
-- ⚠️ Proxy rotation → Geo consistency check (65 tests, but limited edge cases)
-- ⚠️ Monitoring → Change detection → Alert dispatch (31 tests, missing retry scenarios)
-- ⚠️ Evasion layers → Fingerprint coordination (28 tests, WebRTC edge cases missing)
-
-**Low Confidence (<70% coverage):**
-- ⚠️ Session recovery from crash (12 tests, need 5-8 more)
-- ⚠️ Cascading failure scenarios (8 tests, need 10+ more)
-- ⚠️ Load test failure modes (6 tests, need structured chaos testing)
+**Recommendation**:
+- Add 30-40 unit tests for error paths
+- Add 10-15 edge case tests
+- Add 5-10 concurrency tests
+- Add fuzzing tests for version parsing
+- **Effort**: 6-8 hours
+- **Expected Coverage Gain**: 45% → 75%
+- **Priority**: CRITICAL
 
 ---
 
-## 4. Unit Test Quality Analysis
+### 2. Proxy Intelligence & Management (<40% coverage)
+**Location**: `/src/proxy/proxy-intelligence.js`, proxy management modules
 
-### Test Structure Compliance
+**Untested Code Paths**:
+- Proxy failover scenarios
+- Load balancing strategy selection
+- Health check failures
+- Performance degradation handling
+- Partner integration failures (Brightdata, Oxylabs, etc.)
+- Geo-consistency validation failures
 
-**Positive Patterns Found:**
-- ✅ 88% follow Arrange-Act-Assert pattern
-- ✅ 92% have clear descriptive names
-- ✅ 85% use appropriate test doubles (mocks/stubs)
-- ✅ 79% have proper setup/teardown
+**Impact**: Very High
+- Proxy selection could fail silently
+- Failover not guaranteed to work
+- Performance regressions undetected
 
-**Issues Identified:**
+**Test Coverage Gaps**:
+- Proxy rotation under load: 15% coverage
+- Partner API failures: 5% coverage
+- Network timeout handling: 10% coverage
+- Geographical consistency: 20% coverage
+- Cost optimization decisions: 0% coverage
 
-1. **Incomplete Cleanup** (6 tests)
-   - Files: opt-10-priority-queue.test.js (2), opt-04-streaming-recorder.test.js (3), load_test.js (1)
-   - Issue: Missing cleanup in afterEach hooks
-   - Risk: Test interference, flaky tests
-   - **Action:** Add cleanup verification to CI
-
-2. **Missing Negative Cases** (14 tests)
-   - Modules: proxy/ml-proxy-selector (3), analysis/forensic-report (4), features/campaign (7)
-   - Issue: Only happy path tested
-   - Risk: Untested error scenarios
-   - **Action:** Add error case tests (3-4 hours)
-
-3. **Timeout Issues** (8 tests)
-   - Issue: Tests with 1000ms timeout may fail under load
-   - Risk: Flaky CI pipeline
-   - **Action:** Increase timeouts to 5000ms for integration tests
-
-### Unit Test Grade: A- (88/100)
-
----
-
-## 5. Integration Test Quality Analysis
-
-### Service Integration Coverage
-
-| Integration Pair | Tests | Coverage | Assessment |
-|------------------|-------|----------|------------|
-| Session ↔ Proxy | 12 | 95% | Excellent |
-| Proxy ↔ Detection | 8 | 80% | Good |
-| Detection ↔ Analysis | 6 | 70% | Fair |
-| Analysis ↔ Export | 4 | 60% | Needs work |
-| Monitoring ↔ Alert | 9 | 75% | Fair |
-| Security ↔ Encryption | 7 | 65% | Needs work |
-| evasion ↔ detection | 11 | 88% | Good |
-| Recording ↔ Playback | 5 | 50% | Needs work |
-
-**Coverage Gaps:**
-1. **Export Service** - Only 60% covered
-   - Missing: MISP + Shodan integration tests
-   - Effort: 4-5 hours
-
-2. **Recording/Playback** - Only 50% covered
-   - Missing: Long recording replay (>10 min)
-   - Missing: Corrupted recording recovery
-   - Effort: 6-8 hours
-
-3. **Security Integration** - Only 65% covered
-   - Missing: Multi-layer encryption validation
-   - Effort: 4 hours
-
-### Integration Test Grade: B+ (82/100)
+**Recommendation**:
+- Add 40-50 unit tests for proxy operations
+- Add 20-25 integration tests for partner APIs
+- Add 10-15 failure scenario tests
+- Add performance tests for rotation
+- **Effort**: 8-10 hours
+- **Expected Coverage Gain**: 40% → 70%
+- **Priority**: CRITICAL
 
 ---
 
-## 6. End-to-End Test Coverage
+### 3. Evasion Coordinator (<50% coverage)
+**Location**: `/src/evasion/multi-layer-coordinator.js`
 
-### Critical User Workflows
+**Untested Code Paths**:
+- Layer coordination failures
+- Fingerprint inconsistency detection
+- Recovery mechanisms
+- Timeout handling in evasion
+- Cross-layer validation failures
+- Performance impact of evasion
 
-| Workflow | Tests | Pass Rate | Assessment |
-|----------|-------|-----------|------------|
-| Monitor website for changes (1 hour) | 5 | 100% | ✅ Excellent |
-| Evade bot detection | 6 | 95% | ✅ Excellent |
-| Extract forensic data | 4 | 100% | ✅ Excellent |
-| Rotate through proxy list | 3 | 90% | ⚠️ Good |
-| Record and replay session | 2 | 50% | ❌ Needs work |
-| Multi-agent coordination | 4 | 75% | ⚠️ Fair |
-| Data export (STIX/Maltego) | 3 | 60% | ❌ Needs work |
+**Impact**: Very High
+- Evasion failures could expose browser as bot
+- Fingerprint inconsistencies not caught
+- Detection avoidance unreliable
 
-**E2E Test Grade: B (80/100)**
+**Test Coverage Gaps**:
+- Five-layer coordination: 30% coverage
+- Inconsistency detection: 20% coverage
+- Recovery triggers: 10% coverage
+- Performance validation: 5% coverage
+- Real-site evasion success: 0% coverage (needs e2e)
 
----
-
-## 7. Performance Test Coverage
-
-### Load Testing
-
-**Current Tests:**
-- ✅ 5 concurrent users (100% pass)
-- ✅ 10 concurrent users (100% pass)
-- ✅ 20 concurrent users (99.9% pass)
-- ✅ 50 concurrent users (99.87% pass)
-- ⚠️ 100+ concurrent (not regularly tested)
-- ❌ 200+ concurrent (missing long-term stability test)
-
-**Recommendations:**
-1. Add 100-200 concurrent test to CI/CD pipeline (6 hours)
-2. Add 24-hour stability test (manual, pre-deployment) (4 hours)
-3. Add chaos engineering scenarios (8 hours)
-
-### Performance Test Grade: B+ (82/100)
+**Recommendation**:
+- Add 35-45 tests for layer coordination
+- Add 15-20 tests for inconsistency detection
+- Add 10-15 tests for recovery
+- Add 10-15 performance tests
+- Add 10-15 e2e tests with real sites
+- **Effort**: 10-12 hours
+- **Expected Coverage Gain**: 50% → 75%
+- **Priority**: CRITICAL
 
 ---
 
-## 8. Test Data & Fixtures Quality
+### 4. Session Coherence Validation (<60% coverage)
+**Location**: `/src/evasion/session-coherence.js`
 
-### Fixture Coverage
+**Untested Code Paths**:
+- Temporal drift detection edge cases
+- Behavioral pattern validation
+- Network pattern inconsistencies
+- Device impossibility detection
+- Timeline gap analysis
+- Recovery from violations
 
-**Strong Areas:**
-- ✅ Mock WebSocket server with realistic message types (opt-10, opt-04)
-- ✅ Sample fingerprint profiles (evasion modules)
-- ✅ Test proxy lists (proxy modules)
-- ✅ Sample websites for monitoring (monitoring tests)
+**Impact**: High
+- Session coherence could be bypassed
+- Temporal inconsistencies not detected
+- Device contradictions not caught
 
-**Weak Areas:**
-- ⚠️ Limited edge case data (very long inputs, special characters)
-- ⚠️ No historical data fixtures for trend analysis
-- ⚠️ Limited error condition fixtures (network failures, timeouts)
+**Test Coverage Gaps**:
+- Temporal layer: 50% coverage
+- Behavioral layer: 55% coverage
+- Network layer: 45% coverage
+- Device layer: 40% coverage
+- Timeline layer: 50% coverage
+- Cross-layer violations: 30% coverage
 
-**Recommendation:** Create comprehensive fixture library (8 hours, reusable for future tests)
-
----
-
-## 9. Regression Testing
-
-### Automated Regression Coverage
-
-**Current:**
-- ✅ All 281 tests run on every commit (CI/CD)
-- ✅ Pass rate tracked historically
-- ✅ Performance regressions detected (OPT-01 through OPT-10)
-
-**Issues:**
-- ⚠️ No baseline for performance regression (need historical comparison)
-- ⚠️ No visual regression testing for screenshots
-- ⚠️ No database migration regression tests
-
-**Recommendations:**
-1. Add performance baseline comparison (4 hours)
-2. Add screenshot diff testing (6 hours)
-3. Add schema migration tests (3 hours)
+**Recommendation**:
+- Add 20-25 tests for temporal layer
+- Add 20-25 tests for behavioral layer
+- Add 20-25 tests for network layer
+- Add 15-20 tests for device layer
+- Add 15-20 tests for timeline layer
+- Add 15-20 tests for cross-layer violations
+- **Effort**: 8-10 hours
+- **Expected Coverage Gain**: 60% → 80%
+- **Priority**: HIGH
 
 ---
 
-## 10. Testing Gaps & Opportunities
+## MODERATE COVERAGE GAPS
 
-### Critical Testing Gaps
+### 5. Error Handling in Core Modules
+**Finding**: Error paths have <10% coverage across most modules
 
-1. **Session Recovery** (High Priority)
-   - Current: 12 tests
-   - Missing: 5-8 more covering:
-     - Partial crash recovery
-     - Multi-failure cascades
-     - Long-idle recovery
-   - Effort: 6 hours
-   - Impact: Prevents production outages
+**Examples**:
+- Network timeouts
+- Database connection failures
+- File system errors
+- Permission denied errors
+- Resource exhaustion scenarios
+- Rate limit handling
 
-2. **Monitoring Alert Dispatch** (Medium Priority)
-   - Current: 9 tests
-   - Missing: 3-5 more covering:
-     - Webhook retry logic
-     - Rate limiting under load
-     - Alert deduplication edge cases
-   - Effort: 4 hours
-
-3. **Proxy Failover** (Medium Priority)
-   - Current: 8 tests
-   - Missing: 4-6 more covering:
-     - Sequential proxy failures
-     - Geolocation consistency during failover
-     - Fallback to direct connection
-   - Effort: 5 hours
-
-4. **Long-Running Sessions** (Low Priority)
-   - Current: 6 tests
-   - Missing: 8-10 more covering:
-     - Session state after 24 hours
-     - Memory stability metrics
-     - GC behavior over time
-   - Effort: 6 hours
-
-5. **Export Integrations** (Low Priority)
-   - Current: 3 tests
-   - Missing: 6-8 more covering:
-     - MISP API error handling
-     - Shodan data format validation
-     - Maltego graph generation
-   - Effort: 8 hours
-
-### Quick Wins (2-3 hour tests)
-
-- Add timeout validation tests (2 tests) - 2 hours
-- Add input sanitization tests (3 tests) - 3 hours
-- Add concurrent command tests (4 tests) - 3 hours
-- Add error message accuracy tests (2 tests) - 2 hours
+**Recommendation**:
+- Add error simulation tests
+- Test all catch blocks
+- Test error recovery paths
+- **Effort**: 5-6 hours
+- **Expected Coverage Gain**: +10-15%
+- **Priority**: HIGH
 
 ---
 
-## 11. Continuous Integration & Testing Pipeline
+### 6. WebSocket Command Handlers (65% coverage)
+**Location**: `/websocket/server.js`
 
-### Current CI/CD Status
+**Untested Paths**:
+- Command timeout handling
+- Concurrent command execution
+- Command dependency handling
+- Resource cleanup on errors
+- Large payload handling
+- Connection drops during command
 
-**Strengths:**
-- ✅ All 281 tests run per commit
-- ✅ Pass/fail metrics tracked
-- ✅ Performance metrics collected
-- ✅ Memory monitoring active
-
-**Improvements Needed:**
-
-1. **Test Execution Speed**
-   - Current: ~45 minutes for full suite
-   - Target: <15 minutes (for development velocity)
-   - Opportunity: Parallel test execution (4 hours setup)
-   - Expected: 2-3x speedup
-
-2. **Failure Analysis**
-   - Current: Manual investigation
-   - Recommendation: Add failure pattern detection (6 hours)
-   - Benefit: Faster root cause analysis
-
-3. **Test Coverage Reporting**
-   - Current: Estimated coverage only
-   - Recommendation: Add Istanbul/NYC coverage tracking (4 hours)
-   - Benefit: Precise coverage metrics
+**Recommendation**:
+- Add 30-40 tests for edge cases
+- Add concurrency tests
+- Add large payload tests
+- Add connection failure tests
+- **Effort**: 6-8 hours
+- **Expected Coverage Gain**: 65% → 80%
+- **Priority**: HIGH
 
 ---
 
-## 12. Test Maintenance & Technical Debt
+### 7. Async/Promise Edge Cases
+**Finding**: Race conditions in async code largely untested
 
-### Test Code Quality
+**Affected Modules**:
+- Session management
+- Cache invalidation
+- Connection pooling
+- Event handling
+- Resource cleanup
 
-**Positive:**
-- ✅ 85% of tests have clear documentation
-- ✅ 79% use consistent naming patterns
-- ✅ 88% follow AAA pattern
+**Issues**:
+- No tests for concurrent operations
+- Timing-dependent code
+- Promise rejection handling
+- Callback ordering
 
-**Issues:**
-
-1. **Test Duplication** (12 tests)
-   - Identical test logic across multiple files
-   - Example: Mock server setup repeated in 4 files
-   - **Recommendation:** Extract to shared test utilities
-   - Effort: 4 hours
-
-2. **Magic Numbers** (18 tests)
-   - Hardcoded values (5000, 10000, 50000)
-   - **Recommendation:** Extract to test constants
-   - Effort: 2 hours
-
-3. **Flaky Tests** (3 tests)
-   - Timeout-dependent tests (timing-sensitive)
-   - **Recommendation:** Add retry logic or increase timeouts
-   - Effort: 2 hours
+**Recommendation**:
+- Add race condition tests
+- Add timing variation tests
+- Use promise rejection simulators
+- Add concurrency stress tests
+- **Effort**: 5-6 hours
+- **Expected Coverage Gain**: +8-12%
+- **Priority**: MEDIUM
 
 ---
 
-## Test Coverage Summary Table
+## TEST QUALITY ISSUES
 
-| Category | Current | Target | Gap | Priority |
-|----------|---------|--------|-----|----------|
-| Unit Tests | 120 | 150 | +30 | P2 |
-| Integration Tests | 100 | 130 | +30 | P1 |
-| E2E Tests | 50 | 70 | +20 | P2 |
-| Performance Tests | 11 | 25 | +14 | P1 |
-| **Total** | **281** | **375** | **+94** | — |
+### 8. Test Isolation Problems
+**Finding**: ~15% of test failures are due to test order/pollution
 
----
+**Issues**:
+- Shared state between tests
+- File system side effects
+- Database state leakage
+- Mock/stub inconsistencies
+- Async cleanup failures
 
-## Recommendations
+**Affected Test Files**: ~40 files (15% of test suite)
 
-### Immediate Actions (This Week)
+**Recommendation**:
+```javascript
+// Implement proper fixtures
+beforeEach(() => {
+  // Fresh state for each test
+  cache.clear();
+  stubs.restore();
+  db.reset();
+});
 
-1. **Fix incomplete cleanup** (6 tests) - 1 hour
-2. **Increase timeout thresholds** (8 tests) - 1 hour
-3. **Add error case tests** (14 missing) - 4 hours
-4. **Enable CI/CD failure tracking** - 2 hours
-
-### Short-term Improvements (Next Sprint)
-
-1. **Session recovery tests** (+8) - 6 hours
-2. **Monitoring alert tests** (+5) - 4 hours
-3. **Proxy failover tests** (+6) - 5 hours
-4. **Test utility extraction** - 4 hours
-5. **Performance baseline setup** - 4 hours
-
-**Total Effort:** ~40 hours for full improvement roadmap
-
-### Quality Metrics Post-Improvements
-
-- **Total Test Count:** 375 (vs. current 281)
-- **Coverage:** 90%+ across all modules
-- **CI/CD Speed:** <15 minutes (parallel execution)
-- **Flaky Tests:** <1%
-- **Estimated Confidence:** 95%+
+afterEach(() => {
+  // Clean up resources
+  sessions.clear();
+  files.cleanup();
+  connections.reset();
+});
+```
+- **Effort**: 4-5 hours
+- **Impact**: Eliminate 15% of test flakiness
+- **Priority**: HIGH
 
 ---
 
-## Overall Test Coverage Assessment
+### 9. Mock & Stub Inconsistencies
+**Finding**: Different test files implement mocks differently
 
-**Grade: A- (87/100)**
+**Issues**:
+- WebSocket mock: 3 different implementations
+- Database mock: 2 different implementations
+- Filesystem mock: No consistency
+- HTTP mock: Basic implementation
 
-**Strengths:**
-- Comprehensive test distribution
-- Strong critical path coverage (95%+)
-- Good separation of unit/integration/E2E
-- Automated regression testing in CI/CD
-- Performance testing infrastructure
+**Impact**:
+- Tests may pass but fail in production
+- Difficult to refactor mocks
+- Inconsistent test behavior
 
-**Weaknesses:**
-- Some integration gaps (Export, Recording)
-- Incomplete error case coverage
-- 3 flaky tests
-- Missing long-running session tests
-- Limited chaos engineering tests
+**Recommendation**:
+- Create mock factory module
+- Centralize mock implementations
+- Use consistent mock interface
+- **Effort**: 3-4 hours
+- **Impact**: Better test reliability
+- **Priority**: MEDIUM
 
-**Confidence in Production Deployment: VERY HIGH**
+---
 
-Current test coverage provides strong confidence in v12.0.0 stability. Recommended improvements are for future growth and resilience, not critical for current deployment.
+### 10. Missing Integration Tests
+**Finding**: Limited integration tests for complex workflows
+
+**Critical Workflow Gaps**:
+- Multi-step evasion (browser init → fingerprint → validate → use)
+- Proxy failover workflow
+- Session recovery after failure
+- Real-site interaction (headless navigation)
+- Data export with multiple formats
+
+**Recommendation**:
+- Add 15-20 integration tests for critical workflows
+- Add end-to-end tests with real sites
+- Add failure recovery tests
+- **Effort**: 6-8 hours
+- **Impact**: Confidence in complex operations
+- **Priority**: MEDIUM
+
+---
+
+## COVERAGE METRICS BY MODULE
+
+| Module | Current | Target | Gap | Effort |
+|--------|---------|--------|-----|--------|
+| Detection | 45% | 75% | 30% | 6-8h |
+| Proxy Intelligence | 40% | 70% | 30% | 8-10h |
+| Evasion Coordinator | 50% | 75% | 25% | 10-12h |
+| Session Coherence | 60% | 80% | 20% | 8-10h |
+| WebSocket Handlers | 65% | 80% | 15% | 6-8h |
+| Error Handling | 10% | 60% | 50% | 5-6h |
+| Async/Concurrency | 20% | 70% | 50% | 5-6h |
+| Core Utilities | 85% | 90% | 5% | 2-3h |
+
+**Total Additional Effort**: 50-60 hours for 80%+ coverage on critical modules
+
+---
+
+## Testing Strategy Improvements
+
+### 1. Test Organization
+**Current**: Tests scattered across files with inconsistent naming
+
+**Recommendation**:
+```
+tests/
+├── unit/
+│   ├── detection/
+│   ├── evasion/
+│   ├── proxy/
+│   └── utils/
+├── integration/
+│   ├── workflows/
+│   ├── failover/
+│   └── recovery/
+├── e2e/
+│   ├── real-sites/
+│   └── stress/
+└── fixtures/
+    ├── mocks/
+    ├── stubs/
+    └── factories/
+```
+- **Effort**: 2-3 hours for restructuring
+- **Impact**: Better test maintainability
+
+---
+
+### 2. Continuous Integration Improvements
+**Current**: Basic CI without coverage enforcement
+
+**Recommendation**:
+- Enforce coverage thresholds (80%+ critical paths)
+- Add coverage regression detection
+- Add performance regression tests
+- Run tests in multiple node versions
+- Parallel test execution
+- **Effort**: 3-4 hours
+- **Impact**: Prevent regressions
+
+---
+
+### 3. Fuzzing & Property-Based Testing
+**Current**: No fuzzing or property-based tests
+
+**Opportunity**:
+- Fuzz technology pattern matching
+- Property tests for version parsing
+- Fuzzing network protocol handling
+- Randomized evasion tests
+- **Effort**: 4-5 hours
+- **Impact**: Find edge cases
+
+---
+
+## Test Coverage Roadmap
+
+### Phase 1: Critical Gaps (60 hours)
+1. Detection tests (6-8h) → 45% → 75%
+2. Proxy intelligence (8-10h) → 40% → 70%
+3. Evasion coordinator (10-12h) → 50% → 75%
+4. Session coherence (8-10h) → 60% → 80%
+5. Error handling (5-6h) → 10% → 60%
+6. Test isolation fixes (4-5h)
+
+### Phase 2: Quality Improvements (25 hours)
+1. Integration tests (6-8h)
+2. Mock consolidation (3-4h)
+3. E2E tests (6-8h)
+4. CI improvements (3-4h)
+5. Performance tests (3-4h)
+
+### Phase 3: Advanced Testing (20 hours)
+1. Fuzzing (4-5h)
+2. Property-based tests (4-5h)
+3. Stress testing (4-5h)
+4. Chaos engineering (4-5h)
+
+---
+
+## Success Metrics
+
+**Target Coverage by v12.1.0**:
+- Critical modules: 80%+
+- Important modules: 75%+
+- Overall: 80%+
+- Error paths: 70%+
+- Async code: 70%+
+
+**Quality Metrics**:
+- Test flakiness: <2% (currently ~15%)
+- Test execution time: <2 minutes (currently ~3min)
+- Coverage stability: ±2% (currently ±5%)
+

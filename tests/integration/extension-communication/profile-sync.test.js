@@ -109,7 +109,7 @@ function setupServerHandlers() {
     };
 
     profileStore.profiles.set(profileId, profile);
-    return { success: true, profile };
+    return { success: true, result: { profile } };
   });
 
   // Get profile
@@ -119,7 +119,7 @@ function setupServerHandlers() {
     if (!profile) {
       return { success: false, error: 'Profile not found' };
     }
-    return { success: true, profile };
+    return { success: true, result: { profile } };
   });
 
   // Update profile
@@ -141,7 +141,7 @@ function setupServerHandlers() {
 
     profile.updatedAt = new Date().toISOString();
 
-    return { success: true, profile };
+    return { success: true, result: { profile } };
   });
 
   // Delete profile
@@ -171,7 +171,7 @@ function setupServerHandlers() {
         createdAt: profile.createdAt
       });
     });
-    return { success: true, profiles };
+    return { success: true, result: { profiles } };
   });
 
   // Activate profile
@@ -181,13 +181,13 @@ function setupServerHandlers() {
     }
     profileStore.activeProfile = params.profileId;
     const profile = profileStore.profiles.get(params.profileId);
-    return { success: true, profileId: params.profileId, profile };
+    return { success: true, result: { profileId: params.profileId, profile } };
   });
 
   // Get active profile
   server.registerHandler('get_active_profile', async () => {
     const profile = profileStore.profiles.get(profileStore.activeProfile);
-    return { success: true, profileId: profileStore.activeProfile, profile };
+    return { success: true, result: { profileId: profileStore.activeProfile, profile } };
   });
 
   // Set user agent
@@ -198,7 +198,7 @@ function setupServerHandlers() {
       return { success: false, error: 'Profile not found' };
     }
     profile.userAgent = params.userAgent;
-    return { success: true, userAgent: params.userAgent };
+    return { success: true, result: { userAgent: params.userAgent } };
   });
 
   // Get user agent
@@ -208,7 +208,7 @@ function setupServerHandlers() {
     if (!profile) {
       return { success: false, error: 'Profile not found' };
     }
-    return { success: true, userAgent: profile.userAgent };
+    return { success: true, result: { userAgent: profile.userAgent } };
   });
 
   // Set fingerprint
@@ -219,7 +219,7 @@ function setupServerHandlers() {
       return { success: false, error: 'Profile not found' };
     }
     profile.fingerprint = { ...profile.fingerprint, ...params.fingerprint };
-    return { success: true, fingerprint: profile.fingerprint };
+    return { success: true, result: { fingerprint: profile.fingerprint } };
   });
 
   // Get fingerprint
@@ -229,7 +229,7 @@ function setupServerHandlers() {
     if (!profile) {
       return { success: false, error: 'Profile not found' };
     }
-    return { success: true, fingerprint: profile.fingerprint };
+    return { success: true, result: { fingerprint: profile.fingerprint } };
   });
 
   // Set proxy
@@ -240,7 +240,7 @@ function setupServerHandlers() {
       return { success: false, error: 'Profile not found' };
     }
     profile.proxy = params.proxy;
-    return { success: true, proxy: profile.proxy };
+    return { success: true, result: { proxy: profile.proxy } };
   });
 
   // Get proxy
@@ -250,7 +250,7 @@ function setupServerHandlers() {
     if (!profile) {
       return { success: false, error: 'Profile not found' };
     }
-    return { success: true, proxy: profile.proxy };
+    return { success: true, result: { proxy: profile.proxy } };
   });
 
   // Set custom headers
@@ -261,7 +261,7 @@ function setupServerHandlers() {
       return { success: false, error: 'Profile not found' };
     }
     profile.headers = { ...profile.headers, ...params.headers };
-    return { success: true, headers: profile.headers };
+    return { success: true, result: { headers: profile.headers } };
   });
 
   // Get headers
@@ -271,7 +271,7 @@ function setupServerHandlers() {
     if (!profile) {
       return { success: false, error: 'Profile not found' };
     }
-    return { success: true, headers: profile.headers };
+    return { success: true, result: { headers: profile.headers } };
   });
 
   // Sync profile to browser
@@ -283,15 +283,17 @@ function setupServerHandlers() {
     }
     return {
       success: true,
-      synced: true,
-      profile: {
-        id: profile.id,
-        name: profile.name,
-        userAgent: profile.userAgent,
-        fingerprint: profile.fingerprint,
-        proxy: profile.proxy,
-        headers: profile.headers,
-        geolocation: profile.geolocation
+      result: {
+        synced: true,
+        profile: {
+          id: profile.id,
+          name: profile.name,
+          userAgent: profile.userAgent,
+          fingerprint: profile.fingerprint,
+          proxy: profile.proxy,
+          headers: profile.headers,
+          geolocation: profile.geolocation
+        }
       }
     };
   });
@@ -304,9 +306,11 @@ function setupServerHandlers() {
     }
     return {
       success: true,
-      data: {
-        ...profile,
-        exportedAt: new Date().toISOString()
+      result: {
+        data: {
+          ...profile,
+          exportedAt: new Date().toISOString()
+        }
       }
     };
   });
@@ -321,7 +325,7 @@ function setupServerHandlers() {
       importedAt: new Date().toISOString()
     };
     profileStore.profiles.set(profileId, profile);
-    return { success: true, profileId, profile };
+    return { success: true, result: { profileId, profile } };
   });
 }
 

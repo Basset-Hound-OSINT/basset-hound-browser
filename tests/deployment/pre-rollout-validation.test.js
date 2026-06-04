@@ -94,7 +94,7 @@ class PreDeploymentValidator {
       },
       {
         name: 'No TODO comments in production code',
-        test: () => this.checkNoProduction Todos()
+        test: () => this.checkNoProductionTodos()
       },
       {
         name: 'No console.log in production code',
