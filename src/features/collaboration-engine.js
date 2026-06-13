@@ -320,7 +320,7 @@ class CollaborationEngine extends EventEmitter {
       return { success: false, error: 'session-not-found' };
     }
 
-    if (!this._hasPermission(sessionId, userId, 'edit')) {
+    if (!this._hasPermission(sessionId, userId, 'share')) {
       return { success: false, error: 'insufficient-permissions' };
     }
 
@@ -521,9 +521,9 @@ class CollaborationEngine extends EventEmitter {
   _initializePermissions(sessionId, userId, role) {
     const key = `${sessionId}:${userId}`;
     const permissions = {
-      'viewer': ['view', 'read'],
-      'editor': ['view', 'read', 'edit', 'comment'],
-      'admin': ['view', 'read', 'edit', 'comment', 'manage', 'delete', 'communicate']
+      'viewer': ['view', 'read', 'share'],
+      'editor': ['view', 'read', 'edit', 'comment', 'share'],
+      'admin': ['view', 'read', 'edit', 'comment', 'manage', 'delete', 'communicate', 'share']
     };
 
     this.sessions.get(sessionId).permissions.set(userId, {
@@ -610,15 +610,18 @@ class CollaborationEngine extends EventEmitter {
       return { success: false, error: 'session-not-found' };
     }
 
+    const sharedFindings = Array.from(this.findings.keys()).filter(k => k.startsWith(`${sessionId}:`)).length;
+    const uptime = Math.max(1, Date.now() - session.created);
+
     return {
       success: true,
       stats: {
         sessionId,
         activeUsers: session.users.size,
         totalActivities: session.activities.length,
-        sharedFindings: Array.from(this.findings.keys()).filter(k => k.startsWith(`${sessionId}:`)).length,
+        sharedFindings,
         totalAnnotations: Array.from(this.annotations.values()).flat().length,
-        uptime: Date.now() - session.created,
+        uptime,
         createdAt: session.created
       }
     };

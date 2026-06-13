@@ -103,7 +103,10 @@ class DetectionEvasionV2 extends EventEmitter {
     this.mlEnabled = options.mlEnabled !== false;
     this.autoTuning = options.autoTuning !== false;
 
-    this._initializeVectors();
+    // Defer initialization to allow event listeners to be attached
+    process.nextTick(() => {
+      this._initializeVectors();
+    });
   }
 
   /**
@@ -442,6 +445,45 @@ class DetectionEvasionV2 extends EventEmitter {
         type: 'network',
         detectionServices: ['browserleaks'],
         evasion: 'dns-blocking'
+      },
+
+      // Screen & Display (3 vectors)
+      {
+        id: 'screen-resolution',
+        name: 'Screen Resolution Detection',
+        type: 'screen',
+        detectionServices: ['fpjs'],
+        evasion: 'resolution-spoofing'
+      },
+      {
+        id: 'screen-color-depth',
+        name: 'Screen Color Depth Detection',
+        type: 'screen',
+        detectionServices: ['fpjs'],
+        evasion: 'color-depth-spoofing'
+      },
+      {
+        id: 'screen-device-pixel-ratio',
+        name: 'Device Pixel Ratio Detection',
+        type: 'screen',
+        detectionServices: ['browserleaks'],
+        evasion: 'dpr-spoofing'
+      },
+
+      // Font Detection (2 vectors)
+      {
+        id: 'font-enumeration',
+        name: 'Font Enumeration Detection',
+        type: 'font',
+        detectionServices: ['fpjs', 'browserleaks'],
+        evasion: 'font-spoofing'
+      },
+      {
+        id: 'font-rendering',
+        name: 'Font Rendering Fingerprinting',
+        type: 'font',
+        detectionServices: ['fpjs'],
+        evasion: 'rendering-jitter'
       }
     ];
 

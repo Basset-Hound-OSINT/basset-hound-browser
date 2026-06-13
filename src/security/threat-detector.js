@@ -599,7 +599,7 @@ class ThreatDetector {
    */
   _detectSQLInjection(query) {
     const patterns = [
-      /(\bunion\b.*\bselect\b)|(\bor\b.*\b=\b.*\b=\b)|(\b--\b)|(/\*.*\*//i
+      /(\bunion\b.*\bselect\b)|(\bor\b.*\b=\b.*\b=\b)|(\b--\b)|\/\*.*\*\//i
     ];
 
     return patterns.some(pattern => pattern.test(query.toLowerCase()));

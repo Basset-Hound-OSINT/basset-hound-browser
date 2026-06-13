@@ -53,13 +53,17 @@ class AIAnalysisEngine extends EventEmitter {
     // Check cache first
     if (this.cacheEnabled && this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey);
-      if (Date.now() - cached.timestamp < this.cacheExpiry) {
+      const elapsed = Date.now() - cached.timestamp;
+      if (elapsed < this.cacheExpiry) {
         return {
           success: true,
           analysisId,
           result: cached.data,
           fromCache: true
         };
+      } else {
+        // Cache expired, remove it
+        this.cache.delete(cacheKey);
       }
     }
 
@@ -100,7 +104,7 @@ class AIAnalysisEngine extends EventEmitter {
         timestamp: Date.now()
       });
 
-      return { success: true, analysisId, result: analysis };
+      return { success: true, analysisId, result: analysis, fromCache: false };
     } catch (error) {
       this.emit('analysis:error', { analysisId, error: error.message, timestamp: Date.now() });
       return { success: false, error: error.message };
