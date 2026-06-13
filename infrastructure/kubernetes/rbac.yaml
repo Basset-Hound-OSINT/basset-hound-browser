@@ -1,0 +1,129 @@
+# Basset Hound Browser - Kubernetes RBAC Configuration
+# ServiceAccount, Role, and RoleBinding for least privilege access
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: basset-hound
+  labels:
+    app: basset-hound-browser
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: basset-hound-browser
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: basset-hound-browser
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+rules:
+# Read ConfigMaps
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+  resourceNames: ["basset-hound-browser-config", "basset-hound-tor-config"]
+
+# Read Secrets (for TLS certificates)
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+  resourceNames: ["basset-hound-browser-tls", "basset-hound-browser-auth"]
+
+# Pod self-awareness
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+# Read events for monitoring
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: basset-hound-browser
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: basset-hound-browser
+subjects:
+- kind: ServiceAccount
+  name: basset-hound-browser
+  namespace: basset-hound
+
+---
+# Network policy: Restrict traffic to Basset Hound Browser
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: basset-hound-browser-netpol
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+spec:
+  podSelector:
+    matchLabels:
+      app: basset-hound-browser
+
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow WebSocket connections from within cluster
+  - from:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8765
+
+  # Allow DNS queries
+  - to:
+    - namespaceSelector: {}
+    - podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+
+  egress:
+  # Allow DNS queries
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+
+  # Allow external HTTP/HTTPS for web browsing
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+
+  # Allow Tor traffic (if using external Tor)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 9050

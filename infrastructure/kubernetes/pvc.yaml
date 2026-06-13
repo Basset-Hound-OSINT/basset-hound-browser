@@ -1,0 +1,69 @@
+# Basset Hound Browser - Kubernetes PersistentVolumeClaim Configuration
+# Storage for application data, logs, screenshots, and downloads
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basset-hound-data-pvc
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    data-type: application
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basset-hound-logs-pvc
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    data-type: logs
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basset-hound-screenshots-pvc
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    data-type: screenshots
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basset-hound-downloads-pvc
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    data-type: downloads
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 30Gi

@@ -1,0 +1,45 @@
+# Basset Hound Browser - Helm Chart
+# Package: Kubernetes deployment automation and management
+
+apiVersion: v2
+name: basset-hound-browser
+description: OSINT browser automation platform with Kubernetes orchestration
+type: application
+
+# Chart version
+version: 12.0.0
+
+# Application version
+appVersion: "12.0.0"
+
+# Chart metadata
+home: https://github.com/basset-hound-browser/helm
+sources:
+  - https://github.com/basset-hound-browser
+maintainers:
+  - name: Basset Hound Team
+    email: team@basset-hound.dev
+
+# Keywords for discovery
+keywords:
+  - osint
+  - browser
+  - automation
+  - kubernetes
+  - headless
+  - electron
+
+# Chart categories
+categories:
+  - Browser
+  - Automation
+  - OSINT
+
+# Kubeversion constraint
+kubeVersion: ">=1.20.0-0"
+
+# Icon URL
+icon: https://example.com/icon.png
+
+# Deprecated flag
+deprecated: false

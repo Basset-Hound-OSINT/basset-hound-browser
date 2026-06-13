@@ -1,0 +1,113 @@
+# Basset Hound Browser - Production Docker Compose Configuration
+# Features: High availability, strict security, monitoring, auto-restart
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+
+version: '3.9'
+
+services:
+  basset-hound-browser:
+    image: basset-hound-browser:12.0.0
+    container_name: basset-hound-browser-prod
+
+    ports:
+      - "8765:8765"      # WebSocket API
+
+    networks:
+      - basset-hound-prod
+
+    environment:
+      # Production configuration
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+
+      # Display configuration
+      - DISPLAY=:99
+      - SCREEN_RESOLUTION=1920x1080x24
+
+      # Electron configuration
+      - ELECTRON_DISABLE_SANDBOX=1
+
+      # Tor configuration
+      - USE_SYSTEM_TOR=true
+
+      # Optional: WebSocket authentication
+      # - BASSET_WS_TOKEN=${BASSET_WS_TOKEN}
+
+      # Optional: SSL/TLS configuration
+      # - BASSET_WS_SSL_ENABLED=true
+      # - BASSET_WS_SSL_CERT=/run/secrets/server_cert
+      # - BASSET_WS_SSL_KEY=/run/secrets/server_key
+
+    # Mount persistent volumes only
+    volumes:
+      # Persistent data
+      - basset-prod-data:/app/data
+      - basset-logs:/app/logs
+
+      # Downloads and screenshots
+      - basset-downloads:/app/downloads
+      - basset-screenshots:/app/screenshots
+
+    # Security configuration - strict
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits (production - strict)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # High availability restart policy
+    restart: on-failure:5
+
+    # Logging configuration (production)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "env=production"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "/app/health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Secrets (optional, for SSL certificates)
+    # secrets:
+    #   - server_cert
+    #   - server_key
+
+volumes:
+  basset-prod-data:
+    driver: local
+  basset-logs:
+    driver: local
+  basset-downloads:
+    driver: local
+  basset-screenshots:
+    driver: local
+
+networks:
+  basset-hound-prod:
+    name: basset-hound-prod
+    driver: bridge
+
+# secrets:
+#   server_cert:
+#     file: ./certs/server.crt
+#   server_key:
+#     file: ./certs/server.key

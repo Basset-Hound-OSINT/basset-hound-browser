@@ -1,0 +1,205 @@
+# Basset Hound Browser - Kubernetes Deployment Configuration
+# Manages rolling updates with health checks and resource management
+# Usage: kubectl apply -f infrastructure/kubernetes/deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basset-hound-browser
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    version: "12.0.0"
+    component: browser-engine
+spec:
+  # Replica management
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app: basset-hound-browser
+      component: browser-engine
+
+  template:
+    metadata:
+      labels:
+        app: basset-hound-browser
+        version: "12.0.0"
+        component: browser-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8765"
+        prometheus.io/path: "/metrics"
+
+    spec:
+      # Service account for RBAC
+      serviceAccountName: basset-hound-browser
+
+      # Security context (pod-level)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Pod scheduling strategy
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - basset-hound-browser
+              topologyKey: kubernetes.io/hostname
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 30
+
+      # Init containers for setup
+      initContainers:
+      - name: setup
+        image: basset-hound-browser:12.0.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - |
+          echo "Setting up Basset Hound Browser..."
+          mkdir -p /app/data /app/logs
+          chmod 755 /app/data /app/logs
+          echo "Setup complete"
+        volumeMounts:
+        - name: app-data
+          mountPath: /app/data
+        - name: app-logs
+          mountPath: /app/logs
+
+      # Main container
+      containers:
+      - name: basset-hound-browser
+        image: basset-hound-browser:12.0.0
+        imagePullPolicy: IfNotPresent
+
+        # Port configuration
+        ports:
+        - name: websocket
+          containerPort: 8765
+          protocol: TCP
+
+        # Environment variables
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: DISPLAY
+          value: ":99"
+        - name: SCREEN_RESOLUTION
+          value: "1920x1080x24"
+        - name: ELECTRON_DISABLE_SANDBOX
+          value: "1"
+        - name: USE_SYSTEM_TOR
+          value: "true"
+
+        # ConfigMap environment variables
+        envFrom:
+        - configMapRef:
+            name: basset-hound-browser-config
+            optional: true
+
+        # Resource management (production-grade)
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+
+        # Security context (container-level)
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - SYS_ADMIN
+
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /
+            port: websocket
+            scheme: HTTP
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: websocket
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 2
+
+        startupProbe:
+          httpGet:
+            path: /
+            port: websocket
+            scheme: HTTP
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 30
+
+        # Volume mounts
+        volumeMounts:
+        - name: app-data
+          mountPath: /app/data
+        - name: app-logs
+          mountPath: /app/logs
+        - name: app-screenshots
+          mountPath: /app/screenshots
+        - name: app-downloads
+          mountPath: /app/downloads
+
+      # Volume definitions
+      volumes:
+      - name: app-data
+        persistentVolumeClaim:
+          claimName: basset-hound-data-pvc
+      - name: app-logs
+        persistentVolumeClaim:
+          claimName: basset-hound-logs-pvc
+      - name: app-screenshots
+        persistentVolumeClaim:
+          claimName: basset-hound-screenshots-pvc
+      - name: app-downloads
+        persistentVolumeClaim:
+          claimName: basset-hound-downloads-pvc
+
+      # Tolerations for node taints
+      tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "browser"
+        effect: "NoSchedule"

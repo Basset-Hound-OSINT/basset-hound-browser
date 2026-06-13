@@ -1,0 +1,66 @@
+# Basset Hound Browser - Kubernetes Service Configuration
+# Exposes the browser via ClusterIP and NodePort services
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: basset-hound-browser-clusterip
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+  - name: websocket
+    port: 8765
+    targetPort: 8765
+    protocol: TCP
+  selector:
+    app: basset-hound-browser
+    component: browser-engine
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: basset-hound-browser-nodeport
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    tier: backend
+spec:
+  type: NodePort
+  ports:
+  - name: websocket
+    port: 8765
+    targetPort: 8765
+    nodePort: 30765
+    protocol: TCP
+  selector:
+    app: basset-hound-browser
+    component: browser-engine
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: basset-hound-browser-loadbalancer
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    tier: backend
+spec:
+  type: LoadBalancer
+  ports:
+  - name: websocket
+    port: 8765
+    targetPort: 8765
+    protocol: TCP
+  selector:
+    app: basset-hound-browser
+    component: browser-engine
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600

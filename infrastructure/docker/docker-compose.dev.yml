@@ -1,0 +1,99 @@
+# Basset Hound Browser - Development Docker Compose Configuration
+# Features: Hot reload, volume mounts, extensive logging, debug mode
+# Usage: docker-compose -f docker-compose.dev.yml up
+
+version: '3.9'
+
+services:
+  basset-hound-browser:
+    build:
+      context: ../../
+      dockerfile: infrastructure/docker/Dockerfile.multi-stage
+    container_name: basset-hound-browser-dev
+
+    ports:
+      - "8765:8765"      # WebSocket API
+      - "9050:9050"      # Tor SOCKS proxy
+      - "9051:9051"      # Tor control port
+
+    networks:
+      - basset-hound-dev
+
+    environment:
+      # Development configuration
+      - NODE_ENV=development
+      - DEBUG=basset:*
+      - LOG_LEVEL=debug
+
+      # Display configuration
+      - DISPLAY=:99
+      - SCREEN_RESOLUTION=1920x1080x24
+
+      # Electron configuration
+      - ELECTRON_DISABLE_SANDBOX=1
+      - ELECTRON_DEBUG=false
+
+      # Tor configuration
+      - USE_SYSTEM_TOR=true
+
+    # Mount source code for hot reload
+    volumes:
+      # Source code
+      - ../../src:/app/src
+      - ../../websocket:/app/websocket
+      - ../../evasion:/app/evasion
+      - ../../extraction:/app/extraction
+      - ../../proxy:/app/proxy
+      - ../../blocking:/app/blocking
+
+      # Data volumes
+      - ./dev-data:/app/data
+      - ../../downloads:/app/downloads
+      - ../../screenshots:/app/screenshots
+      - ../../logs:/app/logs
+
+      # Shared X11 socket for local display
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    # Security configuration
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits (development - generous)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+    # Restart policy
+    restart: on-failure:3
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+        labels: "env=development"
+
+    # Allow interactive shell access
+    stdin_open: true
+    tty: true
+
+volumes:
+  dev-data:
+    driver: local
+
+networks:
+  basset-hound-dev:
+    name: basset-hound-dev
+    driver: bridge

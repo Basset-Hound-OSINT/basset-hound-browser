@@ -1,0 +1,143 @@
+.performance-metrics {
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.performance-metrics.loading,
+.performance-metrics.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #666;
+}
+
+.performance-metrics.error {
+  background: #fee;
+  color: #c00;
+}
+
+.metrics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.metrics-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.metric-selector select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  background: white;
+  border-left: 4px solid #3b82f6;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.status-ok {
+  border-left-color: #10b981;
+}
+
+.metric-card.status-warning {
+  border-left-color: #f59e0b;
+  background: #fefce8;
+}
+
+.metric-card.status-critical {
+  border-left-color: #ef4444;
+  background: #fee;
+}
+
+.metric-card.status-neutral {
+  border-left-color: #6b7280;
+}
+
+.metric-title {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.metric-unit {
+  font-size: 14px;
+  color: #888;
+  font-weight: normal;
+}
+
+.metric-status {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.metric-status.ok {
+  background: #dbeafe;
+  color: #0c4a6e;
+}
+
+.metric-status.warning {
+  background: #fed7aa;
+  color: #92400e;
+}
+
+.metric-status.critical {
+  background: #fecaca;
+  color: #7c2d12;
+}
+
+.metric-status.neutral {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.chart-container {
+  background: white;
+  border-radius: 6px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.chart-container.pie-chart {
+  max-width: 400px;
+}
+
+.chart-container canvas {
+  max-height: 300px;
+}

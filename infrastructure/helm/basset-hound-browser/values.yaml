@@ -1,0 +1,226 @@
+# Basset Hound Browser - Helm Chart Values
+# Customizable configuration for Kubernetes deployment
+
+# Global configuration
+global:
+  namespace: basset-hound
+  environment: production
+
+# Replica configuration
+replicaCount: 3
+
+# Image configuration
+image:
+  repository: basset-hound-browser
+  tag: "12.0.0"
+  pullPolicy: IfNotPresent
+
+# Image pull secrets for private registries
+imagePullSecrets: []
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8765"
+  prometheus.io/path: "/metrics"
+
+# Security context (pod-level)
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+# Security context (container-level)
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - SYS_ADMIN
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8765
+  targetPort: 8765
+  nodePort: 30765
+  annotations: {}
+  sessionAffinity: ClientIP
+  sessionAffinityTimeout: 3600
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: basset-hound.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: basset-hound-tls
+      hosts:
+        - basset-hound.example.com
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Persistence configuration
+persistence:
+  enabled: true
+
+  # Application data
+  data:
+    storageClass: "standard"
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    mountPath: /app/data
+
+  # Logs
+  logs:
+    storageClass: "standard"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    mountPath: /app/logs
+
+  # Screenshots
+  screenshots:
+    storageClass: "standard"
+    accessMode: ReadWriteOnce
+    size: 50Gi
+    mountPath: /app/screenshots
+
+  # Downloads
+  downloads:
+    storageClass: "standard"
+    accessMode: ReadWriteOnce
+    size: 30Gi
+    mountPath: /app/downloads
+
+# Environment variables
+env:
+  NODE_ENV: production
+  LOG_LEVEL: info
+  DISPLAY: ":99"
+  SCREEN_RESOLUTION: "1920x1080x24"
+  ELECTRON_DISABLE_SANDBOX: "1"
+  USE_SYSTEM_TOR: "true"
+  WEBSOCKET_PORT: "8765"
+  WEBSOCKET_MAX_CONNECTIONS: "1000"
+
+# ConfigMap data
+configMap:
+  data:
+    LOG_FORMAT: "json"
+    LOG_OUTPUT: "stdout"
+    NODE_MAX_HTTP_HEADER_SIZE: "16384"
+    NODE_OPTIONS: "--max-old-space-size=1024 --expose-gc"
+
+# Health checks
+healthCheck:
+  liveness:
+    enabled: true
+    initialDelaySeconds: 40
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+
+  readiness:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 2
+
+  startup:
+    enabled: true
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 30
+
+# Affinity settings
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - basset-hound-browser
+          topologyKey: kubernetes.io/hostname
+
+# Node selector for pod placement
+nodeSelector: {}
+
+# Tolerations for node taints
+tolerations:
+  - key: "workload"
+    operator: "Equal"
+    value: "browser"
+    effect: "NoSchedule"
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Network policies
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Monitoring (Prometheus)
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Logging (ELK/Loki)
+logging:
+  enabled: true
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # 2 AM daily
+  retention: 30  # days
+  storageClass: "standard"
+  size: 100Gi

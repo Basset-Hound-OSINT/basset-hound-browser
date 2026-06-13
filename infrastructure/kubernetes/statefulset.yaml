@@ -1,0 +1,141 @@
+# Basset Hound Browser - Kubernetes StatefulSet Configuration
+# For stateful deployments with persistent session management
+# Use when session state must be maintained across pod restarts
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: basset-hound-browser-stateful
+  namespace: basset-hound
+  labels:
+    app: basset-hound-browser
+    version: "12.0.0"
+    component: browser-engine
+    deployment-type: stateful
+spec:
+  serviceName: basset-hound-browser-stateful
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: basset-hound-browser
+      deployment-type: stateful
+
+  template:
+    metadata:
+      labels:
+        app: basset-hound-browser
+        version: "12.0.0"
+        deployment-type: stateful
+
+    spec:
+      # Security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Service account
+      serviceAccountName: basset-hound-browser
+
+      containers:
+      - name: basset-hound-browser
+        image: basset-hound-browser:12.0.0
+        imagePullPolicy: IfNotPresent
+
+        ports:
+        - name: websocket
+          containerPort: 8765
+
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: DISPLAY
+          value: ":99"
+        - name: ELECTRON_DISABLE_SANDBOX
+          value: "1"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+        envFrom:
+        - configMapRef:
+            name: basset-hound-browser-config
+
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "2Gi"
+
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - SYS_ADMIN
+
+        livenessProbe:
+          httpGet:
+            path: /
+            port: websocket
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: websocket
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 2
+
+        volumeMounts:
+        - name: app-data
+          mountPath: /app/data
+        - name: app-logs
+          mountPath: /app/logs
+        - name: app-session
+          mountPath: /app/session
+
+  # Persistent volume claims
+  volumeClaimTemplates:
+  - metadata:
+      name: app-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 10Gi
+
+  - metadata:
+      name: app-logs
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 5Gi
+
+  - metadata:
+      name: app-session
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 5Gi

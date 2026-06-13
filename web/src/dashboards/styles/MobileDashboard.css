@@ -1,0 +1,393 @@
+.mobile-dashboard {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-dashboard.loading,
+.mobile-dashboard.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+.mobile-dashboard.error {
+  background: #fee;
+  color: #c00;
+}
+
+/* Header */
+.mobile-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-header h1 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.status-indicator {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.status-indicator.excellent {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.status-indicator.good {
+  background: #dbeafe;
+  color: #0c4a6e;
+}
+
+.status-indicator.warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-indicator.critical {
+  background: #fee;
+  color: #7c2d12;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 2s infinite;
+}
+
+/* Quick Stats */
+.quick-stats-mobile {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.stat-icon {
+  font-size: 20px;
+}
+
+.stat-data {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Tabs */
+.mobile-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0;
+  margin: 0;
+}
+
+.mobile-tabs .tab {
+  padding: 12px;
+  border: none;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.mobile-tabs .tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+/* Content */
+.mobile-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.overview-section,
+.metrics-section,
+.errors-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #666;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.value-large {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+}
+
+.resource-item {
+  display: grid;
+  grid-template-columns: 60px 1fr 40px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.resource-item:last-child {
+  margin-bottom: 0;
+}
+
+.resource-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.resource-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.resource-fill {
+  height: 100%;
+  background: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.resource-value {
+  font-size: 11px;
+  color: #666;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Metrics Section */
+.metric-item {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  display: grid;
+  grid-template-columns: 80px 1fr 50px;
+  gap: 10px;
+  align-items: center;
+}
+
+.metric-name {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.metric-bar {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.metric-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.metric-fill.ok {
+  background: #10b981;
+}
+
+.metric-fill.warning {
+  background: #f59e0b;
+}
+
+.metric-fill.critical {
+  background: #ef4444;
+}
+
+.metric-value {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Errors Section */
+.error-item {
+  background: white;
+  border-left: 4px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-item.severity-critical {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.error-item.severity-warning {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.error-item.severity-info {
+  border-left-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.error-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.error-details {
+  flex: 1;
+}
+
+.error-title {
+  font-size: 12px;
+  color: #333;
+  font-weight: 500;
+}
+
+.error-time {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.no-errors {
+  background: white;
+  padding: 20px;
+  text-align: center;
+  color: #999;
+  border-radius: 6px;
+}
+
+/* SOS Button */
+.sos-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  z-index: 20;
+  animation: pulse 2s infinite;
+}
+
+.sos-button:active {
+  transform: scale(0.95);
+}
+
+/* Last Updated */
+.last-updated {
+  padding: 10px;
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .mobile-dashboard {
+    padding: 0;
+  }
+
+  .mobile-content {
+    padding: 8px;
+  }
+
+  .quick-stats-mobile {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mobile-tabs {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-item {
+    padding: 6px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 13px;
+  }
+}
