@@ -168,22 +168,24 @@
 
 ## v12.2.0 Development Planning (July 15, 2026 Target)
 
-### Feature Implementation (June 15 - July 15)
-- [ ] Forensic Excellence Module - ISO/IEC 27037 compliance
-- [ ] Multi-Target Monitoring - Competitor change detection
-- [ ] Agent SDKs - Python, JavaScript, TypeScript
-- [ ] Dark Web Monitoring - Enhanced .onion support
+### Core Feature Implementation (June 15 - July 15)
+- [ ] Forensic Excellence Module - ISO/IEC 27037 compliance for evidence capture
+- [ ] Enhanced .onion Support - Improved dark web navigation
 - [ ] Session Persistence - 500+ concurrent requests
 - [ ] Performance Optimization - 350-400+ msg/sec target
 - [ ] Extended load testing - 500+ concurrent connections
+- [ ] Additional WebSocket Commands - Extended automation capabilities
+- [ ] Documentation expansion - Additional integration guides
 
-### Market Positioning & Certification
-- [ ] ISO/IEC 27037 audit process kickoff
-- [ ] Law enforcement pilot program setup (3+ programs)
-- [ ] Corporate competitive intelligence customer onboarding (10+)
-- [ ] Revenue forecasting for $1-3M ARR target
+### Out of Scope (NOT Planned)
+- ❌ Third-party API integrations (Shodan, Maltego, Censys)
+- ❌ ML-based analysis or model integration
+- ❌ Investigation management system
+- ❌ OSINT pattern detection or intelligence analysis
 
-**Details:** See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
+**Architecture Note:** Basset provides raw data via WebSocket API. External applications and agents can add analysis, integrations, and intelligence layers as needed.
+
+**Details:** See [docs/SCOPE.md](SCOPE.md) for architectural boundaries
 
 ---
 

@@ -706,7 +706,7 @@ async function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '../preload/preload.js'),
       webviewTag: true,
       sandbox: false,
       // Disable webdriver detection
@@ -761,7 +761,7 @@ async function createWindow() {
   // Set up response header modification for CSP bypass
   headerManager.setResponseHeader('Content-Security-Policy', '');
 
-  mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, '../../renderer', 'index.html'));
 
   // Initialize Session Manager
   const sessionDataPath = path.join(app.getPath('userData'), 'sessions');
@@ -861,7 +861,7 @@ async function createWindow() {
   });
 
   // Initialize Script Manager for automation
-  const automationDataPath = path.join(__dirname, 'automation', 'saved');
+  const automationDataPath = path.join(__dirname, '../../automation', 'saved');
   scriptManager = new ScriptManager({
     storagePath: automationDataPath,
     mainWindow
@@ -895,7 +895,7 @@ async function createWindow() {
   // Initialize Session Recording Manager for action recording
   sessionRecordingManager = new SessionRecordingManager({
     mainWindow,
-    storagePath: path.join(__dirname, 'recordings')
+    storagePath: path.join(__dirname, '../../recordings')
   });
 
   // Initialize Replay Engine for playing back recordings
@@ -908,8 +908,8 @@ async function createWindow() {
     mainWindow,
     maxWindows: 20,
     homePage: 'about:blank',
-    preloadPath: path.join(__dirname, 'preload.js'),
-    rendererPath: path.join(__dirname, 'renderer', 'index.html')
+    preloadPath: path.join(__dirname, '../preload/preload.js'),
+    rendererPath: path.join(__dirname, '../../renderer', 'index.html')
   });
 
   windowPool = new WindowPool({
@@ -918,8 +918,8 @@ async function createWindow() {
     warmupDelay: 1000,
     healthCheckInterval: 60000,
     maxIdleTime: 300000,
-    preloadPath: path.join(__dirname, 'preload.js'),
-    rendererPath: path.join(__dirname, 'renderer', 'index.html')
+    preloadPath: path.join(__dirname, '../preload/preload.js'),
+    rendererPath: path.join(__dirname, '../../renderer', 'index.html')
   });
 
   // Link window manager and pool

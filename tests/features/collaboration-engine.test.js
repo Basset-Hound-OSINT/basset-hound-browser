@@ -296,7 +296,7 @@ describe('CollaborationEngine', () => {
   describe('Session Statistics', () => {
     beforeEach(() => {
       engine.createSession('session-1', 'user-1');
-      engine.joinSession('session-1', 'user-2');
+      engine.joinSession('session-1', 'user-2', { role: 'editor' });
     });
 
     test('should calculate session statistics', () => {

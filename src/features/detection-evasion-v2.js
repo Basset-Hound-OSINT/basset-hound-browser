@@ -103,16 +103,14 @@ class DetectionEvasionV2 extends EventEmitter {
     this.mlEnabled = options.mlEnabled !== false;
     this.autoTuning = options.autoTuning !== false;
 
-    // Defer initialization to allow event listeners to be attached
-    process.nextTick(() => {
-      this._initializeVectors();
-    });
+    // Initialize vectors immediately, but defer event emission to allow listeners to be attached
+    this._initializeVectors(true);
   }
 
   /**
    * Initialize all 50+ detection vectors
    */
-  _initializeVectors() {
+  _initializeVectors(deferEvent = false) {
     const vectors = [
       // Canvas Fingerprinting (5 vectors)
       {
@@ -493,7 +491,14 @@ class DetectionEvasionV2 extends EventEmitter {
       this.vectorCount++;
     }
 
-    this.emit('vectors:initialized', { count: this.vectorCount });
+    if (deferEvent) {
+      // Defer event emission to allow listeners to be attached
+      process.nextTick(() => {
+        this.emit('vectors:initialized', { count: this.vectorCount });
+      });
+    } else {
+      this.emit('vectors:initialized', { count: this.vectorCount });
+    }
   }
 
   /**

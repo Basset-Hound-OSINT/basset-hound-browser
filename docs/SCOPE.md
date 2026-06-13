@@ -89,7 +89,32 @@ This approach means:
 - **Rate limiting:** Adaptive delays, exponential backoff
 - **TLS fingerprinting:** JA3/JA4 research and mitigation strategies
 
-### 5. Network Capabilities (Tor-Focused)
+### 5. Third-Party API Integrations
+❌ **EXPLICITLY OUT OF SCOPE**
+- ❌ **Shodan API integration:** Not implemented, browser does not query Shodan
+- ❌ **Maltego API integration:** Not implemented, browser does not call Maltego
+- ❌ **Censys API integration:** Not implemented, browser does not call Censys
+- ❌ **Domain intelligence APIs:** Not implemented, browser does not call threat intel services
+- ❌ **Reverse image search APIs:** Not implemented, browser does not use image lookup services
+- ❌ **ML-based analysis services:** Not implemented, browser does not call ML APIs
+- ❌ **Any cloud service integrations:** Not in browser scope
+
+> **Key Principle:** Basset Hound Browser is a **focused automation and data collection API**. It does NOT integrate with external intelligence services. External applications calling the browser API can choose to integrate third-party services in their own layers if desired.
+
+> **Architecture:** Basset provides raw data via WebSocket API. External agents/applications consuming that data can optionally enrich it with Shodan, Maltego, Censys, or other services. The browser stays focused on browser automation and forensic capture.
+
+### 6. Machine Learning Integrations
+❌ **EXPLICITLY OUT OF SCOPE**
+- ❌ **ML-based fingerprint detection:** Browser does not use ML models
+- ❌ **Behavioral pattern learning:** Not implemented in browser
+- ❌ **Adaptive evasion ML:** Browser uses deterministic evasion, not trained models
+- ❌ **Computer vision services:** Not implemented (image analysis is agent responsibility)
+- ❌ **NLP/text analysis:** Not implemented (text analysis is agent responsibility)
+- ❌ **Any ML inference:** Not in browser scope
+
+> **Principle:** Machine learning and AI analysis are handled by **external agents** using the raw data provided by the browser. The browser itself is deterministic and model-free.
+
+### 7. Network Capabilities (Tor-Focused)
 
 > **Key Clarification:** Generic proxy configuration is NOT a user-configurable feature. The browser's proxy capabilities exist specifically for **Tor integration** to support network forensics and .onion site access.
 

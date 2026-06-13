@@ -1,0 +1,178 @@
+================================================================================
+ROOT DIRECTORY CLEANUP & REORGANIZATION PLAN
+Project: Basset Hound Browser
+Date: 2026-06-13
+================================================================================
+
+PHASE 1: INVENTORY & ANALYSIS
+================================================================================
+
+ROOT-LEVEL FILES (21 total):
+Configuration & Build:
+  - .dockerignore (913 bytes) -> KEEP in root (standard Docker convention)
+  - .gitignore (1.1K) -> KEEP in root (standard Git convention)
+  - docker-compose.yml (1.8K) -> MOVE to /config/docker/
+  - Dockerfile (6.3K) -> MOVE to /config/docker/
+  - package.json (7.7K) -> KEEP in root (standard Node convention)
+  - package-lock.json (396K) -> KEEP in root (standard Node convention)
+
+Main Application Files:
+  - main.js (91K) -> MOVE to /src/main/ (Electron main process)
+  - preload.js (42K) -> MOVE to /src/preload/ (Electron preload script)
+
+Documentation Files (9 files):
+  - README.md (37K) -> KEEP/UPDATE in root (project entry point)
+  - CODE-QUALITY-FINAL-REPORT.txt (19K) -> MOVE to /docs/findings/
+  - CODE-QUALITY-IMPROVEMENTS-PLAN.md (5.8K) -> MOVE to /docs/findings/
+  - CODE-QUALITY-PHASE1-SUMMARY.md (8.8K) -> MOVE to /docs/findings/
+  - CODE-QUALITY-PHASE2-SUMMARY.md (11K) -> MOVE to /docs/findings/
+  - DASHBOARDS-INDEX.md (14K) -> MOVE to /docs/
+  - FINAL-PRODUCTION-VALIDATION-REPORT-2026-06-13.md (12K) -> MOVE to /docs/findings/
+  - INFRASTRUCTURE-SUMMARY.md (8.7K) -> MOVE to /docs/findings/
+  - INTEGRATION-TEST-COMPLETE.md (7.3K) -> MOVE to /docs/findings/
+  - INTEGRATION-TEST-EXECUTION-SUMMARY.txt (11K) -> MOVE to /docs/findings/
+  - OBSERVABILITY-FINDINGS.txt (20K) -> MOVE to /docs/findings/
+  - PHASE1-COMPLETION-VERIFICATION.txt (13K) -> MOVE to /docs/findings/
+  - TESTING-EXPANSION-REPORT.txt (16K) -> MOVE to /docs/findings/
+
+DIRECTORIES (32 total):
+Infrastructure:
+  - assets/ -> KEEP (media assets)
+  - config/ -> KEEP (exists, add docker subdirs)
+  - data/ -> KEEP (data files)
+  - dist/ -> KEEP (build output)
+  - coverage/ -> KEEP (test coverage)
+  - disk-cache/ -> KEEP (runtime cache)
+
+Code Modules:
+  - src/ -> EXISTS (main source structure)
+  - automation/ -> KEEP (automation scripts)
+  - blocking/ -> KEEP (ad/tracker blocking)
+  - blocking-data/ -> KEEP (blocking data)
+  - browser_mcp/ -> KEEP (MCP server)
+  - clients/ -> KEEP (client code)
+  - evasion/ -> KEEP (bot evasion)
+  - evidence/ -> KEEP (evidence collection)
+  - extraction/ -> KEEP (data extraction)
+  - forms/ -> KEEP (form handling)
+  - geolocation/ -> KEEP (geolocation)
+  - headers/ -> KEEP (header manipulation)
+  - headless/ -> KEEP (headless mode)
+  - history/ -> KEEP (history tracking)
+  - input/ -> KEEP (input handling)
+  - inspector/ -> KEEP (DevTools)
+  - logging/ -> KEEP (logging)
+  - proxy/ -> KEEP (proxy management)
+  - request-intercept/ -> KEEP (request interception)
+  - session/ -> KEEP (session management)
+  - storage/ -> KEEP (storage management)
+  - downloads/ -> KEEP (downloads)
+  - cookies/ -> KEEP (cookie management)
+  - devtools/ -> KEEP (DevTools integration)
+
+Documentation/Meta:
+  - docs/ -> KEEP (main documentation)
+  - examples/ -> KEEP (examples)
+  - infrastructure/ -> KEEP (infrastructure as code)
+  - integrations/ -> KEEP (integrations)
+  - tests/ -> KEEP (tests)
+  - scripts/ -> KEEP (utility scripts)
+
+Hidden:
+  - .git/ -> KEEP (Git repository)
+  - .claude/ -> KEEP (Claude Code project settings)
+  - .cache/ -> KEEP (build cache)
+  - .basset-hound/ -> KEEP (project metadata)
+
+ANALYSIS SUMMARY:
+- 13 files need moving to docs/findings/
+- 2 main application files need proper src/ placement
+- 2 Docker files need moving to config/docker/
+- 7 files should stay in root (config, packages, README, docker convention files)
+
+Total cleanup: ~200 MB of root clutter to organize
+After cleanup: Root will be clean with only essential files
+
+================================================================================
+PHASE 2: MOVE CONFIGURATION FILES
+================================================================================
+Create: /config/docker/
+  - Move Dockerfile
+  - Move docker-compose.yml
+
+After Phase 1, /config/ structure:
+  - config/
+    - docker/
+      - Dockerfile
+      - docker-compose.yml
+
+================================================================================
+PHASE 3: MOVE DOCUMENTATION FILES
+================================================================================
+Create: /docs/findings/
+Move all report/summary .txt and .md files:
+  - CODE-QUALITY-FINAL-REPORT.txt
+  - CODE-QUALITY-IMPROVEMENTS-PLAN.md
+  - CODE-QUALITY-PHASE1-SUMMARY.md
+  - CODE-QUALITY-PHASE2-SUMMARY.md
+  - FINAL-PRODUCTION-VALIDATION-REPORT-2026-06-13.md
+  - INFRASTRUCTURE-SUMMARY.md
+  - INTEGRATION-TEST-COMPLETE.md
+  - INTEGRATION-TEST-EXECUTION-SUMMARY.txt
+  - OBSERVABILITY-FINDINGS.txt
+  - PHASE1-COMPLETION-VERIFICATION.txt
+  - TESTING-EXPANSION-REPORT.txt
+
+Keep in root:
+  - README.md (project entry point)
+  - DASHBOARDS-INDEX.md (move to /docs/)
+
+================================================================================
+PHASE 4: ORGANIZE APPLICATION FILES
+================================================================================
+Verify/Create:
+  - /src/main/ -> main.js (currently in root)
+  - /src/preload/ -> preload.js (currently in root)
+
+================================================================================
+PHASE 5: CREATE NAVIGATION & UPDATE REFERENCES
+================================================================================
+Create: /ROOT-NAVIGATION.md
+  - Directory structure overview
+  - Quick links to key files
+  - Module descriptions
+  - Integration points
+
+Update: /README.md
+  - Add structure overview section
+  - Link to ROOT-NAVIGATION.md
+  - Add directory navigation
+
+Update: All relative imports/requires if necessary
+  - main.js references
+  - preload.js references
+  - package.json scripts
+
+================================================================================
+IMPACT ASSESSMENT:
+================================================================================
+
+Benefits:
+  + Root directory cleaned (21 files -> ~8 essential files)
+  + Better organization following conventions
+  + Easier navigation and discovery
+  + Clear separation of concerns
+  + Reduced cognitive load
+
+Risks:
+  - Import paths may need updates
+  - Electron main/preload script paths may need updates
+  - Build scripts may reference old locations
+
+Mitigation:
+  - Check package.json scripts
+  - Check Electron main process config
+  - Test application after moves
+  - Update .gitignore if needed
+
+================================================================================

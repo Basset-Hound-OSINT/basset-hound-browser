@@ -320,7 +320,7 @@ class CollaborationEngine extends EventEmitter {
       return { success: false, error: 'session-not-found' };
     }
 
-    if (!this._hasPermission(sessionId, userId, 'share')) {
+    if (!this._hasPermission(sessionId, userId, 'edit')) {
       return { success: false, error: 'insufficient-permissions' };
     }
 
@@ -521,9 +521,9 @@ class CollaborationEngine extends EventEmitter {
   _initializePermissions(sessionId, userId, role) {
     const key = `${sessionId}:${userId}`;
     const permissions = {
-      'viewer': ['view', 'read', 'share'],
-      'editor': ['view', 'read', 'edit', 'comment', 'share'],
-      'admin': ['view', 'read', 'edit', 'comment', 'manage', 'delete', 'communicate', 'share']
+      'viewer': ['view', 'read'],
+      'editor': ['view', 'read', 'edit', 'comment'],
+      'admin': ['view', 'read', 'edit', 'comment', 'manage', 'delete', 'communicate']
     };
 
     this.sessions.get(sessionId).permissions.set(userId, {

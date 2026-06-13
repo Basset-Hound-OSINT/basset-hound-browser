@@ -1,8 +1,35 @@
 # Basset Hound Browser - Product Roadmap
 
-**Last Updated:** June 3, 2026
+**Last Updated:** June 13, 2026
 **Current Version:** 12.0.0 (Production Live)
-**Status:** ✅ PRODUCTION-READY v12.1.0 - Wave 15 Complete, Wave 16 Foundation Ready
+**Status:** ✅ PRODUCTION-READY v12.1.0 - Wave 16 Core Complete, Scope Clarified
+**Latest Session Record:** [Wave 16 Phase 2-5 Complete, Scope Alignment (June 13)](archives/session_records/2026-06-13_WAVE16-SCOPE-ALIGNMENT.md)
+
+---
+
+## 🎯 SCOPE CLARIFICATION (June 13, 2026)
+
+**Basset Hound Browser is a focused WebSocket API for browser automation and forensic data collection.**
+
+### ✅ IN SCOPE
+- WebSocket API endpoints for browser control
+- Navigation, interaction, content extraction
+- Forensic evidence capture (screenshots, HAR, metadata)
+- Bot evasion (fingerprinting, behavioral simulation)
+- Tor integration for .onion access
+- Profile and session management
+
+### ❌ OUT OF SCOPE (Removed from Roadmap)
+- **Third-party API integrations:** Shodan, Maltego, Censys, threat intelligence services (not implemented)
+- **ML integrations:** No machine learning models, APIs, or ML-based analysis
+- **OSINT analysis:** Pattern detection, data classification, intelligence decisions
+- **Case/investigation management:** External systems handle investigations
+- **External system integration:** Credential fetching, activity syncing, sock puppet management
+
+**Principle:** External applications consuming the browser API can optionally add these services in their own layers. The browser provides raw data only.
+
+---
+
 **Latest Session Record:** [Wave 15 Completion & Wave 16 Foundation (June 2-3)](archives/session_records/2026-06-02_WAVE15-COMPLETION-AND-WAVE16-FOUNDATION.md)
 
 ## Next Release: v12.1.0

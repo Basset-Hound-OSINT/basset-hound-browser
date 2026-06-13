@@ -2,7 +2,7 @@
   "name": "basset-hound-browser",
   "version": "12.0.0",
   "description": "Browser automation tool with anti-detection evasion and forensic data collection",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
@@ -110,8 +110,8 @@
       "buildResources": "assets"
     },
     "files": [
-      "main.js",
-      "preload.js",
+      "src/main/main.js",
+      "src/preload/preload.js",
       "renderer/**/*",
       "updater/**/*",
       "websocket/**/*",
