@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execSync } = require('child_process');
 const { ipcMain } = require('electron');
 const { humanDelay, humanType, humanMouseMove, humanScroll } = require('../evasion/humanize');
@@ -27,6 +28,8 @@ const { WindowManager, WindowState } = require('../windows/manager');
 const { WindowPool, PoolEntryState } = require('../windows/pool');
 const { PluginManager, PLUGIN_STATE } = require('../plugins');
 const { ConnectionPool } = require('./connection-pool');
+const { CommandDispatcher } = require('./command-dispatcher');
+const PriorityQueue = require('./priority-queue');  // OPT-1: Priority queue integration
 
 // Logging and debugging
 const {
@@ -40,16 +43,250 @@ const {
   WebSocketTransport
 } = require('../logging');
 
-// Error Recovery Module
-const { isRetryableError, isRetryableCommand, calculateRetryDelay, sleep, ERROR_RECOVERY_CONFIG } = require('./error-recovery');
+// Phase 3 Performance Optimizations (OPT-9, OPT-11, OPT-12)
+const { getSerializer } = require('./response-serializer');
+const { LazyManagerRegistry } = require('../src/managers/lazy-initializer');
+const {
+  initializeGCTuning,
+  initializeAdvancedGCTuning,
+  getAdaptiveGCManager
+} = require('../utils/gc-tuning');
 
-// Tor Detection Module
-const { isOnionUrl, isTorModeEnabled, checkOnionWithoutTor } = require('./tor-detector');
+// ==========================================
+// Error Recovery Configuration
+// ==========================================
+const ERROR_RECOVERY_CONFIG = {
+  maxRetries: 3,
+  retryDelay: 1000, // Base delay in ms (exponential backoff applied)
+  retryableErrors: [
+    'ETIMEDOUT',
+    'ECONNRESET',
+    'ECONNREFUSED',
+    'EPIPE',
+    'ENOTFOUND',
+    'ENETUNREACH',
+    'EAI_AGAIN',
+    'TIMEOUT',
+    'temporarily unavailable'
+  ],
+  // Commands that are safe to retry (idempotent operations)
+  retryableCommands: [
+    'get_url', 'get_content', 'get_page_state', 'screenshot', 'screenshot_viewport',
+    'screenshot_full_page', 'screenshot_element', 'get_cookies', 'get_all_cookies',
+    'list_sessions', 'list_tabs', 'get_tab_info', 'get_active_tab', 'get_history',
+    'get_downloads', 'get_proxy_status', 'get_user_agent_status', 'status', 'ping',
+    'get_network_logs', 'get_console_logs', 'list_profiles', 'get_profile',
+    'get_storage_stats', 'get_local_storage', 'get_session_storage', 'list_scripts',
+    'get_script', 'get_blocking_stats', 'get_devtools_status', 'get_console_status'
+  ]
+};
 
+/**
+ * Check if an error is transient/retryable
+ * @param {Error|string} error - The error to check
+ * @returns {boolean}
+ */
+function isRetryableError(error) {
+  const errorMessage = error?.message || error?.toString() || '';
+  return ERROR_RECOVERY_CONFIG.retryableErrors.some(
+    retryableError => errorMessage.toLowerCase().includes(retryableError.toLowerCase())
+  );
+}
 
-// IPC Utilities Module
-const { ipcWithTimeout, generateRecoverySuggestion, IPC_DEFAULT_TIMEOUT } = require('./ipc-utils');
+/**
+ * Check if a command is safe to retry (idempotent)
+ * @param {string} command - The command name
+ * @returns {boolean}
+ */
+function isRetryableCommand(command) {
+  return ERROR_RECOVERY_CONFIG.retryableCommands.includes(command);
+}
 
+/**
+ * Calculate delay for retry with exponential backoff
+ * @param {number} attempt - Current attempt number (0-based)
+ * @returns {number} Delay in milliseconds
+ */
+function calculateRetryDelay(attempt) {
+  return ERROR_RECOVERY_CONFIG.retryDelay * Math.pow(2, attempt);
+}
+
+/**
+ * Sleep for specified duration
+ * @param {number} ms - Duration in milliseconds
+ * @returns {Promise<void>}
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ==========================================
+// .onion Domain Detection
+// ==========================================
+
+/**
+ * Check if a URL is a .onion domain
+ * @param {string} url - The URL to check
+ * @returns {boolean} True if the URL is a .onion domain
+ */
+function isOnionUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.hostname.endsWith('.onion');
+  } catch {
+    // Fallback for malformed URLs - check if .onion appears in the string
+    return url.includes('.onion');
+  }
+}
+
+/**
+ * Check if Tor mode is enabled at startup
+ * @returns {boolean} True if Tor mode is enabled
+ */
+function isTorModeEnabled() {
+  const args = process.argv;
+  return (
+    process.env.TOR_MODE === '1' ||
+    process.env.TOR_MODE === 'true' ||
+    args.includes('--tor-mode')
+  );
+}
+
+/**
+ * Check URL and return error if .onion without Tor mode
+ * @param {string} url - The URL to check
+ * @returns {Object|null} Error object if .onion without Tor mode, null otherwise
+ */
+function checkOnionWithoutTor(url) {
+  if (isOnionUrl(url) && !isTorModeEnabled()) {
+    return {
+      success: false,
+      error: '.onion domains require TOR_MODE=1 at startup.',
+      suggestion: 'Restart with TOR_MODE=1 or --tor-mode flag.',
+      url
+    };
+  }
+  return null;
+}
+
+/**
+ * Default timeout for IPC responses (30 seconds)
+ */
+const IPC_DEFAULT_TIMEOUT = 30000;
+
+/**
+ * Execute an IPC request with timeout to prevent hanging promises
+ * @param {Electron.WebContents} webContents - The webContents to send to
+ * @param {string} sendChannel - The channel to send the request on
+ * @param {string} responseChannel - The channel to listen for response on
+ * @param {any} data - Data to send (optional)
+ * @param {number} timeout - Timeout in milliseconds (default: 30000)
+ * @returns {Promise<any>} The response from the renderer
+ */
+function ipcWithTimeout(webContents, sendChannel, responseChannel, data = null, timeout = IPC_DEFAULT_TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    let timeoutId;
+    let resolved = false;
+
+    const handler = (event, result) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeoutId);
+      resolve(result);
+    };
+
+    ipcMain.once(responseChannel, handler);
+
+    timeoutId = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      ipcMain.removeListener(responseChannel, handler);
+      reject(new Error(`IPC timeout: No response from '${responseChannel}' within ${timeout}ms`));
+    }, timeout);
+
+    if (data !== null) {
+      webContents.send(sendChannel, data);
+    } else {
+      webContents.send(sendChannel);
+    }
+  });
+}
+
+/**
+ * Generate a recovery suggestion based on error type
+ * @param {string} command - The failed command
+ * @param {Error|string} error - The error that occurred
+ * @param {string} managerName - The name of the manager that's unavailable
+ * @returns {Object} Recovery suggestion object
+ */
+function generateRecoverySuggestion(command, error, managerName = null) {
+  const errorMessage = error?.message || error?.toString() || 'Unknown error';
+  const suggestion = {
+    error: errorMessage,
+    recoverable: false,
+    suggestion: '',
+    alternativeCommands: []
+  };
+
+  // Manager unavailable errors
+  if (managerName) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = `The ${managerName} is not initialized. This may happen if the browser is still starting up. ` +
+      `Try waiting a few seconds and retry the command. If the issue persists, the manager may have failed to initialize.`;
+    suggestion.alternativeCommands = ['status', 'ping'];
+    return suggestion;
+  }
+
+  // Network/connection errors
+  if (errorMessage.includes('ETIMEDOUT') || errorMessage.includes('ECONNRESET')) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = 'Network timeout or connection reset. Check your network connection and retry. ' +
+      'For proxy-related issues, verify your proxy settings with get_proxy_status.';
+    suggestion.alternativeCommands = ['get_proxy_status', 'status'];
+  }
+  // Element not found
+  else if (errorMessage.includes('not found') || errorMessage.includes('no such element')) {
+    suggestion.suggestion = 'Element not found on the page. Verify the selector is correct and the page has fully loaded. ' +
+      'Use wait_for_element before interacting with dynamic content.';
+    suggestion.alternativeCommands = ['wait_for_element', 'get_page_state', 'get_content'];
+  }
+  // Timeout waiting for element
+  else if (errorMessage.includes('timeout') || errorMessage.includes('Timeout')) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = 'Operation timed out. The page may be slow to load or the element may not exist. ' +
+      'Increase the timeout parameter or check if the element exists.';
+    suggestion.alternativeCommands = ['get_page_state', 'screenshot_viewport'];
+  }
+  // Navigation errors
+  else if (errorMessage.includes('navigation') || errorMessage.includes('ERR_')) {
+    suggestion.suggestion = 'Navigation failed. The URL may be invalid, blocked, or the server is unavailable. ' +
+      'Check the URL and your network/proxy settings.';
+    suggestion.alternativeCommands = ['get_url', 'get_proxy_status', 'status'];
+  }
+  // Permission/access errors
+  else if (errorMessage.includes('permission') || errorMessage.includes('access denied')) {
+    suggestion.suggestion = 'Permission denied. The operation may require authentication or the resource may be restricted.';
+    suggestion.alternativeCommands = ['get_cookies', 'status'];
+  }
+  // Script execution errors
+  else if (errorMessage.includes('script') || errorMessage.includes('JavaScript')) {
+    suggestion.suggestion = 'Script execution failed. Check the script syntax and ensure the page context is correct.';
+    suggestion.alternativeCommands = ['get_console_logs', 'get_page_state'];
+  }
+  // Generic recoverable errors
+  else if (isRetryableError(error)) {
+    suggestion.recoverable = true;
+    suggestion.suggestion = 'A transient error occurred. The command may succeed if retried.';
+  }
+  // Unknown errors
+  else {
+    suggestion.suggestion = 'An unexpected error occurred. Check the browser console and logs for more details. ' +
+      'Use the status command to verify the browser state.';
+    suggestion.alternativeCommands = ['status', 'get_console_logs'];
+  }
+
+  return suggestion;
+}
 
 // ==========================================
 // STATE ROLLBACK MECHANISM
@@ -509,8 +746,11 @@ class WebSocketServer {
     this.clients = new Set();
     this.commandHandlers = {};
 
-    // SSL/TLS configuration (disabled by default for backwards compatibility)
-    this.sslEnabled = options.sslEnabled || (process.env.BASSET_WS_SSL_ENABLED === 'true') || false;
+    // SSL/TLS configuration (enabled by default in production, backwards compatible fallback)
+    const defaultSslEnabled = process.env.NODE_ENV === 'production' ? true : false;
+    this.sslEnabled = options.sslEnabled !== undefined ? options.sslEnabled :
+                      (process.env.BASSET_WS_SSL_ENABLED === 'true' ? true :
+                      (process.env.BASSET_WS_SSL_ENABLED === 'false' ? false : defaultSslEnabled));
     this.sslCertPath = options.sslCertPath || process.env.BASSET_WS_SSL_CERT || null;
     this.sslKeyPath = options.sslKeyPath || process.env.BASSET_WS_SSL_KEY || null;
     this.sslCaPath = options.sslCaPath || process.env.BASSET_WS_SSL_CA || null;
@@ -639,6 +879,31 @@ class WebSocketServer {
     this._setupStateRollbackListeners();
 
     this.setupCommandHandlers();
+
+    // Initialize Command Dispatcher (Phase 2 refactoring)
+    this.commandDispatcher = new CommandDispatcher(this.commandHandlers, {
+      logger: this.logger,
+      profiler: this.profiler,
+      debugManager: this.debugManager
+    });
+
+    // OPT-1: Initialize Priority Queue for command prioritization
+    this.commandQueue = new PriorityQueue({
+      maxQueueSize: 10000,
+      enableAging: true,
+      agingThreshold: 30000,
+      fairnessRatio: 10
+    });
+
+    // Queue processor interval (processes queue every 10ms)
+    this.queueProcessorInterval = null;
+
+    // Phase 3 Performance Optimizations initialization (OPT-9, OPT-11, OPT-12)
+    this.responseSerializer = null;
+    this.lazyManagerRegistry = null;
+    this.gcTuningCleanup = null;
+    this.advancedGCStats = null;
+
     this.start();
   }
 
@@ -717,20 +982,20 @@ class WebSocketServer {
   }
 
   start() {
-    // WebSocket compression configuration (OPT-01)
+    // WebSocket compression configuration (OPT-04: Enhanced compression tuning)
     const compressionConfig = {
       perMessageDeflate: {
         zlibDeflateOptions: {
           chunkSize: 1024,
-          memLevel: 7,
-          level: 3  // Balance between compression ratio and CPU cost
+          memLevel: 8,
+          level: 4  // OPT-04: Optimized for balance (was 3, tuned to 4)
         },
         zlibInflateOptions: {
           chunkSize: 10 * 1024
         },
         clientNoContextTakeover: true,
         serverNoContextTakeover: true,
-        serverMaxWindowBits: 10,
+        serverMaxWindowBits: 15,  // OPT-04: Full 32KB window (was 10, now 15 for better compression)
         concurrencyLimit: 10,
         threshold: 1024  // Only compress messages > 1KB
       }
@@ -782,6 +1047,9 @@ class WebSocketServer {
     // Start heartbeat monitoring
     this.startHeartbeat();
 
+    // OPT-1: Start queue processor for priority-based command handling
+    this.startQueueProcessor();
+
     this.wss.on('connection', (ws, req) => {
       const clientId = `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       ws.clientId = clientId;
@@ -826,41 +1094,41 @@ class WebSocketServer {
           // Handle authentication command
           if (data.command === 'authenticate') {
             const authResult = this.handleAuthenticate(ws, data);
-            ws.send(JSON.stringify({
+            this._sendResponse(ws, {
               id: data.id,
               command: 'authenticate',
               ...authResult
-            }));
+            }, authResult.success ? 'success' : 'error');
             return;
           }
 
           // Check authentication for all other commands
           if (this.requireAuth && !ws.isAuthenticated) {
-            ws.send(JSON.stringify({
+            this._sendResponse(ws, {
               id: data.id,
               command: data.command,
               success: false,
               error: 'Authentication required. Send authenticate command with token.'
-            }));
+            }, 'error');
             return;
           }
 
           // Handle get_rate_limit_status command without counting against rate limit
           if (data.command === 'get_rate_limit_status') {
             const status = this.getRateLimitStatus(ws.clientId);
-            ws.send(JSON.stringify({
+            this._sendResponse(ws, {
               id: data.id,
               command: 'get_rate_limit_status',
               success: true,
               ...status
-            }));
+            }, 'success');
             return;
           }
 
           // Check rate limit before processing command
           const rateLimitResult = this.checkRateLimit(ws.clientId);
           if (!rateLimitResult.allowed) {
-            ws.send(JSON.stringify({
+            this._sendResponse(ws, {
               id: data.id,
               command: data.command,
               success: false,
@@ -868,14 +1136,14 @@ class WebSocketServer {
               rateLimited: true,
               resetIn: rateLimitResult.resetIn,
               remaining: rateLimitResult.remaining
-            }));
+            }, 'error');
             return;
           }
 
           // EDGE CASE FIX #4: Check concurrent operation limits per client
           const concurrencyCheck = this.checkConcurrentOperations(ws.clientId);
           if (!concurrencyCheck.allowed) {
-            ws.send(JSON.stringify({
+            this._sendResponse(ws, {
               id: data.id,
               command: data.command,
               success: false,
@@ -883,7 +1151,7 @@ class WebSocketServer {
               concurrencyLimited: true,
               current: concurrencyCheck.current,
               max: concurrencyCheck.max
-            }));
+            }, 'error');
             return;
           }
 
@@ -900,7 +1168,14 @@ class WebSocketServer {
             const timerName = `cmd:${data.command}:${data.id || Date.now()}`;
             this.profiler.startTimer(timerName, { command: data.command, clientId: ws.clientId });
 
-            const response = await this.handleCommand(data);
+            // Use command dispatcher for routing (Phase 2 refactoring)
+            const { command, id, ...params } = data;
+            const response = await this.commandDispatcher.execute(command, params, {
+              enableRetry: true,
+              maxRetries: ERROR_RECOVERY_CONFIG.maxRetries,
+              clientId: ws.clientId,
+              commandId: id
+            });
 
             // End profiling timer
             const timing = this.profiler.endTimer(timerName);
@@ -912,11 +1187,12 @@ class WebSocketServer {
               duration: timing ? timing.duration : null
             });
             this.debugManager.logWebSocket('response', { ...response, command: data.command, id: data.id }, ws.clientId);
-            ws.send(JSON.stringify({
+            const templateName = response.success ? 'success' : 'error';
+            this._sendResponse(ws, {
               id: data.id,
               command: data.command,
               ...response
-            }));
+            }, templateName);
           } finally {
             // Always mark operation as complete
             this.completeOperation(ws.clientId, operationId);
@@ -939,14 +1215,14 @@ class WebSocketServer {
           }
 
           // Send detailed error response to help client recovery
-          ws.send(JSON.stringify({
+          this._sendResponse(ws, {
             success: false,
             error: error.message,
             errorCode,
             details: errorDetails,
             // Include request echoing first 100 chars for debugging
             requestSample: message.toString().substring(0, 100)
-          }));
+          }, 'error');
 
           // Server continues to accept new commands (doesn't close connection)
         }
@@ -1018,10 +1294,106 @@ class WebSocketServer {
       this.logger.error(`Server error: ${error.message}`, { error });
     });
 
+    // Initialize Phase 3 performance optimizations (OPT-9, OPT-11, OPT-12)
+    this._initializePhase3Optimizations();
+
     const authStatus = this.requireAuth ? 'enabled' : 'disabled';
     const rateLimitStatus = this.rateLimitEnabled ? `enabled (${this.maxRequestsPerMinute}/min, burst: ${this.burstAllowance})` : 'disabled';
     const sslStatus = this.sslActive ? 'enabled' : 'disabled';
     this.logger.info(`Server started on ${this.getConnectionUrl()}`, { auth: authStatus, ssl: sslStatus, rateLimit: rateLimitStatus });
+  }
+
+  /**
+   * Initialize Phase 3 Performance Optimizations (OPT-9, OPT-11, OPT-12)
+   * - OPT-11: Response Serializer with template caching and buffer pooling
+   * - OPT-9: Lazy Manager Registry for deferred initialization
+   * - OPT-12: Advanced GC Tuning with adaptive garbage collection
+   * @private
+   */
+  _initializePhase3Optimizations() {
+    const startTime = Date.now();
+
+    try {
+      // Initialize Response Serializer (OPT-11)
+      this.responseSerializer = getSerializer({
+        poolSize: 32,
+        bufferSize: 8192,
+        enableStats: true,
+        largePayloadThreshold: 65536
+      });
+      this.logger.debug('[Phase3:OPT-11] Response Serializer initialized', {
+        poolSize: 32,
+        bufferSize: '8KB',
+        templates: 5
+      });
+
+      // Initialize Lazy Manager Registry (OPT-9)
+      this.lazyManagerRegistry = new LazyManagerRegistry();
+      this.logger.debug('[Phase3:OPT-9] Lazy Manager Registry initialized');
+
+      // Initialize basic GC tuning (OPT-12 Part 1)
+      this.gcTuningCleanup = initializeGCTuning({
+        maxHeapSize: 512,
+        enableGCMonitoring: true,
+        enablePeriodicCleanup: true,
+        cleanupInterval: 60000
+      });
+      this.logger.debug('[Phase3:OPT-12] Basic GC Tuning initialized');
+
+      // Initialize advanced GC tuning (OPT-12 Part 2)
+      this.advancedGCStats = initializeAdvancedGCTuning({
+        memoryThreshold: 0.85,
+        aggressiveGCAt: 0.95,
+        adjustInterval: 5000,
+        verbose: false
+      });
+      this.logger.debug('[Phase3:OPT-12] Advanced GC Tuning initialized');
+
+      const elapsed = Date.now() - startTime;
+      this.logger.info('[Phase3] All optimizations initialized', {
+        elapsed: `${elapsed}ms`,
+        components: ['ResponseSerializer', 'LazyManagerRegistry', 'GCTuning'],
+        status: 'ready'
+      });
+    } catch (error) {
+      this.logger.error('[Phase3] Failed to initialize optimizations', {
+        error: error.message,
+        stack: error.stack
+      });
+    }
+  }
+
+  /**
+   * Send a response through the optimized serializer (OPT-11)
+   * Falls back to direct JSON.stringify if serializer not available
+   * @param {WebSocket} ws - WebSocket connection
+   * @param {Object} responseData - Response data to send
+   * @param {string} templateName - Optional template name for pre-compiled responses
+   * @private
+   */
+  _sendResponse(ws, responseData, templateName = null) {
+    try {
+      if (this.responseSerializer) {
+        const serialized = this.responseSerializer.serialize(responseData, templateName);
+        ws.send(serialized);
+      } else {
+        // Fallback for initialization phase
+        ws.send(JSON.stringify(responseData));
+      }
+    } catch (error) {
+      this.logger.error('[Phase3] Error sending response', {
+        error: error.message,
+        clientId: ws.clientId
+      });
+      // Attempt fallback send
+      try {
+        ws.send(JSON.stringify(responseData));
+      } catch (fallbackError) {
+        this.logger.error('[Phase3] Failed to send response via fallback', {
+          error: fallbackError.message
+        });
+      }
+    }
   }
 
   /**
@@ -1258,13 +1630,105 @@ class WebSocketServer {
   }
 
   /**
-   * Validate authentication token
+   * Start queue processor - OPT-1 Priority Queue processing
+   * Continuously processes queued commands based on priority
+   */
+  startQueueProcessor() {
+    if (this.queueProcessorInterval) {
+      return; // Already running
+    }
+
+    this.queueProcessorInterval = setInterval(() => {
+      try {
+        const nextRequest = this.commandQueue.getNextRequest();
+        if (nextRequest && nextRequest.ws && !nextRequest.ws.closed) {
+          // Process the request asynchronously
+          this._processQueuedCommand(nextRequest).catch((error) => {
+            this.logger.error(`[QueueProcessor] Error processing queued command: ${error.message}`);
+          });
+        }
+      } catch (error) {
+        this.logger.error(`[QueueProcessor] Error in queue processor: ${error.message}`);
+      }
+    }, 10); // Process queue every 10ms
+  }
+
+  /**
+   * Stop queue processor
+   */
+  stopQueueProcessor() {
+    if (this.queueProcessorInterval) {
+      clearInterval(this.queueProcessorInterval);
+      this.queueProcessorInterval = null;
+    }
+  }
+
+  /**
+   * Process a queued command - OPT-1
+   * @private
+   */
+  async _processQueuedCommand(queuedRequest) {
+    const { originalRequest, ws, id } = queuedRequest;
+    const { command, ...params } = originalRequest;
+
+    try {
+      // Execute the command through the dispatcher
+      const response = await this.commandDispatcher.execute(command, params, {
+        enableRetry: true,
+        maxRetries: ERROR_RECOVERY_CONFIG.maxRetries,
+        clientId: ws.clientId,
+        commandId: id
+      });
+
+      // Send response back to client
+      if (ws && !ws.closed) {
+        ws.send(JSON.stringify({
+          id: id,
+          command: command,
+          ...response
+        }));
+      }
+
+      // Mark request as completed
+      this.commandQueue.completeRequest(queuedRequest.id, response);
+    } catch (error) {
+      this.logger.error(`[QueueProcessor] Command execution error: ${error.message}`);
+
+      // Send error response
+      if (ws && !ws.closed) {
+        ws.send(JSON.stringify({
+          id: id,
+          command: command,
+          success: false,
+          error: error.message
+        }));
+      }
+
+      // Mark request as failed
+      this.commandQueue.failRequest(queuedRequest.id, error);
+    }
+  }
+
+  /**
+   * Validate authentication token using constant-time comparison to prevent timing attacks
    * @param {string} token - Token to validate
    * @returns {boolean} - True if token is valid
    */
   validateToken(token) {
     if (!this.authToken) return false;
-    return token === this.authToken;
+
+    try {
+      // Use constant-time comparison to prevent timing attacks
+      // This prevents attackers from inferring token length/content through response timing
+      return crypto.timingSafeEqual(
+        Buffer.from(token || ''),
+        Buffer.from(this.authToken)
+      );
+    } catch (err) {
+      // Catches length mismatches (both buffers must be equal length)
+      // Safer to return false for any mismatch condition
+      return false;
+    }
   }
 
   /**
@@ -2792,6 +3256,20 @@ class WebSocketServer {
       if (this.tabManager) {
         status.tabs = this.tabManager.tabs.size;
         status.activeTab = this.tabManager.activeTabId;
+      }
+
+      // Phase 3 (OPT-11): Add response serializer stats if available
+      if (this.responseSerializer) {
+        status.serializer = this.responseSerializer.getStats();
+      }
+
+      // Phase 3 (OPT-12): Add GC stats if adaptive GC manager available
+      if (this.advancedGCStats) {
+        try {
+          status.gcMetrics = this.advancedGCStats.getAdaptiveStats();
+        } catch (error) {
+          this.logger.debug('[Phase3] Error getting GC stats', { error: error.message });
+        }
       }
 
       return {
@@ -8686,6 +9164,30 @@ class WebSocketServer {
 
     // Store reference for cleanup
     this.monitoringService = monitoringService;
+
+    // ==========================================
+    // Phase 26: Advanced Monitoring Commands
+    // ==========================================
+    const { registerAdvancedMonitoringCommands } = require('./commands/monitoring-advanced');
+    registerAdvancedMonitoringCommands(this, this.mainWindow);
+
+    // ==========================================
+    // Phase 27: Performance Metrics Commands
+    // ==========================================
+    const { registerPerformanceMetricsCommands } = require('./commands/performance-metrics');
+    registerPerformanceMetricsCommands(this, this.mainWindow);
+
+    // ==========================================
+    // Phase 28: Session Management Commands
+    // ==========================================
+    const { registerSessionManagementCommands } = require('./commands/session-management');
+    registerSessionManagementCommands(this, this.mainWindow);
+
+    // ==========================================
+    // Phase 29: Advanced Analytics Commands
+    // ==========================================
+    const { registerAdvancedAnalyticsCommands } = require('./commands/analytics-advanced');
+    registerAdvancedAnalyticsCommands(this, this.mainWindow);
 
     // ==========================================
     // Wave 14: Proxy Intelligence Commands
