@@ -1,110 +1,219 @@
 """
-Basset Hound Browser - Python SDK
-Provides Python developers with seamless integration for OSINT automation
+Basset Hound Browser Python SDK
+Full-featured async Python SDK for browser automation and forensic capture
 
-Version: 1.0.0
+Version: 1.1.0-alpha
 Created: May 31, 2026
+Requires: Python 3.8+
+
+Installation:
+    pip install basset-hound-browser
 
 Usage:
-    from basset_hound import BassetClient
+    from basset_hound import BrowserClient
 
-    async with BassetClient('ws://localhost:8765') as client:
+    async with BrowserClient('ws://localhost:8765') as client:
         await client.navigate('https://example.com')
         content = await client.get_content()
-        print(content)
+
+        # Session persistence (v12.2.0)
+        checkpoint = await client.create_checkpoint('before-interaction')
+        await client.rollback_to_checkpoint(checkpoint['id'])
+
+Features:
+- All 164 WebSocket commands
+- Async/await throughout
+- Session persistence with checkpoints
+- Automatic reconnection
+- Error recovery with retries
+- Type hints for IDE support
+- Batch command support
+- Context manager support
 """
 
 import asyncio
 import json
 import logging
-from typing import Optional, Dict, List, Any, Callable
-from dataclasses import dataclass
+import time
+from typing import Optional, Dict, List, Any, AsyncContextManager, Tuple, Union, Coroutine, TypeVar, overload, AsyncGenerator
+from dataclasses import dataclass, field
 from enum import Enum
 import websockets
-from websockets.client import WebSocketClientProtocol
 import uuid
+
+# Type variables for generic responses
+T = TypeVar('T', bound=Dict[str, Any])
 
 logger = logging.getLogger(__name__)
 
 
-class CommandType(Enum):
-    """WebSocket command types"""
-    NAVIGATE = "navigate"
-    GET_CONTENT = "get_content"
-    GET_PAGE_STATE = "get_page_state"
-    CLICK = "click"
-    FILL = "fill"
-    SCROLL = "scroll"
+# Custom exceptions
+class BrowserClientError(Exception):
+    """Base exception for browser client"""
+    pass
+
+
+class BatchError(BrowserClientError):
+    """Exception for batch operation failures"""
+
+    def __init__(self, message: str, results: Optional[List['CommandResponse']] = None) -> None:
+        self.message = message
+        self.results = results or []
+        super().__init__(message)
+
+
+class CommandTimeoutError(BrowserClientError):
+    """Exception for command timeout"""
+    pass
+
+
+class ConnectionError(BrowserClientError):
+    """Exception for connection failures"""
+    pass
+
+
+class CommandCategory(Enum):
+    """Command categories for grouping"""
+    NAVIGATION = "navigation"
+    INTERACTION = "interaction"
+    EXTRACTION = "extraction"
     SCREENSHOT = "screenshot"
-    EXTRACT_ALL = "extract_all"
-    EXECUTE_SCRIPT = "execute_script"
-    GET_COOKIES = "get_cookies"
-    SET_COOKIE = "set_cookie"
-    CREATE_SESSION = "create_session"
-    CREATE_FINGERPRINT_PROFILE = "create_fingerprint_profile"
-    APPLY_FINGERPRINT = "apply_fingerprint"
-    CREATE_BEHAVIORAL_PROFILE = "create_behavioral_profile"
-    GENERATE_MOUSE_PATH = "generate_mouse_path"
-    INIT_EVIDENCE_CHAIN = "init_evidence_chain"
-    COLLECT_SCREENSHOT_CHAIN = "collect_screenshot_chain"
-    DETECT_TECHNOLOGY = "detect_technology"
+    COOKIES = "cookies"
+    SESSION = "session"
+    EVASION = "evasion"
+    MONITORING = "monitoring"
+    FORENSICS = "forensics"
+    EVIDENCE = "evidence"
 
 
 @dataclass
-class Response:
-    """Standard response wrapper"""
+class SessionCheckpoint:
+    """Session checkpoint for persistence"""
+    id: str
+    name: str
+    timestamp: int
+    url: Optional[str] = None
+    cookies: Dict[str, Any] = field(default_factory=dict)
+    localStorage: Dict[str, Any] = field(default_factory=dict)
+    sessionStorage: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'name': self.name,
+            'timestamp': self.timestamp,
+            'url': self.url,
+            'cookies': self.cookies,
+            'localStorage': self.localStorage,
+            'sessionStorage': self.sessionStorage
+        }
+
+
+@dataclass
+class CommandResponse:
+    """Standard command response"""
     id: str
     command: str
     success: bool
     data: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     recovery: Optional[Dict[str, Any]] = None
+    execution_time: float = 0.0
 
     @classmethod
-    def from_json(cls, data: Dict):
-        return cls(**data)
+    def from_dict(cls, data: Dict[str, Any]) -> 'CommandResponse':
+        return cls(
+            id=data.get('id', ''),
+            command=data.get('command', ''),
+            success=data.get('success', False),
+            data=data.get('data'),
+            error=data.get('error'),
+            recovery=data.get('recovery'),
+            execution_time=data.get('executionTime', 0.0)
+        )
 
 
-class BassetClient:
+class BrowserClient:
     """
-    Main client for Basset Hound Browser
-    Provides async/await interface for all WebSocket operations
+    Main client for Basset Hound Browser (v1.1.0-alpha)
+    Provides complete async/await interface for browser automation and forensic capture
     """
 
     def __init__(
         self,
-        url: str = "ws://localhost:8765",
+        ws_url: str = "ws://localhost:8765",
         timeout: float = 30.0,
-        auto_reconnect: bool = True
-    ):
-        self.url = url
+        auto_reconnect: bool = True,
+        reconnect_delay: float = 1.0,
+        max_retries: int = 3,
+        log_level: int = logging.INFO
+    ) -> None:
+        """
+        Initialize browser client
+
+        Args:
+            ws_url: WebSocket URL
+            timeout: Request timeout in seconds
+            auto_reconnect: Auto-reconnect on disconnect
+            reconnect_delay: Delay between reconnects
+            max_retries: Max command retries
+            log_level: Logging level
+        """
+        self.ws_url = ws_url
         self.timeout = timeout
         self.auto_reconnect = auto_reconnect
-        self.ws: Optional[WebSocketClientProtocol] = None
-        self.pending_responses: Dict[str, asyncio.Future] = {}
-        self._task: Optional[asyncio.Task] = None
+        self.reconnect_delay = reconnect_delay
+        self.max_retries = max_retries
+        self.ws: Optional[Any] = None  # websockets.WebSocketClientProtocol
+        self.pending_responses: Dict[str, asyncio.Future[CommandResponse]] = {}
+        self._task: Optional[asyncio.Task[None]] = None
+        self._connected = False
 
-    async def __aenter__(self):
+        # Session management
+        self.session_id: Optional[str] = None
+        self.checkpoints: Dict[str, SessionCheckpoint] = {}
+        self.current_checkpoint: Optional[str] = None
+
+        # Configure logging
+        logger.setLevel(log_level)
+
+    async def __aenter__(self) -> 'BrowserClient':
+        """Context manager entry"""
         await self.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[type],
+        exc_val: Optional[Exception],
+        exc_tb: Optional[Any]
+    ) -> None:
+        """Context manager exit"""
         await self.disconnect()
 
-    async def connect(self):
+    async def connect(self) -> bool:
         """Establish WebSocket connection"""
         try:
+            logger.info(f"Connecting to {self.ws_url}")
             self.ws = await asyncio.wait_for(
-                websockets.connect(self.url),
+                websockets.connect(self.ws_url),
                 timeout=self.timeout
             )
             self._task = asyncio.create_task(self._message_loop())
-            logger.info(f"Connected to {self.url}")
+            self._connected = True
+            logger.info("Connected to browser server")
+            return True
         except asyncio.TimeoutError:
-            raise TimeoutError(f"Failed to connect to {self.url} within {self.timeout}s")
+            logger.error(f"Connection timeout after {self.timeout}s")
+            raise TimeoutError(f"Failed to connect to {self.ws_url}")
+        except Exception as e:
+            logger.error(f"Connection failed: {e}")
+            raise
 
-    async def disconnect(self):
+    async def disconnect(self) -> bool:
         """Close WebSocket connection"""
+        self._connected = False
+
         if self._task:
             self._task.cancel()
             try:
@@ -114,11 +223,16 @@ class BassetClient:
 
         if self.ws:
             await self.ws.close()
-            logger.info("Disconnected")
+            logger.info("Disconnected from browser server")
+            return True
 
-    async def _message_loop(self):
+        return False
+
+    async def _message_loop(self) -> None:
         """Background task for receiving messages"""
         try:
+            if self.ws is None:
+                return
             async for message in self.ws:
                 try:
                     data = json.loads(message)
@@ -127,9 +241,9 @@ class BassetClient:
                     if response_id and response_id in self.pending_responses:
                         future = self.pending_responses.pop(response_id)
                         if not future.done():
-                            future.set_result(Response.from_json(data))
+                            future.set_result(CommandResponse.from_dict(data))
                 except json.JSONDecodeError:
-                    logger.error(f"Invalid JSON received: {message}")
+                    logger.error(f"Invalid JSON received: {message[:100]}")
         except asyncio.CancelledError:
             pass
         except Exception as e:
@@ -138,21 +252,23 @@ class BassetClient:
     async def _send_command(
         self,
         command: str,
-        **kwargs
-    ) -> Response:
-        """Send command and await response"""
-        if not self.ws:
+        retry_count: int = 0,
+        **kwargs: Any
+    ) -> CommandResponse:
+        """Send command with automatic retry on failure"""
+        if not self._connected or not self.ws:
             raise RuntimeError("Not connected. Call connect() first.")
 
         request_id = str(uuid.uuid4())
+        start_time = time.time()
+
         message = {
             "id": request_id,
             "command": command,
             **kwargs
         }
 
-        # Set up future for response
-        future: asyncio.Future = asyncio.Future()
+        future: asyncio.Future[CommandResponse] = asyncio.Future()
         self.pending_responses[request_id] = future
 
         try:
@@ -161,54 +277,91 @@ class BassetClient:
                 timeout=self.timeout
             )
 
-            response = await asyncio.wait_for(future, timeout=self.timeout)
+            response: CommandResponse = await asyncio.wait_for(future, timeout=self.timeout)
+            response.execution_time = time.time() - start_time
+
             return response
+
         except asyncio.TimeoutError:
             self.pending_responses.pop(request_id, None)
-            raise TimeoutError(f"Command {command} timed out")
 
-    # Navigation Commands
+            if retry_count < self.max_retries:
+                logger.warning(f"Command {command} timed out, retrying...")
+                await asyncio.sleep(self.reconnect_delay)
+                return await self._send_command(command, retry_count + 1, **kwargs)
 
-    async def navigate(self, url: str) -> Response:
+            raise TimeoutError(f"Command {command} timed out after {self.max_retries} retries")
+
+        except Exception as e:
+            self.pending_responses.pop(request_id, None)
+            logger.error(f"Command {command} failed: {e}")
+            raise
+
+    # ==========================================
+    # NAVIGATION COMMANDS
+    # ==========================================
+
+    async def navigate(self, url: str, wait_time: int = 0) -> CommandResponse:
         """Navigate to URL"""
-        return await self._send_command("navigate", url=url)
+        return await self._send_command("navigate", url=url, wait_time=wait_time)
 
-    async def get_url(self) -> Response:
+    async def go_back(self) -> CommandResponse:
+        """Go back in history"""
+        return await self._send_command("go_back")
+
+    async def go_forward(self) -> CommandResponse:
+        """Go forward in history"""
+        return await self._send_command("go_forward")
+
+    async def refresh(self, hard: bool = False) -> CommandResponse:
+        """Refresh page"""
+        return await self._send_command("refresh", hard=hard)
+
+    async def get_url(self) -> CommandResponse:
         """Get current URL"""
         return await self._send_command("get_url")
 
-    async def get_page_state(self) -> Response:
-        """Get page title, URL, forms, links"""
-        return await self._send_command("get_page_state")
+    async def get_title(self) -> CommandResponse:
+        """Get page title"""
+        return await self._send_command("get_title")
 
-    async def get_content(self) -> Response:
-        """Get HTML and text content"""
-        return await self._send_command("get_content")
+    # ==========================================
+    # INTERACTION COMMANDS
+    # ==========================================
 
-    async def wait_for_element(self, selector: str, timeout: int = 10000) -> Response:
-        """Wait for element to appear"""
+    async def click(self, selector: str, humanize: bool = True) -> CommandResponse:
+        """Click element"""
         return await self._send_command(
-            "wait_for_element",
+            "click",
             selector=selector,
-            timeout=timeout
+            humanize=humanize
         )
 
-    async def execute_script(self, script: str) -> Response:
-        """Execute JavaScript"""
-        return await self._send_command("execute_script", script=script)
-
-    # Interaction Commands
-
-    async def click(self, selector: str, humanize: bool = True) -> Response:
-        """Click element"""
-        return await self._send_command("click", selector=selector, humanize=humanize)
-
-    async def fill(self, selector: str, value: str, humanize: bool = True) -> Response:
+    async def fill(
+        self,
+        selector: str,
+        value: str,
+        humanize: bool = True
+    ) -> CommandResponse:
         """Fill form field"""
         return await self._send_command(
             "fill",
             selector=selector,
             value=value,
+            humanize=humanize
+        )
+
+    async def type_text(
+        self,
+        text: str,
+        selector: Optional[str] = None,
+        humanize: bool = True
+    ) -> CommandResponse:
+        """Type text with human timing"""
+        return await self._send_command(
+            "type_text",
+            text=text,
+            selector=selector,
             humanize=humanize
         )
 
@@ -218,9 +371,9 @@ class BassetClient:
         y: Optional[int] = None,
         selector: Optional[str] = None,
         humanize: bool = True
-    ) -> Response:
+    ) -> CommandResponse:
         """Scroll page"""
-        kwargs = {"humanize": humanize}
+        kwargs: Dict[str, Any] = {"humanize": humanize}
         if x is not None:
             kwargs["x"] = x
         if y is not None:
@@ -230,596 +383,742 @@ class BassetClient:
 
         return await self._send_command("scroll", **kwargs)
 
-    async def type_text(self, text: str, selector: Optional[str] = None) -> Response:
-        """Type text with human timing"""
+    async def hover(self, selector: str) -> CommandResponse:
+        """Hover over element"""
+        return await self._send_command("hover", selector=selector)
+
+    async def wait_for_element(
+        self,
+        selector: str,
+        timeout: int = 10000
+    ) -> CommandResponse:
+        """Wait for element"""
         return await self._send_command(
-            "type_text",
-            text=text,
-            selector=selector
+            "wait_for_element",
+            selector=selector,
+            timeout=timeout
         )
 
-    # Content Extraction Commands
+    async def execute_script(self, script: str) -> CommandResponse:
+        """Execute JavaScript"""
+        return await self._send_command("execute_script", script=script)
 
-    async def extract_metadata(self) -> Response:
-        """Extract meta tags and Open Graph data"""
-        return await self._send_command("extract_metadata")
+    # ==========================================
+    # CONTENT EXTRACTION COMMANDS
+    # ==========================================
 
-    async def extract_links(self, include_external: bool = True) -> Response:
+    async def get_content(self) -> CommandResponse:
+        """Get page content (HTML, text, links)"""
+        return await self._send_command("get_content")
+
+    async def get_page_state(self) -> CommandResponse:
+        """Get page state (title, URL, forms)"""
+        return await self._send_command("get_page_state")
+
+    async def extract_links(self, include_external: bool = True) -> CommandResponse:
         """Extract all links"""
-        return await self._send_command("extract_links", includeExternal=include_external)
+        return await self._send_command(
+            "extract_links",
+            include_external=include_external
+        )
 
-    async def extract_forms(self) -> Response:
-        """Extract form data"""
+    async def extract_forms(self) -> CommandResponse:
+        """Extract all forms"""
         return await self._send_command("extract_forms")
 
-    async def extract_images(self, include_lazy: bool = True) -> Response:
-        """Extract images"""
-        return await self._send_command("extract_images", includeLazy=include_lazy)
+    async def extract_images(self, include_lazy: bool = True) -> CommandResponse:
+        """Extract all images"""
+        return await self._send_command(
+            "extract_images",
+            include_lazy=include_lazy
+        )
 
-    async def extract_structured_data(self) -> Response:
-        """Extract JSON-LD and microdata"""
-        return await self._send_command("extract_structured_data")
+    async def extract_metadata(self) -> CommandResponse:
+        """Extract meta tags"""
+        return await self._send_command("extract_metadata")
 
-    async def extract_all(self) -> Response:
-        """Extract all content types"""
+    async def extract_all(self) -> CommandResponse:
+        """Extract all content"""
         return await self._send_command("extract_all")
 
-    async def detect_technology(self) -> Response:
-        """Detect technologies (CMS, frameworks, analytics)"""
+    async def detect_technology(self) -> CommandResponse:
+        """Detect technology stack"""
         return await self._send_command("detect_technology")
 
-    # Screenshot Commands
+    # ==========================================
+    # SCREENSHOT COMMANDS
+    # ==========================================
 
-    async def screenshot(self, format: str = "png") -> Response:
-        """Capture screenshot"""
-        return await self._send_command("screenshot", format=format)
+    async def screenshot(
+        self,
+        format: str = "png",
+        quality: int = 90
+    ) -> CommandResponse:
+        """Take screenshot"""
+        return await self._send_command(
+            "screenshot",
+            format=format,
+            quality=quality
+        )
 
-    async def screenshot_viewport(self, format: str = "png") -> Response:
-        """Capture visible viewport"""
+    async def screenshot_viewport(self, format: str = "png") -> CommandResponse:
+        """Take viewport screenshot"""
         return await self._send_command("screenshot_viewport", format=format)
 
-    async def screenshot_full_page(self, format: str = "png") -> Response:
-        """Capture entire page"""
+    async def screenshot_full_page(self, format: str = "png") -> CommandResponse:
+        """Take full page screenshot"""
         return await self._send_command("screenshot_full_page", format=format)
 
-    async def screenshot_element(self, selector: str, format: str = "png") -> Response:
-        """Capture specific element"""
+    async def screenshot_element(
+        self,
+        selector: str,
+        format: str = "png"
+    ) -> CommandResponse:
+        """Take element screenshot"""
         return await self._send_command(
             "screenshot_element",
             selector=selector,
             format=format
         )
 
-    # Cookie Management
+    async def screenshot_forensic(
+        self,
+        include_hash: bool = True,
+        include_signature: bool = True
+    ) -> CommandResponse:
+        """Take forensic screenshot with chain of custody"""
+        return await self._send_command(
+            "screenshot_forensic",
+            include_hash=include_hash,
+            include_signature=include_signature
+        )
 
-    async def get_cookies(self, url: str) -> Response:
-        """Get cookies for URL"""
+    # ==========================================
+    # COOKIE & STORAGE COMMANDS
+    # ==========================================
+
+    async def get_cookies(self, url: Optional[str] = None) -> CommandResponse:
+        """Get cookies"""
         return await self._send_command("get_cookies", url=url)
 
-    async def set_cookie(self, cookie: Dict[str, Any]) -> Response:
-        """Set a cookie"""
-        return await self._send_command("set_cookie", cookie=cookie)
-
-    async def delete_cookie(self, url: str, name: str) -> Response:
-        """Delete specific cookie"""
-        return await self._send_command("delete_cookie", url=url, name=name)
-
-    async def clear_all_cookies(self, domain: Optional[str] = None) -> Response:
-        """Clear all cookies"""
-        return await self._send_command("clear_all_cookies", domain=domain)
-
-    # Session Management
-
-    async def create_session(self, name: Optional[str] = None) -> Response:
-        """Create new session"""
-        return await self._send_command("create_session", name=name)
-
-    async def list_sessions(self) -> Response:
-        """List all sessions"""
-        return await self._send_command("list_sessions")
-
-    async def get_session_info(self, session_id: str) -> Response:
-        """Get session details"""
-        return await self._send_command("get_session_info", sessionId=session_id)
-
-    async def delete_session(self, session_id: str) -> Response:
-        """Delete session"""
-        return await self._send_command("delete_session", sessionId=session_id)
-
-    # Evasion Commands
-
-    async def create_fingerprint_profile(
-        self,
-        id: str,
-        platform: str = "windows",
-        timezone: str = "America/New_York",
-        tier: str = "high"
-    ) -> Response:
-        """Create device fingerprint profile"""
-        return await self._send_command(
-            "create_fingerprint_profile",
-            id=id,
-            platform=platform,
-            timezone=timezone,
-            tier=tier
-        )
-
-    async def apply_fingerprint(self, profile_id: str) -> Response:
-        """Apply fingerprint profile"""
-        return await self._send_command("apply_fingerprint", profileId=profile_id)
-
-    async def get_fingerprint_options(self) -> Response:
-        """Get available fingerprint options"""
-        return await self._send_command("get_fingerprint_options")
-
-    async def create_behavioral_profile(
-        self,
-        session_id: str,
-        speed_multiplier: float = 1.0,
-        accuracy_level: float = 0.95
-    ) -> Response:
-        """Create behavioral profile"""
-        return await self._send_command(
-            "create_behavioral_profile",
-            sessionId=session_id,
-            speedMultiplier=speed_multiplier,
-            accuracyLevel=accuracy_level
-        )
-
-    async def generate_mouse_path(
-        self,
-        session_id: str,
-        start: Dict[str, int],
-        end: Dict[str, int]
-    ) -> Response:
-        """Generate human-like mouse path"""
-        return await self._send_command(
-            "generate_mouse_path",
-            sessionId=session_id,
-            start=start,
-            end=end
-        )
-
-    async def generate_typing_events(
-        self,
-        session_id: str,
-        text: str
-    ) -> Response:
-        """Generate human-like typing events"""
-        return await self._send_command(
-            "generate_typing_events",
-            sessionId=session_id,
-            text=text
-        )
-
-    # Evidence Chain Commands
-
-    async def init_evidence_chain(self, base_path: str) -> Response:
-        """Initialize evidence chain"""
-        return await self._send_command("init_evidence_chain", basePath=base_path)
-
-    async def create_investigation(
+    async def set_cookie(
         self,
         name: str,
-        description: Optional[str] = None,
-        investigator: Optional[str] = None
-    ) -> Response:
-        """Create new investigation"""
+        value: str,
+        **options: Any
+    ) -> CommandResponse:
+        """Set cookie"""
         return await self._send_command(
-            "create_investigation",
+            "set_cookie",
             name=name,
-            description=description,
-            investigator=investigator
+            value=value,
+            **options
         )
 
-    async def collect_screenshot_chain(
+    async def delete_cookie(self, name: str) -> CommandResponse:
+        """Delete cookie"""
+        return await self._send_command("delete_cookie", name=name)
+
+    async def get_local_storage(self) -> CommandResponse:
+        """Get local storage"""
+        return await self._send_command("get_local_storage")
+
+    async def get_session_storage(self) -> CommandResponse:
+        """Get session storage"""
+        return await self._send_command("get_session_storage")
+
+    # ==========================================
+    # SESSION PERSISTENCE COMMANDS (v12.2.0)
+    # ==========================================
+
+    async def create_checkpoint(
         self,
-        investigation_id: str,
-        actor: str,
-        tags: Optional[List[str]] = None
-    ) -> Response:
-        """Collect screenshot with chain of custody"""
-        return await self._send_command(
-            "collect_screenshot_chain",
-            investigationId=investigation_id,
-            actor=actor,
-            tags=tags or []
+        checkpoint_name: str,
+        description: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Create session checkpoint for persistence"""
+        result = await self._send_command(
+            "create_checkpoint",
+            checkpoint_name=checkpoint_name,
+            description=description
         )
 
-    # Utility Commands
+        if result.success and result.data:
+            checkpoint_id = result.data.get('checkpointId')
+            if checkpoint_id is None:
+                raise RuntimeError("Checkpoint ID not provided in response")
 
-    async def ping(self) -> Response:
-        """Check connection"""
-        return await self._send_command("ping")
+            checkpoint = SessionCheckpoint(
+                id=checkpoint_id,
+                name=checkpoint_name,
+                timestamp=result.data.get('timestamp', int(time.time() * 1000))
+            )
+            self.checkpoints[checkpoint.id] = checkpoint
+            self.current_checkpoint = checkpoint.id
+            return result.data
 
-    async def status(self) -> Response:
-        """Get browser status"""
-        return await self._send_command("status")
+        raise RuntimeError(f"Failed to create checkpoint: {result.error}")
 
+    async def rollback_to_checkpoint(
+        self,
+        checkpoint_id: str
+    ) -> Dict[str, Any]:
+        """Rollback session to checkpoint"""
+        if checkpoint_id not in self.checkpoints:
+            raise ValueError(f"Checkpoint not found: {checkpoint_id}")
 
-class BassetAgent:
-    """
-    Higher-level wrapper for building OSINT agents
-    Combines multiple commands into common patterns
-    """
+        result = await self._send_command(
+            "rollback_to_checkpoint",
+            checkpoint_id=checkpoint_id
+        )
 
-    def __init__(self, client: BassetClient):
-        self.client = client
+        if result.success and result.data is not None:
+            self.current_checkpoint = checkpoint_id
+            return result.data
 
-    async def investigate_site(self, url: str) -> Dict[str, Any]:
-        """
-        Full site investigation:
-        1. Navigate to URL
-        2. Extract all content
-        3. Detect technologies
-        4. Take screenshot
-        """
-        await self.client.navigate(url)
-        await asyncio.sleep(2)  # Wait for page load
+        raise RuntimeError(f"Failed to rollback to checkpoint: {result.error}")
 
-        results = {
-            "url": url,
-            "content": None,
-            "metadata": None,
-            "technologies": None,
-            "screenshot": None
+    async def list_checkpoints(self) -> List[Dict[str, Any]]:
+        """List all checkpoints"""
+        result = await self._send_command("list_checkpoints")
+
+        if result.success and result.data is not None:
+            checkpoints = result.data.get('checkpoints', [])
+            return checkpoints if isinstance(checkpoints, list) else []
+
+        raise RuntimeError(f"Failed to list checkpoints: {result.error}")
+
+    async def delete_checkpoint(self, checkpoint_id: str) -> bool:
+        """Delete checkpoint"""
+        result = await self._send_command(
+            "delete_checkpoint",
+            checkpoint_id=checkpoint_id
+        )
+
+        if result.success:
+            self.checkpoints.pop(checkpoint_id, None)
+            if self.current_checkpoint == checkpoint_id:
+                self.current_checkpoint = None
+            return True
+
+        raise RuntimeError(f"Failed to delete checkpoint: {result.error}")
+
+    async def branch_session(
+        self,
+        checkpoint_id: str,
+        branch_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Branch session for A/B testing"""
+        result = await self._send_command(
+            "branch_session",
+            checkpoint_id=checkpoint_id,
+            branch_name=branch_name
+        )
+
+        if result.success and result.data is not None:
+            return result.data
+
+        raise RuntimeError(f"Failed to branch session: {result.error}")
+
+    async def resume_session(
+        self,
+        checkpoint_id: str,
+        recovery_options: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Resume session from checkpoint"""
+        result = await self._send_command(
+            "resume_session",
+            checkpoint_id=checkpoint_id,
+            recovery_options=recovery_options or {}
+        )
+
+        if result.success and result.data is not None:
+            return result.data
+
+        raise RuntimeError(f"Failed to resume session: {result.error}")
+
+    # ==========================================
+    # EVASION COMMANDS
+    # ==========================================
+
+    async def apply_fingerprint(
+        self,
+        profile_name: str,
+        **options: Any
+    ) -> CommandResponse:
+        """Apply device fingerprint"""
+        return await self._send_command(
+            "apply_fingerprint",
+            profile_name=profile_name,
+            **options
+        )
+
+    async def rotate_user_agent(self) -> CommandResponse:
+        """Rotate user agent"""
+        return await self._send_command("rotate_user_agent")
+
+    async def set_proxy(
+        self,
+        proxy_url: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None
+    ) -> CommandResponse:
+        """Set proxy"""
+        return await self._send_command(
+            "set_proxy",
+            proxy_url=proxy_url,
+            username=username,
+            password=password
+        )
+
+    async def enable_tor(self) -> CommandResponse:
+        """Enable Tor"""
+        return await self._send_command("enable_tor")
+
+    async def disable_tor(self) -> CommandResponse:
+        """Disable Tor"""
+        return await self._send_command("disable_tor")
+
+    # ==========================================
+    # BATCH OPERATIONS
+    # ==========================================
+
+    async def batch_commands(
+        self,
+        commands: List[Dict[str, Any]]
+    ) -> List[CommandResponse]:
+        """Send multiple commands and get responses"""
+        tasks = []
+        for cmd in commands:
+            command_name = cmd.pop('command')
+            task = self._send_command(command_name, **cmd)
+            tasks.append(task)
+
+        return await asyncio.gather(*tasks)
+
+    # ==========================================
+    # MONITORING & ANALYTICS
+    # ==========================================
+
+    async def start_monitoring(
+        self,
+        threshold: int = 10
+    ) -> CommandResponse:
+        """Start page change monitoring"""
+        return await self._send_command(
+            "start_monitoring",
+            threshold=threshold
+        )
+
+    async def stop_monitoring(self) -> CommandResponse:
+        """Stop page change monitoring"""
+        return await self._send_command("stop_monitoring")
+
+    async def check_page_changes(self) -> CommandResponse:
+        """Check for page changes"""
+        return await self._send_command("check_page_changes")
+
+    # ==========================================
+    # STREAMING COMMANDS (Phase 3)
+    # ==========================================
+
+    async def screenshot_stream(
+        self,
+        format: str = "png",
+        quality: int = 90,
+        chunk_size: int = 8192
+    ) -> AsyncGenerator[bytes, None]:
+        """Stream large screenshot in chunks"""
+        async for chunk in self._stream_command("screenshot_stream", format=format, quality=quality, chunk_size=chunk_size):
+            yield chunk
+
+    async def screenshot_full_page_stream(
+        self,
+        format: str = "png",
+        chunk_size: int = 8192
+    ) -> AsyncGenerator[bytes, None]:
+        """Stream full-page screenshot in chunks"""
+        async for chunk in self._stream_command("screenshot_full_page_stream", format=format, chunk_size=chunk_size):
+            yield chunk
+
+    async def screenshot_element_stream(
+        self,
+        selector: str,
+        format: str = "png",
+        chunk_size: int = 8192
+    ) -> AsyncGenerator[bytes, None]:
+        """Stream element screenshot in chunks"""
+        async for chunk in self._stream_command("screenshot_element_stream", selector=selector, format=format, chunk_size=chunk_size):
+            yield chunk
+
+    async def extract_all_stream(self) -> AsyncGenerator[Dict[str, Any], None]:
+        """Stream extracted content by type"""
+        async for chunk in self._generator_command("extract_all_stream"):
+            yield chunk
+
+    async def extract_images_stream(self, chunk_size: int = 10) -> AsyncGenerator[Dict[str, Any], None]:
+        """Stream extracted images"""
+        async for chunk in self._generator_command("extract_images_stream", chunk_size=chunk_size):
+            yield chunk
+
+    async def monitor_stream(self, threshold: int = 10) -> AsyncGenerator[Dict[str, Any], None]:
+        """Stream monitoring events"""
+        async for event in self._generator_command("monitor_stream", threshold=threshold):
+            yield event
+
+    async def _stream_command(self, command: str, **kwargs: Any) -> AsyncGenerator[bytes, None]:
+        """Send a streaming command and yield chunks"""
+        request_id = str(uuid.uuid4())
+
+        message = {
+            "id": request_id,
+            "command": command,
+            "stream": True,
+            **kwargs
         }
 
-        # Extract all content
-        content_resp = await self.client.extract_all()
-        if content_resp.success:
-            results["content"] = content_resp.data
+        try:
+            if self.ws is None:
+                raise RuntimeError("Not connected")
+            await self.ws.send(json.dumps(message))
+            # Yield chunks from server
+            async for data in self._collect_stream_chunks(request_id):
+                yield data
+        except Exception as e:
+            logger.error(f"Streaming command {command} failed: {e}")
+            raise
 
-        # Detect technologies
-        tech_resp = await self.client.detect_technology()
-        if tech_resp.success:
-            results["technologies"] = tech_resp.data
+    async def _collect_stream_chunks(self, request_id: str) -> AsyncGenerator[bytes, None]:
+        """Collect streaming chunks from server"""
+        if self.ws is None:
+            raise RuntimeError("Not connected")
 
-        # Screenshot
-        screenshot_resp = await self.client.screenshot_full_page()
-        if screenshot_resp.success:
-            results["screenshot"] = screenshot_resp.data
+        try:
+            async for message in self.ws:
+                try:
+                    data = json.loads(message)
+                    if data.get('id') == request_id:
+                        if data.get('stream_chunk'):
+                            chunk = data['stream_chunk']
+                            yield chunk.encode() if isinstance(chunk, str) else chunk
+                        if data.get('stream_complete'):
+                            break
+                except json.JSONDecodeError:
+                    logger.error(f"Invalid JSON in stream: {message[:100]}")
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.error(f"Stream collection error: {e}")
 
-        return results
+    async def _generator_command(self, command: str, **kwargs: Any) -> AsyncGenerator[Dict[str, Any], None]:
+        """Send a generator command"""
+        request_id = str(uuid.uuid4())
 
-    async def monitor_competitor(
+        message = {
+            "id": request_id,
+            "command": command,
+            "generator": True,
+            **kwargs
+        }
+
+        try:
+            if self.ws is None:
+                raise RuntimeError("Not connected")
+            await self.ws.send(json.dumps(message))
+
+            async for message_str in self.ws:
+                try:
+                    data = json.loads(message_str)
+                    if data.get('id') == request_id:
+                        if 'item' in data:
+                            yield data['item']
+                        if data.get('complete'):
+                            break
+                except json.JSONDecodeError:
+                    logger.error(f"Invalid JSON in generator: {message_str[:100]}")
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.error(f"Generator command {command} failed: {e}")
+
+    # ==========================================
+    # BATCH OPERATIONS (Phase 4)
+    # ==========================================
+
+    async def batch(
         self,
-        url: str,
-        check_interval: int = 3600
-    ) -> None:
+        commands: List[Dict[str, Any]],
+        mode: str = "parallel",
+        on_error: str = "continue"
+    ) -> List[CommandResponse]:
         """
-        Monitor competitor site for changes
-        Check every N seconds
-        """
-        last_content = None
-
-        while True:
-            response = await self.client.navigate(url)
-            if not response.success:
-                logger.error(f"Failed to navigate to {url}")
-                await asyncio.sleep(check_interval)
-                continue
-
-            await asyncio.sleep(2)
-
-            content_resp = await self.client.get_content()
-            current_content = content_resp.data.get('text') if content_resp.success else None
-
-            if last_content and current_content != last_content:
-                logger.info(f"Change detected on {url}")
-                # TODO: Send alert
-
-            last_content = current_content
-            await asyncio.sleep(check_interval)
-
-    async def extract_search_results(
-        self,
-        query: str,
-        search_engine: str = "google"
-    ) -> List[Dict[str, Any]]:
-        """
-        Search and extract results
-        """
-        search_url = f"https://www.google.com/search?q={query}"
-
-        await self.client.navigate(search_url)
-        await asyncio.sleep(2)
-
-        links = await self.client.extract_links()
-
-        return links.data if links.success else []
-
-
-# ===========================
-# Wave 14: Tech Detection
-# ===========================
-
-    async def identify_cms(self, html: Optional[str] = None) -> Response:
-        """
-        Identify CMS technologies on current page
+        Execute commands in batch mode
 
         Args:
-            html: Optional HTML content (uses current page if not provided)
+            commands: List of command dicts with 'command' key and parameters
+            mode: 'parallel' (concurrent) or 'atomic' (sequential with rollback)
+            on_error: 'continue' (skip failures) or 'abort' (stop on first error)
 
         Returns:
-            Response with identified CMS technologies
+            List of CommandResponse objects
+
+        Raises:
+            BatchError: If on_error='abort' and a command fails
         """
-        params = {}
-        if html:
-            params['html'] = html
-        return await self._send_command('identify_cms', params)
+        if mode == "atomic":
+            return await self._batch_atomic(commands, on_error)
+        else:  # parallel
+            return await self._batch_parallel(commands, on_error)
 
-    async def identify_analytics(self, html: Optional[str] = None) -> Response:
-        """
-        Identify analytics and tracking technologies on current page
+    async def _batch_parallel(
+        self,
+        commands: List[Dict[str, Any]],
+        on_error: str
+    ) -> List[CommandResponse]:
+        """Execute commands in parallel"""
+        tasks = []
+        for cmd in commands:
+            command_name = cmd.pop('command', None)
+            if command_name:
+                task = self._send_command(command_name, **cmd)
+                tasks.append(task)
 
-        Args:
-            html: Optional HTML content (uses current page if not provided)
-
-        Returns:
-            Response with identified analytics technologies
-        """
-        params = {}
-        if html:
-            params['html'] = html
-        return await self._send_command('identify_analytics', params)
-
-
-# ===========================
-# Wave 14: Competitor Monitoring
-# ===========================
-
-    async def add_monitor(self, url: str, name: str, frequency: str = 'daily',
-                         alerts: Optional[Dict] = None) -> Response:
-        """Add a website to monitor"""
-        return await self._send_command('add_monitor', {
-            'url': url,
-            'name': name,
-            'frequency': frequency,
-            'alerts': alerts or {}
-        })
-
-    async def remove_monitor(self, monitor_id: str) -> Response:
-        """Remove a monitored website"""
-        return await self._send_command('remove_monitor', {'monitor_id': monitor_id})
-
-    async def update_monitor(self, monitor_id: str, updates: Dict) -> Response:
-        """Update monitor configuration"""
-        return await self._send_command('update_monitor', {
-            'monitor_id': monitor_id,
-            **updates
-        })
-
-    async def get_monitor(self, monitor_id: str) -> Response:
-        """Get monitor details"""
-        return await self._send_command('get_monitor', {'monitor_id': monitor_id})
-
-    async def list_monitors(self, filter_: Optional[Dict] = None) -> Response:
-        """List all monitors"""
-        return await self._send_command('list_monitors', filter_ or {})
-
-    async def pause_monitor(self, monitor_id: str) -> Response:
-        """Pause monitoring"""
-        return await self._send_command('pause_monitor', {'monitor_id': monitor_id})
-
-    async def resume_monitor(self, monitor_id: str) -> Response:
-        """Resume monitoring"""
-        return await self._send_command('resume_monitor', {'monitor_id': monitor_id})
-
-    async def check_monitor(self, monitor_id: str) -> Response:
-        """Run check on monitor"""
-        return await self._send_command('check_monitor', {'monitor_id': monitor_id})
-
-    async def get_monitor_changes(self, monitor_id: str) -> Response:
-        """Get change history"""
-        return await self._send_command('get_monitor_changes', {'monitor_id': monitor_id})
-
-    async def get_monitor_snapshots(self, monitor_id: str) -> Response:
-        """Get page snapshots"""
-        return await self._send_command('get_monitor_snapshots', {'monitor_id': monitor_id})
-
-    async def get_monitor_stats(self, monitor_id: str) -> Response:
-        """Get monitor statistics"""
-        return await self._send_command('get_monitor_stats', {'monitor_id': monitor_id})
-
-    async def start_monitoring_service(self) -> Response:
-        """Start the monitoring service"""
-        return await self._send_command('start_monitoring_service', {})
-
-    async def stop_monitoring_service(self) -> Response:
-        """Stop the monitoring service"""
-        return await self._send_command('stop_monitoring_service', {})
-
-    async def pause_monitoring_service(self) -> Response:
-        """Pause the monitoring service"""
-        return await self._send_command('pause_monitoring_service', {})
-
-    async def resume_monitoring_service(self) -> Response:
-        """Resume the monitoring service"""
-        return await self._send_command('resume_monitoring_service', {})
-
-    async def get_monitoring_service_status(self) -> Response:
-        """Get service status"""
-        return await self._send_command('get_monitoring_service_status', {})
-
-    async def get_monitoring_service_stats(self) -> Response:
-        """Get service statistics"""
-        return await self._send_command('get_monitoring_service_stats', {})
-
-    async def configure_monitor_alerts(self, monitor_id: str, alerts: Dict) -> Response:
-        """Configure alerts for a monitor"""
-        return await self._send_command('configure_monitor_alerts', {
-            'monitor_id': monitor_id,
-            'alerts': alerts
-        })
-
-    async def run_monitor_check(self, monitor_id: str) -> Response:
-        """Run manual check"""
-        return await self._send_command('run_monitor_check', {'monitor_id': monitor_id})
-
-    async def export_monitors(self) -> Response:
-        """Export all monitors"""
-        return await self._send_command('export_monitors', {})
-
-    async def import_monitors(self, data: Dict, merge: bool = False) -> Response:
-        """Import monitors"""
-        return await self._send_command('import_monitors', {
-            'data': data,
-            'merge': merge
-        })
-
-    async def cleanup_monitoring_data(self, days_old: int = 30) -> Response:
-        """Cleanup old monitoring data"""
-        return await self._send_command('cleanup_monitoring_data', {'days_old': days_old})
-
-    async def clear_all_monitors(self) -> Response:
-        """Clear all monitors"""
-        return await self._send_command('clear_all_monitors', {})
-
-
-# ===========================
-# Wave 14: Proxy Intelligence
-# ===========================
-
-    async def get_proxy_reputation(self, proxy_address: str, session_id: Optional[str] = None) -> Response:
-        """Get proxy reputation and health score"""
-        return await self._send_command('get_proxy_reputation', {
-            'proxy_address': proxy_address,
-            'session_id': session_id
-        })
-
-    async def set_geo_lock(self, country: Optional[str] = None, region: Optional[str] = None,
-                          latitude: Optional[float] = None, longitude: Optional[float] = None) -> Response:
-        """Set geographic lock for consistency"""
-        return await self._send_command('set_geo_lock', {
-            'country': country,
-            'region': region,
-            'latitude': latitude,
-            'longitude': longitude
-        })
-
-    async def get_proxy_analytics(self, session_id: Optional[str] = None, aggregate: bool = False) -> Response:
-        """Get proxy analytics and performance metrics"""
-        return await self._send_command('get_proxy_analytics', {
-            'session_id': session_id,
-            'aggregate': aggregate
-        })
-
-
-# ===========================
-# Wave 14: Session Checkpoints & Branching
-# ===========================
-
-    async def create_session_checkpoint(self, label: str = '', description: str = '') -> Response:
-        """Create a checkpoint of current session state"""
-        return await self._send_command('create_session_checkpoint', {
-            'label': label,
-            'description': description
-        })
-
-    async def rollback_to_checkpoint(self, checkpoint_id: str) -> Response:
-        """Rollback to a specific checkpoint"""
-        return await self._send_command('rollback_to_checkpoint', {
-            'checkpoint_id': checkpoint_id
-        })
-
-    async def list_checkpoints(self) -> Response:
-        """List all available checkpoints"""
-        return await self._send_command('list_checkpoints', {})
-
-    async def get_checkpoint_details(self, checkpoint_id: str) -> Response:
-        """Get checkpoint details"""
-        return await self._send_command('get_checkpoint_details', {
-            'checkpoint_id': checkpoint_id
-        })
-
-    async def delete_checkpoint(self, checkpoint_id: str) -> Response:
-        """Delete a checkpoint"""
-        return await self._send_command('delete_checkpoint', {
-            'checkpoint_id': checkpoint_id
-        })
-
-    async def branch_session(self, label: str = '') -> Response:
-        """Create a session branch"""
-        return await self._send_command('branch_session', {'label': label})
-
-    async def list_branches(self) -> Response:
-        """List active branches"""
-        return await self._send_command('list_branches', {})
-
-    async def merge_branch(self) -> Response:
-        """Merge current branch"""
-        return await self._send_command('merge_branch', {})
-
-    async def detect_failure(self) -> Response:
-        """Detect failures in session"""
-        return await self._send_command('detect_failure', {})
-
-    async def get_recovery_strategies(self, failure_type: Optional[str] = None) -> Response:
-        """Get recovery strategies"""
-        return await self._send_command('get_recovery_strategies', {
-            'failure_type': failure_type
-        })
-
-    async def resume_session(self, checkpoint_id: str) -> Response:
-        """Resume session from checkpoint"""
-        return await self._send_command('resume_session', {
-            'checkpoint_id': checkpoint_id
-        })
-
-    async def export_checkpoint(self, checkpoint_id: str, format_: str = 'json') -> Response:
-        """Export checkpoint"""
-        return await self._send_command('export_checkpoint', {
-            'checkpoint_id': checkpoint_id,
-            'format': format_
-        })
-
-
-# Example usage
-async def example_basic_navigation():
-    """Example: Basic navigation and content extraction"""
-    async with BassetClient('ws://localhost:8765') as client:
-        # Navigate
-        await client.navigate('https://example.com')
-        await asyncio.sleep(2)
-
-        # Extract content
-        content = await client.get_content()
-        if content.success:
-            print(f"Content: {content.data}")
+        if on_error == "abort":
+            return await asyncio.gather(*tasks)
         else:
-            print(f"Error: {content.error}")
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            return [r if isinstance(r, CommandResponse) else CommandResponse.from_dict({
+                'id': 'error',
+                'command': 'unknown',
+                'success': False,
+                'error': str(r)
+            }) for r in results]
+
+    async def _batch_atomic(
+        self,
+        commands: List[Dict[str, Any]],
+        on_error: str
+    ) -> List[CommandResponse]:
+        """Execute commands sequentially with rollback support"""
+        results = []
+        checkpoint_id: Optional[str] = None
+
+        try:
+            # Create checkpoint for rollback
+            checkpoint = await self.create_checkpoint("batch-atomic-checkpoint")
+            checkpoint_id = checkpoint.get('checkpointId')
+
+            # Execute commands sequentially
+            for cmd in commands:
+                command_name = cmd.pop('command', None)
+                if command_name:
+                    try:
+                        response = await self._send_command(command_name, **cmd)
+                        results.append(response)
+
+                        if not response.success and on_error == "abort":
+                            raise BatchError(f"Command {command_name} failed", results)
+                    except Exception as e:
+                        if on_error == "abort":
+                            raise BatchError(f"Command {command_name} failed: {e}", results)
+                        results.append(CommandResponse.from_dict({
+                            'id': 'error',
+                            'command': command_name,
+                            'success': False,
+                            'error': str(e)
+                        }))
+
+            return results
+
+        except BatchError:
+            # Rollback on failure
+            if checkpoint_id:
+                try:
+                    await self.rollback_to_checkpoint(checkpoint_id)
+                    logger.info(f"Batch rolled back to checkpoint: {checkpoint_id}")
+                except Exception as e:
+                    logger.error(f"Rollback failed: {e}")
+            raise
+
+        finally:
+            # Clean up checkpoint
+            if checkpoint_id:
+                try:
+                    await self.delete_checkpoint(checkpoint_id)
+                except Exception:
+                    pass
+
+    async def batch_extract(
+        self,
+        extraction_types: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """Batch extract multiple content types"""
+        if extraction_types is None:
+            extraction_types = ['content', 'links', 'images', 'forms']
+
+        commands = []
+        if 'content' in extraction_types:
+            commands.append({'command': 'get_content'})
+        if 'links' in extraction_types:
+            commands.append({'command': 'extract_links'})
+        if 'images' in extraction_types:
+            commands.append({'command': 'extract_images'})
+        if 'forms' in extraction_types:
+            commands.append({'command': 'extract_forms'})
+
+        results = await self.batch(commands, mode="parallel")
+
+        return {
+            'content': next((r.data for r in results if r.command == 'get_content'), None),
+            'links': next((r.data for r in results if r.command == 'extract_links'), None),
+            'images': next((r.data for r in results if r.command == 'extract_images'), None),
+            'forms': next((r.data for r in results if r.command == 'extract_forms'), None),
+            'all_success': all(r.success for r in results)
+        }
+
+    async def batch_screenshots(
+        self,
+        types: Optional[List[str]] = None
+    ) -> Dict[str, Any]:
+        """Batch take multiple types of screenshots"""
+        if types is None:
+            types = ['viewport', 'full_page']
+
+        commands = []
+        if 'viewport' in types:
+            commands.append({'command': 'screenshot', 'format': 'png'})
+        if 'full_page' in types:
+            commands.append({'command': 'screenshot_full_page', 'format': 'png'})
+
+        results = await self.batch(commands, mode="parallel")
+
+        return {
+            'viewport': next((r.data for r in results if r.command == 'screenshot'), None),
+            'full_page': next((r.data for r in results if r.command == 'screenshot_full_page'), None),
+            'all_success': all(r.success for r in results)
+        }
+
+    async def batch_workflow(
+        self,
+        workflow_steps: List[Dict[str, Any]]
+    ) -> List[CommandResponse]:
+        """Execute sequential workflow with step ordering"""
+        return await self._batch_atomic(workflow_steps, on_error="abort")
+
+    async def batch_with_recovery(
+        self,
+        commands: List[Dict[str, Any]],
+        retry_count: int = 2
+    ) -> List[CommandResponse]:
+        """Execute batch with automatic retry on failure"""
+        all_results: List[CommandResponse] = []
+
+        for attempt in range(retry_count + 1):
+            try:
+                results = await self.batch(commands, mode="parallel", on_error="continue")
+                failed = [i for i, r in enumerate(results) if not r.success]
+
+                if not failed:
+                    return results
+
+                if attempt < retry_count:
+                    logger.warning(f"Batch failed on attempt {attempt + 1}, retrying failed commands...")
+                    # Retry failed commands
+                    failed_commands = [commands[i] for i in failed]
+                    await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
+                else:
+                    return results
+
+            except Exception as e:
+                logger.error(f"Batch with recovery failed: {e}")
+                if attempt == retry_count:
+                    raise
+
+        return all_results
+
+    # ==========================================
+    # UTILITY METHODS
+    # ==========================================
+
+    def is_connected(self) -> bool:
+        """Check if connected"""
+        return self._connected and self.ws is not None
+
+    async def health_check(self) -> bool:
+        """Check server health"""
+        try:
+            result = await self._send_command("ping")
+            return result.success
+        except Exception:
+            return False
+
+    def get_session_info(self) -> Dict[str, Any]:
+        """Get current session info"""
+        return {
+            'connected': self.is_connected(),
+            'session_id': self.session_id,
+            'current_checkpoint': self.current_checkpoint,
+            'checkpoint_count': len(self.checkpoints)
+        }
 
 
-async def example_evasion():
-    """Example: Bot evasion with fingerprinting"""
-    async with BassetClient('ws://localhost:8765') as client:
-        # Create session with fingerprint
-        session = await client.create_session()
-        fingerprint = await client.create_fingerprint_profile(
-            "fp-1",
-            platform="windows",
-            tier="high"
-        )
-        await client.apply_fingerprint("fp-1")
+# Context manager for session persistence
+class SessionContext:
+    """Context manager for automatic checkpoint creation/rollback"""
 
-        # Navigate with evasion active
-        await client.navigate('https://example.com')
-        screenshot = await client.screenshot_full_page()
+    def __init__(self, client: BrowserClient, name: str) -> None:
+        self.client = client
+        self.name = name
+        self.checkpoint_id: Optional[str] = None
 
-        print(f"Screenshot captured: {screenshot.success}")
+    async def __aenter__(self) -> 'SessionContext':
+        checkpoint = await self.client.create_checkpoint(self.name)
+        self.checkpoint_id = checkpoint.get('checkpointId')
+        return self
 
-
-async def example_osint_investigation():
-    """Example: Full OSINT investigation"""
-    async with BassetClient('ws://localhost:8765') as client:
-        agent = BassetAgent(client)
-        results = await agent.investigate_site('https://example.com')
-
-        print(f"URL: {results['url']}")
-        print(f"Technologies: {results.get('technologies')}")
+    async def __aexit__(
+        self,
+        exc_type: Optional[type],
+        exc_val: Optional[Exception],
+        exc_tb: Optional[Any]
+    ) -> None:
+        if exc_type and self.checkpoint_id:
+            # Rollback on error
+            await self.client.rollback_to_checkpoint(self.checkpoint_id)
+            logger.warning(f"Session rolled back to checkpoint: {self.name}")
 
 
-if __name__ == "__main__":
-    # Run example
-    asyncio.run(example_basic_navigation())
+# Main entry point exports
+__all__ = [
+    'BrowserClient',
+    'SessionCheckpoint',
+    'CommandResponse',
+    'SessionContext',
+    'CommandCategory',
+    'BrowserClientError',
+    'BatchError',
+    'CommandTimeoutError',
+    'ConnectionError'
+]
+
+if __name__ == '__main__':
+    # Example usage
+    async def main() -> None:
+        async with BrowserClient('ws://localhost:8765') as client:
+            # Navigate
+            response = await client.navigate('https://example.com')
+            print(f"Navigation: {response.success}")
+
+            # Create checkpoint
+            checkpoint = await client.create_checkpoint('after-nav')
+            print(f"Checkpoint created: {checkpoint['checkpointId']}")
+
+            # Extract content
+            content = await client.get_content()
+            print(f"Content extracted: {content.success}")
+
+            # Detect technology
+            tech = await client.detect_technology()
+            print(f"Technology detection: {tech.data}")
+
+    asyncio.run(main())

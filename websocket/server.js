@@ -9875,6 +9875,12 @@ class WebSocketServer {
     // ==========================================
     const { registerRecordingCommands } = require('./commands/recording-commands');
     registerRecordingCommands(this.commandHandlers);
+
+    // ==========================================
+    // VIDEO RECORDING COMMANDS (Phase 21)
+    // ==========================================
+    const { registerVideoRecordingCommands } = require('./commands/video-recording-commands');
+    registerVideoRecordingCommands(this.commandHandlers, this.mainWindow);
   }
 
   /**

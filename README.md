@@ -54,20 +54,6 @@ A custom Electron-based browser designed for OSINT (Open Source Intelligence) an
 
 ---
 
-## 📍 Quick Navigation
-
-> **Need to find something?** See **[ROOT-NAVIGATION.md](ROOT-NAVIGATION.md)** for a complete directory structure guide with quick links to important files and modules.
-
-**Key Directories:**
-- **Source Code:** `src/` (45+ modules) - Main application code
-- **Documentation:** `docs/` - Comprehensive guides and API reference
-- **Tests:** `tests/` - Unit, integration, and E2E test suites
-- **Configuration:** `config/docker/` - Docker and build configuration
-- **Scripts:** `scripts/` - Deployment and utility scripts
-- **Examples:** `examples/` - Usage examples and integration patterns
-
----
-
 ## Table of Contents
 
 - [Overview](#overview)

@@ -1,0 +1,239 @@
+# Basset Hound Browser - Multi-Container Network Deployment
+# For production deployments with monitoring and observability
+# Usage: docker-compose -f config/docker/docker-compose.network.yml up -d
+
+version: '3.8'
+
+services:
+  # Primary browser service
+  basset-browser:
+    build:
+      context: ../../
+      dockerfile: config/docker/Dockerfile
+    container_name: basset-hound-browser
+    networks:
+      - basset-hound
+    ports:
+      # WebSocket API - external interface
+      - "8765:8765"
+    environment:
+      # Display configuration
+      - DISPLAY=:99
+      - SCREEN_RESOLUTION=1920x1080x24
+      # Electron configuration
+      - ELECTRON_DISABLE_SANDBOX=1
+      # WebSocket configuration (optional)
+      # - BASSET_WS_HOST=0.0.0.0
+      # - BASSET_WS_PORT=8765
+      # - BASSET_WS_TOKEN=your-secure-token
+    volumes:
+      # Persistent storage for session data
+      - basset-data:/app/data
+      # Screenshots and recordings
+      - basset-screenshots:/app/screenshots
+      # Downloads
+      - basset-downloads:/app/downloads
+      # Profiles (optional)
+      # - basset-profiles:/app/profiles
+
+    # Security hardening
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN  # Required for Electron sandbox
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource management
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Lifecycle management
+    restart: unless-stopped
+
+    # Health monitoring
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=basset-browser"
+
+    depends_on:
+      - prometheus
+      - node-exporter
+
+  # Prometheus metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: basset-prometheus
+    networks:
+      - basset-hound
+    ports:
+      - "9090:9090"
+    volumes:
+      # Configuration
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      # Data persistence
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=prometheus"
+
+  # Grafana dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: basset-grafana
+    networks:
+      - basset-hound
+    ports:
+      - "3000:3000"
+    environment:
+      # Default credentials (change in production)
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # Configuration
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      # Persistence
+      - grafana-data:/var/lib/grafana
+      # Configuration (optional)
+      # - ./config/grafana-datasources.yml:/etc/grafana/provisioning/datasources/prometheus.yml
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=grafana"
+
+  # System metrics exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: basset-exporter
+    networks:
+      - basset-hound
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      # Exclude certain mount points
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|boot)($$|/)"
+      - "--collector.netdev.device-exclude=^(veth.*)$$"
+      - "--no-collector.wifi"
+      - "--no-collector.hwmon"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=node-exporter"
+
+# Persistent volumes
+volumes:
+  # Browser data
+  basset-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
+
+  # Screenshots and recordings
+  basset-screenshots:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./screenshots
+
+  # Downloads
+  basset-downloads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./downloads
+
+  # Profiles (optional)
+  # basset-profiles:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ./profiles
+
+  # Monitoring data
+  prometheus-data:
+    driver: local
+
+  grafana-data:
+    driver: local
+
+# Docker network
+networks:
+  basset-hound:
+    name: basset-hound
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      # Enable IP masquerading (required for external access)
+      com.docker.network.bridge.enable_ip_masquerade: "true"

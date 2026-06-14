@@ -1,0 +1,441 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Human baseline behavioral reference patterns for evasion effectiveness validation",
+    "created": "2026-06-13T00:00:00Z",
+    "sources": [
+      "General human typing statistics",
+      "Mouse movement Fitts's Law analysis",
+      "Scroll behavior from user interaction studies",
+      "Form filling research"
+    ]
+  },
+  "global": {
+    "description": "Overall session statistics",
+    "sessionDuration": {
+      "min": 30000,
+      "max": 3600000,
+      "typical": 300000,
+      "unit": "milliseconds"
+    },
+    "actionsPerMinute": {
+      "min": 5,
+      "max": 120,
+      "typical": 30,
+      "unit": "count"
+    }
+  },
+  "mouseMovement": {
+    "description": "Natural mouse movement patterns based on Fitts's Law",
+    "browser": ["firefox", "chrome", "safari"],
+    "platform": ["windows", "macos", "linux"],
+    "device": ["desktop"],
+    "velocity": {
+      "min": 100,
+      "max": 600,
+      "mean": 250,
+      "stdDev": 80,
+      "unit": "pixels/millisecond"
+    },
+    "acceleration": {
+      "mean": 2.0,
+      "stdDev": 0.8,
+      "unit": "pixels/millisecond^2"
+    },
+    "jitter": {
+      "min": 0.1,
+      "max": 2.0,
+      "mean": 0.8,
+      "description": "Natural tremor in hand movements"
+    },
+    "pauseFrequency": {
+      "value": 0.15,
+      "description": "Fraction of movements that include pauses"
+    },
+    "directionChanges": {
+      "value": 0.08,
+      "description": "Fraction of movements that change direction >45 degrees"
+    },
+    "trajectoryQuadraticDeviation": {
+      "min": 0.0,
+      "max": 0.15,
+      "mean": 0.05,
+      "description": "How much trajectory deviates from straight line"
+    },
+    "overshotProbability": {
+      "value": 0.12,
+      "description": "Probability of overshooting target and correcting"
+    }
+  },
+  "typingPattern": {
+    "description": "Natural human typing patterns",
+    "browser": ["firefox", "chrome", "safari"],
+    "platform": ["windows", "macos", "linux"],
+    "typing_level": {
+      "slowTyper": {
+        "wpmMin": 20,
+        "wpmMax": 40,
+        "wpmMean": 30
+      },
+      "averageTyper": {
+        "wpmMin": 40,
+        "wpmMax": 80,
+        "wpmMean": 60
+      },
+      "fastTyper": {
+        "wpmMin": 70,
+        "wpmMax": 120,
+        "wpmMean": 90
+      },
+      "professionalTypist": {
+        "wpmMin": 80,
+        "wpmMax": 150,
+        "wpmMean": 100
+      }
+    },
+    "interKeystrokeInterval": {
+      "min": 50,
+      "max": 300,
+      "mean": 120,
+      "stdDev": 35,
+      "unit": "milliseconds",
+      "description": "Time between key press and next key press"
+    },
+    "keyHoldDuration": {
+      "min": 30,
+      "max": 150,
+      "mean": 80,
+      "stdDev": 25,
+      "unit": "milliseconds"
+    },
+    "digraphSpeedup": {
+      "value": 0.7,
+      "description": "Speedup factor for common letter pairs (th, he, in, etc.)"
+    },
+    "handAlternationSpeedup": {
+      "value": 0.85,
+      "description": "Speedup when switching hands"
+    },
+    "errorRate": {
+      "min": 0.001,
+      "max": 0.1,
+      "mean": 0.02,
+      "description": "Typical error rate (1-5%)"
+    },
+    "errorCorrectionDelay": {
+      "min": 100,
+      "max": 500,
+      "mean": 200,
+      "unit": "milliseconds"
+    },
+    "cognitiveNPauseProbability": {
+      "afterSentence": 0.3,
+      "afterWord": 0.05,
+      "unit": "probability"
+    },
+    "pauseDuration": {
+      "min": 200,
+      "max": 800,
+      "mean": 500,
+      "unit": "milliseconds",
+      "description": "Cognitive pause duration"
+    }
+  },
+  "scrollBehavior": {
+    "description": "Natural scrolling patterns",
+    "browser": ["firefox", "chrome", "safari"],
+    "platform": ["windows", "macos", "linux"],
+    "device": ["desktop", "laptop"],
+    "scrollVelocity": {
+      "min": 100,
+      "max": 800,
+      "mean": 300,
+      "stdDev": 100,
+      "unit": "pixels/second"
+    },
+    "scrollDistance": {
+      "min": 50,
+      "max": 500,
+      "mean": 200,
+      "stdDev": 100,
+      "unit": "pixels"
+    },
+    "scrollDuration": {
+      "min": 200,
+      "max": 2000,
+      "mean": 800,
+      "unit": "milliseconds"
+    },
+    "pauseFrequency": {
+      "value": 0.3,
+      "description": "Fraction of scrolls that include pauses"
+    },
+    "accelerationProfile": {
+      "values": ["eased", "linear"],
+      "description": "Natural scrolls decelerate (eased), not linear"
+    },
+    "directionChanges": {
+      "min": 0,
+      "max": 5,
+      "mean": 1,
+      "unit": "count",
+      "description": "Number of scroll direction changes per session"
+    }
+  },
+  "clickBehavior": {
+    "description": "Natural click patterns",
+    "browser": ["firefox", "chrome", "safari"],
+    "platform": ["windows", "macos", "linux"],
+    "clickDuration": {
+      "min": 50,
+      "max": 300,
+      "mean": 150,
+      "stdDev": 50,
+      "unit": "milliseconds"
+    },
+    "interClickInterval": {
+      "min": 500,
+      "max": 8000,
+      "mean": 2500,
+      "stdDev": 1500,
+      "unit": "milliseconds"
+    },
+    "doubleClickRate": {
+      "value": 0.02,
+      "description": "Fraction of clicks that are double-clicks"
+    },
+    "rightClickFrequency": {
+      "value": 0.08,
+      "description": "Fraction of clicks that are right-clicks"
+    },
+    "targetType": {
+      "link": 0.4,
+      "button": 0.3,
+      "input": 0.2,
+      "other": 0.1,
+      "description": "Distribution of click targets"
+    }
+  },
+  "idlePatterns": {
+    "description": "Natural idle/pause patterns",
+    "idleDuration": {
+      "min": 1000,
+      "max": 60000,
+      "mean": 5000,
+      "stdDev": 8000,
+      "unit": "milliseconds"
+    },
+    "idleFrequency": {
+      "value": 0.3,
+      "description": "Fraction of session that is idle"
+    },
+    "maxIdleDuration": {
+      "value": 180000,
+      "unit": "milliseconds",
+      "description": "Maximum idle duration before suspicious"
+    }
+  },
+  "navigationTiming": {
+    "description": "Timing around page navigation",
+    "pageLoadAwareness": {
+      "min": 200,
+      "max": 2000,
+      "mean": 500,
+      "unit": "milliseconds",
+      "description": "Time to realize page has loaded"
+    },
+    "clickToNavigationDelay": {
+      "min": 50,
+      "max": 500,
+      "mean": 200,
+      "unit": "milliseconds"
+    },
+    "interPageDelay": {
+      "min": 500,
+      "max": 10000,
+      "mean": 2000,
+      "unit": "milliseconds"
+    },
+    "backButtonUsageRate": {
+      "value": 0.12,
+      "description": "Fraction of navigations that use back button"
+    },
+    "refreshRate": {
+      "value": 0.05,
+      "description": "Fraction of navigations that refresh"
+    }
+  },
+  "formInteraction": {
+    "description": "Natural form filling patterns",
+    "focusToTypeDelay": {
+      "min": 100,
+      "max": 800,
+      "mean": 300,
+      "unit": "milliseconds"
+    },
+    "fieldCompletionTime": {
+      "min": 500,
+      "max": 10000,
+      "mean": 3000,
+      "unit": "milliseconds"
+    },
+    "interFieldDelay": {
+      "min": 100,
+      "max": 2000,
+      "mean": 500,
+      "unit": "milliseconds"
+    },
+    "tabVsClickUsage": {
+      "tab": 0.7,
+      "click": 0.3,
+      "description": "Preference for Tab vs Click for field navigation"
+    },
+    "fieldSkipRate": {
+      "value": 0.05,
+      "description": "Fraction of optional fields that are skipped"
+    },
+    "corrections": {
+      "probabilityPerField": 0.1,
+      "description": "Probability of making corrections while filling"
+    }
+  },
+  "viewportUsage": {
+    "description": "How users interact with visible area",
+    "contentCoveragePct": {
+      "min": 0.5,
+      "max": 1.0,
+      "mean": 0.85,
+      "description": "Fraction of page content viewed"
+    },
+    "focusAreaTypes": [
+      "content_rich_region",
+      "navigation",
+      "header",
+      "footer",
+      "sidebars"
+    ],
+    "readingPatterns": [
+      "f_pattern",
+      "z_pattern",
+      "layer_cake",
+      "random",
+      "spotlight"
+    ]
+  },
+  "deviceSpecificBehavior": {
+    "description": "Device-aware behavior differences",
+    "windows": {
+      "scrollWheelInverted": 0.02,
+      "controlKeyUsage": 0.4
+    },
+    "macos": {
+      "scrollWheelInverted": 0.5,
+      "commandKeyUsage": 0.8,
+      "trackpadUsage": 0.7
+    },
+    "linux": {
+      "scrollWheelInverted": 0.02,
+      "controlKeyUsage": 0.7
+    },
+    "dpiAwareness": {
+      "min": 0.8,
+      "max": 1.0,
+      "mean": 0.94,
+      "description": "How well mouse movement scales with DPI"
+    },
+    "screenSizeAwareness": {
+      "min": 0.8,
+      "max": 1.0,
+      "mean": 0.96,
+      "description": "How well behavior adapts to screen resolution"
+    }
+  },
+  "sessionCoherence": {
+    "description": "How consistent behavior should be within a session",
+    "fingerprint_drift": {
+      "max": 0.02,
+      "description": "Maximum acceptable fingerprint drift between requests"
+    },
+    "behavior_consistency": {
+      "min": 0.85,
+      "description": "Minimum consistency score for session coherence"
+    },
+    "velocity_spike_threshold": {
+      "multiplier": 3.0,
+      "description": "Velocity spikes > 3x standard deviations = suspicious"
+    },
+    "typing_speed_change": {
+      "maxDeviation": 0.3,
+      "description": "Maximum WPM change within session"
+    }
+  },
+  "browserProfiles": {
+    "firefox": {
+      "scroll": {
+        "smoothing": 0.8,
+        "velocityProfile": "eased"
+      },
+      "typing": {
+        "wpmVariation": 0.15
+      }
+    },
+    "chrome": {
+      "scroll": {
+        "smoothing": 0.9,
+        "velocityProfile": "eased"
+      },
+      "typing": {
+        "wpmVariation": 0.12
+      }
+    },
+    "safari": {
+      "scroll": {
+        "smoothing": 0.95,
+        "velocityProfile": "eased"
+      },
+      "typing": {
+        "wpmVariation": 0.15
+      }
+    }
+  },
+  "platformProfiles": {
+    "windows": {
+      "scrollWheelDefault": "normal",
+      "mouseAccelerationDefault": true,
+      "averageClickDuration": 160
+    },
+    "macos": {
+      "scrollWheelDefault": "inverted",
+      "mouseAccelerationDefault": true,
+      "trackpadDefault": true,
+      "averageClickDuration": 140
+    },
+    "linux": {
+      "scrollWheelDefault": "normal",
+      "mouseAccelerationDefault": false,
+      "averageClickDuration": 150
+    }
+  },
+  "anomalyThresholds": {
+    "typing_speed_jump": {
+      "threshold": 0.5,
+      "description": "WPM change > 50% = suspicious"
+    },
+    "mouse_velocity_spike": {
+      "stdDevMultiplier": 3.0,
+      "description": "Velocity spike > 3 std devs = suspicious"
+    },
+    "click_interval_anomaly": {
+      "stdDevMultiplier": 4.0,
+      "description": "Click interval > 4 std devs = suspicious"
+    },
+    "scroll_speed_anomaly": {
+      "stdDevMultiplier": 2.5,
+      "description": "Scroll speed > 2.5 std devs = suspicious"
+    },
+    "idle_duration_anomaly": {
+      "maxIdleDuration": 180000,
+      "description": "Idle > 3 minutes = suspicious"
+    }
+  }
+}

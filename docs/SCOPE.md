@@ -6,17 +6,18 @@
 
 ## Purpose
 
-Basset Hound Browser is a **browser automation tool** designed to be controlled by external applications, AI agents, or automation scripts. It provides powerful capabilities for web interaction, data extraction, and bot detection evasion, while remaining **intelligence-agnostic**.
+Basset Hound Browser is a **focused data collection tool** - a custom browser designed to be controlled by external applications, AI agents, or automation scripts. It captures raw data from web pages through WebSocket API commands, providing forensic-grade evidence and interaction capabilities while remaining **intelligence-agnostic**.
 
 ---
 
 ## Core Principle
 
-> **The browser is a tool with capabilities, not an intelligent system.**
+> **The browser is a DATA COLLECTION TOOL, not an intelligent system.**
 
-- The browser **captures and provides** raw data
+- The browser **captures and provides** raw data from web pages
 - External agents/applications **analyze and decide** what to do with that data
-- The browser does not make intelligence decisions about what data is important
+- The browser does not make intelligence decisions about what data is important or valuable
+- All browser capabilities exist to support accurate, forensic-quality data capture
 
 ---
 
@@ -53,32 +54,36 @@ This approach means:
 
 ## In Scope ✅
 
-### 1. Browser Automation
+These capabilities enable the browser to capture raw data for external processing.
+
+### 1. Browser Navigation & Control
 - **Navigation:** Load URLs, go back/forward, refresh
-- **Interaction:** Click elements, fill forms, type text, scroll
+- **Interaction:** Click elements, fill forms, type text, scroll, hover
 - **Waiting:** Wait for elements, page loads, network idle
 - **JavaScript execution:** Run custom scripts in page context
+- **Tab/window management:** Create, switch, close tabs
 
-### 2. Data Extraction (Raw/Unprocessed)
-- **Page content:** HTML, text, DOM structure
-- **Links:** Extract all links from page (no classification)
-- **Images:** Extract image URLs, dimensions, alt text
-- **Forms:** Extract form structure and fields
-- **Metadata:** Extract meta tags, Open Graph tags
-- **Network data:** Capture HTTP requests/responses (HAR format)
-- **Storage:** Extract cookies, localStorage, sessionStorage
-- **Console logs:** Capture browser console output
+### 2. Data Collection (Raw/Unprocessed)
+Data collection is the PRIMARY PURPOSE - all extraction returns unprocessed data.
+- **Page content:** HTML (full source), text content, DOM structure
+- **Page metadata:** Meta tags, Open Graph, Twitter Card, favicon
+- **Links:** Extract all links from page (no filtering or classification)
+- **Images:** Extract image URLs, dimensions, alt text, EXIF metadata
+- **Forms:** Extract form structure, field types, validation rules
+- **Network data:** Capture HTTP requests/responses (HAR format with timing)
+- **Storage:** Extract cookies, localStorage, sessionStorage, IndexedDB
+- **Console logs:** Capture browser console output and errors
 
-### 3. Forensic Data Capture
-- **Screenshots:** Full page, specific elements, annotated
+### 3. Forensic Evidence Capture
+Core function of the browser - all captures include integrity verification.
+- **Screenshots:** Page captures, element captures, full-page captures with metadata
 - **Page archives:** Save as MHTML, HTML, WARC, PDF
-- **Network capture:** Full HAR with timing, headers, bodies
-- **DOM snapshots:** Capture full DOM state
-- **Image forensics:** EXIF, IPTC, XMP metadata, GPS coordinates
-- **OCR:** Extract text from images (tesseract.js)
-- **Cryptographic hashing:** SHA-256 for integrity verification
-- **Timestamps:** Capture time for all actions
-- **Chain of custody:** Log who captured what and when
+- **Network capture:** Complete HAR with timing, headers, bodies, DNS, TLS
+- **DOM snapshots:** Capture full DOM state with metadata
+- **Image forensics:** EXIF, IPTC, XMP metadata, GPS coordinates, OCR text extraction
+- **Cryptographic hashing:** SHA-256 hash of all evidence for integrity
+- **Timestamps:** Timestamp every action and capture for audit trail
+- **Chain of custody:** Complete audit log of who captured what, when, and why
 
 ### 4. Bot Detection Evasion
 - **Fingerprint spoofing:** Canvas, WebGL, Audio, fonts
@@ -214,48 +219,63 @@ This approach means:
 
 > **Exception - Tor:** Basic Tor integration IS in scope because it directly enables network forensics (accessing .onion sites, anonymous investigation). The browser can start/stop embedded Tor and route traffic through it, but advanced Tor configuration (bridges, guards) is out of scope.
 
-### 2. Intelligence Analysis
+### 2. Intelligence Analysis & Decision-Making
+These are EXTERNAL SYSTEM responsibilities - not the browser's job.
 - ❌ **Pattern detection:** Detecting emails, phones, crypto addresses, social handles
-- ❌ **Data classification:** Deciding what data is "important" or "relevant"
+- ❌ **Data classification:** Deciding what data is "important" or "relevant"  
 - ❌ **OSINT pattern matching:** Automated detection of intelligence indicators
 - ❌ **Confidence scoring:** Rating how "useful" extracted data is
 - ❌ **Relationship inference:** Detecting connections between data points
+- ❌ **Decision-making:** What to extract, where to navigate, what to click
+- ❌ **Investigation context:** Understanding why data matters
+
+> **Principle:** External agents decide what is important. Browser provides everything and lets agents/humans decide.
 
 ### 3. Investigation Management
+These are EXTERNAL APPLICATION responsibilities - move to palletai or basset-hound.
 - ❌ **Investigation workflows:** Managing investigation lifecycle, queuing URLs
 - ❌ **Case management:** Organizing evidence into cases/investigations
-- ❌ **Evidence packages:** Creating investigation bundles (just capture raw evidence)
-- ❌ **Investigation IDs:** Tracking which investigation evidence belongs to
+- ❌ **Evidence packages:** Creating investigation bundles for specific cases
+- ❌ **Investigation IDs:** Linking evidence to investigations
 - ❌ **Workflow orchestration:** Deciding what pages to visit next
+- ❌ **Task queuing:** Managing the investigation task queue
+
+> **Principle:** External agents orchestrate. Browser is called for individual actions.
 
 ### 4. Data Processing & Transformation
+These are EXTERNAL SYSTEM responsibilities - not the browser's job.
 - ❌ **Ingestion modes:** Deciding what to ingest (automatic/selective/filtered)
 - ❌ **Deduplication:** Tracking what's been seen before across sessions
 - ❌ **Normalization:** Converting data to standard formats
 - ❌ **Entity creation:** Creating Person/Organization objects from data
 - ❌ **Orphan data generation:** Transforming data for external systems
 - ❌ **Provenance building:** Creating complex data lineage structures
+- ❌ **Data enrichment:** Adding additional fields or computed values
+
+> **Principle:** Browser extracts raw data. External systems transform as needed.
 
 ### 5. External System Integration
-- ❌ **basset-hound API integration:** Fetching/pushing data to basset-hound
-- ❌ **Sock puppet management:** Managing fake personas in external database
+These are EXTERNAL APPLICATION responsibilities - not the browser's job.
+- ❌ **basset-hound API integration:** Fetching/pushing data to external database
+- ❌ **Sock puppet management:** Managing fake personas
 - ❌ **Activity syncing:** Pushing activity logs to external systems
 - ❌ **Credential fetching:** Pulling credentials from external APIs
+- ❌ **Third-party API calls:** Any external service integration
 
-### 6. Analysis Tools
-- ❌ **Blockchain analysis:** Analyzing crypto transactions
+> **Architecture:** Browser provides raw data via WebSocket. External applications call third-party services if needed.
+
+### 6. Analysis & AI Services
+These are EXTERNAL APPLICATION responsibilities - not the browser's job.
 - ❌ **Face detection:** Identifying faces in images
 - ❌ **Object detection:** Identifying objects in images
 - ❌ **Logo detection:** Identifying company logos
 - ❌ **Reverse image search:** Looking up images online
 - ❌ **Sentiment analysis:** Analyzing text sentiment
 - ❌ **Entity extraction:** NLP-based name/org extraction
+- ❌ **ML-based analysis:** Any machine learning models
+- ❌ **Blockchain analysis:** Analyzing crypto transactions
 
-### 7. Decision-Making
-- ❌ **What to extract:** Browser extracts everything, agent decides what to keep
-- ❌ **Where to navigate:** Agent tells browser where to go
-- ❌ **What to click:** Agent identifies targets, browser executes
-- ❌ **When to capture evidence:** Agent triggers capture at right moment
+> **Principle:** Browser provides raw images/text. External agents use Claude, vision models, etc.
 
 ### 8. Infrastructure, Deployment & Scaling (OUT OF SCOPE - Post-Project)
 - ❌ **Kubernetes orchestration:** K8s deployments, service mesh, container orchestration

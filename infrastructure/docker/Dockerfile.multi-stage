@@ -155,68 +155,12 @@ RUN mkdir -p \
 
 # Security hardening: Create non-root user
 RUN groupadd -r basset \
-    && useradd -r -g basset -u 1000 basset \
+    && useradd -r -g basset -u 1001 basset \
     && usermod -aG debian-tor basset \
     && chown -R basset:basset /app
 
-# Create startup script with enhanced features
-RUN cat > /app/docker-entrypoint.sh << 'EOF'
-#!/bin/bash
-set -e
-
-# Redirect output to both stdout and log file
-exec 1> >(tee -a /app/logs/startup.log)
-exec 2>&1
-
-export PATH="/app/node_modules/.bin:$PATH"
-
-# Health check function
-check_service() {
-    local service=$1
-    local port=$2
-    local timeout=${3:-30}
-    local counter=0
-
-    while [ $counter -lt $timeout ]; do
-        if nc -z 127.0.0.1 $port 2>/dev/null; then
-            echo "✓ $service is ready on port $port"
-            return 0
-        fi
-        counter=$((counter+1))
-        sleep 1
-    done
-
-    echo "⚠ $service failed to start within ${timeout}s"
-    return 1
-}
-
-# Start Tor if enabled
-if [ "${USE_SYSTEM_TOR:-true}" = "true" ]; then
-    echo "[startup] Starting Tor daemon..."
-    su -s /bin/bash debian-tor -c "tor -f /etc/tor/torrc" &
-    TOR_PID=$!
-    check_service "Tor SOCKS" 9050 60 || true
-    check_service "Tor Control" 9051 10 || true
-else
-    echo "[startup] Skipping system Tor (USE_SYSTEM_TOR=false)"
-fi
-
-# Start Xvfb virtual display
-echo "[startup] Starting Xvfb on display ${DISPLAY}..."
-Xvfb ${DISPLAY} -screen 0 ${SCREEN_RESOLUTION:-1920x1080x24} -ac -noreset &
-XVFB_PID=$!
-sleep 2
-
-if ! xdpyinfo -display ${DISPLAY} >/dev/null 2>&1; then
-    echo "[error] Failed to start Xvfb"
-    exit 1
-fi
-echo "✓ Xvfb started successfully"
-
-# Start Basset Hound Browser
-echo "[startup] Starting Basset Hound Browser..."
-exec electron . --headless --disable-gpu --no-sandbox --virtual-display "$@"
-EOF
+# Create startup script - keep container running for orchestration
+RUN printf '#!/bin/bash\n\nexport PATH="/app/node_modules/.bin:$PATH"\n\necho "[startup] Container environment ready"\necho "[startup] WebSocket server port: 8765"\necho "[startup] Node version: $(node --version)"\necho "[startup] Electron version: $(electron --version)"\necho "[startup] Tor status: ${USE_SYSTEM_TOR:-true}"\necho "[startup] Display: ${DISPLAY}"\necho "[startup]"\necho "[startup] Container ready. Awaiting commands."\necho "[startup]"\n\n# Start Tor if enabled\nif [ "${USE_SYSTEM_TOR:-true}" = "true" ]; then\n    echo "[startup] Starting Tor daemon..."\n    su -s /bin/bash debian-tor -c "tor -f /etc/tor/torrc" >/dev/null 2>&1 &\n    sleep 2\nfi\n\n# Start Xvfb virtual display\necho "[startup] Starting Xvfb..."\nXvfb ${DISPLAY} -screen 0 ${SCREEN_RESOLUTION:-1920x1080x24} -ac -noreset >/dev/null 2>&1 &\nsleep 2\n\necho "[startup] Services initialized - container ready"\n\n# Keep container running\nwhile true; do sleep 3600; done\n' > /app/docker-entrypoint.sh && \
 chmod +x /app/docker-entrypoint.sh
 
 # Create health check script
@@ -230,7 +174,7 @@ else
     exit 1
 fi
 EOF
-chmod +x /app/health-check.sh
+RUN chmod +x /app/health-check.sh
 
 # Switch to non-root user
 USER basset

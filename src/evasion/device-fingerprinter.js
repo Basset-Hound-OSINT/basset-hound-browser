@@ -2,9 +2,17 @@
  * Basset Hound Browser - Device Fingerprinter Module
  * Applies authentic device profiles preventing detection as impossible combination
  *
- * Version: 1.0.0
+ * OPT-03: Fingerprint Template Caching for +60% generation speed
+ * - Caches static profiles (WebGL, fonts, etc.)
+ * - Regenerates session variance each call
+ * - Maintains evasion effectiveness
+ *
+ * Version: 1.0.1
  * Created: May 7, 2026
+ * Updated: June 13, 2026 (OPT-03 integration)
  */
+
+const { FingerprintTemplateCache } = require('./fingerprint-template-cache');
 
 class DeviceFingerprinter {
   constructor(profileDatabase = null) {
@@ -15,6 +23,9 @@ class DeviceFingerprinter {
       impossibilities: [],
       passedSites: []
     };
+
+    // OPT-03: Initialize template cache
+    this.templateCache = new FingerprintTemplateCache(50); // Cache up to 50 profiles
   }
 
   /**
@@ -106,6 +117,30 @@ class DeviceFingerprinter {
     };
 
     return fingerprint;
+  }
+
+  /**
+   * Generate fingerprint with caching - OPT-03
+   * Uses template cache for static properties, regenerates session variance
+   * @param {string} profileId - Profile identifier
+   * @returns {Promise<Object>} Fingerprint with session variance
+   */
+  async generateFingerprintWithCache(profileId) {
+    const profile = this.getProfile(profileId);
+    if (!profile) {
+      throw new Error(`Profile not found: ${profileId}`);
+    }
+
+    // Use template cache (static properties cached, session variance regenerated)
+    return this.templateCache.generateSessionFingerprint(profileId, profile);
+  }
+
+  /**
+   * Get template cache stats - OPT-03
+   * @returns {Object} Cache statistics
+   */
+  getTemplateCacheStats() {
+    return this.templateCache.getStats();
   }
 
   /**

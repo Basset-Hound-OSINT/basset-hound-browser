@@ -13,7 +13,7 @@ import os
 # Add SDK to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../sdks/python-sdk'))
 
-from basset_hound_v12_2_0 import (
+from basset_hound import (
     BrowserClient,
     SessionCheckpoint,
     CommandResponse,
@@ -66,12 +66,13 @@ class TestClientInitialization:
     @pytest.mark.asyncio
     async def test_context_manager(self):
         """Test context manager usage"""
-        with patch('websockets.connect') as mock_connect:
+        async def mock_connect(*args, **kwargs):
             mock_ws = AsyncMock()
-            mock_connect.return_value = mock_ws
             mock_ws.__aiter__ = lambda self: self
             mock_ws.__anext__ = AsyncMock(side_effect=asyncio.CancelledError)
+            return mock_ws
 
+        with patch('websockets.connect', side_effect=mock_connect):
             client = BrowserClient()
             try:
                 async with client as c:

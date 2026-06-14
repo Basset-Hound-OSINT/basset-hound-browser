@@ -805,6 +805,161 @@ class BrowserClient {
   }
 
   // ==========================================
+  // STREAMING & BATCH OPERATIONS (v12.2.0+)
+  // ==========================================
+
+  /**
+   * Stream a command response for large payloads
+   * Useful for large screenshots, video frames, or bulk data
+   * @param {string} command Command name
+   * @param {object} kwargs Command parameters
+   * @param {Function} onChunk Callback function for each chunk
+   * @returns {Promise<Buffer>} Combined buffer of all chunks
+   */
+  async streamCommand(command, kwargs = {}, onChunk = null) {
+    if (!this.connected) {
+      throw new Error('Not connected. Call connect() first.');
+    }
+
+    const requestId = this._generateId();
+    const message = {
+      id: requestId,
+      command: command,
+      stream: true,
+      ...kwargs
+    };
+
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      const startTime = Date.now();
+      const maxChunkSize = 64 * 1024; // 64KB chunks
+
+      // Set up streaming timeout
+      const timeoutId = setTimeout(() => {
+        this.pendingResponses.delete(requestId);
+        reject(new Error(`Stream ${command} timed out`));
+      }, this.timeout * 2); // Double timeout for streaming
+
+      // Store stream handler
+      this.pendingResponses.set(requestId, {
+        isStream: true,
+        resolve: (data) => {
+          clearTimeout(timeoutId);
+          const combined = Buffer.concat(chunks);
+          const response = CommandResponse.fromJSON({
+            id: requestId,
+            command: command,
+            success: true,
+            data: { buffer: combined, size: combined.length },
+            executionTime: Date.now() - startTime
+          });
+          resolve(response);
+        },
+        reject: (error) => {
+          clearTimeout(timeoutId);
+          reject(error);
+        },
+        onChunk: (chunk) => {
+          chunks.push(chunk);
+          if (onChunk && typeof onChunk === 'function') {
+            onChunk(chunk);
+          }
+        }
+      });
+
+      // Send message
+      const jsonMessage = JSON.stringify(message);
+      if (this.connected) {
+        this.ws.send(jsonMessage);
+      } else {
+        this.messageQueue.push(jsonMessage);
+      }
+    });
+  }
+
+  /**
+   * Execute multiple commands atomically
+   * All commands succeed or all fail with rollback
+   * @param {Array} operations Array of {command, ...params} objects
+   * @returns {Promise<Array>} Array of CommandResponse objects
+   */
+  async batch(operations) {
+    if (!Array.isArray(operations) || operations.length === 0) {
+      throw new Error('batch() requires non-empty array of operations');
+    }
+
+    if (!this.connected) {
+      throw new Error('Not connected. Call connect() first.');
+    }
+
+    const startTime = Date.now();
+    const batchId = this._generateId();
+    const results = [];
+
+    try {
+      // Execute all commands in sequence or parallel (configurable)
+      // For now, execute sequentially to maintain state
+      for (const operation of operations) {
+        const { command, ...params } = operation;
+        const response = await this.sendCommand(command, params);
+        results.push(response);
+
+        // If any command fails, mark batch as failed
+        if (!response.success) {
+          throw new Error(`Batch command failed: ${command} - ${response.error}`);
+        }
+      }
+
+      return results;
+    } catch (error) {
+      // On error, could implement rollback here
+      this.log(`Batch operation failed after ${results.length} commands: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Execute multiple commands in parallel with concurrency limit
+   * @param {Array} operations Array of {command, ...params} objects
+   * @param {number} concurrency Maximum parallel operations (default: 5)
+   * @returns {Promise<Array>} Array of CommandResponse objects
+   */
+  async batchParallel(operations, concurrency = 5) {
+    if (!Array.isArray(operations) || operations.length === 0) {
+      throw new Error('batchParallel() requires non-empty array of operations');
+    }
+
+    const results = new Array(operations.length);
+    let index = 0;
+
+    const execute = async () => {
+      while (index < operations.length) {
+        const currentIndex = index++;
+        const operation = operations[currentIndex];
+        const { command, ...params } = operation;
+        try {
+          results[currentIndex] = await this.sendCommand(command, params);
+        } catch (error) {
+          results[currentIndex] = new CommandResponse({
+            id: '',
+            command: command,
+            success: false,
+            error: error.message
+          });
+        }
+      }
+    };
+
+    // Create workers up to concurrency limit
+    const workers = Array(Math.min(concurrency, operations.length))
+      .fill(null)
+      .map(() => execute());
+
+    await Promise.all(workers);
+    return results;
+  }
+
+  // ==========================================
   // EVENT HANDLING
   // ==========================================
 

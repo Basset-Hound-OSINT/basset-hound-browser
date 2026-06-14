@@ -1,0 +1,189 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'Dockerfile*'
+      - '.github/workflows/docker.yml'
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    name: Build Docker Image
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            basset-hound-browser
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=basset-hound-browser:buildcache
+          cache-to: type=registry,ref=basset-hound-browser:buildcache,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      - name: Image digest
+        run: echo ${{ steps.build.outputs.digest }}
+
+      - name: Create build report
+        run: |
+          cat > docker-build-report.txt << 'EOF'
+          # Docker Build Report
+
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref }}
+          Commit: ${{ github.sha }}
+          Build Time: $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          Image Tags: ${{ steps.meta.outputs.tags }}
+          Image Digest: ${{ steps.build.outputs.digest }}
+          EOF
+          cat docker-build-report.txt
+
+      - name: Upload build report
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-build-report
+          path: docker-build-report.txt
+          retention-days: 30
+
+  docker-test:
+    runs-on: ubuntu-latest
+    name: Test Docker Image
+    needs: docker-build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: basset-hound-browser:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run container smoke tests
+        run: |
+          docker run --rm -d --name test-container \
+            -p 8765:8765 \
+            basset-hound-browser:test
+
+          # Wait for container to be ready
+          for i in {1..30}; do
+            if docker exec test-container curl -s http://localhost:8765 >/dev/null 2>&1; then
+              echo "Container is ready"
+              break
+            fi
+            echo "Waiting for container... ($i/30)"
+            sleep 2
+          done
+
+          # Check if container is still running
+          if ! docker ps | grep -q test-container; then
+            echo "Container failed to start"
+            docker logs test-container
+            exit 1
+          fi
+
+          docker stop test-container
+
+      - name: Check image size
+        run: |
+          docker images basset-hound-browser:test --format "table {{.Size}}"
+
+      - name: Docker image history
+        run: |
+          docker history basset-hound-browser:test | head -20
+
+  docker-security:
+    runs-on: ubuntu-latest
+    name: Docker Image Security Scan
+    needs: docker-build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: basset-hound-browser:scan
+          cache-from: type=gha
+
+      - name: Run Trivy scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'basset-hound-browser:scan'
+          format: 'table'
+          output: 'trivy-docker-results.txt'
+          severity: 'HIGH,CRITICAL'
+
+      - name: Check scan results
+        run: cat trivy-docker-results.txt
+
+      - name: Upload Docker scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-security-scan
+          path: trivy-docker-results.txt
+          retention-days: 30

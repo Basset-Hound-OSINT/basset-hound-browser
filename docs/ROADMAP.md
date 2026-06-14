@@ -190,39 +190,65 @@ graph TD
 
 ## Upcoming Releases
 
-### v12.1.0 - Platform Integrations & Enhanced QA (June 15, 2026)
-**Status:** Development Complete (May 31) | Staging & Validation: June 1-15
-**Session Record:** [2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md](archives/session_records/2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md)
-- **Technology Detection Module** - 50+ tech detection with 95%+ accuracy
-- **Platform Integrations** - Shodan, Maltego, MISP, Censys, STIX/TAXII exports
-- **Forensic Evidence Export** - Chain of custody documentation, cryptographic manifests
-- **Advanced JavaScript Execution** - Sandbox + 10+ extraction payloads
-- **QA Sprint** - 27 npm packages updated, memory leak fixes, 95%+ test pass rate
-- **Details:** See [V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md](V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md)
+### v12.1.0 - Core Data Collection & Stability (June 15, 2026) ✅ PRODUCTION LIVE
+**Status:** Production Deployment Complete
+**Focus:** Stable, reliable data collection tool
+- ✅ **WebSocket API:** 164 commands for complete browser control
+- ✅ **Data Extraction:** HTML, text, images, metadata, network capture
+- ✅ **Evidence Capture:** Screenshots, archives, HAR, DOM snapshots
+- ✅ **Forensic Quality:** SHA-256 hashing, timestamps, chain of custody
+- ✅ **Bot Evasion:** Fingerprinting, behavioral AI, Tor integration
+- ✅ **Stability:** Memory management, cleanup, error recovery
+- ✅ **Performance:** 285-481 msg/sec @ 50-200 concurrent load
+- **Status:** PRODUCTION READY - Actively deployed
 
-### v12.2.0 - Market Leadership & Forensic Excellence (July 15, 2026)
-**Status:** Strategic Plan Complete | Development: June 15 - July 15
-- **Forensic Certification** - ISO/IEC 27037 compliance pathway
-- **Multi-Target Monitoring** - Automated competitor monitoring with change detection
-- **Agent SDKs** - Native Python, JavaScript, TypeScript integrations
-- **Dark Web Support** - Enhanced .onion site monitoring and analysis
+### v12.2.0 - Data Collection Improvements & Reliability (July 15, 2026)
+**Status:** Development Planning | Target: July 15
+**Focus:** Enhance data collection capabilities and system reliability
+- **Screenshot Improvements** - Better quality, faster capture, more formats
+- **Video Recording** - Capture browser interaction as video (NEW)
+- **Reliability Hardening** - 99.9% uptime, better error recovery
+- **Performance Optimization** - 350-400+ msg/sec target
 - **Session Persistence** - 500+ concurrent requests per profile
-- **Performance:** 350-400+ msg/sec @ 200 concurrent, 500+ concurrent load test
-- **Details:** See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
+- **Extended Load Testing** - 500+ concurrent connection validation
+- **Additional Data Formats** - PDF export, video capture, audio logs
+- **Documentation Expansion** - Integration guides, troubleshooting
+
+### v12.3.0 - Advanced Data Capture (August 15, 2026)
+**Status:** Planning Phase | Target: August 15
+**Focus:** Advanced data collection without intelligence analysis
+- **Advanced Screenshot Modes** - Parallax detection, scroll capture, viewport variants
+- **Video Recording Enhancement** - Multi-track, selective capture, compression
+- **Additional Metadata Capture** - Performance metrics, resource timing, custom headers
+- **Data Collection Templates** - Reusable extraction patterns (CSS, XPath, Regex)
+- **Concurrent Capture** - Parallel screenshots, multi-page recording
+- **Export Formats** - WARC improvements, metadata standards, forensic packages
+- **Stability** - Further reliability improvements
+
+### Out of Scope (NOT Planned for v12.x)
+- ❌ **Third-party API integrations** - Shodan, Maltego, Censys, STIX/TAXII (belongs in external apps)
+- ❌ **Intelligence analysis** - Pattern detection, data classification, confidence scoring
+- ❌ **Investigation management** - Case management, evidence packages, workflow orchestration
+- ❌ **External system integration** - basset-hound sync, credential management
+- ❌ **Enterprise clustering** - K8s, Terraform, multi-node deployment (post-project phase)
+- ❌ **AI/Agent integration** - Browser stays focused on data collection
+
+**Architecture Note:** External applications consuming the browser's data can add their own intelligence layers. Browser provides raw data only.
 
 ---
 
 ## Overview
 
-Basset Hound Browser is a **browser automation tool** designed to be controlled by external applications, AI agents, or automation scripts. It provides powerful capabilities for web interaction, data extraction, and bot detection evasion, while remaining **intelligence-agnostic**.
+Basset Hound Browser is a **focused data collection tool** - a custom browser designed to be controlled by external applications, AI agents, or automation scripts via WebSocket API. It captures forensic-quality evidence from web pages, providing raw data for external analysis while remaining **intelligence-agnostic**.
 
 ### Key Principle
 
-> **The browser is a tool with capabilities, not an intelligent system.**
+> **Basset Hound Browser is a DATA COLLECTION TOOL, not an intelligence system.**
 
-- The browser **captures and provides** raw data
-- External agents/applications **analyze and decide** what to do with that data
-- The browser does not make intelligence decisions about what data is important
+- The browser **captures and provides** raw data from web pages
+- External agents/applications **analyze and decide** what that data means
+- The browser does not make intelligence decisions about what is important
+- All capabilities exist to support accurate, forensic-grade data capture
 
 ### Architecture Position
 

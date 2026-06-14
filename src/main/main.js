@@ -47,16 +47,56 @@ const { WindowPool, PoolEntryState } = require('./windows/pool');
 const { getUpdateManager, UPDATE_STATUS } = require('./updater/manager');
 const CertificateGenerator = require('./utils/cert-generator');
 const { ensureEmbeddedTor, checkTorAvailability, TorAutoSetup } = require('./utils/tor-auto-setup');
-const { initializeGCTuning } = require('./utils/gc-tuning');
+const { initializeGCTuning, initializeAdvancedGCTuning } = require('./utils/gc-tuning');
+const { LazyManagerRegistry } = require('./managers/lazy-initializer');
+const { getSerializer } = require('./websocket/response-serializer');
 
 // ==========================================
-// Garbage Collection Tuning (OPT-07)
+// Garbage Collection Tuning (OPT-07 + OPT-12)
 // ==========================================
 const gcTuningResult = initializeGCTuning({
   maxHeapSize: 512,  // MB
   enableGCMonitoring: true,
   enablePeriodicCleanup: true,
   cleanupInterval: 60000  // 1 minute
+});
+
+// Initialize advanced GC tuning (OPT-12)
+const advancedGCResult = initializeAdvancedGCTuning({
+  minGCInterval: 10000,
+  maxGCInterval: 120000,
+  memoryThreshold: 0.85,
+  aggressiveGCAt: 0.95,
+  adjustInterval: 5000,
+  verbose: process.env.DEBUG_GC === 'true'
+});
+
+// ==========================================
+// Lazy Manager Initialization (OPT-09)
+// ==========================================
+const lazyManagerRegistry = new LazyManagerRegistry();
+
+// Register non-critical managers for lazy initialization
+lazyManagerRegistry.register('technology', async () => {
+  return new TechnologyManager();
+});
+
+lazyManagerRegistry.register('networkAnalysis', async () => {
+  return new NetworkAnalysisManager();
+});
+
+// Mark managers to preload after startup (non-blocking)
+lazyManagerRegistry.markForPreload('technology');
+lazyManagerRegistry.markForPreload('networkAnalysis');
+
+// ==========================================
+// Response Serialization Optimization (OPT-11)
+// ==========================================
+const serializer = getSerializer({
+  poolSize: 32,
+  bufferSize: 8192,
+  largePayloadThreshold: 65536,
+  enableStats: true
 });
 
 // ==========================================
