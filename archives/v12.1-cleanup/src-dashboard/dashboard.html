@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitor Monitoring Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1 class="dashboard-title">Competitor Monitoring Dashboard</h1>
+                <p class="dashboard-subtitle">Real-time competitive intelligence</p>
+            </div>
+            <div class="header-right">
+                <div class="connection-status">
+                    <span id="connectionIndicator" class="status-dot disconnected"></span>
+                    <span id="connectionText">Connecting...</span>
+                </div>
+                <div class="controls">
+                    <button id="refreshBtn" class="btn btn-primary">Refresh</button>
+                    <button id="settingsBtn" class="btn btn-secondary">Settings</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters & Actions -->
+        <nav class="filter-bar">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="monitorFilter">Competitors:</label>
+                    <select id="monitorFilter" multiple>
+                        <option value="">All Competitors</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="categoryFilter">Category:</label>
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="content">Content</option>
+                        <option value="structure">Structure</option>
+                        <option value="technology">Technology</option>
+                        <option value="performance">Performance</option>
+                        <option value="security">Security</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="severityFilter">Severity:</label>
+                    <select id="severityFilter">
+                        <option value="">All Severities</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+            </div>
+            <div class="actions">
+                <button id="markReadBtn" class="btn btn-sm">Mark as Read</button>
+                <button id="dismissBtn" class="btn btn-sm">Dismiss</button>
+                <button id="clearFiltersBtn" class="btn btn-sm btn-outline">Clear Filters</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Sidebar -->
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-section">
+                    <h3 class="section-title">Alerts</h3>
+                    <div class="alert-summary">
+                        <div class="summary-item">
+                            <span class="label">Unread</span>
+                            <span id="unreadCount" class="count">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Critical</span>
+                            <span id="criticalCount" class="count severity-critical">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">High</span>
+                            <span id="highCount" class="count severity-high">0</span>
+                        </div>
+                    </div>
+                    <ul id="alertList" class="alert-list">
+                        <li class="empty-state">No alerts</li>
+                    </ul>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="section-title">Metrics</h3>
+                    <div class="metrics-mini">
+                        <div class="metric-card">
+                            <span class="metric-label">Total Changes</span>
+                            <span id="totalChanges" class="metric-value">0</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Active Monitors</span>
+                            <span id="activeMonitors" class="metric-value">0</span>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Monitors</span>
+                            <span id="monitorCount" class="metric-value">0</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <section class="dashboard-content">
+                <!-- Metrics Row -->
+                <div class="metrics-row">
+                    <div class="metric-box">
+                        <div class="metric-header">
+                            <h4>Change Count</h4>
+                            <span class="metric-trend" id="changeTrend">stable</span>
+                        </div>
+                        <canvas id="changeChart" class="metric-chart"></canvas>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-header">
+                            <h4>Change Frequency</h4>
+                            <span class="metric-info">Last 24h</span>
+                        </div>
+                        <canvas id="frequencyChart" class="metric-chart"></canvas>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-header">
+                            <h4>Categories</h4>
+                            <span class="metric-info">Distribution</span>
+                        </div>
+                        <canvas id="categoryChart" class="metric-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" data-tab="timeline">Timeline</button>
+                        <button class="tab-btn" data-tab="comparison">Comparison</button>
+                        <button class="tab-btn" data-tab="alerts">Alerts</button>
+                        <button class="tab-btn" data-tab="details">Details</button>
+                    </div>
+
+                    <!-- Timeline Tab -->
+                    <div id="timeline" class="tab-content active">
+                        <table class="changes-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Competitor</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timelineBody">
+                                <tr class="empty-state">
+                                    <td colspan="5">No changes recorded</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Comparison Tab -->
+                    <div id="comparison" class="tab-content">
+                        <div class="comparison-container">
+                            <div class="comparison-controls">
+                                <label>Select Competitors to Compare:</label>
+                                <select id="comparisonSelect" multiple>
+                                    <option value="">Select competitors...</option>
+                                </select>
+                                <button id="compareBtn" class="btn btn-primary">Compare</button>
+                            </div>
+                            <div id="comparisonResults" class="comparison-results">
+                                <p class="empty-state">Select 2+ competitors to compare</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Tab -->
+                    <div id="alerts" class="tab-content">
+                        <div class="alerts-filter">
+                            <div class="filter-group">
+                                <label for="alertStatus">Status:</label>
+                                <select id="alertStatus">
+                                    <option value="">All</option>
+                                    <option value="new">New</option>
+                                    <option value="acknowledged">Acknowledged</option>
+                                    <option value="dismissed">Dismissed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <table class="alerts-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="selectAllAlerts"></th>
+                                    <th>Time</th>
+                                    <th>Competitor</th>
+                                    <th>Title</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alertsBody">
+                                <tr class="empty-state">
+                                    <td colspan="7">No alerts</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Details Tab -->
+                    <div id="details" class="tab-content">
+                        <div class="details-container">
+                            <div id="detailsContent">
+                                <p class="empty-state">Select an item to view details</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Dashboard Settings</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="settingsForm">
+                    <div class="form-group">
+                        <label for="refreshInterval">Auto-refresh interval (seconds):</label>
+                        <input type="number" id="refreshInterval" min="5" max="300" value="30">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme">Theme:</label>
+                        <select id="theme">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">Auto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="soundEnabled" checked>
+                            Enable alert sounds
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="notificationsEnabled" checked>
+                            Enable desktop notifications
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">Cancel</button>
+                <button id="saveSettingsBtn" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
