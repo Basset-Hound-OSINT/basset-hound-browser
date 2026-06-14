@@ -1,14 +1,46 @@
-# Basset Hound Browser - Headless Docker Container
-# Runs the Electron browser in headless mode with Xvfb virtual display
+# Basset Hound Browser - Multi-Stage Optimized Dockerfile
+# Optimizes image size, security, and caching with 3 build stages
+# Stage 1: Builder - Node dependencies compilation
+# Stage 2: Runtime - Minimal runtime environment
+# Stage 3: Final - Hardened production image
 
-FROM node:20-bullseye
+# ============================================================================
+# STAGE 1: BUILDER - Node.js dependencies and compilation
+# ============================================================================
+FROM node:20-bullseye AS builder
 
-# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies only needed during build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3 \
+    git \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+
+# Copy package files for dependency resolution
+COPY package*.json ./
+
+# Install dependencies (with caching optimization)
+RUN npm ci --no-optional --prefer-offline
+
+# Build any native modules
+RUN npm run build --if-present || true
+
+# ============================================================================
+# STAGE 2: RUNTIME BASE - System libraries and Tor
+# ============================================================================
+FROM node:20-bullseye-slim AS runtime-base
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV DISPLAY=:99
 ENV ELECTRON_DISABLE_SANDBOX=1
 
-# Install system dependencies for Electron and Xvfb
+# Install runtime dependencies only (no build tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Xvfb for virtual display
     xvfb \
@@ -52,175 +84,164 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Fonts
     fonts-liberation \
     fonts-noto-color-emoji \
-    # Utilities
+    # System utilities
     wget \
     ca-certificates \
     procps \
     dbus \
-    # For Tor repository setup
-    apt-transport-https \
-    gpg \
     netcat-openbsd \
+    curl \
     # Cleanup
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# === TOR INSTALLATION ===
-# Install Tor from Debian repository (stable version for Bullseye)
-# Note: Tor Project's bullseye repo is no longer available, using Debian default
-# obfs4proxy is not available in Bullseye, but embedded Tor can be used as fallback for bridges
+# Install Tor from Debian repository
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    tor \
+    && apt-get install -y --no-install-recommends tor \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure Tor for container use
-RUN echo '# Basset Hound Browser - Docker Container Tor Configuration\n\
-\n\
-# SOCKS5 proxy for browser connections\n\
-SocksPort 127.0.0.1:9050\n\
-\n\
-# Control port for circuit management (TorManager integration)\n\
+# Configure Tor for container environment
+RUN echo 'SocksPort 127.0.0.1:9050\n\
 ControlPort 127.0.0.1:9051\n\
-\n\
-# Data directory\n\
 DataDirectory /var/lib/tor\n\
-\n\
-# Use cookie authentication for control port\n\
 CookieAuthentication 1\n\
 CookieAuthFile /var/lib/tor/control_auth_cookie\n\
 CookieAuthFileGroupReadable 1\n\
-\n\
-# Restrict SOCKS connections to localhost only\n\
 SocksPolicy accept 127.0.0.1\n\
 SocksPolicy reject *\n\
-\n\
-# Safe logging\n\
 SafeLogging 1\n\
-\n\
-# Avoid excessive disk writes\n\
 AvoidDiskWrites 1\n\
-\n\
-# Circuit settings for predictable behavior\n\
 CircuitBuildTimeout 30\n\
 LearnCircuitBuildTimeout 0\n\
 MaxCircuitDirtiness 600\n\
-\n\
-# Log to stdout for Docker log aggregation\n\
-Log notice stdout\n\
-' > /etc/tor/torrc \
+Log notice stdout\n' > /etc/tor/torrc \
     && chown debian-tor:debian-tor /etc/tor/torrc \
     && chmod 644 /etc/tor/torrc \
     && mkdir -p /var/lib/tor \
     && chown -R debian-tor:debian-tor /var/lib/tor \
     && chmod 700 /var/lib/tor
 
-# Create app directory
+# ============================================================================
+# STAGE 3: FINAL - Production image with optimizations
+# ============================================================================
+FROM runtime-base AS production
+
+LABEL maintainer="Basset Hound Team <basset@example.com>"
+LABEL version="12.0.0"
+LABEL description="Basset Hound Browser - OSINT automation platform"
+
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Copy pre-built node_modules from builder stage
+COPY --from=builder --chown=root:root /build/node_modules ./node_modules
 
-# Install all dependencies (including electron)
-RUN npm install
+# Copy application source code
+COPY --chown=root:root . .
 
-# Copy application files
-COPY . .
-
-# Create runtime directories that need to be writable
-RUN mkdir -p /app/automation/saved \
+# Create runtime directories with proper permissions
+RUN mkdir -p \
+    /app/automation/saved \
     /app/recordings/screenshots \
     /app/recordings/data \
     /app/bin/tor \
     /app/data \
     /app/screenshots \
     /app/downloads \
-    /app/blocking-data
+    /app/blocking-data \
+    /app/logs \
+    /tmp/.X11-unix \
+    && chmod 1777 /tmp/.X11-unix
 
-# Create non-root user for security
-# Add basset user to debian-tor group for control port cookie authentication access
-RUN groupadd -r basset && useradd -r -g basset basset \
+# Security hardening: Create non-root user
+RUN groupadd -r basset \
+    && useradd -r -g basset -u 1000 basset \
     && usermod -aG debian-tor basset \
     && chown -R basset:basset /app
 
-# Create directory for Xvfb lock files
-RUN mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix
+# Create startup script with enhanced features
+RUN cat > /app/docker-entrypoint.sh << 'EOF'
+#!/bin/bash
+set -e
+
+# Redirect output to both stdout and log file
+exec 1> >(tee -a /app/logs/startup.log)
+exec 2>&1
+
+export PATH="/app/node_modules/.bin:$PATH"
+
+# Health check function
+check_service() {
+    local service=$1
+    local port=$2
+    local timeout=${3:-30}
+    local counter=0
+
+    while [ $counter -lt $timeout ]; do
+        if nc -z 127.0.0.1 $port 2>/dev/null; then
+            echo "✓ $service is ready on port $port"
+            return 0
+        fi
+        counter=$((counter+1))
+        sleep 1
+    done
+
+    echo "⚠ $service failed to start within ${timeout}s"
+    return 1
+}
+
+# Start Tor if enabled
+if [ "${USE_SYSTEM_TOR:-true}" = "true" ]; then
+    echo "[startup] Starting Tor daemon..."
+    su -s /bin/bash debian-tor -c "tor -f /etc/tor/torrc" &
+    TOR_PID=$!
+    check_service "Tor SOCKS" 9050 60 || true
+    check_service "Tor Control" 9051 10 || true
+else
+    echo "[startup] Skipping system Tor (USE_SYSTEM_TOR=false)"
+fi
+
+# Start Xvfb virtual display
+echo "[startup] Starting Xvfb on display ${DISPLAY}..."
+Xvfb ${DISPLAY} -screen 0 ${SCREEN_RESOLUTION:-1920x1080x24} -ac -noreset &
+XVFB_PID=$!
+sleep 2
+
+if ! xdpyinfo -display ${DISPLAY} >/dev/null 2>&1; then
+    echo "[error] Failed to start Xvfb"
+    exit 1
+fi
+echo "✓ Xvfb started successfully"
+
+# Start Basset Hound Browser
+echo "[startup] Starting Basset Hound Browser..."
+exec electron . --headless --disable-gpu --no-sandbox --virtual-display "$@"
+EOF
+chmod +x /app/docker-entrypoint.sh
+
+# Create health check script
+RUN cat > /app/health-check.sh << 'EOF'
+#!/bin/bash
+# Health check: verify WebSocket server is responding
+HEALTH=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8765 2>/dev/null || echo "000")
+if [ "$HEALTH" = "426" ]; then
+    exit 0
+else
+    exit 1
+fi
+EOF
+chmod +x /app/health-check.sh
+
+# Switch to non-root user
+USER basset
 
 # Expose WebSocket port
 EXPOSE 8765
 
-# Create startup script with Tor startup before Electron
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Add node_modules/.bin to PATH\n\
-export PATH="/app/node_modules/.bin:$PATH"\n\
-\n\
-# === START TOR DAEMON ===\n\
-# Start Tor if USE_SYSTEM_TOR is enabled (default: true)\n\
-if [ "${USE_SYSTEM_TOR:-true}" = "true" ]; then\n\
-    echo "Starting system Tor daemon as debian-tor user..."\n\
-    # Run Tor as debian-tor user (required for proper permissions)\n\
-    su -s /bin/bash debian-tor -c "tor -f /etc/tor/torrc" &\n\
-    TOR_PID=$!\n\
-    \n\
-    # Wait for Tor SOCKS proxy to be ready\n\
-    echo "Waiting for Tor to bootstrap..."\n\
-    TIMEOUT=60\n\
-    COUNTER=0\n\
-    while [ $COUNTER -lt $TIMEOUT ]; do\n\
-        if nc -z 127.0.0.1 9050 2>/dev/null; then\n\
-            echo "Tor SOCKS proxy is ready on 127.0.0.1:9050"\n\
-            break\n\
-        fi\n\
-        COUNTER=$((COUNTER+1))\n\
-        sleep 1\n\
-    done\n\
-    \n\
-    if [ $COUNTER -eq $TIMEOUT ]; then\n\
-        echo "WARNING: Tor failed to start within ${TIMEOUT}s, falling back to embedded Tor"\n\
-    else\n\
-        # Also verify control port is available\n\
-        if nc -z 127.0.0.1 9051 2>/dev/null; then\n\
-            echo "Tor control port is ready on 127.0.0.1:9051"\n\
-        else\n\
-            echo "WARNING: Tor control port not available"\n\
-        fi\n\
-    fi\n\
-else\n\
-    echo "USE_SYSTEM_TOR=false, skipping system Tor (will use embedded Tor)"\n\
-fi\n\
-\n\
-# === START XVFB ===\n\
-# Start Xvfb virtual display\n\
-echo "Starting Xvfb on display ${DISPLAY}..."\n\
-Xvfb ${DISPLAY} -screen 0 ${SCREEN_RESOLUTION:-1920x1080x24} -ac &\n\
-XVFB_PID=$!\n\
-\n\
-# Wait for Xvfb to be ready\n\
-sleep 2\n\
-\n\
-# Verify display is available\n\
-if ! xdpyinfo -display ${DISPLAY} >/dev/null 2>&1; then\n\
-    echo "ERROR: Failed to start Xvfb"\n\
-    exit 1\n\
-fi\n\
-\n\
-echo "Xvfb started successfully"\n\
-\n\
-# === START ELECTRON ===\n\
-# Start the Electron browser in headless mode\n\
-echo "Starting Basset Hound Browser in headless mode..."\n\
-exec electron . --headless --disable-gpu --no-sandbox --virtual-display "$@"\n\
-' > /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoint.sh
+# Health check configuration
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD /app/health-check.sh
 
-# Health check - verify WebSocket server is responding (returns 426 Upgrade Required for HTTP)
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -s -o /dev/null -w "%{http_code}" http://localhost:8765 | grep -q "426" || exit 1
-
-# Use the startup script as entrypoint
+# Set entrypoint
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-
-# Default command (can be overridden)
 CMD []

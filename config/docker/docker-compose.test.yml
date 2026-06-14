@@ -1,0 +1,91 @@
+# Basset Hound Browser - Integration Testing Docker Compose Configuration
+# Features: Fast startup, isolated environment, comprehensive logging
+# Usage: docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+
+version: '3.9'
+
+services:
+  basset-hound-browser:
+    build:
+      context: ../..
+      dockerfile: config/docker/Dockerfile
+    image: basset-hound-browser:test
+    container_name: basset-hound-browser-test
+
+    ports:
+      - "8765:8765"      # WebSocket API
+      - "9050:9050"      # Tor SOCKS proxy
+      - "9051:9051"      # Tor control port
+
+    networks:
+      - basset-hound-test
+
+    environment:
+      # Test configuration
+      - NODE_ENV=test
+      - LOG_LEVEL=debug
+      - CI=true
+
+      # Display configuration
+      - DISPLAY=:99
+      - SCREEN_RESOLUTION=1280x720x24
+
+      # Electron configuration
+      - ELECTRON_DISABLE_SANDBOX=1
+
+      # Tor configuration
+      - USE_SYSTEM_TOR=true
+
+    # Mount volumes for test isolation
+    volumes:
+      - ./test-data:/app/data
+      - ./test-screenshots:/app/screenshots
+      - ./test-logs:/app/logs
+      - ../../tests:/app/tests
+
+    # Security configuration
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits for testing
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Aggressive restart for debugging
+    restart: on-failure:10
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+        labels: "env=test"
+
+    # Allow interactive access
+    stdin_open: true
+    tty: true
+
+volumes:
+  test-data:
+    driver: local
+  test-screenshots:
+    driver: local
+  test-logs:
+    driver: local
+
+networks:
+  basset-hound-test:
+    name: basset-hound-test
+    driver: bridge
