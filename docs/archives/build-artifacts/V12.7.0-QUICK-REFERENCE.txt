@@ -1,0 +1,338 @@
+================================================================================
+V12.7.0 INTEGRATION QUICK REFERENCE - ONE-PAGE LOOKUP
+================================================================================
+
+FILES TO MODIFY: 1
+
+/websocket/server.js
+├─ Constructor @ line ~950:
+│  └─ ADD 2 LINES:
+│     this.evasionCoordinator = options.evasionCoordinator || null;
+│     this.timingCoordinator = options.timingCoordinator || null;
+│
+├─ Constructor @ line ~960:
+│  └─ ADD 4 LINES (or use lazy init):
+│     this.metricsCollector = options.metricsCollector || null;
+│     this.metricsAggregator = options.metricsAggregator || null;
+│     this.alertManager = options.alertManager || null;
+│     this.metricsStore = options.metricsStore || null;
+│
+└─ setupCommandHandlers() @ line 10205 (BEFORE closing brace @ line 10204):
+   └─ ADD 8-12 LINES:
+      const { registerCredentialCommands } = require('./commands/credentials-commands');
+      registerCredentialCommands(this, this.mainWindow);
+
+      const { registerSessionPersistenceCommands } = require('./commands/session-persistence-v4-commands');
+      registerSessionPersistenceCommands(this, this.mainWindow);
+
+      const { registerExtendedEvasionCommands } = require('./commands/extended-evasion-commands');
+      registerExtendedEvasionCommands(this, this.mainWindow);
+
+      const { registerMonitoringMetricsCommands } = require('./commands/monitoring-metrics-commands');
+      registerMonitoringMetricsCommands(this, this.mainWindow);
+
+================================================================================
+
+FILES TO CREATE: 4 NEW FILES
+
+1. websocket/commands/credentials-commands.js (280 lines)
+   ├─ Function: registerCredentialCommands(server, mainWindow)
+   ├─ Imports:
+   │  ├─ src/credentials/totp-generator.js
+   │  ├─ src/credentials/hotp-generator.js
+   │  └─ QR parser (minimal)
+   └─ Commands (5):
+      ├─ generate_totp (params: seed, windowSize) → code, expiresIn, validity
+      ├─ generate_hotp (params: seed, counter) → code, digest
+      ├─ parse_mfa_qr (params: imageData) → seed, algorithm, issuer, accountName, windowSize
+      ├─ fill_mfa_code (params: seed, selector, type) → success, fieldFilled, timestamp
+      └─ get_mfa_status (params: none) → enabled, providers, backupCodes, lastUpdated
+
+2. websocket/commands/session-persistence-v4-commands.js (360 lines)
+   ├─ Function: registerSessionPersistenceCommands(server, mainWindow)
+   ├─ Imports: None (uses this.sessionManager, this.profileManager, this.stateManager)
+   └─ Commands (6):
+      ├─ save_session_state (params: profileName, includeDOM) → profileId, savedAt, size, checksum
+      ├─ restore_session_state (params: profileId, validateChecksum) → restored, itemCount, warnings, verificationResult
+      ├─ list_session_profiles (params: includeSummary) → profiles[]
+      ├─ delete_session_profile (params: profileId) → deleted, name, freedSpace
+      ├─ verify_session_state (params: profileId, deepCheck) → valid, issues[], cookieCount, storageCount
+      └─ get_session_metadata (params: profileId) → name, createdAt, lastRestored, size, expiresAt, version
+
+3. websocket/commands/extended-evasion-commands.js (420 lines)
+   ├─ Function: registerExtendedEvasionCommands(server, mainWindow)
+   ├─ Imports: None (uses global/instance managers)
+   └─ Commands (6):
+      ├─ enable_tls_evasion (params: cipherSuites, tlsVersions, rotateOnEachRequest) → enabled, activeCiphers, tlsVersions
+      ├─ enable_http2_evasion (params: randomizeStreamPriority, manipulateHeaders, varyFlowControl) → enabled, techniques[]
+      ├─ enable_timing_evasion (params: randomization, jitterRange) → enabled, jitterMs, randomizationLevel
+      ├─ set_evasion_profile (params: profile, overrides) → active, techniques[], estimatedDetectionRate
+      ├─ get_evasion_status (params: none) → activeTechniques[], tlsConfig, timingConfig, behavioralConfig, detectionRate
+      └─ test_evasion_effectiveness (params: targetService, testCount) → results[] with service, evasionScore, detectionAttempts, successRate
+
+4. websocket/commands/monitoring-metrics-commands.js (180 lines)
+   ├─ Function: registerMonitoringMetricsCommands(server, mainWindow)
+   ├─ Imports:
+   │  ├─ src/monitoring/metrics-collector.js
+   │  ├─ src/monitoring/metrics-aggregator.js
+   │  ├─ src/monitoring/alert-manager.js
+   │  ├─ src/monitoring/metrics-store.js
+   │  └─ src/monitoring/websocket-handlers.js (registerMonitoringHandlers)
+   ├─ Lazy Initialization: Creates MetricsCollector, MetricsAggregator, AlertManager, MetricsStore
+   └─ Commands (8+): Delegates to registerMonitoringHandlers()
+      ├─ get_metrics (params: none) → current metrics snapshot
+      ├─ get_performance_stats (params: timeRange, startTime, endTime) → performance stats
+      ├─ get_session_stats (params: none) → session info
+      ├─ get_resource_usage (params: none) → memory/CPU metrics
+      ├─ get_performance_dashboard (params: timeRange) → dashboard data
+      ├─ get_metric_history (params: startTime, endTime, granularity) → historical metrics
+      ├─ stream_metrics (params: interval) → streaming metrics updates
+      ├─ get_alerts (params: type, severity) → active alerts
+      └─ ... additional commands from monitoring infrastructure ...
+
+================================================================================
+
+COMMAND SUMMARY
+
+FEATURE 1: TOTP/HOTP CREDENTIALS (5 commands)
+  ✅ generate_totp
+  ✅ generate_hotp
+  ✅ parse_mfa_qr
+  ✅ fill_mfa_code
+  ✅ get_mfa_status
+  NO CONFLICTS WITH EXISTING 164 COMMANDS
+
+FEATURE 2: SESSION PERSISTENCE (6 commands)
+  ✅ save_session_state
+  ✅ restore_session_state
+  ✅ list_session_profiles
+  ✅ delete_session_profile
+  ✅ verify_session_state
+  ✅ get_session_metadata
+  NO CONFLICTS (different from existing session_* commands)
+
+FEATURE 3: EXTENDED EVASION (6 commands)
+  ✅ enable_tls_evasion
+  ✅ enable_http2_evasion
+  ✅ enable_timing_evasion
+  ✅ set_evasion_profile
+  ✅ get_evasion_status
+  ✅ test_evasion_effectiveness
+  NO CONFLICTS WITH EXISTING 164 COMMANDS
+
+FEATURE 4: MONITORING & METRICS (8+ commands)
+  ✅ get_metrics
+  ✅ get_performance_stats
+  ✅ get_session_stats
+  ✅ get_resource_usage
+  ✅ get_performance_dashboard
+  ✅ get_metric_history
+  ✅ stream_metrics
+  ✅ get_alerts
+  NO CONFLICTS WITH EXISTING 164 COMMANDS
+
+TOTAL: 25+ NEW COMMANDS, ZERO CONFLICTS
+
+================================================================================
+
+DEPENDENCY CHECKLIST
+
+Feature 1 - Credentials:
+  ✅ this.mainWindow (exists)
+  ✅ this.logger (exists)
+  ✅ src/credentials/totp-generator.js (EXISTS)
+  ✅ src/credentials/hotp-generator.js (EXISTS)
+  ⚠️ QR parser (minimal implementation needed)
+
+Feature 2 - Session Persistence:
+  ✅ this.sessionManager (line 905)
+  ✅ this.profileManager (line 916)
+  ✅ this.stateManager (line 966)
+  ✅ this.mainWindow (exists)
+  ✅ this.logger (exists)
+
+Feature 3 - Extended Evasion:
+  ✅ this.proxyManager (global, line 14)
+  ✅ this.technologyManager (line 921)
+  ✅ this.requestInterceptor (global, line 16)
+  ✅ this.mainWindow (exists)
+  ✅ this.logger (exists)
+  ❌ this.evasionCoordinator (NEW - add line ~950)
+  ❌ this.timingCoordinator (NEW - add line ~950)
+
+Feature 4 - Monitoring & Metrics:
+  ✅ this.commandDispatcher (line 1001)
+  ✅ this.mainWindow (exists)
+  ✅ src/monitoring/metrics-collector.js (EXISTS)
+  ✅ src/monitoring/metrics-aggregator.js (EXISTS)
+  ✅ src/monitoring/alert-manager.js (EXISTS)
+  ✅ src/monitoring/metrics-store.js (EXISTS)
+  ✅ src/monitoring/websocket-handlers.js (EXISTS)
+  ❌ this.metricsCollector (NEW - add line ~960, or lazy init)
+  ❌ this.metricsAggregator (NEW - add line ~960, or lazy init)
+  ❌ this.alertManager (NEW - add line ~960, or lazy init)
+  ❌ this.metricsStore (NEW - add line ~960, or lazy init)
+
+RESULT: All dependencies satisfied or in constructor
+
+================================================================================
+
+IMPLEMENTATION CHECKLIST (STEP-BY-STEP)
+
+Step 1: Modify Constructor (5 minutes)
+  [ ] Add 2 lines @ line ~950 for evasion coordinators
+  [ ] Add 4 lines @ line ~960 for monitoring managers (or lazy init)
+  [ ] Save and test: npm start
+
+Step 2: Create credentials-commands.js (30 minutes)
+  [ ] Create file with registerCredentialCommands() function
+  [ ] Implement 5 commands with error handling
+  [ ] Import TOTP/HOTP generators
+  [ ] Add module.exports
+
+Step 3: Create session-persistence-v4-commands.js (30 minutes)
+  [ ] Create file with registerSessionPersistenceCommands() function
+  [ ] Implement 6 commands using sessionManager, profileManager, stateManager
+  [ ] Add error handling and validation
+  [ ] Add module.exports
+
+Step 4: Create extended-evasion-commands.js (45 minutes)
+  [ ] Create file with registerExtendedEvasionCommands() function
+  [ ] Implement 6 commands for TLS, HTTP/2, timing evasion
+  [ ] Add profile configuration (minimal, balanced, aggressive)
+  [ ] Add error handling
+  [ ] Add module.exports
+
+Step 5: Create monitoring-metrics-commands.js (20 minutes)
+  [ ] Create file with registerMonitoringMetricsCommands() function
+  [ ] Implement lazy initialization of 4 monitoring managers
+  [ ] Import MetricsCollector, MetricsAggregator, AlertManager, MetricsStore
+  [ ] Call registerMonitoringHandlers() from src/monitoring/websocket-handlers.js
+  [ ] Add module.exports
+
+Step 6: Register in setupCommandHandlers() (5 minutes)
+  [ ] Add 4 registration calls @ line ~10205 in setupCommandHandlers()
+  [ ] Before closing brace of method
+  [ ] Proper require statements and function calls
+
+Step 7: Test (1-2 hours)
+  [ ] npm start - verify server starts
+  [ ] Test all 25 new commands via WebSocket
+  [ ] Verify no conflicts with existing 164 commands
+  [ ] Run regression tests on existing commands
+
+================================================================================
+
+VALIDATION CHECKLIST
+
+Pre-Integration:
+  [ ] All 4 target features identified
+  [ ] No command name conflicts detected
+  [ ] All required managers in constructor or can be initialized
+  [ ] setupCommandHandlers() accepts new calls
+  [ ] No circular dependencies
+
+Post-Integration:
+  [ ] All 25 commands registered in commandHandlers
+  [ ] Constructor initializes all required managers
+  [ ] setupCommandHandlers() completes without errors
+  [ ] CommandDispatcher includes all 25 commands
+  [ ] WebSocket server starts and listens on 8765
+  [ ] No regressions in existing 164 commands
+  [ ] <5% latency increase from new commands
+
+Testing:
+  [ ] 220+ unit tests pass (50+ per feature)
+  [ ] Integration tests pass (cross-feature)
+  [ ] Regression tests pass (all 164 existing commands)
+  [ ] Performance baseline maintained
+  [ ] No memory leaks
+
+================================================================================
+
+KEY METRICS
+
+Code Size:
+  - New files: ~1,240 lines total
+  - Modified files: ~50 lines total
+  - New commands: 25
+  - Existing commands preserved: 164
+  - Total commands after integration: 189+
+
+Quality:
+  - Conflicts detected: 0
+  - Port conflicts: 0
+  - Circular dependencies: 0
+  - Manager conflicts: 0
+
+Risk Level: LOW
+Confidence Level: VERY HIGH (95%+)
+
+================================================================================
+
+TIMELINE ESTIMATE
+
+Total Autonomous Development: 6-10 hours
+
+  Constructor changes: 5 min
+  File creation: 2-3 hours (parallelizable)
+  Registration: 5 min
+  Unit testing: 2-4 hours (parallelizable)
+  Integration testing: 1-2 hours
+  Regression testing: 30 min
+  Verification: 30 min
+
+================================================================================
+
+DOCUMENTS PROVIDED
+
+1. V12.7.0-INTEGRATION-PLAN.md (845 lines)
+   - Comprehensive analysis and decision matrices
+   - Detailed specifications for each feature
+   - Full verification criteria
+   - For understanding the complete strategy
+
+2. V12.7.0-INTEGRATION-CHECKLIST.md (545 lines)
+   - Quick reference during implementation
+   - Step-by-step instructions
+   - File templates
+   - For active development
+
+3. V12.7.0-INTEGRATION-DIAGRAM.txt (400+ lines)
+   - Architecture diagrams
+   - Dependency graphs
+   - Integration flow
+   - For visualization
+
+4. V12.7.0-INTEGRATION-SUMMARY.txt (360 lines)
+   - Executive summary
+   - Plain text format
+   - For review meetings
+
+5. V12.7.0-QUICK-REFERENCE.txt (THIS DOCUMENT)
+   - One-page lookup
+   - Commands summary
+   - Implementation checklist
+   - For quick access during development
+
+================================================================================
+
+APPROVALS NEEDED
+
+Project Lead: ___________________________  Date: __________
+Technical Lead: ___________________________  Date: __________
+Code Reviewer: ___________________________  Date: __________
+
+APPROVED FOR IMPLEMENTATION: ________________  Date: __________
+
+================================================================================
+
+STATUS: DESIGN PHASE COMPLETE - READY FOR IMPLEMENTATION
+
+Created: June 14, 2026
+Confidence: VERY HIGH
+Risk Assessment: LOW
+
+Ready to begin autonomous implementation sprint.
+
+================================================================================

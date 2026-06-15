@@ -1,0 +1,214 @@
+{
+  "dashboard": {
+    "title": "Basset Hound Browser - v12.3.0",
+    "tags": ["basset-hound", "monitoring", "performance"],
+    "timezone": "UTC",
+    "refresh": "30s",
+    "description": "Main monitoring dashboard for Basset Hound Browser production metrics",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Throughput (msg/sec)",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "targets": [
+          {
+            "expr": "rate(messages_total[1m])",
+            "legendFormat": "Messages/sec"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Messages per Second"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Latency P95/P99",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(request_duration_seconds_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency (seconds)"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+        "targets": [
+          {
+            "expr": "memory_usage_percent",
+            "legendFormat": "Heap Usage %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "max": 100,
+            "min": 0
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+        "targets": [
+          {
+            "expr": "rate(requests_error_total[5m])",
+            "legendFormat": "Errors/sec"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Errors per Second"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Active Connections",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+        "targets": [
+          {
+            "expr": "connections_active"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Cache Hit Rate",
+        "type": "gauge",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 16 },
+        "targets": [
+          {
+            "expr": "rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m]))"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "max": 1,
+            "min": 0,
+            "unit": "percentunit"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Uptime",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 16 },
+        "targets": [
+          {
+            "expr": "time() - process_start_time_seconds"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Health Status",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 16 },
+        "targets": [
+          {
+            "expr": "health_check_status"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              }
+            },
+            "mappings": [
+              {
+                "type": "value",
+                "options": {
+                  "1": {
+                    "text": "Healthy",
+                    "color": "green"
+                  },
+                  "0": {
+                    "text": "Unhealthy",
+                    "color": "red"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Request Duration Distribution",
+        "type": "heatmap",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+        "targets": [
+          {
+            "expr": "sum(rate(request_duration_seconds_bucket[5m])) by (le)"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Top Errors (Last 5m)",
+        "type": "table",
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+        "targets": [
+          {
+            "expr": "topk(10, rate(requests_error_total{code!=''}[5m]))"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "WebSocket Status",
+        "type": "stat",
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+        "targets": [
+          {
+            "expr": "websocket_connections_active"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "TOR Circuit Status",
+        "type": "table",
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 36 },
+        "targets": [
+          {
+            "expr": "tor_circuit_status"
+          }
+        ]
+      }
+    ]
+  }
+}

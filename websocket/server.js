@@ -52,6 +52,15 @@ const {
   getAdaptiveGCManager
 } = require('../utils/gc-tuning');
 
+// P2-004: Cloudflare detection and handling
+const { CloudflareDetector } = require('../src/cloudflare/detector');
+
+// v12.7.0 Feature Modules - Credentials, Session Persistence, Extended Evasion, Monitoring
+const { registerCredentialsCommands } = require('./commands/credentials-commands');
+const { registerSessionPersistenceCommands } = require('./commands/session-persistence-commands');
+const { registerExtendedEvasionCommands } = require('./commands/extended-evasion-commands');
+const { registerMonitoringMetricsCommands } = require('./commands/monitoring-metrics-commands');
+
 // ==========================================
 // Error Recovery Configuration
 // ==========================================
@@ -175,7 +184,74 @@ function checkOnionWithoutTor(url) {
 const IPC_DEFAULT_TIMEOUT = 30000;
 
 /**
+ * P1-002 FIX: Adaptive Timeout Configuration
+ * Large HTML documents (>10MB) timeout after 30 seconds
+ * This config implements adaptive timeout that extends based on progress
+ * https://github.com/basset-hound/issues/P1-002
+ */
+const ADAPTIVE_TIMEOUT_CONFIG = {
+  enabled: true,  // Can be disabled via environment: ADAPTIVE_TIMEOUT_DISABLED=1
+  baseTimeout: 30000,  // 30 seconds for normal operations
+  maxTimeout: 120000,  // 120 seconds maximum (2 minutes) for very large documents
+  largeResponseThreshold: 5000000,  // 5MB - consider this a large response
+  hugeResponseThreshold: 20000000,  // 20MB - needs maximum timeout
+  progressHeartbeatTimeout: 5000,  // 5 seconds - extend if no data flowing
+  // Commands that typically need longer timeouts
+  largeResponseCommands: [
+    'get_content',  // HTML extraction
+    'screenshot_full_page',  // Full page screenshots
+    'execute_script',  // Large script execution
+    'get_page_state',  // Page state extraction
+    'get_network_logs',  // Network log extraction
+    'extract_forensic_data'  // Forensic data extraction
+  ]
+};
+
+/**
+ * Calculate adaptive timeout based on command type and expected response size
+ * @param {string} commandName - The name of the command being executed
+ * @param {number} estimatedSize - Estimated response size in bytes (optional)
+ * @returns {number} Timeout in milliseconds
+ */
+function calculateAdaptiveTimeout(commandName, estimatedSize = 0) {
+  // Check if adaptive timeout is disabled
+  if (process.env.ADAPTIVE_TIMEOUT_DISABLED === '1' || !ADAPTIVE_TIMEOUT_CONFIG.enabled) {
+    return IPC_DEFAULT_TIMEOUT;
+  }
+
+  let timeout = ADAPTIVE_TIMEOUT_CONFIG.baseTimeout;
+
+  // Check if this command typically returns large responses
+  if (ADAPTIVE_TIMEOUT_CONFIG.largeResponseCommands.includes(commandName)) {
+    // Give large-response commands 50% more time initially
+    timeout = Math.floor(ADAPTIVE_TIMEOUT_CONFIG.baseTimeout * 1.5);  // 45 seconds
+  }
+
+  // Adjust based on estimated response size
+  if (estimatedSize > ADAPTIVE_TIMEOUT_CONFIG.hugeResponseThreshold) {
+    // Very large responses (20MB+) get maximum timeout
+    timeout = ADAPTIVE_TIMEOUT_CONFIG.maxTimeout;
+  } else if (estimatedSize > ADAPTIVE_TIMEOUT_CONFIG.largeResponseThreshold) {
+    // Large responses (5-20MB) get 60 seconds
+    timeout = 60000;
+  }
+
+  // Ensure timeout is within bounds
+  return Math.max(
+    ADAPTIVE_TIMEOUT_CONFIG.baseTimeout,
+    Math.min(timeout, ADAPTIVE_TIMEOUT_CONFIG.maxTimeout)
+  );
+}
+
+/**
  * Execute an IPC request with timeout to prevent hanging promises
+ *
+ * STABILITY FIX (Phase 3 - Issue #3):
+ * - Race condition prevention with atomic state management
+ * - Guaranteed one-time execution with cleanup function
+ * - Prevents handler executing after timeout
+ * - Proper listener cleanup in all code paths
+ *
  * @param {Electron.WebContents} webContents - The webContents to send to
  * @param {string} sendChannel - The channel to send the request on
  * @param {string} responseChannel - The channel to listen for response on
@@ -186,28 +262,72 @@ const IPC_DEFAULT_TIMEOUT = 30000;
 function ipcWithTimeout(webContents, sendChannel, responseChannel, data = null, timeout = IPC_DEFAULT_TIMEOUT) {
   return new Promise((resolve, reject) => {
     let timeoutId;
-    let resolved = false;
+    let completed = false;
+    let handler = null;
 
-    const handler = (event, result) => {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(timeoutId);
+    /**
+     * Safety cleanup function - ensures one-time execution
+     * and proper resource cleanup
+     * @private
+     */
+    const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      if (handler && completed === false) {
+        // Only remove listener if handler was registered
+        ipcMain.removeListener(responseChannel, handler);
+      }
+      handler = null;
+    };
+
+    /**
+     * Handler for successful response
+     * @private
+     */
+    handler = (event, result) => {
+      // Atomic check-and-set to prevent race conditions
+      if (completed) return;
+      completed = true;
+
+      cleanup();
       resolve(result);
     };
 
+    /**
+     * Handler for timeout
+     * @private
+     */
+    const timeoutHandler = () => {
+      // Atomic check-and-set to prevent race conditions
+      if (completed) return;
+      completed = true;
+
+      cleanup();
+      reject(new Error(`IPC timeout: No response from '${responseChannel}' within ${timeout}ms`));
+    };
+
+    // Register the handler for the response
     ipcMain.once(responseChannel, handler);
 
-    timeoutId = setTimeout(() => {
-      if (resolved) return;
-      resolved = true;
-      ipcMain.removeListener(responseChannel, handler);
-      reject(new Error(`IPC timeout: No response from '${responseChannel}' within ${timeout}ms`));
-    }, timeout);
+    // Set timeout with guaranteed cleanup
+    timeoutId = setTimeout(timeoutHandler, timeout);
 
-    if (data !== null) {
-      webContents.send(sendChannel, data);
-    } else {
-      webContents.send(sendChannel);
+    // Send the request (use try-catch to handle potential errors)
+    try {
+      if (data !== null) {
+        webContents.send(sendChannel, data);
+      } else {
+        webContents.send(sendChannel);
+      }
+    } catch (error) {
+      // If send fails, clean up and reject
+      if (completed) return;
+      completed = true;
+
+      cleanup();
+      reject(new Error(`IPC send failed on '${sendChannel}': ${error.message}`));
     }
   });
 }
@@ -858,6 +978,9 @@ class WebSocketServer {
     this.logger = options.logger || defaultLogger.child('websocket');
     this.profiler = options.profiler || defaultProfiler;
     this.memoryMonitor = options.memoryMonitor || defaultMemoryMonitor;
+
+    // P2-004: Initialize Cloudflare detector
+    this.cloudflareDetector = options.cloudflareDetector || new CloudflareDetector(this.logger);
     this.debugManager = options.debugManager || defaultDebugManager;
 
     // Set WebSocket server reference for debug manager
@@ -981,6 +1104,49 @@ class WebSocketServer {
     this.logger.info('[WebSocket] State rollback listeners configured');
   }
 
+  /**
+   * Check if a port is available (not in use)
+   * @param {number} port - Port to check
+   * @returns {Promise<boolean>} True if port is available
+   */
+  async _isPortAvailable(port) {
+    return new Promise((resolve) => {
+      const net = require('net');
+      const server = net.createServer();
+
+      server.once('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          resolve(false);
+        } else {
+          resolve(false);
+        }
+      });
+
+      server.once('listening', () => {
+        server.close();
+        resolve(true);
+      });
+
+      server.listen(port, '0.0.0.0');
+    });
+  }
+
+  /**
+   * Find the next available port starting from the given port
+   * @param {number} startPort - Port to start searching from
+   * @param {number} maxAttempts - Maximum ports to try (default 10)
+   * @returns {Promise<number>} First available port
+   */
+  async _findAvailablePort(startPort, maxAttempts = 10) {
+    for (let i = 0; i < maxAttempts; i++) {
+      const port = startPort + i;
+      if (await this._isPortAvailable(port)) {
+        return port;
+      }
+    }
+    throw new Error(`Could not find available port after ${maxAttempts} attempts starting from ${startPort}`);
+  }
+
   start() {
     // WebSocket compression configuration (OPT-04: Enhanced compression tuning)
     const compressionConfig = {
@@ -1001,6 +1167,87 @@ class WebSocketServer {
       }
     };
 
+    // P2-003: Handle port conflicts by finding available port
+    this._ensurePortAvailability()
+      .then((availablePort) => {
+        this._startWebSocketServer(availablePort, compressionConfig);
+      })
+      .catch((error) => {
+        this.logger.error(`[WebSocket] Failed to start server: ${error.message}`);
+      });
+  }
+
+  /**
+   * Ensure the desired port is available, find alternative if not
+   * @returns {Promise<number>} The port to use (either requested port or next available)
+   */
+  async _ensurePortAvailability() {
+    const initialPort = this.port;
+    const isAvailable = await this._isPortAvailable(initialPort);
+
+    if (isAvailable) {
+      this.logger.info(`[WebSocket P2-003] Port ${initialPort} is available`);
+      return initialPort;
+    }
+
+    this.logger.warn(`[WebSocket P2-003] Port ${initialPort} is already in use, finding alternative...`);
+    const availablePort = await this._findAvailablePort(initialPort + 1, 10);
+    this.port = availablePort;
+    this.logger.info(`[WebSocket P2-003] Using alternative port: ${availablePort} (requested: ${initialPort})`);
+    return availablePort;
+  }
+
+  /**
+   * Start a non-SSL WebSocket server
+   * @param {number} port - Port to listen on
+   * @param {object} compressionConfig - Compression configuration
+   */
+  _startNonSSLServer(port, compressionConfig) {
+    try {
+      // P2-003: Use http.createServer with explicit error handling
+      const http = require('http');
+      const server = http.createServer();
+
+      this.wss = new WebSocket.Server({
+        server: server,
+        ...compressionConfig
+      });
+
+      // P2-003: Handle listen errors with fallback ports
+      server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+          this.logger.error(`[WebSocket P2-003] Port ${port} became unavailable, retrying...`);
+          this._ensurePortAvailability()
+            .then((newPort) => {
+              server.listen(newPort);
+            })
+            .catch((retryError) => {
+              this.logger.error(`[WebSocket] Failed to find alternative port: ${retryError.message}`);
+            });
+        } else {
+          this.logger.error(`[WebSocket] HTTP server error: ${error.message}`);
+        }
+      });
+
+      server.listen(port, '0.0.0.0');
+      this.sslActive = false;
+      this.logger.info(`[WebSocket] Listening on ws://0.0.0.0:${port}`);
+      this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
+
+      if (this.sslEnabled && (!this.sslCertPath || !this.sslKeyPath)) {
+        this.logger.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
+      }
+    } catch (error) {
+      this.logger.error(`[WebSocket] Failed to create non-SSL server: ${error.message}`);
+    }
+  }
+
+  /**
+   * Start the WebSocket server on the given port
+   * @param {number} port - Port to listen on
+   * @param {object} compressionConfig - Compression configuration
+   */
+  _startWebSocketServer(port, compressionConfig) {
     // Determine if we should use SSL/TLS
     if (this.sslEnabled && this.sslCertPath && this.sslKeyPath) {
       try {
@@ -1010,32 +1257,35 @@ class WebSocketServer {
           server: this.httpsServer,
           ...compressionConfig
         });
-        this.httpsServer.listen(this.port);
+
+        // P2-003: Handle listen errors with fallback ports
+        this.httpsServer.on('error', (error) => {
+          if (error.code === 'EADDRINUSE') {
+            this.logger.error(`[WebSocket P2-003] Port ${port} became unavailable, retrying...`);
+            this._ensurePortAvailability()
+              .then((newPort) => {
+                this.httpsServer.listen(newPort);
+              })
+              .catch((retryError) => {
+                this.logger.error(`[WebSocket] Failed to find alternative port: ${retryError.message}`);
+              });
+          } else {
+            this.logger.error(`[WebSocket] HTTPS server error: ${error.message}`);
+          }
+        });
+
+        this.httpsServer.listen(port, '0.0.0.0');
         this.sslActive = true;
         this.logger.info(`[WebSocket] SSL/TLS enabled with certificate: ${this.sslCertPath}`);
+        this.logger.info(`[WebSocket] Listening on wss://0.0.0.0:${port}`);
         this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
       } catch (error) {
         this.logger.error(`[WebSocket] Failed to load SSL certificates: ${error.message}`);
         this.logger.info('[WebSocket] Falling back to non-SSL mode');
-        this.wss = new WebSocket.Server({
-          port: this.port,
-          ...compressionConfig
-        });
-        this.sslActive = false;
-        this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
+        this._startNonSSLServer(port, compressionConfig);
       }
     } else {
-      // Standard non-SSL WebSocket server
-      this.wss = new WebSocket.Server({
-        port: this.port,
-        ...compressionConfig
-      });
-      this.sslActive = false;
-      this.logger.info('[WebSocket] Message compression (perMessageDeflate) enabled');
-
-      if (this.sslEnabled && (!this.sslCertPath || !this.sslKeyPath)) {
-        this.logger.warn('[WebSocket] SSL enabled but certificate/key paths not provided. Running without SSL.');
-      }
+      this._startNonSSLServer(port, compressionConfig);
     }
 
     // Verify WebSocket server was created successfully
@@ -2165,11 +2415,75 @@ class WebSocketServer {
     // Get page content
     this.commandHandlers.get_content = async (params) => {
       try {
-        return await ipcWithTimeout(
+        // P1-002: Use adaptive timeout for content extraction
+        // Large HTML documents may take longer than 30 seconds
+        const timeout = calculateAdaptiveTimeout('get_content');
+        const result = await ipcWithTimeout(
           this.mainWindow.webContents,
           'get-page-content',
-          'page-content-response'
+          'page-content-response',
+          null,  // no data parameter
+          timeout
         );
+
+        // P2-004: Check for Cloudflare challenge
+        if (result.success && result.content) {
+          const cfDetection = this.cloudflareDetector.detectChallenge(
+            result.content,
+            result.statusCode || 200,
+            result.headers || {}
+          );
+
+          if (cfDetection > 0) {
+            this.logger.warn('[CF-004] Cloudflare challenge detected in content extraction');
+
+            // Try to resolve the challenge
+            try {
+              // Send message to renderer to wait for CF challenge
+              const resolveResult = await ipcWithTimeout(
+                this.mainWindow.webContents,
+                'wait-for-cloudflare',
+                'cloudflare-resolved-response',
+                { timeout: 10000 },
+                15000
+              );
+
+              if (resolveResult.success && resolveResult.content) {
+                // Verify challenge is gone
+                const cfCheckResult = this.cloudflareDetector.detectChallenge(
+                  resolveResult.content,
+                  200,
+                  {}
+                );
+
+                if (cfCheckResult === 0) {
+                  this.logger.info('[CF-004] Cloudflare challenge resolved, returning real content');
+                  return {
+                    success: true,
+                    content: resolveResult.content,
+                    cloudflareResolved: true,
+                    statusCode: 200,
+                    headers: {}
+                  };
+                }
+              }
+            } catch (cfError) {
+              this.logger.warn(`[CF-004] Cloudflare challenge resolution timeout: ${cfError.message}`);
+            }
+
+            // Return content with Cloudflare warning
+            return {
+              success: true,
+              content: result.content,
+              cloudflareChallenge: true,
+              warning: 'Content may be Cloudflare challenge page. Consider enabling evasion techniques.',
+              statusCode: result.statusCode || 200,
+              headers: result.headers || {}
+            };
+          }
+        }
+
+        return result;
       } catch (error) {
         return { success: false, error: error.message };
       }
@@ -2250,10 +2564,14 @@ class WebSocketServer {
     // Get page state (forms, links, buttons)
     this.commandHandlers.get_page_state = async (params) => {
       try {
+        // P1-002: Use adaptive timeout for page state extraction
+        const timeout = calculateAdaptiveTimeout('get_page_state');
         return await ipcWithTimeout(
           this.mainWindow.webContents,
           'get-page-state',
-          'page-state-response'
+          'page-state-response',
+          null,
+          timeout
         );
       } catch (error) {
         return { success: false, error: error.message };
@@ -2268,11 +2586,15 @@ class WebSocketServer {
       }
 
       try {
+        // P1-002: Use adaptive timeout for script execution
+        // Large scripts or those that process large data need more time
+        const timeout = calculateAdaptiveTimeout('execute_script');
         return await ipcWithTimeout(
           this.mainWindow.webContents,
           'execute-in-webview',
           'webview-execute-response',
-          script
+          script,
+          timeout
         );
       } catch (error) {
         return { success: false, error: error.message };
@@ -9130,6 +9452,10 @@ class WebSocketServer {
     // Register commands with the service
     registerCompetitorMonitoringCommands(this.commandHandlers, monitoringService);
 
+    // Register extended features commands (Phase 3 v12.5.0)
+    const { registerExtendedFeatureCommands } = require('./commands/extended-features-commands');
+    registerExtendedFeatureCommands(this, this.mainWindow);
+
     // Wave 14: Register command aliases for standard naming scheme
     // Monitor management (8)
     this.commandHandlers.add_monitor = this.commandHandlers.add_competitor_monitor;
@@ -9869,6 +10195,25 @@ class WebSocketServer {
         return { success: false, error: error.message };
       }
     };
+
+    // ==========================================
+    // v12.7.0 FEATURE COMMANDS - Phase 1 Integration
+    // ==========================================
+    // Feature 1: Credentials (TOTP/HOTP)
+    registerCredentialsCommands(this.commandHandlers);
+    this.logger.info('[WebSocket] Registered 6 credentials commands (TOTP/HOTP)');
+
+    // Feature 2: Session Persistence (State Capture/Restore)
+    registerSessionPersistenceCommands(this.commandHandlers, this.mainWindow);
+    this.logger.info('[WebSocket] Registered 6 session persistence commands');
+
+    // Feature 3: Extended Evasion (TLS, HTTP/2, Timing, Network)
+    registerExtendedEvasionCommands(this.commandHandlers);
+    this.logger.info('[WebSocket] Registered 6 extended evasion commands');
+
+    // Feature 4: Monitoring & Metrics
+    registerMonitoringMetricsCommands(this.commandHandlers, null, this);
+    this.logger.info('[WebSocket] Registered 10 monitoring/metrics commands');
 
     // ==========================================
     // INTERACTION RECORDING COMMANDS (Phase 20)

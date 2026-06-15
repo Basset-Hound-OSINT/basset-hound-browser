@@ -589,6 +589,101 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // P2-004: Wait for Cloudflare challenge to complete
+    api.onWaitForCloudflare(async (options) => {
+      const webview = getActiveWebview();
+      if (!webview) {
+        api.sendCloudflareResolvedResponse({ success: false, error: 'No active webview' });
+        return;
+      }
+
+      const timeout = (options && options.timeout) || 10000;
+      const startTime = Date.now();
+      let lastHtml = '';
+      let resolved = false;
+
+      try {
+        // Poll for Cloudflare challenge to complete
+        while (Date.now() - startTime < timeout && !resolved) {
+          try {
+            const result = await webview.executeJavaScript(`
+              ({
+                html: document.documentElement.outerHTML,
+                text: document.body.innerText,
+                title: document.title,
+                url: window.location.href
+              })
+            `);
+
+            const htmlLower = result.html.toLowerCase();
+
+            // Check if Cloudflare challenge markers are gone
+            const cfMarkers = ['just a moment', 'checking your browser', 'challenge page', '__cf_chl', 'jsfiddle_loader'];
+            let hasChallengeMarkers = false;
+
+            for (const marker of cfMarkers) {
+              if (htmlLower.includes(marker)) {
+                hasChallengeMarkers = true;
+                break;
+              }
+            }
+
+            // If no challenge markers and content changed, challenge is complete
+            if (!hasChallengeMarkers && result.html !== lastHtml && result.html.length > 500) {
+              resolved = true;
+              api.sendCloudflareResolvedResponse({
+                success: true,
+                content: result.html,
+                html: result.html,
+                text: result.text,
+                title: result.title,
+                url: result.url
+              });
+              return;
+            }
+
+            lastHtml = result.html;
+
+            // Wait before next check
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+          } catch (checkError) {
+            // Ignore check errors and retry
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+
+        // Timeout reached, return whatever we have
+        try {
+          const finalResult = await webview.executeJavaScript(`
+            ({
+              html: document.documentElement.outerHTML,
+              text: document.body.innerText,
+              title: document.title,
+              url: window.location.href
+            })
+          `);
+          api.sendCloudflareResolvedResponse({
+            success: true,
+            content: finalResult.html,
+            html: finalResult.html,
+            text: finalResult.text,
+            title: finalResult.title,
+            url: finalResult.url,
+            timeout: true
+          });
+        } catch (finalError) {
+          api.sendCloudflareResolvedResponse({
+            success: false,
+            error: `Cloudflare wait timeout: ${finalError.message}`
+          });
+        }
+
+      } catch (error) {
+        api.sendCloudflareResolvedResponse({ success: false, error: error.message });
+      }
+    });
+
     // Capture screenshot (basic viewport)
     api.onCaptureScreenshot(async () => {
       const webview = getActiveWebview();

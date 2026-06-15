@@ -73,6 +73,50 @@ const FRAME_RATE_PRESETS = {
   high: { fps: 30, latency: 'low', quality: 'high' }
 };
 
+// Quality level profiles - maps quality level names to codec-specific settings
+const QUALITY_PROFILES = {
+  low: {
+    vp8: { q: 9, bitrate: '500k' },
+    vp9: { crf: 50, bitrate: '500k' },
+    h264: { crf: 45, bitrate: '800k' },
+    h265: { crf: 45, bitrate: '600k' }
+  },
+  medium: {
+    vp8: { q: 6, bitrate: '1.5M' },
+    vp9: { crf: 32, bitrate: '1.5M' },
+    h264: { crf: 28, bitrate: '2M' },
+    h265: { crf: 28, bitrate: '1.5M' }
+  },
+  high: {
+    vp8: { q: 4, bitrate: '3M' },
+    vp9: { crf: 23, bitrate: '3M' },
+    h264: { crf: 18, bitrate: '4M' },
+    h265: { crf: 18, bitrate: '3M' }
+  },
+  ultra: {
+    vp8: { q: 3, bitrate: '6M' },
+    vp9: { crf: 15, bitrate: '6M' },
+    h264: { crf: 12, bitrate: '8M' },
+    h265: { crf: 12, bitrate: '6M' }
+  }
+};
+
+// Bitrate optimization settings for different scenarios
+const BITRATE_PROFILES = {
+  bandwidth_constrained: {
+    multiplier: 0.5,
+    description: 'Low bandwidth - 50% bitrate reduction'
+  },
+  standard: {
+    multiplier: 1.0,
+    description: 'Standard bitrate'
+  },
+  high_quality: {
+    multiplier: 1.5,
+    description: 'High quality - 50% bitrate increase'
+  }
+};
+
 class VideoEncoder extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -119,15 +163,32 @@ class VideoEncoder extends EventEmitter {
    * @param {Object} options - Session-specific options
    * @returns {VideoEncoderSession}
    */
-  createSession(sessionId, options = {}) {
+  /**
+   * Create a new video encoding session with optional quality level
+   * @param {string} sessionId - Unique session identifier
+   * @param {Object} options - Session-specific options
+   * @param {string} qualityLevel - Quality level: 'low', 'medium', 'high', 'ultra'
+   * @returns {VideoEncoderSession}
+   */
+  createSession(sessionId, options = {}, qualityLevel = 'medium') {
     if (this.activeEncoders.has(sessionId)) {
       throw new Error(`Video encoding session ${sessionId} already exists`);
     }
 
-    const session = new VideoEncoderSession(sessionId, {
-      ...this.options,
-      ...options
-    });
+    // Apply quality level settings if specified
+    const mergedOptions = { ...this.options, ...options };
+    if (QUALITY_PROFILES[qualityLevel]) {
+      const profile = QUALITY_PROFILES[qualityLevel][mergedOptions.codec || 'vp9'];
+      if (profile) {
+        mergedOptions.qualityLevel = qualityLevel;
+        mergedOptions.qualitySettings = profile;
+        if (!mergedOptions.quality) {
+          mergedOptions.quality = profile.crf || profile.q;
+        }
+      }
+    }
+
+    const session = new VideoEncoderSession(sessionId, mergedOptions);
 
     this.activeEncoders.set(sessionId, session);
 
@@ -143,6 +204,56 @@ class VideoEncoder extends EventEmitter {
     });
 
     return session;
+  }
+
+  /**
+   * Get quality profiles
+   * @returns {Object} All available quality profiles
+   */
+  getQualityProfiles() {
+    return { ...QUALITY_PROFILES };
+  }
+
+  /**
+   * Get bitrate profiles
+   * @returns {Object} All available bitrate profiles
+   */
+  getBitrateProfiles() {
+    return { ...BITRATE_PROFILES };
+  }
+
+  /**
+   * Calculate optimized bitrate for a quality level and bitrate profile
+   * @param {string} qualityLevel - Quality level
+   * @param {string} codec - Codec name
+   * @param {string} bitrateProfile - Bitrate profile name
+   * @returns {string} Optimized bitrate string
+   */
+  calculateOptimizedBitrate(qualityLevel, codec, bitrateProfile = 'standard') {
+    const profile = QUALITY_PROFILES[qualityLevel];
+    const bitrateMultiplier = BITRATE_PROFILES[bitrateProfile];
+
+    if (!profile || !profile[codec]) {
+      return null;
+    }
+
+    const baseBitrate = profile[codec].bitrate;
+    if (!baseBitrate) {
+      return null;
+    }
+
+    // Parse bitrate value
+    const match = baseBitrate.match(/^(\d+(?:\.\d+)?)(k|M)$/);
+    if (!match) {
+      return baseBitrate;
+    }
+
+    const value = parseFloat(match[1]);
+    const unit = match[2];
+    const multiplier = bitrateMultiplier?.multiplier || 1.0;
+    const optimized = (value * multiplier).toFixed(1);
+
+    return `${optimized}${unit}`;
   }
 
   /**
@@ -610,5 +721,7 @@ module.exports = {
   VideoEncoder,
   VideoEncoderSession,
   CODEC_PRESETS,
-  FRAME_RATE_PRESETS
+  FRAME_RATE_PRESETS,
+  QUALITY_PROFILES,
+  BITRATE_PROFILES
 };

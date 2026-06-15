@@ -1,0 +1,28 @@
+{
+  "level": "INFO",
+  "logDir": "./logs",
+  "maxFileSize": 10485760,
+  "maxBackups": 10,
+  "enableConsole": true,
+  "enableFile": true,
+  "prettyPrint": false,
+  "serviceName": "basset-hound-browser",
+  "environment": "production",
+  "formats": {
+    "timestamp": "ISO",
+    "includePid": true,
+    "includeHostname": false
+  },
+  "cleanup": {
+    "enabled": true,
+    "retentionDays": 7,
+    "checkInterval": 86400000
+  },
+  "levels": {
+    "DEBUG": 0,
+    "INFO": 1,
+    "WARN": 2,
+    "ERROR": 3,
+    "CRITICAL": 4
+  }
+}

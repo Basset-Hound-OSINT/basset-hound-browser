@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPageContent: () => ipcRenderer.invoke('get-page-content'),
   getPageState: () => ipcRenderer.invoke('get-page-state'),
 
+  // P2-004: Cloudflare challenge resolution
+  waitForCloudflare: (options) => ipcRenderer.invoke('wait-for-cloudflare', options),
+
   // Screenshot (basic)
   captureScreenshot: () => ipcRenderer.invoke('capture-screenshot'),
 
@@ -202,6 +205,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('get-page-content', handler);
     return () => ipcRenderer.removeListener('get-page-content', handler);
   },
+  onWaitForCloudflare: (callback) => {
+    const handler = (event, data) => callback(data);
+    ipcRenderer.on('wait-for-cloudflare', handler);
+    return () => ipcRenderer.removeListener('wait-for-cloudflare', handler);
+  },
   onCaptureScreenshot: (callback) => {
     const handler = () => callback();
     ipcRenderer.on('capture-screenshot', handler);
@@ -286,6 +294,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   sendWebviewUrlResponse: (url) => ipcRenderer.send('webview-url-response', url),
   sendExecuteResponse: (result) => ipcRenderer.send('webview-execute-response', result),
   sendPageContentResponse: (content) => ipcRenderer.send('page-content-response', content),
+  sendCloudflareResolvedResponse: (data) => ipcRenderer.send('cloudflare-resolved-response', data),
   sendScreenshotResponse: (data) => ipcRenderer.send('screenshot-response', data),
 
   // Enhanced screenshot responses

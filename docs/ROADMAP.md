@@ -1,9 +1,9 @@
 # Basset Hound Browser - Product Roadmap
 
-**Last Updated:** June 13, 2026
-**Current Version:** 12.0.0 (Production Live)
-**Status:** ✅ PRODUCTION-READY v12.1.0 - Wave 16 Core Complete, Scope Clarified
-**Latest Session Record:** [Wave 16 Phase 2-5 Complete, Scope Alignment (June 13)](archives/session_records/2026-06-13_WAVE16-SCOPE-ALIGNMENT.md)
+**Last Updated:** June 15, 2026
+**Current Version:** 12.7.0 Phase 1 (Ready for Production Deployment)
+**Status:** ✅ v12.7.0 Phase 1 COMPLETE (288+ tests, 100% pass) - Phase 2 & v12.8.0 Planned
+**Latest Session Record:** [v12.7.0 Phase 1 Complete + Phase 2 & v12.8.0 Planning (June 15)](archives/session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md)
 
 ---
 
@@ -30,9 +30,61 @@
 
 ---
 
-**Latest Session Record:** [Wave 15 Completion & Wave 16 Foundation (June 2-3)](archives/session_records/2026-06-02_WAVE15-COMPLETION-AND-WAVE16-FOUNDATION.md)
+## Next Release: v12.7.0 Phase 2 (June 29 - July 12, 2026)
 
-## Next Release: v12.1.0
+### v12.7.0 Phase 2 - PLANNED ✓
+- **Timeline:** June 29 - July 12, 2026
+- **Features:** 4 major enhancements across TOTP/HOTP, Sessions, Evasion, Monitoring
+- **Work Items:** 85+ specific items
+- **Planned Tests:** 170+
+- **Gate Reviews:** July 5 (mid-point), July 12 (completion)
+- **Status:** Fully specified, ready for autonomous development
+
+### Details (See `/docs/findings/V12.7.0-PHASE2-MASTER-PLAN-2026-06-15.md`)
+- **Feature 1:** TOTP/HOTP Enhancements - Key management, backup codes, hardware tokens (15+ items)
+- **Feature 2:** Session Management - Multi-session parallelization, inheritance, performance (18+ items)
+- **Feature 3:** Advanced Evasion - ML-based detection prediction, adaptive response (22+ items)
+- **Feature 4:** Metrics Expansion - Dashboards, predictive analysis, alerts (30+ items)
+
+---
+
+## Future: v12.8.0 (July 13-31, 2026)
+
+### v12.8.0 - FULLY SPECIFIED ✓
+- **Timeline:** July 13-31, 2026 (19-day development cycle)
+- **Release Target:** August 1, 2026
+- **Features:** 4 major (Multi-Browser, AI Integration, Browser Pool, Forensic Analysis)
+- **Planning:** 7,245 LOC of detailed specifications
+- **Planned Tests:** 420+
+- **New Commands:** 58+
+
+### Feature Specifications (See `/docs/findings/V12.8.0-*.md`)
+1. **Multi-Browser Support** (1,018 lines) - Firefox, Chrome, Safari, Edge
+2. **Advanced AI Integration** (3,173 lines) - Predictive evasion, agent coordination
+3. **Distributed Browser Pool** (1,983 lines) - Multi-instance management, load balancing
+4. **Advanced Forensic Analysis** (1,071 lines) - Enhanced collection and analysis
+
+---
+
+**Latest Session Record:** [v12.7.0 Phase 1 Complete + Phase 2 & v12.8.0 Planning (June 15)](archives/session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md)
+
+## Latest Release: v12.7.0 Phase 1 (June 15, 2026)
+
+### v12.7.0 Phase 1 - COMPLETE ✅ (June 14-15, 2026)
+- ✅ **TOTP/HOTP Credentials Generator:** RFC 6238/4226 compliant, 99 tests (100% pass), 671 LOC
+- ✅ **Session Persistence:** 5-layer validation, 111 tests (100% pass), 1,155 LOC
+- ✅ **Extended Evasion Vectors:** 6+ detection vectors, 92 tests (100% pass), 1,820 LOC
+- ✅ **Monitoring Metrics Framework:** Real-time metrics, 47 tests (100% pass), 1,566 LOC
+- ✅ **Integration:** 28 new WebSocket commands (192+ total), comprehensive API reference
+- ✅ **Deployment Automation:** 5 production-ready scripts (2,905 LOC) - deploy, canary, health-check, rollback, monitor
+- ✅ **Release Materials:** Comprehensive docs (160 KB), deployment checklist, API reference
+- **Total:** 288+ tests (100% pass), 6,212 LOC, production-ready
+- **Status:** READY FOR IMMEDIATE PRODUCTION DEPLOYMENT
+- **Details:** [Session Record](archives/session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md)
+
+---
+
+## Previous Release: v12.1.0
 
 ### v12.1.0 Wave 15 Completion ✅ (Complete June 2-3, 2026)
 - ✅ **Dashboard MVP:** 5,416 lines, 83 tests, enterprise-ready competitor monitoring

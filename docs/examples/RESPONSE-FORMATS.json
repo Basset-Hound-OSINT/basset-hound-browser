@@ -1,0 +1,387 @@
+{
+  "title": "Basset Hound Browser - Response Format Examples",
+  "description": "Example responses for all command categories",
+  "version": "12.3.0",
+  "updated": "2026-06-14",
+  "examples": {
+    "success_responses": {
+      "ping": {
+        "id": 1,
+        "command": "ping",
+        "success": true,
+        "data": {},
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "status": {
+        "id": 2,
+        "command": "status",
+        "success": true,
+        "data": {
+          "uptime_seconds": 3600,
+          "memory_mb": 245,
+          "cpu_percent": 12.5,
+          "connections": 3,
+          "sessions": 2,
+          "tabs": 4,
+          "status": "operational"
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "navigate": {
+        "id": 3,
+        "command": "navigate",
+        "success": true,
+        "data": {
+          "url": "https://example.com",
+          "load_time_ms": 1234,
+          "status_code": 200,
+          "title": "Example Domain"
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "get_page_state": {
+        "id": 4,
+        "command": "get_page_state",
+        "success": true,
+        "data": {
+          "title": "Example Domain",
+          "url": "https://www.example.com/",
+          "forms": [
+            {
+              "id": "search-form",
+              "name": "search",
+              "action": "/search",
+              "method": "GET",
+              "fields": [
+                {
+                  "name": "q",
+                  "type": "text",
+                  "value": ""
+                }
+              ]
+            }
+          ],
+          "links": [
+            {
+              "href": "https://www.iana.org/domains/example",
+              "text": "More information..."
+            }
+          ]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "screenshot": {
+        "id": 5,
+        "command": "screenshot",
+        "success": true,
+        "data": {
+          "image": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+          "format": "png",
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "size_bytes": 45032,
+          "timestamp": "2026-06-14T12:34:56.789Z"
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "extract_all": {
+        "id": 6,
+        "command": "extract_all",
+        "success": true,
+        "data": {
+          "text": "Example Domain\nThis domain is for use in examples and documentation.\nMore information...",
+          "html": "<!doctype html>...",
+          "links": [
+            {
+              "href": "https://www.iana.org/domains/example",
+              "text": "More information...",
+              "target": null
+            }
+          ],
+          "forms": [
+            {
+              "id": "search",
+              "name": "search",
+              "action": "/search",
+              "method": "GET",
+              "fields": [...]
+            }
+          ],
+          "images": [
+            {
+              "src": "/images/logo.png",
+              "alt": "Example Logo",
+              "width": 100,
+              "height": 100
+            }
+          ],
+          "scripts": [
+            {
+              "src": "/js/main.js",
+              "type": "text/javascript"
+            }
+          ],
+          "stylesheets": [
+            {
+              "href": "/css/style.css",
+              "media": "all"
+            }
+          ],
+          "metadata": {
+            "viewport": "width=device-width, initial-scale=1",
+            "charset": "utf-8",
+            "description": "Example Domain"
+          }
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "click": {
+        "id": 7,
+        "command": "click",
+        "success": true,
+        "data": {
+          "selector": "#submit-button",
+          "clicked": true,
+          "element_type": "button"
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "fill": {
+        "id": 8,
+        "command": "fill",
+        "success": true,
+        "data": {
+          "selector": "#email",
+          "value": "user@example.com",
+          "element_type": "input",
+          "filled": true
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "get_cookies": {
+        "id": 9,
+        "command": "get_cookies",
+        "success": true,
+        "data": {
+          "cookies": [
+            {
+              "name": "session_id",
+              "value": "abc123xyz789",
+              "domain": ".example.com",
+              "path": "/",
+              "expires": "2026-06-21T12:34:56.789Z",
+              "secure": true,
+              "httpOnly": true
+            }
+          ],
+          "count": 1
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "create_session": {
+        "id": 10,
+        "command": "create_session",
+        "success": true,
+        "data": {
+          "sessionId": "sess_a1b2c3d4e5f6g7h8",
+          "name": "Session A",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+          "fingerprint": "US",
+          "created": "2026-06-14T12:34:56.789Z"
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "detect_technologies": {
+        "id": 11,
+        "command": "detect_technologies",
+        "success": true,
+        "data": {
+          "technologies": [
+            {
+              "name": "Apache",
+              "category": "Servers",
+              "confidence": 95,
+              "method": "headers"
+            },
+            {
+              "name": "jQuery",
+              "category": "JavaScript Frameworks",
+              "confidence": 87,
+              "method": "scripts"
+            }
+          ],
+          "count": 2,
+          "analyzed_at": "2026-06-14T12:34:56.789Z"
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "get_memory_usage": {
+        "id": 12,
+        "command": "get_memory_usage",
+        "success": true,
+        "data": {
+          "total_mb": 1024,
+          "used_mb": 256,
+          "free_mb": 768,
+          "percent": 25,
+          "heap_mb": 200,
+          "heap_limit_mb": 512
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      }
+    },
+    "error_responses": {
+      "element_not_found": {
+        "id": 7,
+        "command": "click",
+        "success": false,
+        "error": "Element not found with selector #invalid-selector",
+        "recovery": {
+          "suggestion": "Verify the selector is correct and the page has fully loaded. Use wait_for_element before interacting.",
+          "alternativeCommands": ["wait_for_element", "get_page_state"]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "navigation_timeout": {
+        "id": 3,
+        "command": "navigate",
+        "success": false,
+        "error": "Navigation timeout after 30000ms",
+        "recovery": {
+          "suggestion": "The page took too long to load. Check if the URL is correct and the server is responding.",
+          "alternativeCommands": ["navigate"]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "rate_limit_exceeded": {
+        "id": 15,
+        "command": "navigate",
+        "success": false,
+        "error": "Rate limit exceeded: 1000 commands/minute",
+        "recovery": {
+          "suggestion": "Wait 60 seconds before sending more commands",
+          "retryAfter": 60,
+          "alternativeCommands": []
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "invalid_command": {
+        "id": 1,
+        "command": "invalid_command_name",
+        "success": false,
+        "error": "Unknown command: invalid_command_name",
+        "recovery": {
+          "suggestion": "Check the command name in API-REFERENCE.md. Did you mean one of these?",
+          "alternativeCommands": ["navigate", "get_url", "get_content"]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "invalid_parameters": {
+        "id": 2,
+        "command": "navigate",
+        "success": false,
+        "error": "Missing required parameter: url",
+        "recovery": {
+          "suggestion": "The 'navigate' command requires a 'url' parameter",
+          "alternativeCommands": ["get_url"]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "authentication_failed": {
+        "id": 1,
+        "command": "ping",
+        "success": false,
+        "error": "Authentication failed: Invalid token",
+        "recovery": {
+          "suggestion": "Verify your API token is correct and not expired",
+          "alternativeCommands": ["authenticate"]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      },
+      "browser_crashed": {
+        "id": 5,
+        "command": "screenshot",
+        "success": false,
+        "error": "Browser has crashed or is unresponsive",
+        "recovery": {
+          "suggestion": "The browser process unexpectedly terminated. Reconnect and retry.",
+          "alternativeCommands": ["status", "ping"]
+        },
+        "timestamp": "2026-06-14T12:34:56.789Z"
+      }
+    },
+    "batch_responses": {
+      "multiple_commands": {
+        "description": "WebSocket sends individual responses for each command",
+        "responses": [
+          {
+            "id": 1,
+            "command": "navigate",
+            "success": true,
+            "data": {"url": "https://example.com", "load_time_ms": 1234}
+          },
+          {
+            "id": 2,
+            "command": "wait_for_element",
+            "success": true,
+            "data": {"selector": "#main", "found": true}
+          },
+          {
+            "id": 3,
+            "command": "extract_all",
+            "success": true,
+            "data": {"links": [...], "forms": [...]}
+          }
+        ]
+      }
+    },
+    "data_types": {
+      "cookie": {
+        "name": "string",
+        "value": "string",
+        "domain": "string",
+        "path": "string",
+        "expires": "ISO-8601 timestamp",
+        "secure": "boolean",
+        "httpOnly": "boolean",
+        "sameSite": "string (Strict, Lax, None)"
+      },
+      "form": {
+        "id": "string or null",
+        "name": "string",
+        "action": "string",
+        "method": "string (GET, POST, etc)",
+        "fields": [
+          {
+            "name": "string",
+            "type": "string (text, password, email, etc)",
+            "value": "string",
+            "options": ["string"] | null
+          }
+        ]
+      },
+      "link": {
+        "href": "string (URL)",
+        "text": "string",
+        "target": "string or null (_blank, _self, etc)",
+        "title": "string or null"
+      },
+      "image": {
+        "src": "string (URL)",
+        "alt": "string or null",
+        "width": "number or null",
+        "height": "number or null",
+        "lazy": "boolean"
+      },
+      "technology": {
+        "name": "string",
+        "category": "string",
+        "confidence": "number (0-100)",
+        "method": "string (wappalyzer, headers, meta, scripts)",
+        "version": "string or null"
+      }
+    }
+  }
+}

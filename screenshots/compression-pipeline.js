@@ -126,6 +126,15 @@ class CompressionPipeline {
    * @returns {Promise<Object>} Result object
    */
   async compressOptimized(data, mimeType = 'application/octet-stream') {
+    // Handle null or undefined data
+    if (!data) {
+      return {
+        success: false,
+        error: 'No data provided',
+        originalSize: 0
+      };
+    }
+
     const buffer = Buffer.isBuffer(data) ? data : Buffer.from(data);
     const codecConfig = this.getOptimalCodec(mimeType);
 

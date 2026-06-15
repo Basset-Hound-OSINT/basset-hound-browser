@@ -61,7 +61,7 @@ class BufferPool {
   /**
    * Acquire a buffer from the pool
    * @param {number} requiredSize - Size needed
-   * @returns {Object} Buffer object { buffer, size }
+   * @returns {Buffer} Buffer object
    */
   acquire(requiredSize = this.options.bufferSize) {
     // Try to find buffer from pool
@@ -82,8 +82,11 @@ class BufferPool {
     if (!bufferObj) {
       // Check if we can grow the pool
       const currentMemory = this.stats.currentSize;
+      const totalCount = this.availableBuffers.length + this.inUseBuffers.size;
+
       if (currentMemory + requiredSize <= this.options.maxPoolMemory &&
-          this.availableBuffers.length + this.inUseBuffers.size < this.options.maxBufferCount) {
+          totalCount < this.options.maxBufferCount) {
+        // Allocate new buffer
         bufferObj = {
           buffer: Buffer.allocUnsafe(requiredSize),
           size: requiredSize,
@@ -95,14 +98,20 @@ class BufferPool {
         this.stats.currentSize += requiredSize;
         this.stats.allocations++;
         this.stats.poolMisses++;
+      } else if (this.options.autoGrowth && this.availableBuffers.length > 0) {
+        // Fallback: Use any available buffer even if not perfectly sized
+        bufferObj = this.availableBuffers.shift();
+        this.stats.poolMisses++;
       } else {
-        // Return smallest available buffer as fallback
-        if (this.availableBuffers.length > 0) {
-          bufferObj = this.availableBuffers.shift();
-          this.stats.poolMisses++;
-        } else {
-          throw new Error('Buffer pool exhausted - no buffers available');
-        }
+        // Last resort: create a temporary buffer without tracking it
+        bufferObj = {
+          buffer: Buffer.allocUnsafe(requiredSize),
+          size: requiredSize,
+          allocatedAt: Date.now(),
+          usageCount: 0,
+          temporary: true
+        };
+        this.stats.poolMisses++;
       }
     }
 
@@ -201,12 +210,15 @@ class ScreenshotObjectPool {
 
     if (this.availableObjects.length > 0) {
       screenshotObj = this.availableObjects.pop();
-      // Reset object
+      // Reset object but preserve id
+      const oldId = screenshotObj.id;
       Object.keys(screenshotObj).forEach(key => {
-        if (key !== 'metadata') {
+        if (key !== 'metadata' && key !== 'id') {
           screenshotObj[key] = undefined;
         }
       });
+      // Ensure id is preserved
+      screenshotObj.id = oldId;
       this.stats.reused++;
     } else {
       screenshotObj = {

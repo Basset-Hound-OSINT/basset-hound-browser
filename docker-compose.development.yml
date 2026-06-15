@@ -1,0 +1,125 @@
+# Basset Hound Browser - Development Deployment (v12.3.0+ Latest)
+# Auto-deploys weekly, experimental features enabled, full logging
+# Usage: docker-compose -f docker-compose.development.yml up -d
+
+version: '3.9'
+
+services:
+  basset-hound-browser:
+    build:
+      context: .
+      dockerfile: config/docker/Dockerfile
+      args:
+        - NODE_ENV=development
+        - BUILD_VERSION=12.3.0
+    image: basset-hound-browser:latest
+    container_name: basset-hound-browser-dev
+    hostname: basset-hound-dev
+
+    ports:
+      - "8766:8765"      # WebSocket API (Internal only - mapped to 8766)
+      - "9050:9050"      # Tor SOCKS proxy
+      - "9051:9051"      # Tor control port
+      - "9091:9091"      # Prometheus metrics (dev metrics port)
+
+    networks:
+      - basset-hound-dev
+
+    env_file:
+      - config/development.env
+
+    environment:
+      # Development overrides
+      - NODE_ENV=development
+      - DEBUG=basset:*
+      - LOG_LEVEL=debug
+
+    # Mount source code for hot reload and testing
+    volumes:
+      # Source code for development
+      - ./src:/app/src:cached
+      - ./websocket:/app/websocket:cached
+      - ./evasion:/app/evasion:cached
+      - ./extraction:/app/extraction:cached
+      - ./proxy:/app/proxy:cached
+      - ./blocking:/app/blocking:cached
+      - ./mcp:/app/mcp:cached
+
+      # Configuration
+      - ./config:/app/config:cached
+
+      # Data volumes (separate from production)
+      - basset-dev-data:/app/data
+      - basset-dev-logs:/app/logs
+      - basset-dev-downloads:/app/downloads
+      - basset-dev-screenshots:/app/screenshots
+
+    # Security configuration
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits (development - generous for testing)
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+
+    # Restart policy (aggressive for development)
+    restart: on-failure:3
+
+    # Logging configuration (development - verbose)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+        labels: "env=development,version=latest"
+
+    # Allow interactive shell access
+    stdin_open: true
+    tty: true
+
+    # Health check (more lenient for development)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 2
+      start_period: 30s
+
+volumes:
+  basset-dev-data:
+    driver: local
+    labels:
+      version: "latest"
+      environment: "development"
+  basset-dev-logs:
+    driver: local
+    labels:
+      version: "latest"
+      environment: "development"
+  basset-dev-downloads:
+    driver: local
+    labels:
+      environment: "development"
+  basset-dev-screenshots:
+    driver: local
+    labels:
+      environment: "development"
+
+networks:
+  basset-hound-dev:
+    name: basset-hound-dev
+    driver: bridge
+    labels:
+      environment: "development"
+      version: "latest"

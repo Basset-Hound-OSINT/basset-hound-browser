@@ -1,0 +1,100 @@
+# Basset Hound Browser - Production Deployment (v12.5.0 Stable)
+# Strict SLA: 99.9% uptime, quarterly updates, critical security patches only
+# Usage: docker-compose -f docker-compose.production.yml up -d
+
+version: '3.9'
+
+services:
+  basset-hound-browser:
+    image: basset-hound-browser:v12.5.0
+    container_name: basset-hound-browser-prod
+    hostname: basset-hound-prod
+
+    ports:
+      - "8765:8765"      # WebSocket API (External - Public)
+
+    networks:
+      - basset-hound-prod
+
+    env_file:
+      - config/production.env
+
+    environment:
+      # Override any env file settings if needed
+      - NODE_ENV=production
+
+    # Mount persistent volumes only (no source code)
+    volumes:
+      # Persistent data (v12.2.0 schema)
+      - basset-prod-data:/app/data
+      - basset-prod-logs:/app/logs
+
+      # Downloads and screenshots
+      - basset-prod-downloads:/app/downloads
+      - basset-prod-screenshots:/app/screenshots
+
+    # Security configuration - strict
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Resource limits (production - conservative)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # High availability restart policy (with limit)
+    restart: on-failure:5
+
+    # Logging configuration (production - strict rotation)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "env=production,version=v12.5.0"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  basset-prod-data:
+    driver: local
+    labels:
+      version: "v12.5.0"
+      environment: "production"
+  basset-prod-logs:
+    driver: local
+    labels:
+      version: "v12.5.0"
+      environment: "production"
+  basset-prod-downloads:
+    driver: local
+    labels:
+      environment: "production"
+  basset-prod-screenshots:
+    driver: local
+    labels:
+      environment: "production"
+
+networks:
+  basset-hound-prod:
+    name: basset-hound-prod
+    driver: bridge
+    labels:
+      environment: "production"
+      version: "v12.5.0"

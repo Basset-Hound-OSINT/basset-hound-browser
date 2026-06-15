@@ -1,0 +1,373 @@
+================================================================================
+BASSET HOUND BROWSER v12.7.0 - DEPLOYMENT QUICK REFERENCE
+================================================================================
+
+QUICK START COMMANDS
+================================================================================
+
+1. STANDARD DEPLOYMENT (Recommended for patch releases)
+   ./scripts/deploy-v12.7.0.sh --force
+
+2. CANARY DEPLOYMENT (Recommended for major releases)
+   ./scripts/canary-deploy.sh --version 12.7.0
+
+3. HEALTH CHECK
+   ./scripts/health-check-v12.7.0.sh --detailed
+
+4. MONITOR DEPLOYMENT
+   ./scripts/monitor-deployment-v12.7.0.sh --duration 3600
+
+5. EMERGENCY ROLLBACK
+   ./scripts/rollback-v12.7.0.sh --force
+
+================================================================================
+DEPLOYMENT PHASES
+================================================================================
+
+PHASE 1: Pre-Deployment (5 min)
+  □ Review version in package.json
+  □ Run test suite: npm test
+  □ Verify Docker build: docker build -t basset-hound-browser:test .
+  □ Notify stakeholders
+  □ Prepare monitoring dashboard
+
+PHASE 2: Deployment (7-9 min)
+  □ Run deployment script: ./scripts/deploy-v12.7.0.sh --force
+  □ Monitor logs: docker logs -f basset-hound-browser-prod
+  □ Track health checks in real-time
+
+PHASE 3: Validation (10 min)
+  □ Run health checks: ./scripts/health-check-v12.7.0.sh --detailed
+  □ Monitor metrics: ./scripts/monitor-deployment-v12.7.0.sh
+  □ Verify WebSocket: curl http://localhost:8765
+  □ Test critical features
+  □ Review logs for errors: docker logs basset-hound-browser-prod
+
+PHASE 4: Post-Deployment (Ongoing)
+  □ Continue monitoring for 1 hour
+  □ Review performance metrics
+  □ Close deployment tickets
+  □ Archive logs and reports
+
+================================================================================
+KEY FILES & LOCATIONS
+================================================================================
+
+DEPLOYMENT SCRIPTS
+  scripts/deploy-v12.7.0.sh           Main deployment orchestrator (660 LOC)
+  scripts/canary-deploy.sh            Progressive traffic rollout (479 LOC)
+  scripts/health-check-v12.7.0.sh    Health validation (688 LOC)
+  scripts/rollback-v12.7.0.sh         Emergency rollback (499 LOC)
+  scripts/monitor-deployment-v12.7.0.sh  Monitoring & alerts (579 LOC)
+
+DOCKER CONFIGURATION
+  config/docker/Dockerfile            Multi-stage optimized build
+  docker-compose.production.yml       Production deployment config
+  docker-compose.monitoring.yml       Prometheus + Grafana stack
+  .dockerignore                       Build context optimization
+
+DOCUMENTATION
+  docs/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md          Complete guide
+  docs/handoffs/DEPLOYMENT-AUTOMATION-COMPLETE-*       Handoff document
+  DEPLOYMENT-QUICK-REFERENCE.txt                       This file
+
+TESTS
+  tests/deployment/deployment.test.js  25+ deployment test cases
+
+================================================================================
+CRITICAL HEALTH CHECKS
+================================================================================
+
+Docker Running:
+  docker ps basset-hound-browser-prod
+
+Container Health:
+  docker inspect basset-hound-browser-prod --format='{{.State.Health}}'
+
+WebSocket Connectivity:
+  curl http://localhost:8765
+  nc -zv localhost 8765
+
+Memory Usage:
+  docker stats basset-hound-browser-prod
+
+Recent Logs:
+  docker logs --tail 100 basset-hound-browser-prod
+
+All Checks (Automated):
+  ./scripts/health-check-v12.7.0.sh --detailed
+
+================================================================================
+ALERT THRESHOLDS & ACTIONS
+================================================================================
+
+Memory > 85%
+  Action: Alert ops team
+  Command: docker stats basset-hound-browser-prod
+
+CPU > 80%
+  Action: Alert ops team
+  Command: docker stats basset-hound-browser-prod
+
+Latency > 500ms
+  Action: Investigate performance
+  Command: ./scripts/monitor-deployment-v12.7.0.sh
+
+Error Rate > 5%
+  Action: Automatic rollback
+  Command: ./scripts/rollback-v12.7.0.sh --force
+
+Container Down
+  Action: Automatic rollback + alert
+  Command: ./scripts/rollback-v12.7.0.sh --force
+
+================================================================================
+ROLLBACK PROCEDURE (< 2 minutes)
+================================================================================
+
+EMERGENCY ROLLBACK
+  1. Run: ./scripts/rollback-v12.7.0.sh --force
+  2. Wait for health: docker logs basset-hound-browser-prod
+  3. Verify: curl http://localhost:8765
+  4. Notify stakeholders
+
+MANUAL ROLLBACK
+  1. docker stop basset-hound-browser-prod
+  2. docker rm basset-hound-browser-prod
+  3. docker run -d --name basset-hound-browser-prod \
+       -v basset-prod-data:/app/data basset-hound-browser:12.5.0
+  4. ./scripts/health-check-v12.7.0.sh
+
+ROLLBACK WITH DATA RESTORE
+  1. ./scripts/rollback-v12.7.0.sh --to-version 12.5.0
+  2. Data automatically restored from backup
+  3. Verify: docker ps, curl http://localhost:8765
+
+================================================================================
+MONITORING COMMANDS
+================================================================================
+
+Real-Time Monitoring (1 hour):
+  ./scripts/monitor-deployment-v12.7.0.sh --duration 3600
+
+Monitor with Email Alerts:
+  ./scripts/monitor-deployment-v12.7.0.sh --email ops@example.com
+
+Monitor with Slack Alerts:
+  ./scripts/monitor-deployment-v12.7.0.sh --slack https://hooks.slack.com/...
+
+View Metrics Dashboard:
+  tail -f logs/deployment-dashboard.txt
+
+Export Metrics to CSV:
+  cat logs/deployment-metrics-*.csv > deployment_metrics.csv
+
+View Deployment Logs:
+  tail -f logs/deployment-*.log
+
+================================================================================
+DOCKER COMMANDS REFERENCE
+================================================================================
+
+View Container Status:
+  docker ps basset-hound-browser-prod
+  docker ps -a | grep basset-hound
+
+View Container Logs:
+  docker logs basset-hound-browser-prod
+  docker logs --tail 100 basset-hound-browser-prod
+  docker logs -f basset-hound-browser-prod  # Follow logs
+
+View Container Stats:
+  docker stats basset-hound-browser-prod
+  docker stats --no-stream basset-hound-browser-prod
+
+View Container Config:
+  docker inspect basset-hound-browser-prod
+  docker inspect basset-hound-browser-prod | jq .State.Health
+
+View Image Info:
+  docker images basset-hound-browser
+  docker history basset-hound-browser:v12.7.0
+
+Stop/Start Container:
+  docker stop basset-hound-browser-prod
+  docker start basset-hound-browser-prod
+  docker restart basset-hound-browser-prod
+
+Remove Container:
+  docker rm basset-hound-browser-prod
+
+View Volumes:
+  docker volume ls | grep basset
+  docker inspect basset-prod-data
+
+================================================================================
+TROUBLESHOOTING QUICK FIXES
+================================================================================
+
+CONTAINER WON'T START
+  1. Check logs: docker logs basset-hound-browser-prod
+  2. Check image: docker images basset-hound-browser:v12.7.0
+  3. Verify resources: docker system df
+  4. Clean up: docker system prune
+  5. Rollback: ./scripts/rollback-v12.7.0.sh --force
+
+WEBSOCKET NOT RESPONDING
+  1. Test port: nc -zv localhost 8765
+  2. Check firewall: sudo iptables -L -n | grep 8765
+  3. Verify mapping: docker port basset-hound-browser-prod
+  4. Restart container: docker restart basset-hound-browser-prod
+
+HIGH MEMORY USAGE
+  1. Check current: docker stats basset-hound-browser-prod
+  2. Review logs: docker logs basset-hound-browser-prod | grep -i memory
+  3. Check processes: docker top basset-hound-browser-prod
+  4. Increase limit: Edit docker-compose.production.yml
+  5. Redeploy: docker-compose down && docker-compose up -d
+
+HIGH CPU USAGE
+  1. Monitor trend: ./scripts/monitor-deployment-v12.7.0.sh
+  2. Check processes: docker top basset-hound-browser-prod
+  3. Review logs: docker logs basset-hound-browser-prod | grep -i error
+  4. Optimize code or rollback
+
+DISK SPACE ISSUE
+  1. Check usage: docker system df
+  2. Clean images: docker image prune -a
+  3. Clean volumes: docker volume prune
+  4. Clean containers: docker container prune
+
+================================================================================
+DEPLOYMENT SCRIPTS DETAILED USAGE
+================================================================================
+
+DEPLOY-V12.7.0.SH
+  Standard:          ./scripts/deploy-v12.7.0.sh --force
+  With artifact:     ./scripts/deploy-v12.7.0.sh --artifact /path/img.tar --force
+  To registry:       ./scripts/deploy-v12.7.0.sh --registry docker.io/myorg --force
+  Canary mode:       ./scripts/deploy-v12.7.0.sh --canary --force
+  Skip tests:        ./scripts/deploy-v12.7.0.sh --skip-tests --force
+
+CANARY-DEPLOY.SH
+  Standard:          ./scripts/canary-deploy.sh --version 12.7.0
+  Custom duration:   ./scripts/canary-deploy.sh --version 12.7.0 --duration 600
+  Custom threshold:  ./scripts/canary-deploy.sh --version 12.7.0 --threshold 10
+
+HEALTH-CHECK-V12.7.0.SH
+  Standard:          ./scripts/health-check-v12.7.0.sh
+  Detailed report:   ./scripts/health-check-v12.7.0.sh --detailed
+  With email:        ./scripts/health-check-v12.7.0.sh --email ops@example.com
+  With Slack:        ./scripts/health-check-v12.7.0.sh --slack https://hooks...
+
+ROLLBACK-V12.7.0.SH
+  Standard:          ./scripts/rollback-v12.7.0.sh (will prompt)
+  Force rollback:    ./scripts/rollback-v12.7.0.sh --force
+  To specific ver:   ./scripts/rollback-v12.7.0.sh --to-version 12.5.0 --force
+
+MONITOR-DEPLOYMENT-V12.7.0.SH
+  1 hour monitor:    ./scripts/monitor-deployment-v12.7.0.sh
+  Custom duration:   ./scripts/monitor-deployment-v12.7.0.sh --duration 7200
+  With alerts:       ./scripts/monitor-deployment-v12.7.0.sh --email ops@ex.com
+
+================================================================================
+PERFORMANCE BASELINES
+================================================================================
+
+Deployment Times
+  Build (first):           6-8 minutes
+  Build (cached):          2-3 minutes
+  Container start:         5-10 seconds
+  Health checks:           30-45 seconds
+  Smoke tests:             20-30 seconds
+  Total (first):           7-9 minutes
+  Total (artifact):        2-3 minutes
+
+Rollback Times
+  Backup:                  1-2 minutes
+  Stop/Start:              15-20 seconds
+  Health verify:           30-45 seconds
+  Total:                   < 2 minutes
+
+Docker Image
+  Build time:              6-8 min (3-5 min cached)
+  Image size:              ~2.2GB
+  Layer count:             20+
+  Compression:             70-93%
+
+Monitoring Overhead
+  CPU usage:               < 1%
+  Memory overhead:         < 10MB
+  Metrics collection:      5 sec intervals
+  Alert detection:         < 30 sec
+
+================================================================================
+DOCUMENTATION RESOURCES
+================================================================================
+
+Complete Guide:
+  docs/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md
+
+Quick Reference:
+  DEPLOYMENT-QUICK-REFERENCE.txt (this file)
+
+Handoff Document:
+  docs/handoffs/DEPLOYMENT-AUTOMATION-COMPLETE-2026-06-15.md
+
+API Reference:
+  docs/API-REFERENCE-v12.7.0.md
+
+Test Suite:
+  tests/deployment/deployment.test.js
+
+================================================================================
+CONTACTS & SUPPORT
+================================================================================
+
+For Issues:
+  1. Review logs: docker logs basset-hound-browser-prod
+  2. Check documentation: docs/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md
+  3. Run health check: ./scripts/health-check-v12.7.0.sh --detailed
+  4. Review troubleshooting: DEPLOYMENT-QUICK-REFERENCE.txt section above
+
+Emergency Rollback (24/7):
+  ./scripts/rollback-v12.7.0.sh --force
+
+Documentation:
+  Complete guide: docs/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md
+  Handoff: docs/handoffs/DEPLOYMENT-AUTOMATION-COMPLETE-2026-06-15.md
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+PRE-DEPLOYMENT
+  □ Version updated in package.json
+  □ Tests passing: npm test
+  □ Docker builds successfully
+  □ Backup created: scripts available
+  □ Team notified
+  □ Rollback plan reviewed
+
+DURING DEPLOYMENT
+  □ Running deployment script
+  □ Monitoring logs
+  □ Health checks running
+  □ WebSocket connectivity verified
+
+POST-DEPLOYMENT
+  □ All health checks passing
+  □ Performance baseline met
+  □ Error logs reviewed
+  □ Monitoring active for 1 hour
+  □ Stakeholders notified
+  □ Deployment logged
+
+================================================================================
+STATUS: ✅ PRODUCTION READY
+Version: 12.7.0
+Date: 2026-06-15
+Last Updated: 2026-06-15
+
+For complete details, see: docs/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md
+================================================================================

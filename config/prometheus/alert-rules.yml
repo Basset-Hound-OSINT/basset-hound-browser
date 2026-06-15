@@ -1,0 +1,150 @@
+# Basset Hound Browser Alert Rules - v12.3.0
+# Prometheus alerting rules for critical and warning conditions
+
+groups:
+  - name: basset_hound_alerts
+    interval: 30s
+    rules:
+      # CRITICAL: Memory usage exceeds 90%
+      - alert: CriticalMemoryUsage
+        expr: memory_usage_percent > 90
+        for: 2m
+        labels:
+          severity: critical
+          component: memory
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          dashboard: "http://grafana:3000/d/basset-hound"
+
+      # WARNING: Memory usage exceeds 75%
+      - alert: HighMemoryUsage
+        expr: memory_usage_percent > 75 and memory_usage_percent < 90
+        for: 5m
+        labels:
+          severity: warning
+          component: memory
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # CRITICAL: High error rate
+      - alert: HighErrorRate
+        expr: rate(requests_error_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          component: requests
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # WARNING: Elevated latency
+      - alert: ElevatedLatency
+        expr: histogram_quantile(0.95, rate(request_duration_seconds_bucket[5m])) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+          component: latency
+        annotations:
+          summary: "Elevated request latency detected"
+          description: "P95 latency is {{ $value }}s on {{ $labels.instance }}"
+
+      # CRITICAL: Process crash detected
+      - alert: ProcessDown
+        expr: up{job="basset-browser"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: process
+        annotations:
+          summary: "Basset Hound Browser process is down"
+          description: "Process {{ $labels.instance }} has been down for more than 1 minute"
+
+      # WARNING: Too many active connections
+      - alert: HighConnectionCount
+        expr: connections_active > 500
+        for: 2m
+        labels:
+          severity: warning
+          component: connections
+        annotations:
+          summary: "High number of active connections"
+          description: "{{ $value }} active connections on {{ $labels.instance }}"
+
+      # CRITICAL: Event loop lag
+      - alert: EventLoopLag
+        expr: event_loop_lag_milliseconds > 100
+        for: 2m
+        labels:
+          severity: critical
+          component: eventloop
+        annotations:
+          summary: "Event loop lag detected"
+          description: "Event loop lag is {{ $value }}ms on {{ $labels.instance }}"
+
+      # CRITICAL: Cache misses exceeding threshold
+      - alert: HighCacheMissRate
+        expr: rate(cache_misses_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "High cache miss rate"
+          description: "Cache miss rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # WARNING: Throughput degradation
+      - alert: ThroughputDegradation
+        expr: rate(messages_total[5m]) < 100
+        for: 3m
+        labels:
+          severity: warning
+          component: throughput
+        annotations:
+          summary: "Throughput degradation detected"
+          description: "Messages per second is {{ $value }} on {{ $labels.instance }}"
+
+      # CRITICAL: Health check failures
+      - alert: HealthCheckFailure
+        expr: health_check_failures_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: health
+        annotations:
+          summary: "Health check failures detected"
+          description: "{{ $value }} health check failures on {{ $labels.instance }}"
+
+      # WARNING: High disk usage
+      - alert: HighDiskUsage
+        expr: disk_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: disk
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # WARNING: WebSocket connection errors
+      - alert: WebSocketErrors
+        expr: rate(websocket_errors_total[5m]) > 0.01
+        for: 2m
+        labels:
+          severity: warning
+          component: websocket
+        annotations:
+          summary: "WebSocket connection errors detected"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+
+      # CRITICAL: TOR circuit failures
+      - alert: TorCircuitFailures
+        expr: rate(tor_circuit_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          component: tor
+        annotations:
+          summary: "TOR circuit failures detected"
+          description: "Failure rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"

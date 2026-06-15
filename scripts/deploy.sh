@@ -34,7 +34,7 @@ docker network create $NETWORK_NAME 2>/dev/null || echo "Network already exists"
 
 # Step 3: Build new image
 echo "[3/5] Building Docker image..."
-docker build $NO_CACHE -t $IMAGE_NAME:latest .
+docker build $NO_CACHE -f config/docker/Dockerfile -t $IMAGE_NAME:latest .
 
 # Step 4: Start new container
 echo "[4/5] Starting new container..."

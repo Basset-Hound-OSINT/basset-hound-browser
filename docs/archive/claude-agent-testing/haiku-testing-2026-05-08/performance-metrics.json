@@ -1,52 +1,52 @@
 [
   {
     "scenario": "Simple Navigation",
-    "duration": 121,
-    "timestamp": "2026-06-13T17:39:29.719Z"
+    "duration": 168,
+    "timestamp": "2026-06-15T06:06:49.115Z"
   },
   {
     "scenario": "Form Interaction",
-    "duration": 392,
-    "timestamp": "2026-06-13T17:39:30.112Z"
+    "duration": 352,
+    "timestamp": "2026-06-15T06:06:49.468Z"
   },
   {
     "scenario": "Content Extraction",
-    "duration": 342,
-    "timestamp": "2026-06-13T17:39:30.456Z"
+    "duration": 201,
+    "timestamp": "2026-06-15T06:06:49.670Z"
   },
   {
     "scenario": "Screenshot Capture",
-    "duration": 576,
-    "timestamp": "2026-06-13T17:39:31.033Z"
+    "duration": 163,
+    "timestamp": "2026-06-15T06:06:49.834Z"
   },
   {
     "scenario": "Cookie Management",
-    "duration": 393,
-    "timestamp": "2026-06-13T17:39:31.427Z"
+    "duration": 478,
+    "timestamp": "2026-06-15T06:06:50.313Z"
   },
   {
     "scenario": "Multiple Tabs",
-    "duration": 548,
-    "timestamp": "2026-06-13T17:39:31.976Z"
+    "duration": 437,
+    "timestamp": "2026-06-15T06:06:50.751Z"
   },
   {
     "scenario": "JavaScript Execution",
-    "duration": 341,
-    "timestamp": "2026-06-13T17:39:32.318Z"
+    "duration": 350,
+    "timestamp": "2026-06-15T06:06:51.101Z"
   },
   {
     "scenario": "Proxy Configuration",
-    "duration": 411,
-    "timestamp": "2026-06-13T17:39:32.730Z"
+    "duration": 316,
+    "timestamp": "2026-06-15T06:06:51.418Z"
   },
   {
     "scenario": "User Agent Rotation",
-    "duration": 216,
-    "timestamp": "2026-06-13T17:39:32.947Z"
+    "duration": 361,
+    "timestamp": "2026-06-15T06:06:51.779Z"
   },
   {
     "scenario": "Tor Integration",
-    "duration": 513,
-    "timestamp": "2026-06-13T17:39:33.461Z"
+    "duration": 448,
+    "timestamp": "2026-06-15T06:06:52.227Z"
   }
 ]

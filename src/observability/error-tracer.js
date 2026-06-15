@@ -17,6 +17,132 @@
 
 const EventEmitter = require('events');
 
+/**
+ * P3-004: Error Context Manager
+ * Captures comprehensive error context for debugging
+ */
+class ErrorContextManager {
+  constructor() {
+    this.contexts = new Map(); // errorId -> context
+    this.maxContextSize = 100; // Max entries to keep
+    this.contextIndex = new Map(); // Index for O(1) search by field
+  }
+
+  /**
+   * Add comprehensive context to an error
+   */
+  addContext(errorId, contextData) {
+    const context = {
+      errorId,
+      timestamp: Date.now(),
+      requestId: contextData.requestId || null,
+      command: contextData.command || null,
+      parameters: this._sanitizeParameters(contextData.parameters || {}),
+      operationName: contextData.operationName || null,
+      component: contextData.component || null,
+      module: contextData.module || null,
+      function: contextData.function || null,
+      lineNumber: contextData.lineNumber || null,
+      callStack: this._formatCallStack(contextData.callStack || []),
+      systemContext: {
+        memoryUsage: process.memoryUsage ? process.memoryUsage() : null,
+        uptime: process.uptime ? process.uptime() : null,
+        platform: process.platform || null
+      },
+      userContext: contextData.userContext || {},
+      additionalInfo: contextData.additionalInfo || {}
+    };
+
+    this.contexts.set(errorId, context);
+
+    // Maintain bounded size
+    if (this.contexts.size > this.maxContextSize) {
+      const firstKey = this.contexts.keys().next().value;
+      this.contexts.delete(firstKey);
+    }
+
+    return context;
+  }
+
+  /**
+   * Get context for an error
+   */
+  getContext(errorId) {
+    return this.contexts.get(errorId) || null;
+  }
+
+  /**
+   * Search errors by request ID
+   */
+  findByRequestId(requestId) {
+    const results = [];
+    for (const [errorId, context] of this.contexts.entries()) {
+      if (context.requestId === requestId) {
+        results.push({ errorId, context });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Search errors by component
+   */
+  findByComponent(component) {
+    const results = [];
+    for (const [errorId, context] of this.contexts.entries()) {
+      if (context.component === component) {
+        results.push({ errorId, context });
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Get all contexts (bounded)
+   */
+  getAllContexts(limit = 50) {
+    const entries = Array.from(this.contexts.entries());
+    return entries.slice(-limit).map(([errorId, context]) => ({ errorId, context }));
+  }
+
+  /**
+   * Sanitize parameters to remove sensitive data
+   */
+  _sanitizeParameters(params) {
+    const sanitized = { ...params };
+    const sensitiveKeys = ['password', 'token', 'secret', 'apiKey', 'auth', 'credential'];
+
+    for (const key of Object.keys(sanitized)) {
+      if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+        sanitized[key] = '[REDACTED]';
+      }
+    }
+
+    return sanitized;
+  }
+
+  /**
+   * Format call stack for readability
+   */
+  _formatCallStack(stack) {
+    if (Array.isArray(stack)) {
+      return stack.slice(0, 10); // Keep first 10 frames
+    }
+    if (typeof stack === 'string') {
+      return stack.split('\n').slice(0, 10);
+    }
+    return [];
+  }
+
+  /**
+   * Clear old contexts
+   */
+  clear() {
+    this.contexts.clear();
+    this.contextIndex.clear();
+  }
+}
+
 class ErrorTracer extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -37,6 +163,7 @@ class ErrorTracer extends EventEmitter {
     this.errorChains = new Map();
     this.stackTraces = new Map();
     this.errorCausalityGraph = new Map();
+    this.contextManager = new ErrorContextManager(); // P3-004: Error context
     this.errorMetrics = {
       totalErrors: 0,
       errorsByType: new Map(),
@@ -47,6 +174,7 @@ class ErrorTracer extends EventEmitter {
 
   /**
    * Trace an error with full context
+   * P3-004: Enhanced with comprehensive error context
    */
   traceError(spanId, errorData) {
     const error = {
@@ -94,6 +222,20 @@ class ErrorTracer extends EventEmitter {
 
     this.errors.set(error.errorId, error);
     this._updateErrorMetrics(error);
+
+    // P3-004: Add comprehensive error context
+    this.contextManager.addContext(error.errorId, {
+      requestId: error.requestId,
+      command: errorData.command || null,
+      parameters: errorData.parameters || {},
+      operationName: errorData.operationName || null,
+      component: error.component,
+      module: errorData.module || null,
+      function: errorData.function || null,
+      callStack: error.stackTrace,
+      userContext: errorData.userContext || {},
+      additionalInfo: errorData.additionalInfo || {}
+    });
 
     // Track error tree
     if (error.parentErrorId) {
@@ -510,6 +652,47 @@ class ErrorTracer extends EventEmitter {
   }
 
   /**
+   * P3-004: Get error with full context
+   */
+  getErrorWithContext(errorId) {
+    const error = this.errors.get(errorId);
+    if (!error) {
+      return null;
+    }
+
+    const context = this.contextManager.getContext(errorId);
+    return {
+      error,
+      context,
+      combined: {
+        ...error,
+        enrichedContext: context
+      }
+    };
+  }
+
+  /**
+   * P3-004: Search errors by request ID with context
+   */
+  searchByRequestId(requestId) {
+    return this.contextManager.findByRequestId(requestId);
+  }
+
+  /**
+   * P3-004: Search errors by component with context
+   */
+  searchByComponent(component) {
+    return this.contextManager.findByComponent(component);
+  }
+
+  /**
+   * P3-004: Get all recent errors with context
+   */
+  getRecentErrorsWithContext(limit = 50) {
+    return this.contextManager.getAllContexts(limit);
+  }
+
+  /**
    * Close system
    */
   close() {
@@ -519,8 +702,10 @@ class ErrorTracer extends EventEmitter {
     this.errorChains.clear();
     this.stackTraces.clear();
     this.errorCausalityGraph.clear();
+    this.contextManager.clear();
     this.emit('system:closed');
   }
 }
 
 module.exports = ErrorTracer;
+module.exports.ErrorContextManager = ErrorContextManager;

@@ -1,0 +1,257 @@
+================================================================================
+BASSET HOUND BROWSER - P3 BUG FIXES IMPLEMENTATION PLAN
+================================================================================
+
+STATUS: DESIGN COMPLETE & READY FOR ENGINEERING REVIEW
+DATE: June 14, 2026
+SCOPE: 4 Medium-Priority Bugs | 8 Hours Total | 40 Tests | 700 LOC Changes
+
+================================================================================
+BUG INVENTORY
+================================================================================
+
+P3-001: SCREENSHOT MEMORY LEAKS (2 hours)
+────────────────────────────────────────
+File: src/extraction/screenshot-phase4-robustness.js
+Root Cause: Recovery logs accumulate unbounded, stream handles leak, error
+            reports retain full context objects
+Impact: Memory pressure over time during long-running screenshot operations
+Test Cases: 10 (CircularBuffer bounds, stream cleanup, pooling, growth limits)
+Fix Complexity: Medium
+Key Changes:
+  • Replace array-based logging with CircularBuffer (bounded O(n) to O(1))
+  • Add stream cleanup via setImmediate after compression fallback
+  • Implement object pool for error reports (max 50 cached objects)
+  • Trigger GC when memory pressure > 100MB
+  • Add try-finally cleanup handlers
+
+Success Metric: Memory delta < 5MB over 10,000 screenshot operations
+
+────────────────────────────────────────────────────────────────────────────────
+
+P3-002: SESSION COHERENCE EDGE CASES (2 hours)
+──────────────────────────────────────────────
+File: src/evasion/session-coherence.js
+Root Cause: False positives on legitimate state changes (fingerprint updates,
+            screen rotation, network patterns), race conditions in concurrent
+            state updates, outdated impossible device combinations
+Impact: Legitimate user sessions flagged as suspicious; evasion framework
+        incorrectly rejects valid scenarios
+Test Cases: 10 (exemptions, rotation, variance, Chrome OS, race conditions)
+Fix Complexity: Medium-High
+Key Changes:
+  • Add allowedComponentUpdates configuration (fonts, screen, etc.)
+  • Skip exempt components in temporal validation layer
+  • Replace variance threshold with coefficient of variation (human-like 0.15+)
+  • Implement screen orientation normalization (sort dimensions)
+  • Update impossible device combinations (Chrome OS + Chrome valid, iPad + Firefox valid)
+  • Add atomic locking to recordInteraction for race condition prevention
+
+Success Metric: Coherence score > 0.90 for legitimate sessions with valid changes
+
+────────────────────────────────────────────────────────────────────────────────
+
+P3-003: TIMEOUT HANDLER CLEANUP FAILURES (2 hours)
+──────────────────────────────────────────────────
+File: src/resilience/timeout-protection.js
+Root Cause: Timeout handlers created but never cancelled if promises never
+            settle; activeTasks accumulate without cleanup; retry logic
+            doesn't cancel prior timeout handlers; missing emergency cleanup
+Impact: Under high concurrency (1000+), handlers accumulate → memory pressure
+        → eventual system hang/OOM
+Test Cases: 10 (cleanup on resolution, activeTasks drainage, retry cleanup,
+                overdue detection, 1000+ concurrent)
+Fix Complexity: High
+Key Changes:
+  • Implement CancellableTimeout class with AbortController
+  • Rewrite withTimeout() to use AbortController + guaranteed finally cleanup
+  • Add activeTimeouts tracking Map
+  • Implement cleanup watcher (30-sec interval) to detect/cleanup overdue tasks
+  • Update executeWithFallback retry loop to cancel prior timeouts
+  • Enhance trackTask with guaranteed cleanup via wrapped promise
+  • Add destroy() method for process shutdown cleanup
+
+Success Metric: activeTasks Map always empty after timeouts resolve;
+               no dangling setTimeout/setInterval
+
+────────────────────────────────────────────────────────────────────────────────
+
+P3-004: ERROR LOGGING CONTEXT LOSS (2-3 hours)
+──────────────────────────────────────────────
+File: src/observability/error-tracer.js
+Root Cause: Unbounded context storage (10MB+ DOM trees stored as-is);
+            unindexed error search (O(n), becomes O(n²) in loops);
+            unbounded pattern collections; unlimited recovery attempts;
+            full stack traces retained with closure variables
+Impact: Large context objects cause heap growth (GB scale); error queries
+        timeout; difficult to debug large error sets
+Test Cases: 10 (context validation, circular refs, search performance,
+                collection bounds, recovery attempt limits)
+Fix Complexity: High
+Key Changes:
+  • Add context size validation (MAX_CONTEXT_SIZE = 1MB)
+  • Implement JSON serialization with circular reference detection
+  • Add error indexing (byType, byComponent, bySeverity, bySpan Maps)
+  • Rewrite findRelatedErrors() to use index lookup (O(1) vs O(n))
+  • Bound recovery attempt array to 10 max (FIFO eviction)
+  • Limit error pattern Sets to 100 entries each
+  • Limit stack trace depth to 15 frames
+  • Enhance close() cleanup to deallocate all indexes
+
+Success Metric: Error search < 10ms for 10K errors; memory < 10MB for
+               10K errors with full context
+
+================================================================================
+IMPLEMENTATION PHASES
+================================================================================
+
+PHASE 1 (Days 1-2): MEMORY & CLEANUP FIXES
+───────────────────────────────────────────
+Monday:  Implement P3-001 + P3-003 (CircularBuffer, AbortController)
+         Performance profiling & memory validation
+Tuesday: Complete unit testing (20 tests)
+         Integration testing & sign-off
+
+PHASE 2 (Days 3-4): VALIDATION & INDEXING
+──────────────────────────────────────────
+Wednesday: Implement P3-002 + P3-004 (coherence fixes, error indexing)
+           Performance profiling & search optimization
+Thursday:  Complete unit testing (20 tests)
+           Integration testing & sign-off
+
+PHASE 3 (Day 5): VERIFICATION & DEPLOYMENT
+────────────────────────────────────────────
+Friday: Full 40-test suite execution
+        Performance profiling across all fixes
+        Regression testing vs v12.0.0 baseline
+        Edge case validation
+        Deployment preparation
+
+================================================================================
+DELIVERABLES
+================================================================================
+
+Code Changes:
+  • P3-001: 5 changes, ~100 LOC (CircularBuffer, pooling, cleanup)
+  • P3-002: 6 changes, ~150 LOC (exemptions, variance calc, rotation, locking)
+  • P3-003: 6 changes, ~200 LOC (AbortController, cleanup watcher, destroy)
+  • P3-004: 9 changes, ~250 LOC (validation, indexing, bounds, cleanup)
+  Total: 26 changes, ~700 LOC
+
+Tests:
+  • 10 tests per bug = 40 total
+  • Unit tests (isolated)
+  • Integration tests (cross-component)
+  • Performance tests (memory, latency)
+  • Stress tests (1000+ concurrent)
+
+Documentation:
+  • P3_IMPLEMENTATION_PLAN.md (comprehensive 700-line guide)
+  • P3_QUICK_REFERENCE.md (checklist & debugging guide)
+  • P3_BUG_SUMMARY.txt (this file)
+  • Inline code comments in all 4 files
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+Memory Stability:
+  ✓ P3-001: Memory growth < 5MB over 10,000 operations
+  ✓ P3-003: activeTasks Map returns to 0 after cleanup
+  ✓ P3-004: Error storage < 10MB for 10K errors
+
+Performance:
+  ✓ P3-002: Coherence calculations < 50ms
+  ✓ P3-004: Error search < 10ms for 10K errors (O(1))
+  ✓ Overall: Zero regression vs v12.0.0 baseline
+
+Correctness:
+  ✓ All 40 tests passing
+  ✓ 0 regressions in Phase 1-2 test suite
+  ✓ Edge cases handled (screen rotation, Chrome OS, etc.)
+
+Observability:
+  ✓ Error logs include request ID, command, parameters, stack
+  ✓ Emergency cleanup logging for overdue tasks
+  ✓ Structured logging fields
+
+================================================================================
+RISK ASSESSMENT
+================================================================================
+
+LOW RISK ITEMS:
+  • P3-001 CircularBuffer implementation (well-defined algorithm)
+  • P3-004 Error indexing (standard Map-based approach)
+  • All unit tests (isolated, repeatable)
+
+MEDIUM RISK ITEMS:
+  • P3-003 AbortController migration (platform dependent)
+  • P3-002 race condition locking (timing dependent)
+  • Integration between components
+
+MITIGATION:
+  • Code review checkpoints after each phase
+  • Performance profiling sign-off before Phase 2
+  • Regression testing vs baseline
+  • Rollback plan for each bug
+  • Extended testing window (Friday full validation)
+
+================================================================================
+EFFORT BREAKDOWN
+================================================================================
+
+Analysis & Design:        2 hours (complete)
+Implementation (Phase 1): 4 hours (2 hrs + testing)
+Implementation (Phase 2): 4 hours (2 hrs + testing)
+Integration & Verify:     2-4 hours (Friday validation)
+Documentation:            1 hour (complete)
+─────────────────────────────────
+TOTAL:                    8 hours implementation + testing
+
+Effort by Bug:
+  P3-001: 2 hours (straightforward, bounded problem)
+  P3-002: 2 hours (moderate complexity, clear scope)
+  P3-003: 2 hours (higher complexity, cleanup critical)
+  P3-004: 2-3 hours (indexing schema, validation logic)
+
+================================================================================
+KEY FILES
+================================================================================
+
+Source Files (to be modified):
+  /src/extraction/screenshot-phase4-robustness.js
+  /src/evasion/session-coherence.js
+  /src/resilience/timeout-protection.js
+  /src/observability/error-tracer.js
+
+Test Files (to be created):
+  /tests/unit/p3-001-screenshot-memory.test.js
+  /tests/unit/p3-002-session-coherence.test.js
+  /tests/unit/p3-003-timeout-cleanup.test.js
+  /tests/unit/p3-004-error-context.test.js
+
+Documentation Files (created):
+  /P3_IMPLEMENTATION_PLAN.md (detailed 700-line specification)
+  /P3_QUICK_REFERENCE.md (checklist & debugging guide)
+  /P3_BUG_SUMMARY.txt (this file)
+
+================================================================================
+EXECUTION APPROVAL
+================================================================================
+
+Ready for:  Engineering Team Review & Implementation Approval
+Confidence: Very High (comprehensive analysis, detailed specs, clear success criteria)
+Next Steps:
+  1. Team reviews implementation plan
+  2. Schedule 2-week development sprint (Mon-Fri)
+  3. Execute Phase 1-3 sequentially
+  4. Validate against success criteria
+  5. Deploy to staging for final validation
+  6. Merge to main branch
+
+Questions/Clarifications: Contact engineering team
+
+================================================================================
+Generated: June 14, 2026
+Plan Status: DESIGN COMPLETE - READY FOR EXECUTION
+================================================================================

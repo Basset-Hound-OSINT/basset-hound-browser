@@ -10,6 +10,13 @@ if (!app) {
   process.exit(1);
 }
 
+// ==========================================
+// Early Headless Mode Initialization (P1-001)
+// ==========================================
+// This MUST happen before any Electron initialization
+// In Docker/headless environments, Electron fails to start without a display
+// We need to initialize Xvfb BEFORE app.whenReady() is called
+
 const path = require('path');
 const fs = require('fs');
 const WebSocketServer = require('./websocket/server');
@@ -1248,6 +1255,11 @@ function setupIPCHandlers() {
   // Get page content
   ipcMain.handle('get-page-content', async () => {
     return createIPCPromiseWithTimeout('get-page-content', 'page-content-response');
+  });
+
+  // P2-004: Wait for Cloudflare challenge to complete
+  ipcMain.handle('wait-for-cloudflare', async (event, options) => {
+    return createIPCPromiseWithTimeout('wait-for-cloudflare', 'cloudflare-resolved-response', options);
   });
 
   // Screenshot (basic viewport)
@@ -2756,9 +2768,83 @@ function setupDownloadManagerEvents() {
   });
 }
 
+/**
+ * Initialize headless mode BEFORE app.whenReady()
+ * Critical for Docker/headless environments - Electron fails without a display
+ * This is the P1-001 bug fix: https://github.com/basset-hound/issues/P1-001
+ */
+function initializeHeadlessModeEarly() {
+  try {
+    const headlessOpts = getHeadlessOptions();
+    const envDetection = headlessManager.detectHeadlessEnvironment();
+
+    // Determine if we need headless mode
+    const needsHeadless = headlessOpts.headless ||
+                         !envDetection.hasDisplay ||
+                         envDetection.dockerEnvironment ||
+                         process.env.ELECTRON_DISABLE_SANDBOX === '1';
+
+    if (needsHeadless) {
+      console.log('[Headless-Early] Initializing headless mode EARLY (before app.whenReady)');
+      console.log('[Headless-Early] Environment:', {
+        docker: envDetection.dockerEnvironment,
+        hasDisplay: envDetection.hasDisplay,
+        displayVar: process.env.DISPLAY,
+        ELECTRON_DISABLE_SANDBOX: process.env.ELECTRON_DISABLE_SANDBOX
+      });
+
+      // Step 1: Start Xvfb if needed (this happens in Docker)
+      if (!envDetection.hasDisplay && process.env.DISPLAY) {
+        console.log(`[Headless-Early] Starting Xvfb on ${process.env.DISPLAY}...`);
+        const xvfbResult = headlessManager.startVirtualDisplay(process.env.DISPLAY.slice(1)); // Remove ':'
+        if (xvfbResult.success) {
+          console.log(`[Headless-Early] Xvfb started successfully on ${xvfbResult.display}`);
+        } else {
+          console.warn(`[Headless-Early] Failed to start Xvfb: ${xvfbResult.error}`);
+          // Continue anyway - Xvfb might already be running
+        }
+      }
+
+      // Step 2: Apply critical Electron flags BEFORE app initialization
+      // These MUST be set before Electron tries to initialize the GPU/display
+      app.commandLine.appendSwitch('no-sandbox');
+      app.commandLine.appendSwitch('disable-setuid-sandbox');
+      app.commandLine.appendSwitch('disable-gpu');
+      app.commandLine.appendSwitch('disable-gpu-compositing');
+      app.commandLine.appendSwitch('disable-software-rasterizer');
+      app.commandLine.appendSwitch('disable-dev-shm-usage');
+      app.commandLine.appendSwitch('disable-background-networking');
+      app.commandLine.appendSwitch('disable-extensions');
+
+      console.log('[Headless-Early] Critical Electron flags applied');
+
+      // Step 3: Mark headless manager as initialized
+      headlessManager.enabled = true;
+      headlessManager.initialized = true;
+      console.log('[Headless-Early] Headless mode initialized successfully');
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('[Headless-Early] Error initializing headless mode:', error.message);
+    console.error('[Headless-Early] Stack:', error.stack);
+    // Don't exit - let Electron try to start normally
+    return false;
+  }
+}
+
+// Initialize headless mode EARLY if needed (P1-001 fix)
+// This must happen BEFORE app.whenReady() for Docker environments
+const earlyHeadlessInitialized = initializeHeadlessModeEarly();
+
 app.whenReady().then(async () => {
-  // Configure headless mode now that app is ready
-  isHeadlessMode = configureHeadlessMode();
+  // Configure remaining headless settings (if not already done early)
+  if (!earlyHeadlessInitialized) {
+    isHeadlessMode = configureHeadlessMode();
+  } else {
+    isHeadlessMode = true;
+  }
 
   // Initialize recovery system
   initializeRecoveryPaths();
@@ -2886,4 +2972,67 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
   } else {
     callback(false);
   }
+});
+
+// ==========================================
+// SECURITY FIX #3: Global Error Handlers
+// Prevent unhandled promise rejections and uncaught exceptions from crashing the process
+// ==========================================
+
+/**
+ * Handle unhandled promise rejections
+ * Logs the error and continues operation (non-fatal)
+ */
+process.on('unhandledRejection', (reason, promise) => {
+  const errorMessage = reason?.message || String(reason) || 'Unknown error';
+  const errorStack = reason?.stack || 'No stack trace available';
+  const errorType = reason?.constructor?.name || 'UnhandledRejection';
+
+  console.error('[UnhandledRejection]', {
+    type: errorType,
+    message: errorMessage,
+    stack: errorStack,
+    timestamp: new Date().toISOString()
+  });
+
+  // Log to file for debugging
+  try {
+    const logEntry = `[${new Date().toISOString()}] UnhandledRejection: ${errorType}\n${errorMessage}\n${errorStack}\n---\n`;
+    const logPath = path.join(app.getPath('userData'), 'error-log.txt');
+    fs.appendFileSync(logPath, logEntry, 'utf8');
+  } catch (writeError) {
+    console.error('[UnhandledRejection] Failed to write error log:', writeError.message);
+  }
+
+  // Don't exit process - log and continue
+  // This allows the browser to stay running even if background promises fail
+});
+
+/**
+ * Handle uncaught exceptions
+ * These are fatal and cause process exit
+ */
+process.on('uncaughtException', (error) => {
+  const errorMessage = error?.message || String(error) || 'Unknown error';
+  const errorStack = error?.stack || 'No stack trace available';
+  const errorType = error?.constructor?.name || 'UncaughtException';
+
+  console.error('[UncaughtException]', {
+    type: errorType,
+    message: errorMessage,
+    stack: errorStack,
+    timestamp: new Date().toISOString()
+  });
+
+  // Log to file for debugging
+  try {
+    const logEntry = `[${new Date().toISOString()}] UncaughtException: ${errorType}\n${errorMessage}\n${errorStack}\n---\n`;
+    const logPath = path.join(app.getPath('userData'), 'error-log.txt');
+    fs.appendFileSync(logPath, logEntry, 'utf8');
+  } catch (writeError) {
+    console.error('[UncaughtException] Failed to write error log:', writeError.message);
+  }
+
+  // Exit on uncaught exceptions (fatal)
+  process.exit(1);
 });

@@ -7,9 +7,50 @@
  * Created: May 11, 2026
  */
 
+/**
+ * P3-002: Simple async mutex for race condition prevention
+ */
+class AsyncMutex {
+  constructor() {
+    this.locked = false;
+    this.waitQueue = [];
+  }
+
+  async lock() {
+    if (!this.locked) {
+      this.locked = true;
+      return;
+    }
+
+    // Wait for lock to be released
+    await new Promise(resolve => {
+      this.waitQueue.push(resolve);
+    });
+  }
+
+  unlock() {
+    if (this.waitQueue.length > 0) {
+      const resolve = this.waitQueue.shift();
+      resolve();
+    } else {
+      this.locked = false;
+    }
+  }
+
+  async run(fn) {
+    await this.lock();
+    try {
+      return await fn();
+    } finally {
+      this.unlock();
+    }
+  }
+}
+
 class SessionCoherence {
   constructor() {
     this.sessions = new Map();
+    this.sessionMutexes = new Map(); // P3-002: Per-session locks for atomic updates
     this.coherenceThresholds = {
       temporal: 0.95,      // Fingerprint shouldn't change much in short time
       behavioral: 0.92,    // Behavior patterns should be consistent
@@ -18,6 +59,17 @@ class SessionCoherence {
       timeline: 0.94       // Overall timeline coherence
     };
     this.violationLog = [];
+  }
+
+  /**
+   * P3-002: Get or create mutex for session
+   * @private
+   */
+  _getMutex(sessionId) {
+    if (!this.sessionMutexes.has(sessionId)) {
+      this.sessionMutexes.set(sessionId, new AsyncMutex());
+    }
+    return this.sessionMutexes.get(sessionId);
   }
 
   /**
@@ -83,103 +135,109 @@ class SessionCoherence {
 
   /**
    * Record a new interaction and validate coherence
+   * P3-002: Now uses atomic locking to prevent race conditions
    */
-  recordInteraction(sessionId, interactionData) {
-    const session = this.sessions.get(sessionId);
-    if (!session) {
-      throw new Error(`Session not found: ${sessionId}`);
-    }
+  async recordInteraction(sessionId, interactionData) {
+    // P3-002: Acquire lock to ensure atomic update
+    const mutex = this._getMutex(sessionId);
+    return mutex.run(async () => {
+      const session = this.sessions.get(sessionId);
+      if (!session) {
+        throw new Error(`Session not found: ${sessionId}`);
+      }
 
-    const timestamp = Date.now();
+      const timestamp = Date.now();
 
-    // Create interaction record
-    const interaction = {
-      id: this.generateInteractionId(),
-      timestamp,
-      type: interactionData.type,
-      data: interactionData,
-      coherenceValidation: null,
-      violations: []
-    };
-
-    // Layer 1: Temporal Coherence (fingerprint evolution)
-    if (interactionData.fingerprint) {
-      const temporalResult = this.validateTemporalCoherence(session, interactionData.fingerprint, timestamp);
-      interaction.coherenceValidation = temporalResult;
-      interaction.violations.push(...temporalResult.violations);
-    }
-
-    // Layer 2: Behavioral Coherence
-    if (interactionData.behavior) {
-      const behavioralResult = this.validateBehavioralCoherence(session, interactionData.behavior);
-      interaction.violations.push(...behavioralResult.violations);
-    }
-
-    // Layer 3: Network Coherence
-    if (interactionData.network) {
-      const networkData = { ...interactionData.network, timestamp };
-      const networkResult = this.validateNetworkCoherence(session, networkData);
-      interaction.violations.push(...networkResult.violations);
-    }
-
-    // Layer 4: Device Coherence
-    if (interactionData.device) {
-      const deviceResult = this.validateDeviceCoherence(session, interactionData.device);
-      interaction.violations.push(...deviceResult.violations);
-    }
-
-    // Layer 5: Timeline Coherence
-    const timelineResult = this.validateTimelineCoherence(session, interaction);
-    interaction.violations.push(...timelineResult.violations);
-
-    // Record interaction
-    session.interactions.push(interaction);
-
-    // Track all violations in session
-    session.violations.push(...interaction.violations);
-
-    // Update coherence scores
-    if (interaction.coherenceValidation) {
-      session.coherenceScores.temporal = interaction.coherenceValidation.score;
-    }
-
-    if (interactionData.fingerprint) {
-      session.layers.temporal.history.push({
+      // Create interaction record
+      const interaction = {
+        id: this.generateInteractionId(),
         timestamp,
-        fingerprint: interactionData.fingerprint
-      });
-    }
+        type: interactionData.type,
+        data: interactionData,
+        coherenceValidation: null,
+        violations: []
+      };
 
-    if (interactionData.behavior) {
-      session.layers.behavioral.patterns.push({
+      // Layer 1: Temporal Coherence (fingerprint evolution)
+      if (interactionData.fingerprint) {
+        const temporalResult = this.validateTemporalCoherence(session, interactionData.fingerprint, timestamp);
+        interaction.coherenceValidation = temporalResult;
+        interaction.violations.push(...temporalResult.violations);
+      }
+
+      // Layer 2: Behavioral Coherence
+      if (interactionData.behavior) {
+        const behavioralResult = this.validateBehavioralCoherence(session, interactionData.behavior);
+        interaction.violations.push(...behavioralResult.violations);
+      }
+
+      // Layer 3: Network Coherence
+      if (interactionData.network) {
+        const networkData = { ...interactionData.network, timestamp };
+        const networkResult = this.validateNetworkCoherence(session, networkData);
+        interaction.violations.push(...networkResult.violations);
+      }
+
+      // Layer 4: Device Coherence
+      if (interactionData.device) {
+        const deviceResult = this.validateDeviceCoherence(session, interactionData.device);
+        interaction.violations.push(...deviceResult.violations);
+      }
+
+      // Layer 5: Timeline Coherence
+      const timelineResult = this.validateTimelineCoherence(session, interaction);
+      interaction.violations.push(...timelineResult.violations);
+
+      // P3-002: All updates happen atomically within the lock
+      // Record interaction
+      session.interactions.push(interaction);
+
+      // Track all violations in session
+      session.violations.push(...interaction.violations);
+
+      // Update coherence scores
+      if (interaction.coherenceValidation) {
+        session.coherenceScores.temporal = interaction.coherenceValidation.score;
+      }
+
+      if (interactionData.fingerprint) {
+        session.layers.temporal.history.push({
+          timestamp,
+          fingerprint: interactionData.fingerprint
+        });
+      }
+
+      if (interactionData.behavior) {
+        session.layers.behavioral.patterns.push({
+          timestamp,
+          behavior: interactionData.behavior
+        });
+      }
+
+      if (interactionData.network) {
+        session.layers.network.requests.push({
+          timestamp,
+          ...interactionData.network
+        });
+      }
+
+      session.layers.timeline.events.push({
         timestamp,
-        behavior: interactionData.behavior
+        type: interactionData.type,
+        data: interactionData
       });
-    }
 
-    if (interactionData.network) {
-      session.layers.network.requests.push({
-        timestamp,
-        ...interactionData.network
-      });
-    }
+      // Calculate overall coherence
+      const overallCoherence = this.calculateOverallCoherence(session);
 
-    session.layers.timeline.events.push({
-      timestamp,
-      type: interactionData.type,
-      data: interactionData
+      return {
+        success: true,
+        interactionId: interaction.id,
+        coherence: overallCoherence,
+        violations: interaction.violations.length,
+        requiresRecovery: interaction.violations.length > 0
+      };
     });
-
-    // Calculate overall coherence
-    const overallCoherence = this.calculateOverallCoherence(session);
-
-    return {
-      success: true,
-      interactionId: interaction.id,
-      coherence: overallCoherence,
-      violations: interaction.violations.length,
-      requiresRecovery: interaction.violations.length > 0
-    };
   }
 
   /**

@@ -1,7 +1,7 @@
 # Basset Hound Browser
 
-**Version 12.1.0** - Production Ready  
-A custom Electron-based browser designed for OSINT (Open Source Intelligence) and automation tasks with comprehensive bot detection evasion framework. Part of the Basset Hound OSINT toolkit.
+**Version 12.5.0** - Production Ready ✅  
+A custom Electron-based browser designed for OSINT (Open Source Intelligence) and automation tasks with comprehensive bot detection evasion framework and advanced fingerprinting prevention. Part of the Basset Hound OSINT toolkit.
 
 ---
 

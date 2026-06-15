@@ -8,15 +8,14 @@ const path = require('path');
 // Skip in CI or when SKIP_INTEGRATION_TESTS is set (requires Electron and Playwright)
 const shouldSkip = process.env.CI === 'true' || process.env.SKIP_INTEGRATION_TESTS === 'true';
 
-// Only require spectron and playwright/test when actually running tests
-let Application, electron;
+// Only require playwright/test when actually running tests
+let electron;
 if (!shouldSkip) {
   try {
-    Application = require('spectron').Application;
     const playwright = require('@playwright/test');
     electron = playwright._electron;
   } catch (e) {
-    // Spectron or Playwright not available, will skip tests
+    // Playwright not available, will skip tests
   }
 }
 
@@ -24,7 +23,6 @@ if (!shouldSkip) {
 const APP_PATH = path.join(__dirname, '..', '..');
 
 (shouldSkip ? describe.skip : describe)('Browser Launch Tests', () => {
-  let app;
   let electronApp;
 
   beforeAll(async () => {
@@ -32,59 +30,9 @@ const APP_PATH = path.join(__dirname, '..', '..');
   });
 
   afterEach(async () => {
-    if (app && app.isRunning()) {
-      await app.stop();
-    }
     if (electronApp) {
       await electronApp.close();
     }
-  });
-
-  describe('Spectron Tests', () => {
-    beforeEach(async () => {
-      app = new Application({
-        path: require('electron'),
-        args: [APP_PATH],
-        startTimeout: 20000,
-        waitTimeout: 20000
-      });
-    });
-
-    test('should start the application', async () => {
-      await app.start();
-      expect(app.isRunning()).toBe(true);
-    });
-
-    test('should have a visible browser window', async () => {
-      await app.start();
-      const windowCount = await app.client.getWindowCount();
-      expect(windowCount).toBeGreaterThanOrEqual(1);
-    });
-
-    test('should have correct window title', async () => {
-      await app.start();
-      const title = await app.browserWindow.getTitle();
-      expect(title).toContain('Basset Hound');
-    });
-
-    test('should have correct initial window size', async () => {
-      await app.start();
-      const [width, height] = await app.browserWindow.getSize();
-      expect(width).toBeGreaterThanOrEqual(1024);
-      expect(height).toBeGreaterThanOrEqual(600);
-    });
-
-    test('should not be minimized on start', async () => {
-      await app.start();
-      const isMinimized = await app.browserWindow.isMinimized();
-      expect(isMinimized).toBe(false);
-    });
-
-    test('should be visible on start', async () => {
-      await app.start();
-      const isVisible = await app.browserWindow.isVisible();
-      expect(isVisible).toBe(true);
-    });
   });
 
   describe('Playwright Electron Tests', () => {

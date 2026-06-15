@@ -1,0 +1,409 @@
+================================================================================
+V12.7.0 WEBSOCKET SERVER INTEGRATION ARCHITECTURE DIAGRAM
+================================================================================
+
+CURRENT STATE (Before Integration)
+────────────────────────────────────────────────────────────────────────────
+
+    /websocket/server.js
+    ┌─────────────────────────────────────────────────┐
+    │ constructor() [line 855]                        │
+    │  - Initialize 25+ managers                      │
+    │  - sessionManager, profileManager, etc.         │
+    │  - Call setupCommandHandlers()                  │
+    └─────────────────────────────────────────────────┘
+                           │
+                           ↓
+    ┌─────────────────────────────────────────────────┐
+    │ setupCommandHandlers() [line 2254-10204]        │
+    │  ├─ Navigate commands (inline)                  │
+    │  ├─ Content extraction (inline)                 │
+    │  ├─ Screenshot commands (inline)                │
+    │  ├─ ... 120+ more commands (inline) ...         │
+    │  ├─ registerRecordingCommands()                 │
+    │  │  └─ 5 recording commands                     │
+    │  └─ registerVideoRecordingCommands()            │
+    │     └─ 4 video recording commands               │
+    │                                                 │
+    │  TOTAL: 164 commands, 7950 lines inline         │
+    └─────────────────────────────────────────────────┘
+                           │
+                           ↓
+    ┌─────────────────────────────────────────────────┐
+    │ commandHandlers = {                             │
+    │   navigate: async (params) => { ... },          │
+    │   click: async (params) => { ... },             │
+    │   screenshot: async (params) => { ... },        │
+    │   ...                                           │
+    │   start_recording: async (params) => { ... },   │
+    │   stop_recording: async (params) => { ... },    │
+    │   ...                                           │
+    │ }                                               │
+    │                                                 │
+    │ Total: 164 commands registered                  │
+    └─────────────────────────────────────────────────┘
+
+
+NEW STATE (After v12.7.0 Integration)
+────────────────────────────────────────────────────────────────────────────
+
+    /websocket/server.js
+    ┌────────────────────────────────────────────────────────┐
+    │ constructor() [line 855]                               │
+    │  ├─ Initialize 25+ managers (existing)                 │
+    │  ├─ NEW @ line ~950:                                   │
+    │  │   this.evasionCoordinator = options.evasionCoord... │
+    │  │   this.timingCoordinator = options.timingCoord...   │
+    │  └─ NEW @ line ~960:                                   │
+    │      this.metricsCollector = options.metricsCollector  │
+    │      this.metricsAggregator = options.metricsAggregator│
+    │      this.alertManager = options.alertManager...       │
+    │      this.metricsStore = options.metricsStore...       │
+    └────────────────────────────────────────────────────────┘
+                           │
+                           ↓
+    ┌────────────────────────────────────────────────────────┐
+    │ setupCommandHandlers() [line 2254-10220]               │
+    │  ├─ Existing inline commands [2254-9400]               │
+    │  │  ├─ Navigate, screenshot, extraction                │
+    │  │  ├─ Proxy, headers, cookies, etc.                   │
+    │  │  └─ ... 150+ commands ...                           │
+    │  │                                                     │
+    │  ├─ registerRecordingCommands() [9196]                 │
+    │  │  └─ 5 recording commands                            │
+    │  │                                                     │
+    │  ├─ registerVideoRecordingCommands() [9202]            │
+    │  │  └─ 4 video recording commands                      │
+    │  │                                                     │
+    │  ├─ NEW registerCredentialCommands() [10205]           │
+    │  │  └─ 5 credential/MFA commands                       │
+    │  │     - generate_totp                                 │
+    │  │     - generate_hotp                                 │
+    │  │     - parse_mfa_qr                                  │
+    │  │     - fill_mfa_code                                 │
+    │  │     - get_mfa_status                                │
+    │  │                                                     │
+    │  ├─ NEW registerSessionPersistenceCommands() [10210]   │
+    │  │  └─ 6 session persistence commands                  │
+    │  │     - save_session_state                            │
+    │  │     - restore_session_state                         │
+    │  │     - list_session_profiles                         │
+    │  │     - delete_session_profile                        │
+    │  │     - verify_session_state                          │
+    │  │     - get_session_metadata                          │
+    │  │                                                     │
+    │  ├─ NEW registerExtendedEvasionCommands() [10215]      │
+    │  │  └─ 6 extended evasion commands                     │
+    │  │     - enable_tls_evasion                            │
+    │  │     - enable_http2_evasion                          │
+    │  │     - enable_timing_evasion                         │
+    │  │     - set_evasion_profile                           │
+    │  │     - get_evasion_status                            │
+    │  │     - test_evasion_effectiveness                    │
+    │  │                                                     │
+    │  └─ NEW registerMonitoringMetricsCommands() [10220]    │
+    │     └─ 8+ monitoring & metrics commands               │
+    │        - get_metrics                                   │
+    │        - get_performance_stats                         │
+    │        - get_session_stats                             │
+    │        - get_resource_usage                            │
+    │        - get_performance_dashboard                     │
+    │        - get_metric_history                            │
+    │        - stream_metrics                                │
+    │        - get_alerts                                    │
+    │        - ... (additional commands)                     │
+    └────────────────────────────────────────────────────────┘
+                           │
+                           ↓
+    ┌────────────────────────────────────────────────────────┐
+    │ commandHandlers = {                                    │
+    │   navigate: async (params) => { ... },                 │
+    │   click: async (params) => { ... },                    │
+    │   screenshot: async (params) => { ... },               │
+    │   ...                                                  │
+    │   // Existing 164 commands                             │
+    │   ...                                                  │
+    │                                                        │
+    │   // NEW Feature 1: Credentials (5 commands)           │
+    │   generate_totp: async (params) => { ... },            │
+    │   generate_hotp: async (params) => { ... },            │
+    │   parse_mfa_qr: async (params) => { ... },             │
+    │   fill_mfa_code: async (params) => { ... },            │
+    │   get_mfa_status: async (params) => { ... },           │
+    │                                                        │
+    │   // NEW Feature 2: Session Persistence (6 commands)   │
+    │   save_session_state: async (params) => { ... },       │
+    │   restore_session_state: async (params) => { ... },    │
+    │   list_session_profiles: async (params) => { ... },    │
+    │   delete_session_profile: async (params) => { ... },   │
+    │   verify_session_state: async (params) => { ... },     │
+    │   get_session_metadata: async (params) => { ... },     │
+    │                                                        │
+    │   // NEW Feature 3: Extended Evasion (6 commands)      │
+    │   enable_tls_evasion: async (params) => { ... },       │
+    │   enable_http2_evasion: async (params) => { ... },     │
+    │   enable_timing_evasion: async (params) => { ... },    │
+    │   set_evasion_profile: async (params) => { ... },      │
+    │   get_evasion_status: async (params) => { ... },       │
+    │   test_evasion_effectiveness: async (params) => { ... },│
+    │                                                        │
+    │   // NEW Feature 4: Monitoring & Metrics (8+ commands) │
+    │   get_metrics: async (params) => { ... },              │
+    │   get_performance_stats: async (params) => { ... },    │
+    │   get_session_stats: async (params) => { ... },        │
+    │   get_resource_usage: async (params) => { ... },       │
+    │   get_performance_dashboard: async (params) => { ... },│
+    │   get_metric_history: async (params) => { ... },       │
+    │   stream_metrics: async (params) => { ... },           │
+    │   get_alerts: async (params) => { ... },               │
+    │   ...                                                  │
+    │ }                                                      │
+    │                                                        │
+    │ TOTAL: 189+ commands registered (164 existing + 25 new)│
+    └────────────────────────────────────────────────────────┘
+
+
+MODULAR FILE STRUCTURE
+────────────────────────────────────────────────────────────────────────────
+
+/websocket/server.js (MODIFIED - 50 lines added/changed)
+├─ Constructor (line ~950): Add 2 manager references for evasion
+├─ Constructor (line ~960): Add 4 manager references for monitoring (optional)
+└─ setupCommandHandlers() (line ~10205-10220): Add 4 registration calls
+
+
+NEW FILES (4 files, ~1,240 lines)
+├─ /websocket/commands/credentials-commands.js (280 lines)
+│  └─ registerCredentialCommands(server, mainWindow)
+│     ├─ generate_totp command (45 lines)
+│     ├─ generate_hotp command (45 lines)
+│     ├─ parse_mfa_qr command (50 lines)
+│     ├─ fill_mfa_code command (40 lines)
+│     └─ get_mfa_status command (35 lines)
+│
+├─ /websocket/commands/session-persistence-v4-commands.js (360 lines)
+│  └─ registerSessionPersistenceCommands(server, mainWindow)
+│     ├─ save_session_state command (50 lines)
+│     ├─ restore_session_state command (55 lines)
+│     ├─ list_session_profiles command (30 lines)
+│     ├─ delete_session_profile command (25 lines)
+│     ├─ verify_session_state command (40 lines)
+│     └─ get_session_metadata command (25 lines)
+│
+├─ /websocket/commands/extended-evasion-commands.js (420 lines)
+│  └─ registerExtendedEvasionCommands(server, mainWindow)
+│     ├─ enable_tls_evasion command (60 lines)
+│     ├─ enable_http2_evasion command (55 lines)
+│     ├─ enable_timing_evasion command (50 lines)
+│     ├─ set_evasion_profile command (45 lines)
+│     ├─ get_evasion_status command (35 lines)
+│     └─ test_evasion_effectiveness command (60 lines)
+│
+└─ /websocket/commands/monitoring-metrics-commands.js (180 lines)
+   └─ registerMonitoringMetricsCommands(server, mainWindow)
+      ├─ Initialize MetricsCollector (if needed)
+      ├─ Initialize MetricsAggregator (if needed)
+      ├─ Initialize AlertManager (if needed)
+      ├─ Initialize MetricsStore (if needed)
+      └─ Call registerMonitoringHandlers() from src/monitoring/websocket-handlers.js
+         └─ Registers 8+ monitoring commands
+
+
+DEPENDENCY GRAPH
+────────────────────────────────────────────────────────────────────────────
+
+FEATURE 1: Credentials Commands
+    ┌─────────────────────────────────────────┐
+    │ credentials-commands.js                 │
+    ├─────────────────────────────────────────┤
+    │ Dependencies:                           │
+    │  ✅ src/credentials/totp-generator.js   │
+    │  ✅ src/credentials/hotp-generator.js   │
+    │  ✅ this.mainWindow                     │
+    │  ✅ this.logger                         │
+    │  ⚠️ QR parser (minimal impl)            │
+    │                                         │
+    │ No dependencies on other Features       │
+    └─────────────────────────────────────────┘
+
+FEATURE 2: Session Persistence Commands
+    ┌─────────────────────────────────────────┐
+    │ session-persistence-v4-commands.js      │
+    ├─────────────────────────────────────────┤
+    │ Dependencies:                           │
+    │  ✅ this.sessionManager (line 905)      │
+    │  ✅ this.profileManager (line 916)      │
+    │  ✅ this.stateManager (line 966)        │
+    │  ✅ this.mainWindow                     │
+    │  ✅ this.logger                         │
+    │                                         │
+    │ No dependencies on other Features       │
+    └─────────────────────────────────────────┘
+
+FEATURE 3: Extended Evasion Commands
+    ┌─────────────────────────────────────────┐
+    │ extended-evasion-commands.js            │
+    ├─────────────────────────────────────────┤
+    │ Dependencies:                           │
+    │  ✅ this.proxyManager (global)          │
+    │  ✅ this.technologyManager              │
+    │  ✅ this.requestInterceptor (global)    │
+    │  ❌ this.evasionCoordinator (NEW @950)  │
+    │  ❌ this.timingCoordinator (NEW @950)   │
+    │  ✅ this.mainWindow                     │
+    │  ✅ this.logger                         │
+    │                                         │
+    │ No dependencies on other Features       │
+    │ REQUIRES: Constructor init line ~950    │
+    └─────────────────────────────────────────┘
+
+FEATURE 4: Monitoring & Metrics Commands
+    ┌─────────────────────────────────────────┐
+    │ monitoring-metrics-commands.js          │
+    ├─────────────────────────────────────────┤
+    │ Dependencies:                           │
+    │  ✅ this.commandDispatcher (line 1001)  │
+    │  ❌ this.metricsCollector (NEW @960)    │
+    │  ❌ this.metricsAggregator (NEW @960)   │
+    │  ❌ this.alertManager (NEW @960)        │
+    │  ❌ this.metricsStore (NEW @960)        │
+    │  ✅ this.mainWindow                     │
+    │  ✅ src/monitoring/websocket-handlers.js│
+    │  ✅ src/monitoring/metrics-collector.js │
+    │  ✅ src/monitoring/metrics-aggregator.js│
+    │  ✅ src/monitoring/alert-manager.js     │
+    │  ✅ src/monitoring/metrics-store.js     │
+    │                                         │
+    │ No dependencies on other Features       │
+    │ REQUIRES: Constructor init line ~960    │
+    │           OR lazy initialization        │
+    └─────────────────────────────────────────┘
+
+
+INTEGRATION FLOW
+────────────────────────────────────────────────────────────────────────────
+
+SERVER STARTUP
+    │
+    ├─→ new WebSocketServer(port, mainWindow, options)
+    │   │
+    │   ├─→ constructor()
+    │   │   ├─ Initialize 25+ existing managers
+    │   │   ├─ NEW @ line ~950: evasionCoordinator, timingCoordinator
+    │   │   ├─ NEW @ line ~960: metricsCollector, metricsAggregator,
+    │   │   │                     alertManager, metricsStore (optional)
+    │   │   └─ setupCommandHandlers()
+    │   │       │
+    │   │       ├─ Register 150+ inline commands
+    │   │       ├─ registerRecordingCommands() (9 commands total)
+    │   │       ├─ registerVideoRecordingCommands()
+    │   │       ├─ registerCredentialCommands() [NEW]
+    │   │       │  └─ 5 commands: totp, hotp, mfa_qr, mfa_code, mfa_status
+    │   │       ├─ registerSessionPersistenceCommands() [NEW]
+    │   │       │  └─ 6 commands: save, restore, list, delete, verify, metadata
+    │   │       ├─ registerExtendedEvasionCommands() [NEW]
+    │   │       │  └─ 6 commands: tls, http2, timing, profile, status, test
+    │   │       └─ registerMonitoringMetricsCommands() [NEW]
+    │   │          └─ 8+ commands: metrics, stats, dashboard, history, stream, alerts
+    │   │
+    │   ├─ Initialize commandDispatcher
+    │   │  └─ Register all 189+ commands from commandHandlers
+    │   │
+    │   └─ Create WebSocket server @ port 8765
+    │
+    └─→ Server running with 189+ commands available
+
+
+EXECUTION TIMELINE
+────────────────────────────────────────────────────────────────────────────
+
+DAY 1 - SETUP (1 hour)
+  ├─ Modify constructor (~5 min)
+  │  ├─ Add 2 evasion manager references @ line ~950
+  │  └─ Add 4 monitoring manager references @ line ~960
+  │
+  └─ Modify setupCommandHandlers() (~5 min)
+     └─ Add 4 registration calls @ lines 10205-10220
+
+
+DAY 1-2 - FILE CREATION (2-3 hours)
+  ├─ Create credentials-commands.js (280 lines, 45 min)
+  ├─ Create session-persistence-v4-commands.js (360 lines, 60 min)
+  ├─ Create extended-evasion-commands.js (420 lines, 60 min)
+  └─ Create monitoring-metrics-commands.js (180 lines, 30 min)
+
+
+DAY 2-3 - TESTING (2-4 hours, parallelizable)
+  ├─ Unit tests (220+ tests, 2-4 hours)
+  │  ├─ credentials-commands.test.js (50 tests)
+  │  ├─ session-persistence-v4.test.js (50 tests)
+  │  ├─ extended-evasion-commands.test.js (80 tests)
+  │  └─ monitoring-metrics-commands.test.js (40 tests)
+  │
+  ├─ Integration tests (1 hour)
+  │  └─ Cross-feature interaction, full command set
+  │
+  └─ Regression tests (30 min)
+     └─ Verify all 164 existing commands still work
+
+
+DAY 3 - VERIFICATION (30 min)
+  ├─ WebSocket server startup test
+  ├─ Command availability verification
+  ├─ Performance baseline check
+  └─ Release readiness verification
+
+
+TOTAL EFFORT: ~6-10 hours autonomous development
+
+
+RISK & MITIGATION
+────────────────────────────────────────────────────────────────────────────
+
+RISK 1: Manager not initialized
+  MITIGATION: All managers optional (null checks in commands)
+              If manager missing, command returns error with helpful message
+
+RISK 2: Command name conflict
+  MITIGATION: Verified all 25 names unique against 164 existing commands
+              Zero conflicts detected
+
+RISK 3: Port conflict
+  MITIGATION: All features use existing port 8765
+              No new ports required
+
+RISK 4: Circular dependencies
+  MITIGATION: Dependency graph is linear, no circular deps detected
+              Features can be initialized independently if needed
+
+RISK 5: Performance degradation
+  MITIGATION: Modular approach keeps startup fast
+              CommandHandlers map already supports 164 entries
+              25 more entries negligible impact
+              Estimated: <1% performance impact
+
+RISK 6: WebSocket timeout on large operations
+  MITIGATION: Each command has timeout handling
+              Existing timeout infrastructure supports all new commands
+              Testing will validate timing
+
+
+SUCCESS CRITERIA
+────────────────────────────────────────────────────────────────────────────
+
+✅ All 4 files created without syntax errors
+✅ Constructor modifications applied successfully
+✅ setupCommandHandlers() calls all 4 registration functions
+✅ WebSocket server starts without errors
+✅ All 189+ commands registered (164 existing + 25 new)
+✅ All 25 new commands callable and return responses
+✅ Zero command name conflicts detected
+✅ Zero port conflicts detected
+✅ All 164 existing commands still functional (regression test)
+✅ No memory leaks or performance degradation
+✅ 220+ new tests passing (100% success rate)
+✅ Complete documentation provided
+
+================================================================================
+END OF DIAGRAM
+================================================================================

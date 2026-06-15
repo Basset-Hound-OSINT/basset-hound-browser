@@ -14,6 +14,9 @@
  * - Configuration updates
  */
 
+// Set timeout for integration tests with async operations
+jest.setTimeout(30000);
+
 const EventEmitter = require('events');
 
 // Mock BrowserView - must be defined before jest.mock
@@ -245,58 +248,52 @@ describe('ResourceMonitor', () => {
   });
 
   describe('Resource Checking', () => {
-    test('should perform resource checks', (done) => {
+    test('should perform resource checks', async () => {
       monitor = new ResourceMonitor({ checkInterval: 50 });
-      setTimeout(() => {
-        const stats = monitor.getStats();
-        expect(stats.checksPerformed).toBeGreaterThan(0);
-        expect(stats.currentMemoryMB).toBeGreaterThan(0);
-        done();
-      }, 150);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const stats = monitor.getStats();
+      expect(stats.checksPerformed).toBeGreaterThan(0);
+      expect(stats.currentMemoryMB).toBeGreaterThan(0);
     });
 
-    test('should track peak memory usage', (done) => {
+    test('should track peak memory usage', async () => {
       monitor = new ResourceMonitor({ checkInterval: 50 });
-      setTimeout(() => {
-        const stats = monitor.getStats();
-        expect(stats.peakMemoryMB).toBeGreaterThanOrEqual(stats.currentMemoryMB);
-        done();
-      }, 150);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const stats = monitor.getStats();
+      expect(stats.peakMemoryMB).toBeGreaterThanOrEqual(stats.currentMemoryMB);
     });
 
-    test('should track peak CPU usage', (done) => {
+    test('should track peak CPU usage', async () => {
       monitor = new ResourceMonitor({ checkInterval: 50 });
-      setTimeout(() => {
-        const stats = monitor.getStats();
-        expect(stats.peakCPUPercent).toBeGreaterThanOrEqual(stats.currentCPUPercent);
-        done();
-      }, 150);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const stats = monitor.getStats();
+      expect(stats.peakCPUPercent).toBeGreaterThanOrEqual(stats.currentCPUPercent);
     });
 
-    test('should emit threshold-exceeded event when memory limit exceeded', (done) => {
+    test('should emit threshold-exceeded event when memory limit exceeded', async () => {
       monitor = new ResourceMonitor({
         maxMemoryMB: 1, // Very low to trigger
         checkInterval: 50
       });
 
-      monitor.on('threshold-exceeded', (info) => {
-        expect(info.memory).toBe(true);
-        expect(info.stats).toBeDefined();
-        done();
+      await new Promise((resolve) => {
+        monitor.on('threshold-exceeded', (info) => {
+          expect(info.memory).toBe(true);
+          expect(info.stats).toBeDefined();
+          resolve();
+        });
       });
     });
 
-    test('should increment threshold exceeded counter', (done) => {
+    test('should increment threshold exceeded counter', async () => {
       monitor = new ResourceMonitor({
         maxMemoryMB: 1,
         checkInterval: 50
       });
 
-      setTimeout(() => {
-        const stats = monitor.getStats();
-        expect(stats.thresholdExceeded).toBeGreaterThan(0);
-        done();
-      }, 150);
+      await new Promise(resolve => setTimeout(resolve, 150));
+      const stats = monitor.getStats();
+      expect(stats.thresholdExceeded).toBeGreaterThan(0);
     });
   });
 
@@ -489,13 +486,15 @@ describe('MultiPageManager', () => {
       expect(manager.activePageId).toBeNull();
     });
 
-    test('should emit page-destroyed event', async (done) => {
+    test('should emit page-destroyed event', async () => {
       const pageId = await manager.createPage();
-      manager.on('page-destroyed', (event) => {
-        expect(event.pageId).toBe(pageId);
-        done();
+      await new Promise((resolve) => {
+        manager.on('page-destroyed', (event) => {
+          expect(event.pageId).toBe(pageId);
+          resolve();
+        });
+        manager.destroyPage(pageId);
       });
-      await manager.destroyPage(pageId);
     });
 
     test('should increment statistics', async () => {
@@ -534,13 +533,15 @@ describe('MultiPageManager', () => {
       expect(manager.activePageId).toBe(pageId2);
     });
 
-    test('should emit active-page-changed event', async (done) => {
+    test('should emit active-page-changed event', async () => {
       const pageId = await manager.createPage();
-      manager.on('active-page-changed', (event) => {
-        expect(event.pageId).toBe(pageId);
-        done();
+      await new Promise((resolve) => {
+        manager.on('active-page-changed', (event) => {
+          expect(event.pageId).toBe(pageId);
+          resolve();
+        });
+        manager.setActivePage(pageId);
       });
-      manager.setActivePage(pageId);
     });
 
     test('should add view to window', async () => {
@@ -675,14 +676,16 @@ describe('MultiPageManager', () => {
         .rejects.toThrow('Page not found');
     });
 
-    test('should emit page-loaded event', async (done) => {
+    test('should emit page-loaded event', async () => {
       const pageId = await manager.createPage();
-      manager.on('page-loaded', (event) => {
-        expect(event.pageId).toBe(pageId);
-        expect(event.url).toBe('https://example.com');
-        done();
+      await new Promise((resolve) => {
+        manager.on('page-loaded', (event) => {
+          expect(event.pageId).toBe(pageId);
+          expect(event.url).toBe('https://example.com');
+          resolve();
+        });
+        manager.navigatePage(pageId, 'https://example.com');
       });
-      await manager.navigatePage(pageId, 'https://example.com');
     });
   });
 
@@ -755,18 +758,20 @@ describe('MultiPageManager', () => {
       expect(manager.navigationQueue.length).toBe(0);
     });
 
-    test('should emit navigation-queued event', async (done) => {
+    test('should emit navigation-queued event', async () => {
       const pageId1 = await manager.createPage();
       const pageId2 = await manager.createPage();
 
-      manager.on('navigation-queued', (event) => {
-        expect(event.pageId).toBe(pageId2);
-        expect(event.queueLength).toBeGreaterThan(0);
-        done();
-      });
+      await new Promise((resolve) => {
+        manager.on('navigation-queued', (event) => {
+          expect(event.pageId).toBe(pageId2);
+          expect(event.queueLength).toBeGreaterThan(0);
+          resolve();
+        });
 
-      manager.navigatePage(pageId1, 'https://example1.com');
-      manager.navigatePage(pageId2, 'https://example2.com');
+        manager.navigatePage(pageId1, 'https://example1.com');
+        manager.navigatePage(pageId2, 'https://example2.com');
+      });
     });
   });
 
@@ -831,18 +836,21 @@ describe('MultiPageManager', () => {
       expect(timeTaken).toBeLessThan(1000); // Should be concurrent
     });
 
-    test('should emit rate-limit-delay event', async (done) => {
+    test('should emit rate-limit-delay event', async () => {
       const pageId1 = await manager.createPage();
       const pageId2 = await manager.createPage();
 
-      manager.on('rate-limit-delay', (event) => {
-        expect(event.domain).toBe('example.com');
-        expect(event.delay).toBeGreaterThan(0);
-        done();
-      });
+      await new Promise((resolve) => {
+        manager.on('rate-limit-delay', (event) => {
+          expect(event.domain).toBe('example.com');
+          expect(event.delay).toBeGreaterThan(0);
+          resolve();
+        });
 
-      await manager.navigatePage(pageId1, 'https://example.com/page1');
-      await manager.navigatePage(pageId2, 'https://example.com/page2');
+        manager.navigatePage(pageId1, 'https://example.com/page1').then(() => {
+          manager.navigatePage(pageId2, 'https://example.com/page2');
+        });
+      });
     });
 
     test('should increment rate limit delay statistics', async () => {
@@ -875,21 +883,23 @@ describe('MultiPageManager', () => {
         .rejects.toThrow('Navigation failed');
     });
 
-    test('should emit page-load-failed event', async (done) => {
+    test('should emit page-load-failed event', async () => {
       const pageId = await manager.createPage();
       const page = manager.pages.get(pageId);
 
-      manager.on('page-load-failed', (event) => {
-        expect(event.pageId).toBe(pageId);
-        done();
+      await new Promise((resolve) => {
+        manager.on('page-load-failed', (event) => {
+          expect(event.pageId).toBe(pageId);
+          resolve();
+        });
+
+        // Trigger fail event
+        setTimeout(() => {
+          page.view.webContents.emit('did-fail-load', {}, -1, 'Error', 'https://example.com');
+        }, 10);
+
+        manager.navigatePage(pageId, 'https://example.com').catch(() => {});
       });
-
-      // Trigger fail event
-      setTimeout(() => {
-        page.view.webContents.emit('did-fail-load', {}, -1, 'Error', 'https://example.com');
-      }, 10);
-
-      await manager.navigatePage(pageId, 'https://example.com').catch(() => {});
     });
 
     test('should increment navigation failed statistics', async () => {
@@ -1107,12 +1117,10 @@ describe('MultiPageManager', () => {
       });
     });
 
-    test('should track resource threshold hits', (done) => {
-      setTimeout(() => {
-        const stats = manager.getStatistics();
-        expect(stats.resourceThresholdHits).toBeGreaterThan(0);
-        done();
-      }, 100);
+    test('should track resource threshold hits', async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const stats = manager.getStatistics();
+      expect(stats.resourceThresholdHits).toBeGreaterThan(0);
     });
   });
 
@@ -1132,14 +1140,16 @@ describe('MultiPageManager', () => {
       expect(manager.config.maxConcurrentNavigations).toBe(10);
     });
 
-    test('should emit config-updated event', (done) => {
-      manager.on('config-updated', (event) => {
-        expect(event.config).toBeDefined();
-        expect(event.config.maxConcurrentPages).toBe(15);
-        done();
-      });
+    test('should emit config-updated event', async () => {
+      await new Promise((resolve) => {
+        manager.on('config-updated', (event) => {
+          expect(event.config).toBeDefined();
+          expect(event.config.maxConcurrentPages).toBe(15);
+          resolve();
+        });
 
-      manager.updateConfig({ maxConcurrentPages: 15 });
+        manager.updateConfig({ maxConcurrentPages: 15 });
+      });
     });
   });
 
@@ -1198,11 +1208,13 @@ describe('MultiPageManager', () => {
       expect(manager.resourceMonitor.checkTimer).toBeNull();
     });
 
-    test('should emit shutdown event', (done) => {
-      manager.on('shutdown', () => {
-        done();
+    test('should emit shutdown event', async () => {
+      await new Promise((resolve) => {
+        manager.on('shutdown', () => {
+          resolve();
+        });
+        manager.shutdown();
       });
-      manager.shutdown();
     });
 
     test('should clear rate limiters', async () => {

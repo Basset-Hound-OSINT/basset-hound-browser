@@ -1,6 +1,6 @@
 # Documentation Archives - Index
 
-**Last Updated:** May 31, 2026  
+**Last Updated:** June 15, 2026  
 **Purpose:** Navigate all archived documentation from development sessions  
 **Navigation:** Lean approach - main docs reference session records for detailed context
 
@@ -12,7 +12,8 @@
 **See [session_records/INDEX.md](session_records/INDEX.md) for full chronological list and quick navigation**
 
 Recent Key Sessions:
-- **May 31:** [Waves 1-9 Complete Orchestration](session_records/2026-05-31_WAVES-1-9-COMPLETE-ORCHESTRATION.md) - v12.1.0 development, 35,000+ lines, 9 waves
+- **June 15:** [V12.7.0 Phase 1 Complete + Phase 2 & v12.8.0 Planning](session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md) - 288+ tests (Phase 1), 85+ Phase 2 items, v12.8.0 full planning (7,245 LOC), deployment automation (5 scripts)
+- **June 13:** [v12.0.0 Production Deployment Complete](session_records/2026-06-13_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md) - 92.3% test pass rate, 2.64 GB Docker image, production live
 - **May 11:** [v12.0.0 Production Deployment Complete](session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md) - Full rollout with all phases
 - **May 8:** [v11.3.0 Final Validation](session_records/2026-05-08_V11.3.0-FINAL-VALIDATION-COMPLETE.md) - 92.9% pass rate, production ready
 
