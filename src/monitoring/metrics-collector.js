@@ -18,6 +18,14 @@ class MetricsCollector extends EventEmitter {
     this.maxSamples = options.maxSamples || 10000; // Keep last 10k latency samples
     this.maxErrorHistory = options.maxErrorHistory || 100; // Keep last 100 errors
 
+    // Batch processing configuration
+    this.batchSize = options.batchSize || 100; // Flush after 100 metrics
+    this.batchInterval = options.batchInterval || 100; // Or after 100ms
+    this.enableBatching = options.enableBatching !== false; // Default enabled
+
+    // Initialize batch queue
+    this._initializeBatching();
+
     // Initialize metrics storage
     this._resetMetrics();
 
@@ -41,6 +49,21 @@ class MetricsCollector extends EventEmitter {
       () => this._collectResources(),
       5000 // Every 5 seconds
     );
+  }
+
+  /**
+   * Initialize batch processing queue
+   * @private
+   */
+  _initializeBatching() {
+    this.metricsBatch = [];
+    this.batchTimer = null;
+    this.batchStats = {
+      totalFlushed: 0,
+      flushCount: 0,
+      lastFlushTime: Date.now(),
+      avgBatchSize: 0
+    };
   }
 
   /**
@@ -163,7 +186,7 @@ class MetricsCollector extends EventEmitter {
   }
 
   /**
-   * Record the completion of a command execution
+   * Record the completion of a command execution (with optional batching)
    * @param {string} commandId - The command ID returned from recordCommandStart
    * @param {string} commandName - The name of the command
    * @param {number} duration - Duration in milliseconds
@@ -171,6 +194,28 @@ class MetricsCollector extends EventEmitter {
    * @param {number} bytesTransferred - Bytes transferred in response (optional)
    */
   recordCommandEnd(commandId, commandName, duration, success, bytesTransferred = 0) {
+    if (this.enableBatching) {
+      // Queue metric for batch processing
+      this._addToBatch({
+        type: 'commandEnd',
+        commandId,
+        commandName,
+        duration,
+        success,
+        bytesTransferred,
+        timestamp: Date.now()
+      });
+    } else {
+      // Process immediately (legacy behavior)
+      this._processCommandEnd(commandId, commandName, duration, success, bytesTransferred);
+    }
+  }
+
+  /**
+   * Process a single command end metric
+   * @private
+   */
+  _processCommandEnd(commandId, commandName, duration, success, bytesTransferred = 0) {
     // Update global command metrics
     this.metrics.commands.total++;
     this.metrics.commands.activeCount = Math.max(0, this.metrics.commands.activeCount - 1);
@@ -210,17 +255,6 @@ class MetricsCollector extends EventEmitter {
     this.windowByteCount += bytesTransferred;
     this.metrics.throughput.totalMessages++;
     this.metrics.throughput.totalBytes += bytesTransferred;
-
-    // Update latency statistics
-    this._updateLatencyStats();
-
-    // Emit event for streaming subscribers
-    this.emit('command', {
-      commandName,
-      duration,
-      success,
-      timestamp: Date.now()
-    });
 
     // Cleanup state
     if (this._commandStates) {
@@ -296,13 +330,34 @@ class MetricsCollector extends EventEmitter {
   }
 
   /**
-   * Record an error
+   * Record an error (with optional batching)
    * @param {string} type - Error type
    * @param {string} message - Error message
    * @param {string} command - Command that triggered the error (optional)
    * @param {string} stack - Error stack trace (optional)
    */
   recordError(type, message, command = null, stack = null) {
+    if (this.enableBatching) {
+      // Queue error for batch processing
+      this._addToBatch({
+        type: 'error',
+        errorType: type,
+        message,
+        command,
+        stack,
+        timestamp: Date.now()
+      });
+    } else {
+      // Process immediately (legacy behavior)
+      this._processError(type, message, command, stack);
+    }
+  }
+
+  /**
+   * Process a single error metric
+   * @private
+   */
+  _processError(type, message, command = null, stack = null) {
     this.metrics.errors.total++;
 
     // Track by type
@@ -339,14 +394,6 @@ class MetricsCollector extends EventEmitter {
 
     // Calculate error rate (errors per second)
     this.metrics.errors.rate = this.errorTimestamps.length / (this.errorRateWindow / 1000);
-
-    // Emit event for streaming
-    this.emit('error', {
-      type,
-      message,
-      command,
-      timestamp: Date.now()
-    });
   }
 
   /**
@@ -514,9 +561,118 @@ class MetricsCollector extends EventEmitter {
   }
 
   /**
+   * Add metric to batch queue
+   * @private
+   */
+  _addToBatch(metric) {
+    this.metricsBatch.push(metric);
+
+    // Force flush if batch is full
+    if (this.metricsBatch.length >= this.batchSize) {
+      this._flushBatch();
+    } else if (!this.batchTimer) {
+      // Schedule flush if not already scheduled
+      this.batchTimer = setTimeout(() => this._flushBatch(), this.batchInterval);
+    }
+  }
+
+  /**
+   * Process entire batch of metrics at once
+   * @private
+   */
+  _flushBatch() {
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer);
+      this.batchTimer = null;
+    }
+
+    if (this.metricsBatch.length === 0) {
+      return;
+    }
+
+    const batch = this.metricsBatch;
+    this.metricsBatch = [];
+
+    // Update statistics
+    this.batchStats.totalFlushed += batch.length;
+    this.batchStats.flushCount++;
+    this.batchStats.lastFlushTime = Date.now();
+    this.batchStats.avgBatchSize = Math.round(
+      this.batchStats.totalFlushed / this.batchStats.flushCount
+    );
+
+    // Process all metrics in batch efficiently
+    for (const metric of batch) {
+      if (metric.type === 'commandEnd') {
+        this._processCommandEnd(
+          metric.commandId,
+          metric.commandName,
+          metric.duration,
+          metric.success,
+          metric.bytesTransferred
+        );
+      } else if (metric.type === 'error') {
+        this._processError(
+          metric.errorType,
+          metric.message,
+          metric.command,
+          metric.stack
+        );
+      }
+    }
+
+    // Emit batch-level event for subscribers
+    this.emit('batch', {
+      size: batch.length,
+      timestamp: Date.now()
+    });
+
+    // Trigger latency update once per batch instead of per-metric
+    if (batch.some(m => m.type === 'commandEnd')) {
+      this._updateLatencyStats();
+    }
+  }
+
+  /**
+   * Get batch statistics
+   * @returns {Object} Batch processing statistics
+   */
+  getBatchStats() {
+    return {
+      ...this.batchStats,
+      currentBatchSize: this.metricsBatch.length,
+      batchingEnabled: this.enableBatching
+    };
+  }
+
+  /**
+   * Toggle batching on/off
+   * @param {boolean} enabled - Enable or disable batching
+   */
+  setBatchingEnabled(enabled) {
+    this.enableBatching = enabled;
+    if (enabled && this.metricsBatch.length === 0) {
+      // Clear any pending timer when disabling
+      if (this.batchTimer) {
+        clearTimeout(this.batchTimer);
+        this.batchTimer = null;
+      }
+    }
+  }
+
+  /**
    * Cleanup and shutdown
    */
   shutdown() {
+    // Flush any pending batch before shutdown
+    if (this.metricsBatch.length > 0) {
+      this._flushBatch();
+    }
+
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer);
+    }
+
     if (this.aggregationInterval) {
       clearInterval(this.aggregationInterval);
     }

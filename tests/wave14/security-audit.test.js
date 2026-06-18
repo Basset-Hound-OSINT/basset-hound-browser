@@ -13,7 +13,9 @@
 const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 const crypto = require('crypto');
+const rimraf = require('rimraf');
 
 // Import Wave 14 modules
 const TechnologyDetectionEngine = require('../../src/detection/detector');
@@ -426,16 +428,18 @@ describe('Wave 14 Security Audit', () => {
     let testDir;
 
     beforeEach(() => {
-      testDir = path.join(__dirname, '../../.test-sessions-' + Date.now());
+      // Use system temp directory instead of project root
+      testDir = path.join(os.tmpdir(), '.test-sessions-' + Date.now());
+      fs.mkdirSync(testDir, { recursive: true });
       sessionPersist = new SessionPersistence({
         storageDir: testDir
       });
     });
 
     afterEach(() => {
-      // Cleanup
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true });
+      // Clean up after each test
+      if (testDir && fs.existsSync(testDir)) {
+        rimraf.sync(testDir);
       }
     });
 
@@ -488,13 +492,23 @@ describe('Wave 14 Security Audit', () => {
 
   describe('4.2 Session Persistence - Replay Protection', () => {
     let sessionPersist;
+    let testDir;
 
     beforeEach(() => {
-      const testDir = path.join(__dirname, '../../.test-sessions-' + Date.now());
+      // Use system temp directory instead of project root
+      testDir = path.join(os.tmpdir(), '.test-sessions-' + Date.now());
+      fs.mkdirSync(testDir, { recursive: true });
       sessionPersist = new SessionPersistence({
         storageDir: testDir,
         maxSnapshots: 5
       });
+    });
+
+    afterEach(() => {
+      // Clean up after each test
+      if (testDir && fs.existsSync(testDir)) {
+        rimraf.sync(testDir);
+      }
     });
 
     it('should prevent snapshot replay attacks', () => {

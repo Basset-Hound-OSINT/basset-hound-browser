@@ -13,6 +13,11 @@
  */
 
 const { TOTPGenerator, HOTPGenerator } = require('../../src/credentials');
+const { requireWSS } = require('../middleware/tls-enforcement');
+const CredentialRateLimiter = require('../../src/infrastructure/credential-rate-limiter');
+
+// Shared rate limiter instance for credential validation
+const validationRateLimiter = new CredentialRateLimiter(5, 60000); // 5 attempts per 60 seconds
 
 /**
  * Register credentials command handlers
@@ -31,7 +36,14 @@ function registerCredentialsCommands(commandHandlers) {
    *
    * Returns: {success, token, expiresAt, validFor, timeRemaining}
    */
-  commandHandlers.generate_totp = async (params) => {
+  commandHandlers.generate_totp = async (params, context = {}) => {
+    // Check WSS requirement in production
+    if (context.upgradeRequest) {
+      const tlsError = requireWSS(context.upgradeRequest);
+      if (tlsError) {
+        return { success: false, ...tlsError };
+      }
+    }
     try {
       const { secret, algorithm = 'SHA1', window = 30, digits = 6 } = params;
 
@@ -79,11 +91,32 @@ function registerCredentialsCommands(commandHandlers) {
    *
    * Returns: {success, valid, message}
    */
-  commandHandlers.validate_totp = async (params) => {
+  commandHandlers.validate_totp = async (params, context = {}) => {
+    // Check WSS requirement in production
+    if (context.upgradeRequest) {
+      const tlsError = requireWSS(context.upgradeRequest);
+      if (tlsError) {
+        return { success: false, ...tlsError };
+      }
+    }
+
+    // Check rate limiting on failed attempts
+    const clientIP = context.remoteAddress || 'unknown';
+    const rateLimitCheck = validationRateLimiter.isAllowed(clientIP);
+    if (!rateLimitCheck.allowed) {
+      return {
+        success: false,
+        error: 'RATE_LIMIT_EXCEEDED',
+        message: rateLimitCheck.message,
+        waitSeconds: Math.ceil(rateLimitCheck.waitMs / 1000),
+        attemptsRemaining: 0
+      };
+    }
     try {
       const { secret, token, window = 1, algorithm = 'SHA1', timeWindow = 30 } = params;
 
       if (!secret || !token) {
+        validationRateLimiter.recordFailure(clientIP);
         return { success: false, error: 'Secret and token are required' };
       }
 
@@ -94,14 +127,31 @@ function registerCredentialsCommands(commandHandlers) {
 
       const isValid = totp.validate(token, window);
 
-      return {
+      if (isValid) {
+        // Record successful validation
+        validationRateLimiter.recordSuccess(clientIP);
+      } else {
+        // Record failed validation attempt
+        validationRateLimiter.recordFailure(clientIP);
+      }
+
+      const response = {
         success: true,
         valid: isValid,
         message: isValid ? 'Token is valid' : 'Token is invalid or expired',
         token,
         driftWindow: window
       };
+
+      // Add rate limiting info if approaching limit
+      const status = validationRateLimiter.getStatus(clientIP);
+      if (status.attemptCount > 0) {
+        response.attemptsRemaining = Math.max(0, status.maxAttempts - status.attemptCount);
+      }
+
+      return response;
     } catch (error) {
+      validationRateLimiter.recordFailure(clientIP);
       return {
         success: false,
         error: error.message
@@ -121,7 +171,14 @@ function registerCredentialsCommands(commandHandlers) {
    *
    * Returns: {success, token, counter, nextCounter, algorithm, digits}
    */
-  commandHandlers.generate_hotp = async (params) => {
+  commandHandlers.generate_hotp = async (params, context = {}) => {
+    // Check WSS requirement in production
+    if (context.upgradeRequest) {
+      const tlsError = requireWSS(context.upgradeRequest);
+      if (tlsError) {
+        return { success: false, ...tlsError };
+      }
+    }
     try {
       const { secret, counter = 0, algorithm = 'SHA1', digits = 6 } = params;
 
@@ -167,11 +224,32 @@ function registerCredentialsCommands(commandHandlers) {
    *
    * Returns: {success, valid, counter, message}
    */
-  commandHandlers.validate_hotp = async (params) => {
+  commandHandlers.validate_hotp = async (params, context = {}) => {
+    // Check WSS requirement in production
+    if (context.upgradeRequest) {
+      const tlsError = requireWSS(context.upgradeRequest);
+      if (tlsError) {
+        return { success: false, ...tlsError };
+      }
+    }
+
+    // Check rate limiting on failed attempts
+    const clientIP = context.remoteAddress || 'unknown';
+    const rateLimitCheck = validationRateLimiter.isAllowed(clientIP);
+    if (!rateLimitCheck.allowed) {
+      return {
+        success: false,
+        error: 'RATE_LIMIT_EXCEEDED',
+        message: rateLimitCheck.message,
+        waitSeconds: Math.ceil(rateLimitCheck.waitMs / 1000),
+        attemptsRemaining: 0
+      };
+    }
     try {
       const { secret, token, counter = 0, lookahead = 0, algorithm = 'SHA1' } = params;
 
       if (!secret || !token) {
+        validationRateLimiter.recordFailure(clientIP);
         return { success: false, error: 'Secret and token are required' };
       }
 
@@ -182,14 +260,31 @@ function registerCredentialsCommands(commandHandlers) {
 
       const validation = hotp.validate(token, lookahead);
 
-      return {
+      if (validation.valid) {
+        // Record successful validation
+        validationRateLimiter.recordSuccess(clientIP);
+      } else {
+        // Record failed validation attempt
+        validationRateLimiter.recordFailure(clientIP);
+      }
+
+      const response = {
         success: true,
         valid: validation.valid,
         counter: validation.counter,
         message: validation.valid ? 'Token is valid' : 'Token is invalid',
         lookaheadUsed: lookahead
       };
+
+      // Add rate limiting info if approaching limit
+      const status = validationRateLimiter.getStatus(clientIP);
+      if (status.attemptCount > 0) {
+        response.attemptsRemaining = Math.max(0, status.maxAttempts - status.attemptCount);
+      }
+
+      return response;
     } catch (error) {
+      validationRateLimiter.recordFailure(clientIP);
       return {
         success: false,
         error: error.message
@@ -208,7 +303,14 @@ function registerCredentialsCommands(commandHandlers) {
    *
    * Returns: {success, counter, message}
    */
-  commandHandlers.resync_hotp = async (params) => {
+  commandHandlers.resync_hotp = async (params, context = {}) => {
+    // Check WSS requirement in production
+    if (context.upgradeRequest) {
+      const tlsError = requireWSS(context.upgradeRequest);
+      if (tlsError) {
+        return { success: false, ...tlsError };
+      }
+    }
     try {
       const { secret, correctCounter, algorithm = 'SHA1' } = params;
 
@@ -247,7 +349,14 @@ function registerCredentialsCommands(commandHandlers) {
    *
    * Returns: {success, timeRemaining, currentCounter, nextTokenStartsAt}
    */
-  commandHandlers.get_totp_info = async (params) => {
+  commandHandlers.get_totp_info = async (params, context = {}) => {
+    // Check WSS requirement in production
+    if (context.upgradeRequest) {
+      const tlsError = requireWSS(context.upgradeRequest);
+      if (tlsError) {
+        return { success: false, ...tlsError };
+      }
+    }
     try {
       const { secret, algorithm = 'SHA1', timeWindow = 30 } = params;
 

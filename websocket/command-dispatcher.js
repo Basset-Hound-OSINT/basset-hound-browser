@@ -90,7 +90,9 @@ class CommandDispatcher {
       enableRetry = true,
       maxRetries = ERROR_RECOVERY_CONFIG.maxRetries,
       clientId = 'unknown',
-      commandId = null
+      commandId = null,
+      upgradeRequest = null,
+      remoteAddress = null
     } = options;
 
     // Stats tracking
@@ -144,8 +146,14 @@ class CommandDispatcher {
           this.logger.info(`[CommandDispatcher] Retrying command: ${command} (attempt ${attemptCount + 1}/${maxRetries + 1})`);
         }
 
-        // Execute the command handler
-        const result = await handler(params);
+        // Execute the command handler with context
+        const context = {
+          clientId,
+          commandId,
+          upgradeRequest,
+          remoteAddress
+        };
+        const result = await handler(params, context);
 
         // Check for manager unavailable errors (non-throwing failures)
         if (!result.success && result.error && result.error.includes('not available')) {

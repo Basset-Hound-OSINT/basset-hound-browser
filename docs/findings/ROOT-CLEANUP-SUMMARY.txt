@@ -1,0 +1,376 @@
+================================================================================
+ROOT DIRECTORY CLEANUP PLAN - EXECUTIVE SUMMARY
+================================================================================
+Date: June 15, 2026
+Status: READY FOR EXECUTION
+Priority: HIGH
+Estimated Duration: 2-3 hours
+Risk Level: LOW
+
+================================================================================
+THE PROBLEM
+================================================================================
+
+Basset Hound Browser root directory contains ~26 MB of test artifacts that:
+- Should not be in version control
+- Leak from test processes that don't clean up properly
+- Accumulate over time, bloating the repository
+
+BREAKDOWN:
+  .mypy_cache/     24 MB  (type checking temporary files)
+  htmlcov/         816 KB (HTML coverage reports)
+  .pytest_cache/   40 KB  (pytest configuration cache)
+  .coverage        52 KB  (coverage instrumentation data)
+  .test-sessions*  768 KB (test session artifacts)
+  TOTAL:          25.6 MB
+
+ROOT CAUSES:
+1. .gitignore missing 4 patterns (lines 94-98)
+2. tests/setup.js cleanup doesn't handle Python caches
+3. No cleanup handlers on test suite exit
+4. Test output scattered across root instead of centralized
+
+================================================================================
+THE SOLUTION - THREE PHASES
+================================================================================
+
+PHASE A: IMMEDIATE FIXES (30 minutes)
+─────────────────────────────────────
+
+A1. Update .gitignore
+    File: .gitignore (lines 94-98)
+    Add:  .mypy_cache/, .pytest_cache/, .coverage, htmlcov/
+    Effect: Prevents future commits of these files
+
+A2. Fix tests/setup.js
+    File: tests/setup.js (lines 42-67)
+    Update: cleanOldSessions() to also clean Python caches
+    Effect: Python caches removed on test startup
+
+A3. Remove Current Artifacts
+    Command: rm -rf .test-sessions* .mypy_cache .pytest_cache .coverage htmlcov/
+    Verify: git status shows clean
+    Effect: Removes ~25.6 MB from root directory
+
+PHASE B: PREVENT FUTURE LEAKAGE (1-2 hours)
+───────────────────────────────────────────
+
+B1. Create Centralized Test Output Directory
+    Create: tests/output/ with subdirectories
+    Add: .gitkeep files to preserve structure
+    Effect: Single location for all test artifacts
+
+B2. Update .gitignore for tests/output/
+    File: .gitignore (after line 40)
+    Add:  tests/output/* (with exceptions for .gitkeep)
+    Effect: All test output automatically excluded
+
+B3. Add Cleanup Handlers
+    File: tests/setup.js
+    Add: registerTestCleanup(), cleanTestArtifacts() functions
+    Hook: Process exit, SIGINT, uncaughtException
+    Effect: Cleanup runs on all test suite exits
+
+B4. Optional Pre-commit Hook
+    File: .git/hooks/pre-commit
+    Add: Prevent commits of forbidden patterns
+    Effect: Double protection against artifact commits
+
+PHASE C: DOCUMENTATION (30 minutes)
+──────────────────────────────────
+
+C1. Create Test Artifact Management Guide
+    File: docs/guides/TEST-ARTIFACT-MANAGEMENT.md
+    Content: Guidelines for test writers, examples, troubleshooting
+    Effect: Clear policy for all developers
+
+C2. Update Contributing Guide
+    File: docs/CONTRIBUTING.md (or README.md)
+    Add: Test artifact requirements section
+    Effect: New contributors learn best practices
+
+================================================================================
+EXPECTED OUTCOMES
+================================================================================
+
+IMMEDIATE (After Phase A):
+  ✓ Root directory: -25.6 MB (89.5% reduction)
+  ✓ .gitignore: 4 new patterns preventing future leaks
+  ✓ Tests: Still passing with cleanup logic
+
+MEDIUM-TERM (After Phase B):
+  ✓ Test structure: Centralized in tests/output/
+  ✓ Automatic cleanup: Runs on suite exit
+  ✓ Prevention: Multiple layers (gitignore + hooks + cleanup)
+
+LONG-TERM (After Phase C):
+  ✓ Developer knowledge: Clear artifact management policy
+  ✓ Consistency: All developers follow same practices
+  ✓ Maintainability: Repository stays clean over time
+
+METRICS:
+  Before: ~26 MB of test artifacts in root
+  After:  < 100 KB of test artifacts (auto-cleaned)
+  Prevention: 100% of new test artifacts properly excluded
+
+================================================================================
+CRITICAL FILES TO MODIFY
+================================================================================
+
+1. .gitignore (4 lines added)
+   - Add: .mypy_cache/, .pytest_cache/, .coverage, htmlcov/
+
+2. tests/setup.js (3 functions, 60+ lines)
+   - Update: cleanOldSessions() function
+   - Add: registerTestCleanup() function
+   - Add: cleanTestArtifacts() function
+
+3. Documentation (2 files)
+   - Create: docs/guides/TEST-ARTIFACT-MANAGEMENT.md
+   - Update: docs/CONTRIBUTING.md (if exists)
+
+================================================================================
+RISK ASSESSMENT & MITIGATION
+================================================================================
+
+RISK 1: Deleting artifacts loses important data
+  Probability: LOW (artifacts are regeneratable)
+  Mitigation: Test data is auto-regenerated by test suite
+  Recovery: Run tests again if needed
+
+RISK 2: Moving artifact dirs breaks test paths
+  Probability: MEDIUM (if paths hardcoded)
+  Mitigation: Use path.join() and setup.js exports
+  Recovery: Update test file paths, re-run tests
+
+RISK 3: Cleanup removes needed test data
+  Probability: LOW (only removes known types)
+  Mitigation: Only clean specific directories, preserve .gitkeep
+  Recovery: Add --preserve-artifacts flag if needed
+
+OVERALL RISK: LOW - all changes are additive/safe, with clear rollback path
+
+================================================================================
+EXECUTION CHECKLIST
+================================================================================
+
+PRE-CLEANUP:
+  [ ] Backup current state (optional): tar czf /tmp/cleanup-backup.tar.gz .
+  [ ] Verify git status is clean: git status
+  [ ] Note current root size: du -sh /home/devel/basset-hound-browser/
+
+PHASE A (30 min):
+  [ ] A1: Update .gitignore with 4 missing patterns
+  [ ] A2: Update tests/setup.js with Python cache cleanup
+  [ ] A3: Remove current artifacts from root
+  [ ] Verify: git status clean, tests pass
+
+PHASE B (1-2 hours):
+  [ ] B1: Create tests/output/ directory structure
+  [ ] B2: Update .gitignore for tests/output/*
+  [ ] B3: Add cleanup handlers to tests/setup.js
+  [ ] B4: (Optional) Add pre-commit hook
+  [ ] Verify: Tests still pass with new structure
+
+PHASE C (30 min):
+  [ ] C1: Create docs/guides/TEST-ARTIFACT-MANAGEMENT.md
+  [ ] C2: Update docs/CONTRIBUTING.md or README.md
+  [ ] Verify: Documentation complete and accurate
+
+POST-CLEANUP:
+  [ ] Run full test suite: npm test
+  [ ] Check root directory size reduction
+  [ ] Verify no new artifacts in root
+  [ ] Confirm git status is clean
+
+================================================================================
+DETAILED DOCUMENTATION
+================================================================================
+
+This plan includes comprehensive documentation files:
+
+1. ROOT-CLEANUP-PLAN-2026-06-15.md (THIS FILE IN DETAIL)
+   - Complete implementation guide
+   - Code examples for all changes
+   - Architecture rationale
+   - Risk mitigation strategies
+   - Success criteria
+
+2. ROOT-CLEANUP-CHECKLIST.md
+   - Quick-reference execution checklist
+   - Time estimates per task
+   - Pre/post verification procedures
+   - Rollback instructions
+
+3. This Summary (for quick overview)
+
+LOCATION: /home/devel/basset-hound-browser/docs/findings/
+
+================================================================================
+GETTING STARTED
+================================================================================
+
+To execute this plan:
+
+1. Read the complete plan:
+   cat docs/findings/ROOT-CLEANUP-PLAN-2026-06-15.md
+
+2. Use the checklist:
+   cat docs/findings/ROOT-CLEANUP-CHECKLIST.md
+
+3. Execute Phase A first (30 min, lowest risk)
+4. Verify tests still pass
+5. Execute Phase B (1-2 hours, adds prevention)
+6. Execute Phase C (30 min, documentation)
+7. Monitor repository for 2 weeks
+
+================================================================================
+DEPENDENCIES & PREREQUISITES
+================================================================================
+
+Required:
+  ✓ Git repository initialized
+  ✓ Node.js 14+ (for test scripts)
+  ✓ Read/write access to repository root
+
+Optional:
+  Git hooks support (for pre-commit hook)
+  Coverage reporting tools (pytest, mypy)
+
+Conflicts:
+  None identified - all changes are safe to apply
+
+================================================================================
+TIMELINE
+================================================================================
+
+Phase A: 30 minutes
+  - Update .gitignore: 5 min
+  - Update tests/setup.js: 10 min
+  - Remove artifacts: 5 min
+  - Verify: 10 min
+
+Phase B: 1-2 hours
+  - Create tests/output/: 5 min
+  - Update .gitignore: 5 min
+  - Add cleanup handlers: 20 min
+  - Pre-commit hook (optional): 10 min
+  - Testing: 30-45 min
+
+Phase C: 30 minutes
+  - Create artifact guide: 20 min
+  - Update contributing guide: 10 min
+
+TOTAL: 2-3 hours (including testing)
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+After completing all phases, the project should have:
+
+✓ Root directory cleaned (< 100 KB of test artifacts)
+✓ All tests passing with cleanup logic
+✓ No test artifacts visible in git status
+✓ Centralized test output in tests/output/ directory
+✓ Automatic cleanup on test suite exit
+✓ Clear documentation for artifact management
+✓ No new artifacts accumulating within 2 weeks
+
+VERIFICATION:
+  git status                  # Should be clean
+  du -sh /home/devel/basset-hound-browser/   # Should be significantly smaller
+  npm test                    # All tests pass
+  ls -la | grep test-sessions # Should show nothing
+  cat docs/guides/TEST-ARTIFACT-MANAGEMENT.md # Should exist
+
+================================================================================
+POST-CLEANUP MONITORING
+================================================================================
+
+Week 1: Daily Checks
+  - Verify no new artifacts in root
+  - Confirm tests still passing
+  - Check that cleanup handlers work
+
+Week 2-4: Weekly Checks
+  - Monitor root directory size
+  - Verify tests/output/ stays clean
+  - Check for any artifact leakage
+
+Ongoing:
+  - Reference artifact guide in code reviews
+  - Monitor for developers not following guidelines
+  - Adjust cleanup thresholds if needed
+
+================================================================================
+SUPPORT & TROUBLESHOOTING
+================================================================================
+
+If you encounter issues during execution:
+
+1. Test artifacts won't delete
+   → Check file permissions: ls -la .mypy_cache/
+   → Try: rm -rf --force
+   → Or: Use git clean -fd
+
+2. Tests fail after cleanup
+   → Verify Phase B3 cleanup handlers added correctly
+   → Check that node tests/setup.js doesn't error
+   → Run: npm test to verify
+
+3. .gitignore patterns not working
+   → Clear git cache: git rm -r --cached .
+   → Verify: git check-ignore -v .mypy_cache/
+   → Recommit: git add . && git commit
+
+4. Pre-commit hook causing issues
+   → Temporarily disable: git commit --no-verify
+   → Check hook syntax: chmod +x .git/hooks/pre-commit
+   → Debug: bash -x .git/hooks/pre-commit
+
+See ROOT-CLEANUP-PLAN-2026-06-15.md for detailed troubleshooting.
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Review this summary (you're reading it)
+2. Read the detailed plan: ROOT-CLEANUP-PLAN-2026-06-15.md
+3. Use the checklist: ROOT-CLEANUP-CHECKLIST.md
+4. Execute Phase A (30 minutes)
+5. Run test suite to verify
+6. Execute Phase B (1-2 hours)
+7. Execute Phase C (30 minutes)
+8. Monitor for 2 weeks
+
+================================================================================
+QUESTIONS & SUPPORT
+================================================================================
+
+For detailed implementation guidance, see:
+  Root Cleanup Plan:  docs/findings/ROOT-CLEANUP-PLAN-2026-06-15.md
+  Quick Checklist:    docs/findings/ROOT-CLEANUP-CHECKLIST.md
+
+For artifact management guidelines, see:
+  Test Artifact Guide: docs/guides/TEST-ARTIFACT-MANAGEMENT.md
+  Contributing Guide:  docs/CONTRIBUTING.md
+
+================================================================================
+PLAN STATUS: READY FOR EXECUTION
+================================================================================
+
+This comprehensive plan is ready to execute immediately. All files have been
+analyzed, risks assessed, and procedures documented. The cleanup process is
+straightforward and low-risk with multiple fallback options.
+
+Recommended: Start with Phase A (30 minutes) to gain confidence, then proceed
+with Phase B and C for full cleanup and prevention.
+
+Plan Created: June 15, 2026
+Ready for Execution: NOW
+Approval Status: Ready
+
+================================================================================
+END OF SUMMARY
+================================================================================

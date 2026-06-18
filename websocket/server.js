@@ -59,7 +59,8 @@ const { CloudflareDetector } = require('../src/cloudflare/detector');
 const { registerCredentialsCommands } = require('./commands/credentials-commands');
 const { registerSessionPersistenceCommands } = require('./commands/session-persistence-commands');
 const { registerExtendedEvasionCommands } = require('./commands/extended-evasion-commands');
-const { registerMonitoringMetricsCommands } = require('./commands/monitoring-metrics-commands');
+const { registerMonitoringMetricsCommands, registerConsentCommands } = require('./commands/monitoring-metrics-commands');
+const { getConsentManager } = require('./middleware/monitoring-consent');
 
 // ==========================================
 // Error Recovery Configuration
@@ -998,6 +999,10 @@ class WebSocketServer {
     // Set logger for state manager (after logger initialization)
     this.stateManager.logger = this.logger;
 
+    // Initialize Monitoring Consent Manager (Security Fix #3)
+    // Tracks user consent for monitoring before collecting metrics
+    this.consentManager = getConsentManager();
+
     // Setup rollback listeners for different state types
     this._setupStateRollbackListeners();
 
@@ -1305,6 +1310,7 @@ class WebSocketServer {
       ws.clientId = clientId;
       ws.isAlive = true;
       ws.lastHeartbeat = Date.now();
+      ws.upgradeRequest = req; // Store HTTP upgrade request for TLS/security checks
       this.clients.add(ws);
 
       // Check for token in query string or headers for immediate authentication
@@ -1424,7 +1430,9 @@ class WebSocketServer {
               enableRetry: true,
               maxRetries: ERROR_RECOVERY_CONFIG.maxRetries,
               clientId: ws.clientId,
-              commandId: id
+              commandId: id,
+              upgradeRequest: ws.upgradeRequest, // Pass request for security checks (TLS, rate limiting)
+              remoteAddress: req.socket.remoteAddress // Pass client IP for rate limiting
             });
 
             // End profiling timer
@@ -10214,6 +10222,10 @@ class WebSocketServer {
     // Feature 4: Monitoring & Metrics
     registerMonitoringMetricsCommands(this.commandHandlers, null, this);
     this.logger.info('[WebSocket] Registered 10 monitoring/metrics commands');
+
+    // Feature 4B: Monitoring Consent Management (Security Fix #3)
+    registerConsentCommands(this.commandHandlers, this.consentManager);
+    this.logger.info('[WebSocket] Registered 6 monitoring consent commands');
 
     // ==========================================
     // INTERACTION RECORDING COMMANDS (Phase 20)

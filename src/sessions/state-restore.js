@@ -1,3 +1,9 @@
+const zlib = require('zlib');
+const { promisify } = require('util');
+const { pipeline } = require('stream/promises');
+
+const gunzip = promisify(zlib.gunzip);
+
 /**
  * Basset Hound Browser - Browser State Restoration Module
  * Progressive restoration of captured browser state with validation
@@ -11,6 +17,7 @@
  * - Graceful degradation on partial failures
  * - Stale state detection
  * - Error recovery and logging
+ * - Async/streaming restoration for large payloads
  */
 
 /**
@@ -434,6 +441,51 @@ class BrowserStateRestore {
     }
 
     return { issues };
+  }
+
+  /**
+   * Decompress state from buffer (async)
+   * @param {Buffer} compressedData - Compressed state buffer
+   * @returns {Promise<Object>} - Decompressed state object
+   */
+  async decompressState(compressedData) {
+    try {
+      const decompressed = await gunzip(compressedData);
+      return JSON.parse(decompressed.toString('utf8'));
+    } catch (error) {
+      this.logger.error(`Decompression failed: ${error.message}`);
+      throw new Error(`State decompression failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Decompress state from stream (for large payloads >5MB)
+   * @param {Stream} readStream - Source read stream (gzip compressed)
+   * @returns {Promise<Object>} - Decompressed state object
+   */
+  async decompressStateStream(readStream) {
+    try {
+      const gunzipTransform = zlib.createGunzip();
+      const chunks = [];
+
+      await new Promise((resolve, reject) => {
+        gunzipTransform.on('data', chunk => {
+          chunks.push(chunk);
+        });
+
+        gunzipTransform.on('end', resolve);
+        gunzipTransform.on('error', reject);
+
+        readStream.on('error', reject);
+        readStream.pipe(gunzipTransform);
+      });
+
+      const decompressed = Buffer.concat(chunks).toString('utf8');
+      return JSON.parse(decompressed);
+    } catch (error) {
+      this.logger.error(`Streaming decompression failed: ${error.message}`);
+      throw new Error(`Streaming decompression failed: ${error.message}`);
+    }
   }
 
   /**

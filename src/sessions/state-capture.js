@@ -16,7 +16,9 @@
 
 const zlib = require('zlib');
 const { promisify } = require('util');
+const { pipeline } = require('stream/promises');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const gzip = promisify(zlib.gzip);
 const gunzip = promisify(zlib.gunzip);
@@ -324,6 +326,26 @@ class BrowserStateCapture {
     } catch (error) {
       this.logger.warn(`Compression failed: ${error.message}, returning uncompressed`);
       return Buffer.from(stateJson, 'utf8');
+    }
+  }
+
+  /**
+   * Compress state using streaming (for large payloads >5MB)
+   * @param {string} stateJson - Stringified state
+   * @param {Stream} writeStream - Destination write stream
+   * @returns {Promise<void>}
+   */
+  async compressStateStream(stateJson, writeStream) {
+    try {
+      const sourceStream = require('stream').Readable.from([stateJson]);
+      const gzipTransform = zlib.createGzip({
+        level: zlib.constants.Z_DEFAULT_COMPRESSION
+      });
+
+      await pipeline(sourceStream, gzipTransform, writeStream);
+    } catch (error) {
+      this.logger.warn(`Streaming compression failed: ${error.message}`);
+      throw new Error(`Streaming compression failed: ${error.message}`);
     }
   }
 

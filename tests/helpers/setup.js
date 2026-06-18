@@ -69,6 +69,29 @@ async function globalTeardown() {
 }
 
 /**
+ * Clean up test artifacts after all tests complete
+ */
+afterAll(() => {
+  // Clean up test artifacts
+  try {
+    const glob = require('glob');
+    const rimraf = require('rimraf');
+
+    // Remove test session directories from root
+    glob.sync('.test-sessions-*', { cwd: process.cwd() }).forEach(dir => {
+      rimraf.sync(dir);
+    });
+
+    // Remove other test artifacts from root
+    rimraf.sync('.mypy_cache');
+    rimraf.sync('.pytest_cache');
+    rimraf.sync('htmlcov');
+  } catch (err) {
+    console.warn(`Warning: Could not clean up test artifacts: ${err.message}`);
+  }
+});
+
+/**
  * Create the test HTML page
  */
 async function createTestPage() {

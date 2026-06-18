@@ -406,6 +406,185 @@ function registerMonitoringMetricsCommands(commandHandlers, metricsCollector = n
 }
 
 /**
+ * Register consent management commands
+ * Handles monitoring consent tracking and auditing
+ */
+function registerConsentCommands(commandHandlers, consentManager = null) {
+  // Lazy-load consent manager if not provided
+  let consent = consentManager;
+  if (!consent) {
+    try {
+      const { getConsentManager } = require('../middleware/monitoring-consent');
+      consent = getConsentManager();
+    } catch (error) {
+      console.warn('[Consent] Failed to load consent manager:', error.message);
+      return; // Consent management optional
+    }
+  }
+
+  if (!consent) return;
+
+  /**
+   * Command: init_monitoring_consent
+   * Initialize consent tracking for a client connection
+   */
+  commandHandlers.init_monitoring_consent = async (params, options = {}) => {
+    try {
+      const clientId = options.clientId || params.clientId;
+      if (!clientId) {
+        return { success: false, error: 'clientId is required' };
+      }
+
+      const result = consent.initializeConsent(clientId, params);
+      return {
+        success: result.success,
+        clientId: result.clientId,
+        monitoring: result.monitoring,
+        message: 'Consent initialized. Monitoring is ' + (result.monitoring ? 'enabled' : 'disabled') + ' by default.'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Command: set_monitoring_consent
+   * Grant or revoke monitoring consent
+   */
+  commandHandlers.set_monitoring_consent = async (params, options = {}) => {
+    try {
+      const clientId = options.clientId || params.clientId;
+      const enabled = params.enabled;
+      const reason = params.reason || 'user_request';
+
+      if (!clientId) {
+        return { success: false, error: 'clientId is required' };
+      }
+      if (typeof enabled !== 'boolean') {
+        return { success: false, error: 'enabled must be a boolean' };
+      }
+
+      const result = consent.setConsent(clientId, enabled, reason);
+      return {
+        success: result.success,
+        clientId: result.clientId,
+        consentBefore: result.consentBefore,
+        consentAfter: result.consentAfter,
+        timestamp: result.timestamp,
+        reason: result.reason,
+        message: `Monitoring consent ${enabled ? 'granted' : 'revoked'}`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Command: get_monitoring_consent
+   * Check current monitoring consent status
+   */
+  commandHandlers.get_monitoring_consent = async (params, options = {}) => {
+    try {
+      const clientId = options.clientId || params.clientId;
+      if (!clientId) {
+        return { success: false, error: 'clientId is required' };
+      }
+
+      const result = consent.getConsent(clientId);
+      return {
+        success: result.success,
+        clientId: result.clientId,
+        consent: result.consent,
+        monitoringEnabled: result.consent.monitoring
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Command: revoke_monitoring_consent
+   * Explicitly revoke all monitoring consent
+   */
+  commandHandlers.revoke_monitoring_consent = async (params, options = {}) => {
+    try {
+      const clientId = options.clientId || params.clientId;
+      if (!clientId) {
+        return { success: false, error: 'clientId is required' };
+      }
+
+      const result = consent.revokeConsent(clientId);
+      return {
+        success: result.success,
+        clientId: result.clientId,
+        timestamp: result.timestamp,
+        message: 'All monitoring consent has been revoked',
+        note: 'No metrics will be collected without explicit re-authorization'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Command: get_consent_audit_trail
+   * Retrieve audit trail of consent changes
+   */
+  commandHandlers.get_consent_audit_trail = async (params, options = {}) => {
+    try {
+      const clientId = params.clientId || null;
+      const limit = params.limit || 50;
+
+      const auditTrail = consent.getAuditTrail(clientId, limit);
+      return {
+        success: true,
+        auditTrail,
+        count: auditTrail.length,
+        clientId: clientId || 'all',
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+
+  /**
+   * Command: get_consent_stats
+   * Get aggregate consent statistics
+   */
+  commandHandlers.get_consent_stats = async (params) => {
+    try {
+      const stats = consent.getConsentStats();
+      return {
+        success: true,
+        stats,
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  };
+}
+
+/**
  * Register stub monitoring commands (fallback when monitoring module unavailable)
  */
 function registerStubMonitoringCommands(commandHandlers) {
@@ -433,5 +612,6 @@ function registerStubMonitoringCommands(commandHandlers) {
 }
 
 module.exports = {
-  registerMonitoringMetricsCommands
+  registerMonitoringMetricsCommands,
+  registerConsentCommands
 };

@@ -28,6 +28,7 @@ tests/results/*
 !tests/results/*.md
 tests/screenshots/
 tests/reports/
+reports/
 test-user-data*/
 *.log
 **/test-certs*/
@@ -38,6 +39,10 @@ tmp_tests/
 .test-sessions*
 .test-scratch*
 tests/tmp/
+
+# Centralized test outputs (Phase B cleanup)
+tests/output/*
+!tests/output/.gitkeep
 
 # IDE
 .vscode/
@@ -96,3 +101,9 @@ __pycache__/
 *.py[cod]
 venv/
 **/.claude/
+
+# Python cache and coverage
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/

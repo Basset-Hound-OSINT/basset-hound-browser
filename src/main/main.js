@@ -1,3 +1,21 @@
+// ==========================================
+// Module Resolution Setup (for proper relative path handling)
+// ==========================================
+const path = require('path');
+const fs = require('fs');
+
+// Define project root and create a helper for resolving module paths
+const PROJECT_ROOT = path.join(__dirname, '../..');
+
+// Helper function to resolve modules from project root
+function resolveModule(modulePath) {
+  if (modulePath.startsWith('.')) {
+    // Relative require - resolve from project root
+    return require(path.join(PROJECT_ROOT, modulePath));
+  }
+  return require(modulePath);
+}
+
 // EDGE CASE FIX #2: Electron app may be undefined in CI/headless environments
 // This requires Electron to be running as the main process (via electron CLI)
 let { app, BrowserWindow, ipcMain, session, dialog } = require('electron');
@@ -17,46 +35,44 @@ if (!app) {
 // In Docker/headless environments, Electron fails to start without a display
 // We need to initialize Xvfb BEFORE app.whenReady() is called
 
-const path = require('path');
-const fs = require('fs');
-const WebSocketServer = require('./websocket/server');
-const { getRandomViewport, getRealisticUserAgent, getEvasionScript, getEvasionScriptWithConfig } = require('./evasion/fingerprint');
-const { proxyManager } = require('./proxy/manager');
-const { torManager } = require('./proxy/tor');
+const WebSocketServer = require(path.join(PROJECT_ROOT, 'websocket/server'));
+const { getRandomViewport, getRealisticUserAgent, getEvasionScript, getEvasionScriptWithConfig } = require(path.join(PROJECT_ROOT, 'evasion/fingerprint'));
+const { proxyManager } = require(path.join(PROJECT_ROOT, 'proxy/manager'));
+const { torManager } = require(path.join(PROJECT_ROOT, 'proxy/tor'));
 // Proxy chain management has been migrated to basset-hound-networking
-// const { proxyChainManager } = require('./proxy/chain');
-const { userAgentManager } = require('./utils/user-agents');
-const SessionManager = require('./sessions/manager');
-const { TabManager } = require('./tabs/manager');
-const { CookieManager, COOKIE_FORMATS } = require('./cookies/manager');
-const { DownloadManager } = require('./downloads/manager');
-const { geolocationManager } = require('./geolocation/manager');
-const { networkThrottler } = require('./network/throttling');
-const StorageManager = require('./storage/manager');
-const { DevToolsManager } = require('./devtools/manager');
-const { ConsoleManager } = require('./devtools/console');
-const { HistoryManager } = require('./history/manager');
-const { ProfileManager } = require('./profiles/manager');
-const { HeaderManager } = require('./headers/manager');
-const { PREDEFINED_PROFILES, profileStorage } = require('./headers/profiles');
-const { DOMInspector } = require('./inspector/manager');
-const { blockingManager } = require('./blocking/manager');
-const { ScriptManager } = require('./automation/scripts');
-const { memoryManager } = require('./utils/memory-manager');
-const { TechnologyManager } = require('./technology');
-const { ExtractionManager } = require('./extraction');
-const { NetworkAnalysisManager } = require('./network-analysis/manager');
-const { SessionRecordingManager, RECORDING_STATE } = require('./recording/session-recorder');
-const { ReplayEngine, REPLAY_STATE, ERROR_MODE } = require('./recording/replay');
-const { HeadlessManager, headlessManager, HEADLESS_PRESETS } = require('./headless/manager');
-const { WindowManager, WindowState } = require('./windows/manager');
-const { WindowPool, PoolEntryState } = require('./windows/pool');
-const { getUpdateManager, UPDATE_STATUS } = require('./updater/manager');
-const CertificateGenerator = require('./utils/cert-generator');
-const { ensureEmbeddedTor, checkTorAvailability, TorAutoSetup } = require('./utils/tor-auto-setup');
-const { initializeGCTuning, initializeAdvancedGCTuning } = require('./utils/gc-tuning');
-const { LazyManagerRegistry } = require('./managers/lazy-initializer');
-const { getSerializer } = require('./websocket/response-serializer');
+// const { proxyChainManager } = require(path.join(PROJECT_ROOT, 'proxy/chain'));
+const { userAgentManager } = require(path.join(PROJECT_ROOT, 'utils/user-agents'));
+const SessionManager = require(path.join(PROJECT_ROOT, 'sessions/manager'));
+const { TabManager } = require(path.join(PROJECT_ROOT, 'tabs/manager'));
+const { CookieManager, COOKIE_FORMATS } = require(path.join(PROJECT_ROOT, 'cookies/manager'));
+const { DownloadManager } = require(path.join(PROJECT_ROOT, 'downloads/manager'));
+const { geolocationManager } = require(path.join(PROJECT_ROOT, 'geolocation/manager'));
+const { networkThrottler } = require(path.join(PROJECT_ROOT, 'network/throttling'));
+const StorageManager = require(path.join(PROJECT_ROOT, 'storage/manager'));
+const { DevToolsManager } = require(path.join(PROJECT_ROOT, 'devtools/manager'));
+const { ConsoleManager } = require(path.join(PROJECT_ROOT, 'devtools/console'));
+const { HistoryManager } = require(path.join(PROJECT_ROOT, 'history/manager'));
+const { ProfileManager } = require(path.join(PROJECT_ROOT, 'profiles/manager'));
+const { HeaderManager } = require(path.join(PROJECT_ROOT, 'headers/manager'));
+const { PREDEFINED_PROFILES, profileStorage } = require(path.join(PROJECT_ROOT, 'headers/profiles'));
+const { DOMInspector } = require(path.join(PROJECT_ROOT, 'inspector/manager'));
+const { blockingManager } = require(path.join(PROJECT_ROOT, 'blocking/manager'));
+const { ScriptManager } = require(path.join(PROJECT_ROOT, 'automation/scripts'));
+const { memoryManager } = require(path.join(PROJECT_ROOT, 'utils/memory-manager'));
+const { TechnologyManager } = require(path.join(PROJECT_ROOT, 'technology'));
+const { ExtractionManager } = require(path.join(PROJECT_ROOT, 'extraction'));
+const { NetworkAnalysisManager } = require(path.join(PROJECT_ROOT, 'network-analysis/manager'));
+const { SessionRecordingManager, RECORDING_STATE } = require(path.join(PROJECT_ROOT, 'recording/session-recorder'));
+const { ReplayEngine, REPLAY_STATE, ERROR_MODE } = require(path.join(PROJECT_ROOT, 'recording/replay'));
+const { HeadlessManager, headlessManager, HEADLESS_PRESETS } = require(path.join(PROJECT_ROOT, 'headless/manager'));
+const { WindowManager, WindowState } = require(path.join(PROJECT_ROOT, 'windows/manager'));
+const { WindowPool, PoolEntryState } = require(path.join(PROJECT_ROOT, 'windows/pool'));
+const { getUpdateManager, UPDATE_STATUS } = require(path.join(PROJECT_ROOT, 'updater/manager'));
+const CertificateGenerator = require(path.join(PROJECT_ROOT, 'utils/cert-generator'));
+const { ensureEmbeddedTor, checkTorAvailability, TorAutoSetup } = require(path.join(PROJECT_ROOT, 'utils/tor-auto-setup'));
+const { initializeGCTuning, initializeAdvancedGCTuning } = require(path.join(PROJECT_ROOT, 'utils/gc-tuning'));
+const { LazyManagerRegistry } = require(path.join(PROJECT_ROOT, 'managers/lazy-initializer'));
+const { getSerializer } = require(path.join(PROJECT_ROOT, 'websocket/response-serializer'));
 
 // ==========================================
 // Garbage Collection Tuning (OPT-07 + OPT-12)
@@ -109,7 +125,7 @@ const serializer = getSerializer({
 // ==========================================
 // Configuration System
 // ==========================================
-const { initConfig } = require('./config');
+const { initConfig } = require(path.join(PROJECT_ROOT, 'config'));
 
 // Initialize configuration from all sources (CLI, env, file, defaults)
 const configResult = initConfig({ watch: true });
@@ -122,7 +138,7 @@ if (configResult.help) {
 
 // Handle --version flag
 if (configResult.version) {
-  const packageJson = require('./package.json');
+  const packageJson = require(path.join(PROJECT_ROOT, 'package.json'));
   console.log(`Basset Hound Browser v${packageJson.version}`);
   process.exit(0);
 }

@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-06-16T04:04:55.874Z",
+  "version": "12.7.0",
+  "totalTests": 6,
+  "successTests": 2,
+  "blockedTests": 4,
+  "timeoutTests": 0,
+  "errorTests": 0,
+  "tests": [
+    {
+      "name": "Test 1: Google Search",
+      "url": "https://www.google.com/search?q=basset+hound+browser",
+      "timestamp": "2026-06-16T04:04:55.876Z",
+      "success": true,
+      "blocked": false,
+      "statusCode": 200,
+      "blockingIndicators": [],
+      "error": null,
+      "responseSize": 42507,
+      "resultsCount": 0,
+      "timeMs": 296
+    },
+    {
+      "name": "Test 2: Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Web_automation",
+      "timestamp": "2026-06-16T04:04:58.177Z",
+      "success": false,
+      "blocked": true,
+      "statusCode": 404,
+      "blockingIndicators": [
+        "CAPTCHA/Challenge detected",
+        "Bot Detection Script"
+      ],
+      "error": null,
+      "responseSize": 48145,
+      "timeMs": 452
+    },
+    {
+      "name": "Test 3: GitHub",
+      "url": "https://github.com/",
+      "timestamp": "2026-06-16T04:05:00.632Z",
+      "success": false,
+      "blocked": true,
+      "statusCode": 200,
+      "blockingIndicators": [
+        "CAPTCHA/Challenge detected",
+        "Bot Detection Script"
+      ],
+      "error": null,
+      "responseSize": 570587,
+      "timeMs": 268
+    },
+    {
+      "name": "Test 4: Hacker News",
+      "url": "https://news.ycombinator.com/",
+      "timestamp": "2026-06-16T04:05:02.905Z",
+      "success": true,
+      "blocked": false,
+      "statusCode": 200,
+      "blockingIndicators": [],
+      "error": null,
+      "responseSize": 34457,
+      "timeMs": 307
+    },
+    {
+      "name": "Test 5: BBC News",
+      "url": "https://www.bbc.com/news",
+      "timestamp": "2026-06-16T04:05:05.214Z",
+      "success": false,
+      "blocked": true,
+      "statusCode": 200,
+      "blockingIndicators": [
+        "CAPTCHA/Challenge detected",
+        "Bot Detection Script"
+      ],
+      "error": null,
+      "responseSize": 398232,
+      "timeMs": 313
+    },
+    {
+      "name": "Test 6: Reddit",
+      "url": "https://www.reddit.com/",
+      "timestamp": "2026-06-16T04:05:07.532Z",
+      "success": false,
+      "blocked": true,
+      "statusCode": 200,
+      "blockingIndicators": [
+        "CAPTCHA/Challenge detected"
+      ],
+      "error": null,
+      "responseSize": 8424,
+      "timeMs": 199
+    }
+  ]
+}

@@ -79,6 +79,29 @@ function getTestSessionDir(testType = 'general') {
   return sessionDir;
 }
 
+/**
+ * Clean up test artifacts after all tests complete
+ */
+afterAll(() => {
+  // Clean up test artifacts
+  const glob = require('glob');
+  const rimraf = require('rimraf');
+
+  try {
+    // Remove test session directories
+    glob.sync('.test-sessions-*', { cwd: process.cwd() }).forEach(dir => {
+      rimraf.sync(dir);
+    });
+
+    // Remove other test artifacts from root
+    rimraf.sync('.mypy_cache');
+    rimraf.sync('.pytest_cache');
+    rimraf.sync('htmlcov');
+  } catch (err) {
+    console.warn(`Warning: Could not clean up test artifacts: ${err.message}`);
+  }
+});
+
 // Run setup
 ensureTestDirectories();
 cleanOldSessions();

@@ -18,6 +18,7 @@
 const { EventEmitter } = require('events');
 const zlib = require('zlib');
 const { performance } = require('perf_hooks');
+const CompressionSelector = require('./compression-selector');
 
 // Content types that are already compressed or incompressible
 const INCOMPRESSIBLE_TYPES = new Set([
@@ -65,6 +66,11 @@ class AdaptiveCompression extends EventEmitter {
     // Codec performance tracking
     this.codecStats = new Map();
     this.payloadTypeStats = new Map();
+
+    // Initialize compression selector for adaptive level tuning
+    this.selector = new CompressionSelector({
+      debug: options.debug || false
+    });
 
     this.debug = options.debug || false;
 
@@ -162,16 +168,10 @@ class AdaptiveCompression extends EventEmitter {
    * Larger payloads = more compression for ratio
    * @private
    */
-  _selectCompressionLevel(payloadSize) {
-    if (payloadSize < this.smallPayloadThreshold) {
-      return this.smallPayloadLevel;
-    }
-
-    if (payloadSize < this.mediumPayloadThreshold) {
-      return this.mediumPayloadLevel;
-    }
-
-    return this.largePayloadLevel;
+  _selectCompressionLevel(buffer) {
+    // Use new CompressionSelector for adaptive level selection
+    // Analyzes entropy and size for optimal compression level
+    return this.selector.selectLevel(buffer);
   }
 
   /**
@@ -219,8 +219,8 @@ class AdaptiveCompression extends EventEmitter {
       // Pre-filter if needed
       const filtered = this._preFilterPayload(buffer, payloadType);
 
-      // Select compression level
-      const level = this._selectCompressionLevel(payloadSize);
+      // Select compression level using adaptive selector
+      const level = this._selectCompressionLevel(filtered);
 
       // Try compression with deflate
       const compressed = await new Promise((resolve, reject) => {

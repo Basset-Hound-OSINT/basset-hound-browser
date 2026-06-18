@@ -3,7 +3,18 @@
  * Defines action types for recording user interactions
  */
 
-const { v4: uuidv4 } = require('uuid');
+let uuidv4;
+try {
+  const uuid = require('uuid');
+  uuidv4 = uuid.v4;
+} catch (e) {
+  uuidv4 = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+}
 
 /**
  * Action types for recording
