@@ -29,7 +29,7 @@ python3 mcp/verify_e2e.py       # full FastMCP dispatch path vs live browser →
 ```
 
 - `smoke:mvp` and `verify_e2e.py` self-boot on isolated ephemeral/distinct ports, use throwaway `--user-data-dir`, and reap their own process group — safe to run repeatedly, no strays.
-- **Before any manual doc research, query the docs RAG** at `http://localhost:10021` (one `/api/search` or `/api/ask` beats grepping `docs/`). Usage + CLI client: `docs/rag-app/USAGE-BASSET-HOUND.md`. Fall back to grep+Read only if RAG is unreachable.
+- **Before any manual doc research, query the docs RAG** at `http://localhost:10080` (one `/api/search` or `/api/ask` beats grepping `docs/`). Usage + CLI client: `docs/operations/DOCS-RAG.md`. Fall back to grep+Read only if RAG is unreachable.
 - Prefer the two live harnesses over any doc-quoted "100% tests" number — most Jest suites self-skip in CI or fail to load under Node 18 (`File is not defined`).
 
 ## 3. The phased roadmap (one line each)
@@ -66,7 +66,7 @@ Full detail: `docs/archives/session_records/2026-07-04_MODULARIZATION-AND-DIFFER
 | **Scope / hard blacklist** | `docs/architecture/SCOPE.md` |
 | **Command registry** (Phase-1 target) | dispatcher + `register*` calls in `websocket/server.js` (1,110 ln); handler modules in `websocket/commands/*.js` (incl. `core-cmds-01..11.js`, `core-tor-commands.js`); shared-scope barrel `websocket/core/handler-deps.js` |
 | **MCP adapter** | `mcp/server.py` (18 tools), `mcp/verify_e2e.py`, `mcp/README.md`, `mcp/requirements.txt` |
-| **Docs RAG** | `http://localhost:10021` · usage `docs/rag-app/USAGE-BASSET-HOUND.md` · client `docs/rag-app/client/ragq.py` |
+| **Docs RAG** | `http://localhost:10080` · usage `docs/operations/DOCS-RAG.md` · client `~/rag-consumers/basset-hound-docs-rag/client/ragq.py` |
 | **Orchestra system** | `/home/devel/palletai/claude_code_orchestra/CONTEXT_FOR_NEW_CONVERSATIONS.md` |
 | **Deferred evasion research** | `docs/research/bot-detection/BOT-DETECTION-GAP-ANALYSIS.md` (+ salvage refs in `docs/research/bot-detection/salvage/`) |
 

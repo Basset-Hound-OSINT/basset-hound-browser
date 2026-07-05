@@ -11,9 +11,9 @@
 - [x] Forensic + compression commands registered (SHA-256 / chain-of-custody live)
 - [x] Security hardening: loopback bind, SSRF guard, PathValidator (CRITICAL + 4 HIGH closed)
 - [x] Pruned 78 dead files (evasion simulators, orphans, mock tests); docs made honest (13 bannered)
-- [x] Docs RAG deployed + working (localhost:10021); scope blacklist enforced (no agents/models)
+- [x] Docs RAG deployed + working (localhost:10080); scope blacklist enforced (no agents/models)
 - [x] **One-shot `forensic_capture` command** (navigate → 13-file evidence bundle + SHA-256 manifest; smoke:mvp **15/15**) + 19-line Python client `tmp/real_world_test/capture_client.py` — see 2026-07-04_CAPTURE-CMD-GUI-RAG-AND-FILE-SIZE.md
-- [x] Local docs-RAG updated to latest multi-KB template (localhost:10021)
+- [x] Local docs-RAG migrated to rag-bootstrap image-mode (single-KB) (localhost:10080)
 
 ### 🟡 In progress / ⏭️ next (2026-07-04 cont.)
 - [x] **Opt-in GUI** `--gui`/`BASSET_GUI=1` (or `npm run start:gui`) — DONE + live-verified: toggle + BOTH layout fixes (webview fills space, tabs horizontal); headless stays 15/15, unit 16/16
