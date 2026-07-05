@@ -5,6 +5,7 @@
  *
  * Removes test output files and temporary directories before committing.
  * Runs automatically before tests and commits (via pre-commit hooks).
+ * Also includes pre-test system health checks.
  *
  * Usage:
  *   node scripts/clean-test-artifacts.js
@@ -15,23 +16,39 @@ const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 
+// Import system check utilities
+let systemCheck;
+try {
+  systemCheck = require('../tests/helpers/system-check');
+} catch (err) {
+  // System check not available - continue with cleanup only
+  console.warn('⚠️  System check module not available, skipping health check');
+}
+
 const projectRoot = path.join(__dirname, '..');
 
 // Patterns to clean (relative to project root)
 const cleanPatterns = [
-  // Test outputs (centralized) - clean contents but preserve structure
-  'tests/output/reports/*',
-  'tests/output/results/*',
-  'tests/output/screenshots/*',
-  'tests/output/logs/*',
-  '!tests/output/**/.gitkeep',
+  // Test outputs (centralized to tests/results and tests/output)
+  'tests/results/*',
+  '!tests/results/.gitkeep',
+  'tests/output/*',
+  '!tests/output/.gitkeep',
+  'tests/certs/old/*',
 
-  // Legacy test session directories
+  // Temporary test files
+  'tmp/*',
+  '!tmp/.gitkeep',
+
+  // Legacy test directories
   '.test-sessions*',
   '.test-scratch*',
   'test-sessions/',
   'tmp_tests/',
   'tests/tmp/',
+
+  // Claude Code worktrees (older than 1 hour handled by separate logic)
+  '.claude/worktrees/',
 
   // Python caches
   '.mypy_cache/',
@@ -42,6 +59,17 @@ const cleanPatterns = [
   'htmlcov/',
   '.coverage'
 ];
+
+// Perform system health check before cleanup
+if (systemCheck) {
+  const healthResults = systemCheck.checkSystemHealth();
+  const isHealthy = systemCheck.printHealthReport(healthResults, false);
+
+  if (!isHealthy) {
+    console.warn('⚠️  System health check detected issues');
+    console.warn('    Tests may fail or produce unreliable results\n');
+  }
+}
 
 console.log('🧹 Cleaning test artifacts...\n');
 

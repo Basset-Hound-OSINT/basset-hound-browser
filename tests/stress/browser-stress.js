@@ -32,7 +32,7 @@ const TEST_URLS = [
   'https://httpbin.org/delay/2',
   'ftp://invalid-protocol.com',
   'http://',
-  'https://example.com/404/not-found',
+  'https://example.com/404/not-found'
 ];
 
 // Metrics tracking
@@ -78,8 +78,8 @@ const metrics = {
 
 let ws = null;
 let requestIdCounter = 0;
-let pendingRequests = new Map();
-let activeTabIds = new Set();
+const pendingRequests = new Map();
+const activeTabIds = new Set();
 let memoryCheckInterval = null;
 
 /**
@@ -188,7 +188,7 @@ async function testConcurrentNavigations() {
 
   console.log(`  Successful: ${result.successful}/${result.total}`);
   console.log(`  Failed: ${result.failed}/${result.total}`);
-  console.log(`  Avg Navigation Time: ${(metrics.navigation_times.reduce((a,b) => a+b, 0) / metrics.navigation_times.length || 0).toFixed(2)}ms`);
+  console.log(`  Avg Navigation Time: ${(metrics.navigation_times.reduce((a, b) => a + b, 0) / metrics.navigation_times.length || 0).toFixed(2)}ms`);
 
   metrics.test_results.concurrent_navigations = result;
   return result;
@@ -240,7 +240,7 @@ async function testTabManagement() {
 
   console.log(`  Created: ${result.total_created} tabs`);
   console.log(`  Max Concurrent Pages: ${metrics.max_concurrent_pages}`);
-  console.log(`  Avg Tab Creation Time: ${(metrics.tab_creation_times.reduce((a,b) => a+b, 0) / metrics.tab_creation_times.length || 0).toFixed(2)}ms`);
+  console.log(`  Avg Tab Creation Time: ${(metrics.tab_creation_times.reduce((a, b) => a + b, 0) / metrics.tab_creation_times.length || 0).toFixed(2)}ms`);
 
   // Now destroy tabs
   const tabDestructionPromises = [];
@@ -325,7 +325,7 @@ async function testScreenshotCapture() {
 
   console.log(`  Successful: ${result.successful}/${result.total}`);
   console.log(`  Failed: ${result.failed}/${result.total}`);
-  console.log(`  Avg Screenshot Time: ${(metrics.screenshot_times.reduce((a,b) => a+b, 0) / metrics.screenshot_times.length || 0).toFixed(2)}ms`);
+  console.log(`  Avg Screenshot Time: ${(metrics.screenshot_times.reduce((a, b) => a + b, 0) / metrics.screenshot_times.length || 0).toFixed(2)}ms`);
 
   metrics.test_results.screenshot_capture = result;
   return result;
@@ -384,7 +384,7 @@ async function testFormFilling() {
   console.log(`  Successful: ${result.successful}`);
   console.log(`  Failed: ${result.failed}`);
   if (metrics.form_fill_times.length > 0) {
-    console.log(`  Avg Fill Time: ${(metrics.form_fill_times.reduce((a,b) => a+b, 0) / metrics.form_fill_times.length).toFixed(2)}ms`);
+    console.log(`  Avg Fill Time: ${(metrics.form_fill_times.reduce((a, b) => a + b, 0) / metrics.form_fill_times.length).toFixed(2)}ms`);
   }
 
   metrics.test_results.form_filling = result;
@@ -577,7 +577,7 @@ async function testTorModeSwitching() {
   console.log(`  Successful: ${result.successful}`);
   console.log(`  Failed: ${result.failed}`);
   if (metrics.tor_switch_times.length > 0) {
-    console.log(`  Avg Switch Time: ${(metrics.tor_switch_times.reduce((a,b) => a+b, 0) / metrics.tor_switch_times.length).toFixed(2)}ms`);
+    console.log(`  Avg Switch Time: ${(metrics.tor_switch_times.reduce((a, b) => a + b, 0) / metrics.tor_switch_times.length).toFixed(2)}ms`);
   }
 
   metrics.test_results.tor_mode_switching = result;
@@ -674,9 +674,13 @@ function handleMessage(data) {
     const msg = JSON.parse(data.toString());
 
     // Skip status messages
-    if (msg.type === 'status') return;
+    if (msg.type === 'status') {
+      return;
+    }
 
-    if (!msg.id || !pendingRequests.has(msg.id)) return;
+    if (!msg.id || !pendingRequests.has(msg.id)) {
+      return;
+    }
 
     const pending = pendingRequests.get(msg.id);
     clearTimeout(pending.timeout);
@@ -776,7 +780,7 @@ function calculateMetrics() {
     tab_creation_latency: {
       samples: metrics.tab_creation_times.length,
       avg: metrics.tab_creation_times.length > 0
-        ? metrics.tab_creation_times.reduce((a,b) => a+b, 0) / metrics.tab_creation_times.length
+        ? metrics.tab_creation_times.reduce((a, b) => a + b, 0) / metrics.tab_creation_times.length
         : 0
     }
   };
@@ -817,7 +821,7 @@ function saveResults() {
 
   // Save findings summary
   const findingsPath = path.join(STRESS_RESULTS_DIR, 'browser-stress-findings.txt');
-  let findings = `Basset Hound Browser Stress Test Results
+  const findings = `Basset Hound Browser Stress Test Results
 Generated: ${new Date().toISOString()}
 Duration: ${metrics.test_duration_seconds.toFixed(2)} seconds
 
@@ -865,11 +869,11 @@ ${metrics.issues_found.length > 0 ? metrics.issues_found.join('\n') : 'No critic
 TEST RESULTS BY CATEGORY
 =======================
 ${Object.entries(metrics.test_results).map(([name, result]) => {
-  return `${name}:
+    return `${name}:
   - Successful: ${result.successful || result.valid_success || result.total_created || 0}
   - Failed: ${result.failed || 0}
   - Total: ${result.total || result.total_operations || result.total_switches || 0}`;
-}).join('\n\n')}
+  }).join('\n\n')}
 `;
 
   fs.writeFileSync(findingsPath, findings);

@@ -128,7 +128,7 @@ class SecurityEdgeCasesTester {
   }
 }
 
-describe('Security Edge Cases Tests', function() {
+describe('Security Edge Cases Tests', function () {
   this.timeout(TIMEOUT);
   let tester;
 

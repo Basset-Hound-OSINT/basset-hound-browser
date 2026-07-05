@@ -2614,6 +2614,6 @@ Potential improvements for future versions:
 
 For questions or issues, refer to:
 - Implementation: `/home/devel/basset-hound-browser/evidence/evidence-manager.js`
-- WebSocket Commands: `/home/devel/basset-hound-browser/websocket/commands/evidence-commands.js`
+- WebSocket Commands: `/home/devel/basset-hound-browser/websocket/commands/forensic/evidence/evidence-commands.js`
 - Tests: `/home/devel/basset-hound-browser/tests/unit/evidence-collector.test.js`
 - Standards: RFC 3161, ISO 27037, SWGDE, NIST IR 8387

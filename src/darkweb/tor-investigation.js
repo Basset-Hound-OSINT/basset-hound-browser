@@ -491,7 +491,9 @@ class TorInvestigation {
     ];
 
     const hasIssues = Math.random() > 0.7;
-    if (!hasIssues) return [];
+    if (!hasIssues) {
+      return [];
+    }
 
     const issueCount = Math.floor(Math.random() * 3) + 1;
     return issues.slice(0, issueCount);

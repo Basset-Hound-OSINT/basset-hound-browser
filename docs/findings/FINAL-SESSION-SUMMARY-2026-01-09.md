@@ -46,7 +46,7 @@ needed given the comprehensive MCP and WebSocket APIs.
 
 **Deliverables:**
 - network-forensics/forensics.js (~1,200 lines)
-- websocket/commands/network-forensics-commands.js (16 commands)
+- websocket/commands/forensic/network/network-forensics-commands.js (16 commands)
 - tests/unit/network-forensics.test.js (70+ tests)
 - Export formats: JSON, CSV, HTML, Timeline
 

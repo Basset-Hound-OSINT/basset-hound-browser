@@ -267,7 +267,9 @@ class AutomaticRecoveryHandler {
 
     // Expired cookies
     const expiredCookies = (state.cookies || []).filter(c => {
-      if (!c.expires) return false;
+      if (!c.expires) {
+        return false;
+      }
       return new Date(c.expires).getTime() < now;
     });
 
@@ -410,7 +412,9 @@ class AutomaticRecoveryHandler {
    * @returns {WebContents|null}
    */
   getWebContentsForSession(sessionId) {
-    if (!this.sessionManager) return null;
+    if (!this.sessionManager) {
+      return null;
+    }
 
     try {
       const session = this.sessionManager.getSession(sessionId);

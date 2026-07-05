@@ -24,13 +24,13 @@ const { TECH_SIGNATURES } = require('./tech-signatures');
 class SignatureIndexer {
   constructor() {
     this.indexes = {
-      byName: new Map(),           // techName → signature
-      byCategory: new Map(),       // category → [techNames]
-      byHeaderPattern: new Map(),  // header pattern → [techNames]
-      byScriptPattern: new Map(),  // script pattern → [techNames]
-      byMetaPattern: new Map(),    // meta pattern → [techNames]
-      byHtmlPattern: new Map(),    // html pattern → [techNames]
-      byEndpoint: new Map()        // endpoint → [techNames]
+      byName: new Map(), // techName → signature
+      byCategory: new Map(), // category → [techNames]
+      byHeaderPattern: new Map(), // header pattern → [techNames]
+      byScriptPattern: new Map(), // script pattern → [techNames]
+      byMetaPattern: new Map(), // meta pattern → [techNames]
+      byHtmlPattern: new Map(), // html pattern → [techNames]
+      byEndpoint: new Map() // endpoint → [techNames]
     };
 
     this.buildIndexes();
@@ -59,21 +59,21 @@ class SignatureIndexer {
           const pattern = rule.pattern;
 
           switch (rule.type) {
-            case 'header':
-              this._addToIndex(this.indexes.byHeaderPattern, pattern, techName);
-              break;
-            case 'script':
-              this._addToIndex(this.indexes.byScriptPattern, pattern, techName);
-              break;
-            case 'meta':
-              this._addToIndex(this.indexes.byMetaPattern, pattern, techName);
-              break;
-            case 'html':
-              this._addToIndex(this.indexes.byHtmlPattern, pattern, techName);
-              break;
-            case 'endpoint':
-              this._addToIndex(this.indexes.byEndpoint, pattern, techName);
-              break;
+          case 'header':
+            this._addToIndex(this.indexes.byHeaderPattern, pattern, techName);
+            break;
+          case 'script':
+            this._addToIndex(this.indexes.byScriptPattern, pattern, techName);
+            break;
+          case 'meta':
+            this._addToIndex(this.indexes.byMetaPattern, pattern, techName);
+            break;
+          case 'html':
+            this._addToIndex(this.indexes.byHtmlPattern, pattern, techName);
+            break;
+          case 'endpoint':
+            this._addToIndex(this.indexes.byEndpoint, pattern, techName);
+            break;
           }
         });
       }

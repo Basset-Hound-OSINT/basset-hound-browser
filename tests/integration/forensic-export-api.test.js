@@ -302,7 +302,7 @@ describe('Forensic Export API - Integration Tests', () => {
         analystName: 'Collector 1'
       });
 
-      let manifest = result.manifest;
+      const manifest = result.manifest;
 
       // Verify initial custody record
       assert(manifest.chainOfCustody.created.timestamp);

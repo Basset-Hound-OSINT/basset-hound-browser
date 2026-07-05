@@ -265,7 +265,7 @@ describe('CVE-W14-004: Webhook URL Validation Missing (SSRF)', () => {
       // Hit the limit
       shortValidator.checkRateLimit('example.com');
       shortValidator.checkRateLimit('example.com');
-      let result = shortValidator.checkRateLimit('example.com');
+      const result = shortValidator.checkRateLimit('example.com');
       assert.strictEqual(result.allowed, false);
 
       // Manual reset simulation (in real impl would wait 1 hour)
@@ -277,13 +277,13 @@ describe('CVE-W14-004: Webhook URL Validation Missing (SSRF)', () => {
       const hosts = ['host1.com', 'host2.com', 'host3.com'];
 
       for (const host of hosts) {
-        let result = validator.checkRateLimit(host);
+        const result = validator.checkRateLimit(host);
         assert.strictEqual(result.allowed, true);
       }
 
       // Each host should have independent limits
       for (const host of hosts) {
-        let result = validator.checkRateLimit(host);
+        const result = validator.checkRateLimit(host);
         assert.strictEqual(result.allowed, true);
       }
     });

@@ -13,8 +13,53 @@
  * Created: June 14, 2026
  */
 
-const { BrowserStateCapture } = require('../../src/sessions/state-capture');
-const { BrowserStateRestore } = require('../../src/sessions/state-restore');
+// NOTE: both modules export the class directly (module.exports = Class), so they must be
+// imported directly — destructuring `{ BrowserStateCapture }` yielded undefined and made
+// save_session_state / restore_session_state throw "not a constructor" (pre-existing bug).
+const BrowserStateCapture = require('../../src/sessions/state-capture');
+const BrowserStateRestore = require('../../src/sessions/state-restore');
+
+/**
+ * Resolve the active <webview> guest WebContents.
+ *
+ * State capture/restore historically ran against `mainWindow.webContents` — the empty
+ * browser SHELL — so storage/DOM/navigation state was captured from a blank document and
+ * restore wrote into the shell instead of the page. Real pages live in the <webview>
+ * guest. This resolves the live guest WebContents (same shell-vs-webview fix used by
+ * getWebviewPageContent in websocket/server.js). Falls back to the host webContents when
+ * no guest is attached.
+ *
+ * @param {Object} mainWindow - Electron BrowserWindow (host)
+ * @returns {Electron.WebContents}
+ */
+function resolveGuestWebContents(mainWindow) {
+  const host = mainWindow && mainWindow.webContents;
+  try {
+    const { webContents } = require('electron');
+    const guests = webContents.getAllWebContents().filter((wc) => {
+      try {
+        return !wc.isDestroyed() && wc.getType() === 'webview';
+      } catch (e) {
+        return false;
+      }
+    });
+    if (guests.length === 0) {
+      return host;
+    }
+    // Prefer a guest currently showing a real (non-blank) page.
+    const live = guests.filter((wc) => {
+      try {
+        const u = wc.getURL();
+        return u && u !== 'about:blank';
+      } catch (e) {
+        return false;
+      }
+    });
+    return live[0] || guests[0] || host;
+  } catch (e) {
+    return host;
+  }
+}
 
 /**
  * Session State Manager - Tracks saved sessions in memory
@@ -111,7 +156,7 @@ function registerSessionPersistenceCommands(commandHandlers, mainWindow) {
 
       const stateCapture = new BrowserStateCapture(captureOptions);
       const state = await stateCapture.captureState(
-        mainWindow.webContents,
+        resolveGuestWebContents(mainWindow),
         { profileId, includeDOM }
       );
 
@@ -167,6 +212,12 @@ function registerSessionPersistenceCommands(commandHandlers, mainWindow) {
 
       // Validate state if requested
       if (validateFirst) {
+        // FIX: `stateCapture` was never instantiated in this handler — it only
+        // existed in save_session_state's scope — so the validateFirst branch
+        // threw `ReferenceError: stateCapture is not defined`, breaking every
+        // restore that used the (default-on) validation path. Instantiate it
+        // here, mirroring verify_session_state below.
+        const stateCapture = new BrowserStateCapture();
         const validation = stateCapture.validateState(sessionData.state);
         if (!validation.valid) {
           return {
@@ -185,7 +236,7 @@ function registerSessionPersistenceCommands(commandHandlers, mainWindow) {
 
       const stateRestore = new BrowserStateRestore(restoreOptions);
       const result = await stateRestore.restoreState(
-        mainWindow.webContents,
+        resolveGuestWebContents(mainWindow),
         sessionData.state,
         restoreOptions
       );

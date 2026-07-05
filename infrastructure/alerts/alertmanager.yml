@@ -1,0 +1,280 @@
+# Alertmanager Configuration for Basset Hound Browser
+# Version: 1.0
+# Purpose: Route and manage alerts across notification channels
+
+global:
+  # Resolve timeout - time after which alert is auto-resolved if not modified
+  resolve_timeout: 5m
+
+  # SMTP configuration for email notifications
+  smtp_smarthost: 'smtp.sendgrid.net:587'
+  smtp_auth_username: 'apikey'
+  smtp_auth_password: '${SENDGRID_API_KEY}'
+  smtp_require_tls: true
+  smtp_from: 'alerts@basset-hound.io'
+
+  # Slack API key (via environment variable for security)
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+# Template files for alert messages
+templates:
+  - '/etc/alertmanager/templates/basset-hound-alerts.tmpl'
+  - '/etc/alertmanager/templates/email.tmpl'
+  - '/etc/alertmanager/templates/slack.tmpl'
+
+# Alert grouping
+route:
+  # Receiver for unmatched alerts
+  receiver: 'default'
+
+  # Group alerts by labels for batching
+  group_by: ['alertname', 'severity', 'component']
+
+  # Wait period before sending group of alerts
+  group_wait: 10s
+
+  # Interval to re-send grouped alerts if unchanged
+  group_interval: 1m
+
+  # Repeat resolved alerts after this interval
+  repeat_interval: 4h
+
+  # Routing rules - order matters (top match wins)
+  routes:
+    # CRITICAL alerts - immediate escalation
+    - match:
+        severity: critical
+      receiver: 'critical'
+      group_wait: 0s        # Send immediately, don't wait
+      group_interval: 1m    # Re-send every minute if unresolved
+      repeat_interval: 30m  # Repeat every 30 minutes
+      continue: false
+      routes:
+        # Service down - immediate page
+        - match:
+            alertname: ServiceDown
+          receiver: 'critical-oncall'
+          group_wait: 0s
+          continue: true
+
+        # High error rate
+        - match:
+            alertname: 'HighErrorRate|LowSuccessRate'
+          receiver: 'critical-oncall'
+          group_wait: 0s
+          continue: true
+
+        # Memory critical
+        - match:
+            alertname: HighMemoryUsage
+          receiver: 'critical-oncall'
+          group_wait: 0s
+          continue: true
+
+    # HIGH alerts - urgent but not immediate
+    - match:
+        severity: high
+      receiver: 'high'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      continue: false
+      routes:
+        # Performance degradation
+        - match:
+            component: 'performance|throughput'
+          receiver: 'high-performance'
+          group_wait: 30s
+
+        # Security issues
+        - match:
+            component: security
+          receiver: 'high-security'
+          group_wait: 10s
+
+        # System infrastructure
+        - match:
+            component: 'infrastructure|database|proxy'
+          receiver: 'high-infrastructure'
+          group_wait: 30s
+
+    # MEDIUM alerts - standard review
+    - match:
+        severity: medium
+      receiver: 'medium'
+      group_wait: 1m
+      group_interval: 15m
+      repeat_interval: 4h
+      continue: false
+
+    # LOW/INFO alerts - informational only
+    - match:
+        severity: 'low|info'
+      receiver: 'low'
+      group_wait: 5m
+      group_interval: 1h
+      repeat_interval: 24h
+      continue: false
+
+# Alert receivers
+receivers:
+  # Default receiver for unmatched alerts
+  - name: 'default'
+    slack_configs:
+      - channel: '#monitoring'
+        title: 'Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # CRITICAL - Page on-call immediately
+  - name: 'critical-oncall'
+    # PagerDuty trigger
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_CRITICAL_KEY}'
+        client: 'Basset Hound Alertmanager'
+        client_url: '{{ .ExternalURL }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+          resolved: '{{ template "pagerduty.default.instances" .Alerts.Resolved }}'
+          severity: 'critical'
+
+    # Email to on-call
+    email_configs:
+      - to: '${ONCALL_EMAIL}'
+        headers:
+          Subject: 'CRITICAL: {{ .GroupLabels.alertname }} - Immediate Action Required'
+        html: '{{ template "email.critical.html" . }}'
+
+    # Slack to incidents channel
+    slack_configs:
+      - channel: '#incidents'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'danger'
+        actions:
+          - type: button
+            text: 'Dashboard'
+            url: '{{ (index .Alerts 0).Annotations.dashboard_url }}'
+          - type: button
+            text: 'Runbook'
+            url: '{{ (index .Alerts 0).Annotations.runbook_url }}'
+          - type: button
+            text: 'Acknowledge'
+            url: '{{ .ExternalURL }}/alerting/groups'
+
+    # SMS for critical (if configured)
+    # victorops_configs for SMS via VictorOps
+
+  # HIGH - Urgent escalation
+  - name: 'high'
+    slack_configs:
+      - channel: '#incidents'
+        title: '⚠️ HIGH: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'warning'
+    email_configs:
+      - to: '${ONCALL_EMAIL}'
+        headers:
+          Subject: 'HIGH: {{ .GroupLabels.alertname }} - Investigation Required'
+        html: '{{ template "email.high.html" . }}'
+
+  # HIGH - Performance issues
+  - name: 'high-performance'
+    slack_configs:
+      - channel: '#incidents'
+        title: '⚠️ PERFORMANCE: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'warning'
+    email_configs:
+      - to: '${PERFORMANCE_TEAM_EMAIL}'
+        headers:
+          Subject: 'Performance Alert: {{ .GroupLabels.alertname }}'
+
+  # HIGH - Security issues
+  - name: 'high-security'
+    slack_configs:
+      - channel: '#security-incidents'
+        title: '🔒 SECURITY: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'danger'
+    email_configs:
+      - to: '${SECURITY_TEAM_EMAIL}'
+        headers:
+          Subject: 'Security Alert: {{ .GroupLabels.alertname }}'
+
+  # HIGH - Infrastructure issues
+  - name: 'high-infrastructure'
+    slack_configs:
+      - channel: '#infrastructure'
+        title: '⚠️ INFRASTRUCTURE: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'warning'
+    email_configs:
+      - to: '${OPS_TEAM_EMAIL}'
+        headers:
+          Subject: 'Infrastructure Alert: {{ .GroupLabels.alertname }}'
+
+  # MEDIUM - Standard review
+  - name: 'medium'
+    slack_configs:
+      - channel: '#monitoring'
+        title: 'ℹ️ MEDIUM: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'good'
+    email_configs:
+      - to: '${TEAM_EMAIL}'
+        headers:
+          Subject: 'Medium: {{ .GroupLabels.alertname }}'
+
+  # LOW/INFO - Informational only
+  - name: 'low'
+    slack_configs:
+      - channel: '#monitoring'
+        title: '📋 INFO: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts.Firing }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'good'
+
+# Inhibition rules - suppress alerts based on conditions
+inhibit_rules:
+  # Suppress LOW/MEDIUM if CRITICAL is firing
+  - source_match:
+      severity: 'critical'
+    target_match_re:
+      severity: 'medium|low'
+    equal: ['alertname', 'component']
+
+  # Suppress HIGH if CRITICAL is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'high'
+    equal: ['alertname', 'component']
+
+  # Suppress MEDIUM if HIGH is firing
+  - source_match:
+      severity: 'high'
+    target_match:
+      severity: 'medium'
+    equal: ['alertname', 'component']
+
+  # Don't alert on component issues if service is already down
+  - source_match:
+      alertname: 'ServiceDown'
+    target_match_re:
+      alertname: 'Component.*|Health.*'
+    equal: ['instance']
+
+  # Don't alert on memory growth if already at critical level
+  - source_match:
+      alertname: 'HighMemoryUsage'
+    target_match:
+      alertname: 'HighMemoryGrowthRate'
+    equal: ['instance']

@@ -324,21 +324,23 @@ Integration and stability testing for Basset Hound Browser v12.0.0 has been comp
 ## Test Results by Category
 
 ${Object.entries(report.tests).map(([key, result]) => {
-  if (!result) return '';
-  const passed = result.passCount || 0;
-  const total = result.testCount || (passed + (result.failCount || 0));
-  return `### ${key}
+    if (!result) {
+      return '';
+    }
+    const passed = result.passCount || 0;
+    const total = result.testCount || (passed + (result.failCount || 0));
+    return `### ${key}
 - **Status:** ${result.success ? 'Completed' : 'Failed'}
 - **Passed:** ${passed}/${total}
 - **Failed:** ${result.failCount || 0}
 - **Skipped:** ${result.skipCount || 0}`;
-}).filter(Boolean).join('\n\n')}
+  }).filter(Boolean).join('\n\n')}
 
 ## Issues Found
 
 ${report.issues.length > 0
-  ? report.issues.map(issue => `- **${issue.test}** (${issue.severity}): ${issue.message}`).join('\n')
-  : '- No critical issues found'}
+    ? report.issues.map(issue => `- **${issue.test}** (${issue.severity}): ${issue.message}`).join('\n')
+    : '- No critical issues found'}
 
 ## Recommendations
 
@@ -349,10 +351,10 @@ ${report.recommendations.map(rec => `- ${rec}`).join('\n')}
 **Status:** \`${report.decision}\`
 
 ${report.decision.startsWith('GO')
-  ? '### ✓ System Ready for Production\nAll validation tests have passed. The system is stable and ready for production deployment.'
-  : report.decision === 'SKIPPED - Tests not run'
-  ? '### ⚠ Tests Not Run\nIntegration validation tests could not be executed. Ensure WebSocket server is running on port 8765.'
-  : '### ✗ System Not Ready\nFix identified issues before proceeding with production deployment. Review test output for details.'}
+    ? '### ✓ System Ready for Production\nAll validation tests have passed. The system is stable and ready for production deployment.'
+    : report.decision === 'SKIPPED - Tests not run'
+      ? '### ⚠ Tests Not Run\nIntegration validation tests could not be executed. Ensure WebSocket server is running on port 8765.'
+      : '### ✗ System Not Ready\nFix identified issues before proceeding with production deployment. Review test output for details.'}
 
 ## Test Coverage
 

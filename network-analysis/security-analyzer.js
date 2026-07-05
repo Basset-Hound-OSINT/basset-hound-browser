@@ -256,37 +256,37 @@ class SecurityAnalyzer {
    */
   analyzeSecurityHeader(headerKey, value, url) {
     switch (headerKey) {
-      case 'content-security-policy':
-      case 'content-security-policy-report-only':
-        return this.analyzeCSP(value);
+    case 'content-security-policy':
+    case 'content-security-policy-report-only':
+      return this.analyzeCSP(value);
 
-      case 'strict-transport-security':
-        return this.analyzeHSTS(value);
+    case 'strict-transport-security':
+      return this.analyzeHSTS(value);
 
-      case 'x-frame-options':
-        return this.analyzeXFrameOptions(value);
+    case 'x-frame-options':
+      return this.analyzeXFrameOptions(value);
 
-      case 'x-content-type-options':
-        return this.analyzeXContentTypeOptions(value);
+    case 'x-content-type-options':
+      return this.analyzeXContentTypeOptions(value);
 
-      case 'referrer-policy':
-        return this.analyzeReferrerPolicy(value);
+    case 'referrer-policy':
+      return this.analyzeReferrerPolicy(value);
 
-      case 'permissions-policy':
-      case 'feature-policy':
-        return this.analyzePermissionsPolicy(value);
+    case 'permissions-policy':
+    case 'feature-policy':
+      return this.analyzePermissionsPolicy(value);
 
-      case 'cross-origin-embedder-policy':
-        return this.analyzeCOEP(value);
+    case 'cross-origin-embedder-policy':
+      return this.analyzeCOEP(value);
 
-      case 'cross-origin-opener-policy':
-        return this.analyzeCOOP(value);
+    case 'cross-origin-opener-policy':
+      return this.analyzeCOOP(value);
 
-      case 'cross-origin-resource-policy':
-        return this.analyzeCORP(value);
+    case 'cross-origin-resource-policy':
+      return this.analyzeCORP(value);
 
-      default:
-        return { parsed: value, issues: [], recommendations: [] };
+    default:
+      return { parsed: value, issues: [], recommendations: [] };
     }
   }
 
@@ -662,15 +662,15 @@ class SecurityAnalyzer {
    */
   getMissingHeaderRecommendation(headerKey) {
     const recommendations = {
-      'content-security-policy': "Add a Content-Security-Policy header to control resource loading",
-      'strict-transport-security': "Add Strict-Transport-Security header to enforce HTTPS",
-      'x-frame-options': "Add X-Frame-Options: DENY or SAMEORIGIN to prevent clickjacking",
-      'x-content-type-options': "Add X-Content-Type-Options: nosniff to prevent MIME sniffing",
-      'referrer-policy': "Add Referrer-Policy to control referrer information",
-      'permissions-policy': "Consider adding Permissions-Policy to control browser features",
-      'cross-origin-embedder-policy': "Consider adding COEP for cross-origin isolation",
-      'cross-origin-opener-policy': "Consider adding COOP for cross-origin isolation",
-      'cross-origin-resource-policy': "Consider adding CORP to control resource loading"
+      'content-security-policy': 'Add a Content-Security-Policy header to control resource loading',
+      'strict-transport-security': 'Add Strict-Transport-Security header to enforce HTTPS',
+      'x-frame-options': 'Add X-Frame-Options: DENY or SAMEORIGIN to prevent clickjacking',
+      'x-content-type-options': 'Add X-Content-Type-Options: nosniff to prevent MIME sniffing',
+      'referrer-policy': 'Add Referrer-Policy to control referrer information',
+      'permissions-policy': 'Consider adding Permissions-Policy to control browser features',
+      'cross-origin-embedder-policy': 'Consider adding COEP for cross-origin isolation',
+      'cross-origin-opener-policy': 'Consider adding COOP for cross-origin isolation',
+      'cross-origin-resource-policy': 'Consider adding CORP to control resource loading'
     };
 
     return recommendations[headerKey] || `Consider adding ${headerKey} header`;
@@ -707,12 +707,19 @@ class SecurityAnalyzer {
     score = Math.max(0, Math.min(100, score));
 
     // Determine grade
-    if (score >= 90) grade = 'A+';
-    else if (score >= 80) grade = 'A';
-    else if (score >= 70) grade = 'B';
-    else if (score >= 60) grade = 'C';
-    else if (score >= 50) grade = 'D';
-    else grade = 'F';
+    if (score >= 90) {
+      grade = 'A+';
+    } else if (score >= 80) {
+      grade = 'A';
+    } else if (score >= 70) {
+      grade = 'B';
+    } else if (score >= 60) {
+      grade = 'C';
+    } else if (score >= 50) {
+      grade = 'D';
+    } else {
+      grade = 'F';
+    }
 
     return {
       score,

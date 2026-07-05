@@ -162,10 +162,18 @@ class SLAEngine extends EventEmitter {
       return { success: false, error: `Policy for ${priority} not found` };
     }
 
-    if (updates.responseTimeMinutes) policy.responseTimeMinutes = updates.responseTimeMinutes;
-    if (updates.resolutionTimeMinutes) policy.resolutionTimeMinutes = updates.resolutionTimeMinutes;
-    if (updates.escalationSteps) policy.escalationSteps = updates.escalationSteps;
-    if (updates.businessHoursOnly !== undefined) policy.businessHoursOnly = updates.businessHoursOnly;
+    if (updates.responseTimeMinutes) {
+      policy.responseTimeMinutes = updates.responseTimeMinutes;
+    }
+    if (updates.resolutionTimeMinutes) {
+      policy.resolutionTimeMinutes = updates.resolutionTimeMinutes;
+    }
+    if (updates.escalationSteps) {
+      policy.escalationSteps = updates.escalationSteps;
+    }
+    if (updates.businessHoursOnly !== undefined) {
+      policy.businessHoursOnly = updates.businessHoursOnly;
+    }
 
     policy.updatedAt = new Date().toISOString();
 
@@ -206,7 +214,7 @@ class SLAEngine extends EventEmitter {
     const businessStart = 9;
     const businessEnd = 17;
 
-    let current = new Date(deadline);
+    const current = new Date(deadline);
     let remainingMinutes = minutes;
 
     while (remainingMinutes > 0) {
@@ -433,7 +441,9 @@ class SLAEngine extends EventEmitter {
    */
   handleEscalation(ticket, compliance) {
     const policy = this.policies.get(ticket.priority);
-    if (!policy) return;
+    if (!policy) {
+      return;
+    }
 
     const now = new Date();
     const responseDeadline = new Date(ticket.sla.responseDeadline);

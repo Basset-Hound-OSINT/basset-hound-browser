@@ -29,9 +29,9 @@ class ProductionLoadProfileTest {
 
     // Operation distribution matching production
     this.operationDistribution = {
-      monitoring: 0.70,    // get_url, get_content, screenshot, get_html
-      detection: 0.20,     // detect_tech, get_headers, get_console_logs
-      dashboard: 0.10      // list_sessions, get_session_info, get_analytics
+      monitoring: 0.70, // get_url, get_content, screenshot, get_html
+      detection: 0.20, // detect_tech, get_headers, get_console_logs
+      dashboard: 0.10 // list_sessions, get_session_info, get_analytics
     };
 
     this.operationTypes = {
@@ -222,7 +222,9 @@ class ProductionLoadProfileTest {
     const connectionIntervals = [];
 
     for (const conn of connections) {
-      if (!conn || !conn.connected) continue;
+      if (!conn || !conn.connected) {
+        continue;
+      }
 
       const intervalId = setInterval(() => {
         if (conn.ws.readyState !== WebSocket.OPEN || performance.now() > testEndTime) {

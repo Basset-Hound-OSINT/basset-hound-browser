@@ -126,7 +126,7 @@ describe('Interaction Pattern Anonymization', () => {
       const elements = [
         { x: 100, y: 100, width: 100, height: 50, type: 'button' },
         { x: 300, y: 100, width: 100, height: 50, type: 'button' },
-        { x: 100, y: 200, width: 100, height: 50, type: 'button' },
+        { x: 100, y: 200, width: 100, height: 50, type: 'button' }
       ];
 
       const sequence = patterns.generateClickSequence(elements);
@@ -139,7 +139,7 @@ describe('Interaction Pattern Anonymization', () => {
     test('Click sequence should have hover before click', () => {
       const elements = [
         { x: 100, y: 100, width: 100, height: 50 },
-        { x: 300, y: 100, width: 100, height: 50 },
+        { x: 300, y: 100, width: 100, height: 50 }
       ];
 
       const sequence = patterns.generateClickSequence(elements);
@@ -166,7 +166,7 @@ describe('Interaction Pattern Anonymization', () => {
     test('Elements should be clicked in reading order (top-to-bottom)', () => {
       const elements = [
         { x: 100, y: 300, width: 100, height: 50, id: 'bottom' },
-        { x: 100, y: 100, width: 100, height: 50, id: 'top' },
+        { x: 100, y: 100, width: 100, height: 50, id: 'top' }
       ];
 
       const sequence = patterns.generateClickSequence(elements);
@@ -192,14 +192,14 @@ describe('Interaction Pattern Anonymization', () => {
           selector: '#email',
           value: 'john@example.com',
           type: 'email',
-          label: 'Email',
+          label: 'Email'
         },
         {
           selector: '#password',
           value: 'secret123',
           type: 'password',
-          label: 'Password',
-        },
+          label: 'Password'
+        }
       ];
 
       const actions = patterns.generateFormFillingPattern(fields);
@@ -211,7 +211,7 @@ describe('Interaction Pattern Anonymization', () => {
 
     test('Form filling should include focus, type, and submit', () => {
       const fields = [
-        { selector: '#name', value: 'John', type: 'text', label: 'Name' },
+        { selector: '#name', value: 'John', type: 'text', label: 'Name' }
       ];
 
       const actions = patterns.generateFormFillingPattern(fields);
@@ -225,7 +225,7 @@ describe('Interaction Pattern Anonymization', () => {
       const fields = [
         { selector: '#field1', value: 'value1', type: 'text', label: 'Field 1' },
         { selector: '#field2', value: 'value2', type: 'text', label: 'Field 2' },
-        { selector: '#field3', value: 'value3', type: 'text', label: 'Field 3' },
+        { selector: '#field3', value: 'value3', type: 'text', label: 'Field 3' }
       ];
 
       const actions = patterns.generateFormFillingPattern(fields);
@@ -239,7 +239,7 @@ describe('Interaction Pattern Anonymization', () => {
     test('Should include hesitation delays between fields', () => {
       const fields = [
         { selector: '#name', value: 'John', type: 'text' },
-        { selector: '#email', value: 'john@example.com', type: 'email' },
+        { selector: '#email', value: 'john@example.com', type: 'email' }
       ];
 
       const actions = patterns.generateFormFillingPattern(fields);
@@ -258,7 +258,7 @@ describe('Interaction Pattern Anonymization', () => {
 
     test('Submit should be last action with hesitation delay', () => {
       const fields = [
-        { selector: '#name', value: 'John', type: 'text' },
+        { selector: '#name', value: 'John', type: 'text' }
       ];
 
       const actions = patterns.generateFormFillingPattern(fields);
@@ -407,7 +407,7 @@ describe('Interaction Pattern Anonymization', () => {
     test('Should record interactions', () => {
       patterns.recordInteraction({
         type: 'click',
-        element: 'button',
+        element: 'button'
       });
 
       expect(patterns.interactionHistory.length).toBe(1);
@@ -417,7 +417,7 @@ describe('Interaction Pattern Anonymization', () => {
       for (let i = 0; i < 1500; i++) {
         patterns.recordInteraction({
           type: 'click',
-          id: i,
+          id: i
         });
       }
 

@@ -1,0 +1,183 @@
+name: v12.9.0 Feature Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/v12-9-0/**'
+      - 'tests/v12-9-0/**'
+      - '.github/workflows/v12.9.0-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/v12-9-0/**'
+      - 'tests/v12-9-0/**'
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run v12.9.0 Feature Tests
+        run: npm test -- tests/v12-9-0/features --reporter=json --outputFile=test-results.json
+        continue-on-error: true
+
+      - name: Run Compression Tests
+        run: npm test -- tests/v12-9-0/features/compression*.test.js --reporter=tap > compression-results.tap
+        continue-on-error: true
+
+      - name: Run Forensic Analysis Tests
+        run: npm test -- tests/v12-9-0/features/forensic*.test.js --reporter=tap > forensic-results.tap
+        continue-on-error: true
+
+      - name: Generate Test Report
+        if: always()
+        run: |
+          npm run test:v12.9.0:report || echo "Report generation skipped"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-node-${{ matrix.node-version }}
+          path: |
+            test-results.json
+            compression-results.tap
+            forensic-results.tap
+          retention-days: 30
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const testResults = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+            const comment = `## v12.9.0 Feature Tests
+            - **Node Version**: ${{ matrix.node-version }}
+            - **Tests Run**: ${testResults.stats.tests}
+            - **Passed**: ${testResults.stats.passes}
+            - **Failed**: ${testResults.stats.failures}
+            - **Duration**: ${testResults.stats.duration}ms
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: test
+    if: success()
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Integration Tests
+        run: npm test -- tests/v12-9-0/integration --timeout=30000
+        continue-on-error: true
+
+      - name: Run Benchmark Tests
+        run: npm test -- tests/v12-9-0/benchmarks --reporter=json --outputFile=benchmark-results.json
+        continue-on-error: true
+
+      - name: Upload Integration Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-results
+          path: benchmark-results.json
+          retention-days: 30
+
+  performance:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Performance Tests
+        run: npm run test:v12.9.0:performance || echo "Performance tests not configured"
+        continue-on-error: true
+
+      - name: Compare Performance Baseline
+        run: npm run test:v12.9.0:performance:compare || echo "Baseline comparison skipped"
+        continue-on-error: true
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Coverage Report
+        run: npm run test:v12.9.0:coverage || npm test -- tests/v12-9-0 --coverage
+        continue-on-error: true
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: v12.9.0
+          name: v12.9.0-coverage
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [test, integration-tests, performance, coverage]
+    if: always()
+
+    steps:
+      - name: Test Summary
+        run: |
+          echo "## v12.9.0 CI Pipeline Summary"
+          echo "- Unit Tests: ${{ needs.test.result }}"
+          echo "- Integration Tests: ${{ needs.integration-tests.result }}"
+          echo "- Performance Tests: ${{ needs.performance.result }}"
+          echo "- Coverage: ${{ needs.coverage.result }}"

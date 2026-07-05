@@ -518,7 +518,9 @@ class SessionStorage {
           const files = fs.readdirSync(this.filesystemPath);
 
           for (const file of files) {
-            if (!file.endsWith('.json')) continue;
+            if (!file.endsWith('.json')) {
+              continue;
+            }
 
             try {
               const filePath = path.join(this.filesystemPath, file);

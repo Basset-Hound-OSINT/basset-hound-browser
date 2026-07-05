@@ -218,7 +218,9 @@ Your ticket will receive immediate attention from our senior support team.
    */
   async sendAutoResponse(ticket, type) {
     const template = this.templates[type];
-    if (!template) return;
+    if (!template) {
+      return;
+    }
 
     const responseData = {
       ticketId: ticket.id,
@@ -564,7 +566,9 @@ Your ticket will receive immediate attention from our senior support team.
       t => t.status === 'resolved' || t.status === 'closed'
     );
 
-    if (resolvedTickets.length === 0) return 0;
+    if (resolvedTickets.length === 0) {
+      return 0;
+    }
 
     const totalTime = resolvedTickets.reduce((sum, ticket) => {
       const created = new Date(ticket.createdAt);
@@ -581,7 +585,9 @@ Your ticket will receive immediate attention from our senior support team.
   calculateAverageResponseTime() {
     const respondedTickets = Array.from(this.tickets.values()).filter(t => t.responses.length > 0);
 
-    if (respondedTickets.length === 0) return 0;
+    if (respondedTickets.length === 0) {
+      return 0;
+    }
 
     const totalTime = respondedTickets.reduce((sum, ticket) => {
       const created = new Date(ticket.createdAt);

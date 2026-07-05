@@ -195,7 +195,7 @@ class PluginAPI extends EventEmitter {
         getStatus() {
           return {
             success: true,
-            hasMainWindow: !!self.mainWindow,
+            hasMainWindow: Boolean(self.mainWindow),
             apiVersion: self.version
           };
         }
@@ -455,18 +455,18 @@ class PluginAPI extends EventEmitter {
               const url = contentResult.url || '';
 
               switch (type) {
-                case 'metadata':
-                  return { success: true, data: self.managers.extraction.extractMetadata(html, url) };
-                case 'links':
-                  return { success: true, data: self.managers.extraction.extractLinks(html, url) };
-                case 'forms':
-                  return { success: true, data: self.managers.extraction.extractForms(html) };
-                case 'images':
-                  return { success: true, data: self.managers.extraction.extractImages(html, url) };
-                case 'all':
-                  return { success: true, data: self.managers.extraction.extractAll(html, url) };
-                default:
-                  return { success: false, error: `Unknown extraction type: ${type}` };
+              case 'metadata':
+                return { success: true, data: self.managers.extraction.extractMetadata(html, url) };
+              case 'links':
+                return { success: true, data: self.managers.extraction.extractLinks(html, url) };
+              case 'forms':
+                return { success: true, data: self.managers.extraction.extractForms(html) };
+              case 'images':
+                return { success: true, data: self.managers.extraction.extractImages(html, url) };
+              case 'all':
+                return { success: true, data: self.managers.extraction.extractAll(html, url) };
+              default:
+                return { success: false, error: `Unknown extraction type: ${type}` };
               }
             }
             return { success: false, error: 'Extraction manager not available' };

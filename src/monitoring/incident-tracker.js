@@ -47,7 +47,7 @@ class IncidentTracker extends EventEmitter {
     super();
 
     this.options = {
-      dataDir: options.dataDir || path.join(process.cwd(), '.basset-hound', 'incidents'),
+      dataDir: options.dataDir || path.join(process.cwd(), 'tmp', '.basset-hound', 'incidents'),
       autoCreateFromAlerts: options.autoCreateFromAlerts !== false,
       alertThreshold: options.alertThreshold || 'high', // Alert severity threshold for auto-creation
       ...options
@@ -194,7 +194,9 @@ class IncidentTracker extends EventEmitter {
    */
   acknowledgeIncident(incidentId, acknowledgedBy) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) throw new Error(`Incident ${incidentId} not found`);
+    if (!incident) {
+      throw new Error(`Incident ${incidentId} not found`);
+    }
 
     incident.status = INCIDENT_STATUS.ACKNOWLEDGED;
     incident.acknowledgedAt = Date.now();
@@ -215,7 +217,9 @@ class IncidentTracker extends EventEmitter {
    */
   updateIncidentStatus(incidentId, newStatus, updatedBy) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) throw new Error(`Incident ${incidentId} not found`);
+    if (!incident) {
+      throw new Error(`Incident ${incidentId} not found`);
+    }
 
     const oldStatus = incident.status;
     incident.status = newStatus;
@@ -241,7 +245,9 @@ class IncidentTracker extends EventEmitter {
    */
   resolveIncident(incidentId, resolution, resolvedBy) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) throw new Error(`Incident ${incidentId} not found`);
+    if (!incident) {
+      throw new Error(`Incident ${incidentId} not found`);
+    }
 
     incident.status = INCIDENT_STATUS.RESOLVED;
     incident.resolvedAt = Date.now();
@@ -269,7 +275,9 @@ class IncidentTracker extends EventEmitter {
    */
   closeIncident(incidentId, closedBy) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) throw new Error(`Incident ${incidentId} not found`);
+    if (!incident) {
+      throw new Error(`Incident ${incidentId} not found`);
+    }
 
     incident.status = INCIDENT_STATUS.CLOSED;
     incident.closedAt = Date.now();
@@ -293,7 +301,9 @@ class IncidentTracker extends EventEmitter {
    */
   addEvent(incidentId, eventConfig) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) throw new Error(`Incident ${incidentId} not found`);
+    if (!incident) {
+      throw new Error(`Incident ${incidentId} not found`);
+    }
 
     const event = {
       id: `${incidentId}-EVT-${incident.events.length}`,
@@ -315,7 +325,9 @@ class IncidentTracker extends EventEmitter {
    */
   getIncidentTimeline(incidentId) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) return null;
+    if (!incident) {
+      return null;
+    }
 
     return {
       incidentId,
@@ -336,7 +348,9 @@ class IncidentTracker extends EventEmitter {
    */
   createPostMortem(incidentId, config) {
     const incident = this.incidents.get(incidentId);
-    if (!incident) throw new Error(`Incident ${incidentId} not found`);
+    if (!incident) {
+      throw new Error(`Incident ${incidentId} not found`);
+    }
 
     const postMortem = {
       incidentId,
@@ -443,7 +457,9 @@ class IncidentTracker extends EventEmitter {
       if (incident.duration) {
         totalDuration += incident.duration;
         totalResolutionTime += incident.resolvedAt ? incident.duration : 0;
-        if (incident.resolvedAt) resolvedCount++;
+        if (incident.resolvedAt) {
+          resolvedCount++;
+        }
       }
     }
 

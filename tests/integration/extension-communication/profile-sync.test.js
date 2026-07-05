@@ -130,14 +130,24 @@ function setupServerHandlers() {
     }
 
     // Update fields
-    if (params.name !== undefined) profile.name = params.name;
-    if (params.userAgent !== undefined) profile.userAgent = params.userAgent;
+    if (params.name !== undefined) {
+      profile.name = params.name;
+    }
+    if (params.userAgent !== undefined) {
+      profile.userAgent = params.userAgent;
+    }
     if (params.fingerprint !== undefined) {
       profile.fingerprint = { ...profile.fingerprint, ...params.fingerprint };
     }
-    if (params.proxy !== undefined) profile.proxy = params.proxy;
-    if (params.headers !== undefined) profile.headers = { ...profile.headers, ...params.headers };
-    if (params.geolocation !== undefined) profile.geolocation = params.geolocation;
+    if (params.proxy !== undefined) {
+      profile.proxy = params.proxy;
+    }
+    if (params.headers !== undefined) {
+      profile.headers = { ...profile.headers, ...params.headers };
+    }
+    if (params.geolocation !== undefined) {
+      profile.geolocation = params.geolocation;
+    }
 
     profile.updatedAt = new Date().toISOString();
 

@@ -352,10 +352,18 @@ class SiteAnalyzer {
   calculateSecurityScore(security) {
     let score = 100;
 
-    if (!security.content_security_policy) score -= 10;
-    if (!security.x_frame_options) score -= 5;
-    if (!security.x_content_type_options) score -= 5;
-    if (!security.strict_transport_security) score -= 10;
+    if (!security.content_security_policy) {
+      score -= 10;
+    }
+    if (!security.x_frame_options) {
+      score -= 5;
+    }
+    if (!security.x_content_type_options) {
+      score -= 5;
+    }
+    if (!security.strict_transport_security) {
+      score -= 10;
+    }
 
     return Math.max(0, score);
   }
@@ -391,8 +399,8 @@ class SiteAnalyzer {
           <h3>${type}</h3>
           <p>
             ${Array.isArray(items) && items.length > 0
-              ? items.map(item => `<span class="tech-tag">${item}</span>`).join('')
-              : 'None detected'}
+    ? items.map(item => `<span class="tech-tag">${item}</span>`).join('')
+    : 'None detected'}
           </p>
         `).join('')}
 

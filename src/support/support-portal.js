@@ -123,7 +123,9 @@ class SupportPortal extends EventEmitter {
    * Record article view
    */
   recordArticleView(articleId) {
-    if (!this.knowledgeBase) return;
+    if (!this.knowledgeBase) {
+      return;
+    }
 
     this.knowledgeBase.recordView(articleId);
 

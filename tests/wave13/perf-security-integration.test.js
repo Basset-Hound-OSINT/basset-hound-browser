@@ -32,9 +32,15 @@ class MockPriorityQueue {
   }
 
   dequeue() {
-    if (this.queues.critical.length) return this.queues.critical.shift();
-    if (this.queues.normal.length) return this.queues.normal.shift();
-    if (this.queues.low.length) return this.queues.low.shift();
+    if (this.queues.critical.length) {
+      return this.queues.critical.shift();
+    }
+    if (this.queues.normal.length) {
+      return this.queues.normal.shift();
+    }
+    if (this.queues.low.length) {
+      return this.queues.low.shift();
+    }
     return null;
   }
 
@@ -191,8 +197,11 @@ class MockDOMCache {
   }
 
   logAccess(key, hit) {
-    if (hit) this.hits++;
-    else this.misses++;
+    if (hit) {
+      this.hits++;
+    } else {
+      this.misses++;
+    }
   }
 
   getStats() {
@@ -430,7 +439,7 @@ describe('Wave 13: Performance + Security Integration Tests', () => {
         auditLogger.logSensitiveOperation({
           command: 'extract_html',
           clientId: 'client1',
-          cacheHit: !!hit
+          cacheHit: Boolean(hit)
         });
       }
 
@@ -499,7 +508,9 @@ describe('Wave 13: Performance + Security Integration Tests', () => {
       // Simulate encryption during rate-limited operations
       for (let i = 0; i < 60; i++) {
         const allowed = limiter.canAccept('client1', 'create_session_checkpoint', 5);
-        if (!allowed.allowed) rateLimitedCount++;
+        if (!allowed.allowed) {
+          rateLimitedCount++;
+        }
 
         if (i % 10 === 0) {
           const data = { sessionId: `session${i}` };
@@ -549,7 +560,9 @@ describe('Wave 13: Performance + Security Integration Tests', () => {
       for (let i = 0; i < 20; i++) {
         // 1. Check rate limit
         const allowed = limiter.canAccept(`client${i % 5}`, 'screenshot', 10);
-        if (!allowed.allowed) continue;
+        if (!allowed.allowed) {
+          continue;
+        }
 
         // 2. Encrypt session checkpoint
         const sessionData = { id: i, url: `https://site${i}.com` };
@@ -571,7 +584,7 @@ describe('Wave 13: Performance + Security Integration Tests', () => {
         auditLogger.logSensitiveOperation({
           command: 'screenshot',
           clientId: `client${i % 5}`,
-          cacheHit: !!cachedContent,
+          cacheHit: Boolean(cachedContent),
           params: { encryptedCheckpoint: encrypted.slice(0, 20) + '...' }
         });
       }
@@ -599,7 +612,9 @@ describe('Wave 13: Performance + Security Integration Tests', () => {
       for (let i = 0; i < 100; i++) {
         // Rate check
         const allowed = limiter.canAccept(`client${i % 10}`, 'any', 5);
-        if (allowed.allowed) results.rateLimited++;
+        if (allowed.allowed) {
+          results.rateLimited++;
+        }
 
         // Encryption
         encryptor.encryptSession({ data: i });

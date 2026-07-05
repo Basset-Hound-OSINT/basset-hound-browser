@@ -58,8 +58,8 @@ class SignatureLoader {
         category: Array.isArray(sig.cats)
           ? sig.cats[0]
           : typeof sig.cats === 'string'
-          ? sig.cats
-          : sig.category || 'Unknown',
+            ? sig.cats
+            : sig.category || 'Unknown',
 
         headers: this.normalizeHeaders(sig.headers || {}),
         html: this.normalizeHtml(sig.html),
@@ -70,9 +70,15 @@ class SignatureLoader {
       };
 
       // Copy over optional fields
-      if (sig.description) normalized[id].description = sig.description;
-      if (sig.website) normalized[id].website = sig.website;
-      if (sig.icon) normalized[id].icon = sig.icon;
+      if (sig.description) {
+        normalized[id].description = sig.description;
+      }
+      if (sig.website) {
+        normalized[id].website = sig.website;
+      }
+      if (sig.icon) {
+        normalized[id].icon = sig.icon;
+      }
     }
 
     return normalized;
@@ -97,7 +103,9 @@ class SignatureLoader {
    * Normalize HTML patterns format
    */
   normalizeHtml(html) {
-    if (!html) return null;
+    if (!html) {
+      return null;
+    }
 
     const normalized = {
       patterns: Array.isArray(html) ? html : [html],
@@ -113,7 +121,9 @@ class SignatureLoader {
    * Normalize JavaScript patterns format
    */
   normalizeJs(js) {
-    if (!js) return null;
+    if (!js) {
+      return null;
+    }
 
     const normalized = {
       urls: [],
@@ -182,8 +192,12 @@ class SignatureLoader {
     const issues = [];
 
     for (const [id, sig] of Object.entries(this.signatures)) {
-      if (!sig.name) issues.push(`${id}: Missing name`);
-      if (!sig.category) issues.push(`${id}: Missing category`);
+      if (!sig.name) {
+        issues.push(`${id}: Missing name`);
+      }
+      if (!sig.category) {
+        issues.push(`${id}: Missing category`);
+      }
 
       // Validate patterns
       if (sig.headers && typeof sig.headers === 'object') {

@@ -21,8 +21,8 @@ class ResponseStreamer {
     this.streamDir = options.streamDir || '/tmp/basset-streams';
     this.htmlThreshold = options.htmlThreshold || 5 * 1024 * 1024; // 5MB
     this.diffThreshold = options.diffThreshold || 1 * 1024 * 1024; // 1MB
-    this.chunkSize = options.chunkSize || 64 * 1024;              // 64KB chunks
-    this.cleanupInterval = options.cleanupInterval || 3600000;    // 1 hour
+    this.chunkSize = options.chunkSize || 64 * 1024; // 64KB chunks
+    this.cleanupInterval = options.cleanupInterval || 3600000; // 1 hour
 
     this.metrics = {
       streamsCreated: 0,
@@ -149,7 +149,9 @@ class ResponseStreamer {
 
           while (true) {
             const { bytesRead } = await fileHandle.read(buffer, 0, this.chunkSize, offset);
-            if (bytesRead === 0) break;
+            if (bytesRead === 0) {
+              break;
+            }
 
             const chunk = buffer.slice(0, bytesRead);
             await chunkCallback(chunk);
@@ -229,7 +231,9 @@ class ResponseStreamer {
    * @private
    */
   _updateAvgStreamSize() {
-    if (this.metrics.streamSizes.length === 0) return;
+    if (this.metrics.streamSizes.length === 0) {
+      return;
+    }
 
     const sum = this.metrics.streamSizes.reduce((a, b) => a + b, 0);
     this.metrics.avgStreamSize = Math.round(sum / this.metrics.streamSizes.length);

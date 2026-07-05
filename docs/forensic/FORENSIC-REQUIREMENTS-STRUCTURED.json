@@ -1,0 +1,461 @@
+{
+  "functional_requirements": [
+    {
+      "id": "FR-FC-001",
+      "name": "Full Page HTML Extraction",
+      "category": "HTML Extraction & Capture",
+      "description": "Capture complete rendered page HTML with all DOM elements, attributes, and structure in raw, prettified, and minified formats",
+      "acceptance_criteria": [
+        "Capture returns identical HTML regardless of timing (idempotent)",
+        "All DOM elements including Shadow DOM included in output",
+        "Inline scripts and styles preserved verbatim with proper escaping",
+        "HTML structure is valid and re-parseable",
+        "Handles edge cases: frames, iframes, web components, custom elements, portals",
+        "Provides three format options in single response",
+        "Response includes metrics: element count, total size, unique tag types",
+        "Supports selective capture: full page or specific subtree by selector",
+        "Includes comments and doctype declarations"
+      ]
+    },
+    {
+      "id": "FR-FC-002",
+      "name": "DOM Structure Snapshot",
+      "category": "HTML Extraction & Capture",
+      "description": "Create structured snapshot of DOM tree with metadata about hierarchy and element properties including computed styles and visibility state",
+      "acceptance_criteria": [
+        "DOM snapshot includes parent-child relationships for all elements",
+        "Computed styles captured (not just inline styles)",
+        "Element visibility state recorded (display, visibility, opacity, z-index)",
+        "Data-* attributes and custom element properties preserved",
+        "Form field metadata: type, name, value, required, validation rules",
+        "Detects and marks hidden elements",
+        "Returns hierarchical JSON with XPath for element location",
+        "Includes text node content with whitespace preservation option",
+        "Captures bounding box and scroll position for each element",
+        "Identifies dynamic content markers (data-reactid, ng-*, v-*, etc.)"
+      ]
+    },
+    {
+      "id": "FR-FC-003",
+      "name": "Complete JavaScript Code Extraction",
+      "category": "JavaScript Capture",
+      "description": "Extract all JavaScript code executing in the page context including inline scripts, external files, and dynamically loaded modules",
+      "acceptance_criteria": [
+        "Extracts inline script tag content with original formatting",
+        "Captures external script URLs with integrity hash (SRI) when present",
+        "Identifies dynamically injected scripts (added via DOM manipulation)",
+        "Records script execution order and dependencies",
+        "Includes script tags with attributes (async, defer, module, nomodule, type)",
+        "Detects bundled code (webpack, rollup, parcel) markers",
+        "Returns source maps if available",
+        "Identifies minified vs. source code",
+        "Captures variable scope information when available",
+        "Records error callbacks and event listeners"
+      ]
+    },
+    {
+      "id": "FR-FC-004",
+      "name": "JavaScript Execution Context",
+      "category": "JavaScript Capture",
+      "description": "Snapshot JavaScript execution context at capture time including window state, functions, global variables, and loaded libraries",
+      "acceptance_criteria": [
+        "Captures window object enumerable properties",
+        "Records defined function names and signatures",
+        "Identifies loaded libraries (jQuery, React, Angular, etc.)",
+        "Captures console output history (logs, errors, warnings)",
+        "Records event listeners attached to elements",
+        "Includes timers (setTimeout, setInterval) state",
+        "Captures localStorage and sessionStorage contents",
+        "Records IndexedDB database information",
+        "Handles circular references and non-serializable objects",
+        "Provides safe serialization for function contents"
+      ]
+    },
+    {
+      "id": "FR-FC-005",
+      "name": "Complete CSS Extraction",
+      "category": "CSS Extraction",
+      "description": "Extract all stylesheets including inline blocks, external files, @imports, and computed styles applied to elements",
+      "acceptance_criteria": [
+        "Extracts inline style tag content with original formatting",
+        "Captures external stylesheet URLs with integrity hashes",
+        "Detects @import directives and resolves imported stylesheets",
+        "Identifies CSS preprocessor files (SASS, LESS, PostCSS)",
+        "Records stylesheet load order",
+        "Includes media query conditions and specificity",
+        "Captures CSS variables (custom properties) and values",
+        "Records font imports (@font-face)",
+        "Identifies CSS-in-JS frameworks (styled-components, emotion, etc.)",
+        "Returns computed styles for each element"
+      ]
+    },
+    {
+      "id": "FR-FC-006",
+      "name": "Network Request/Response Capture",
+      "category": "Network Capture",
+      "description": "Capture HTTP/HTTPS requests and responses with headers, bodies, timing, and status codes in HAR format",
+      "acceptance_criteria": [
+        "Captures all HTTP/HTTPS requests and responses",
+        "Records request headers, method, URL, query parameters",
+        "Records response headers, status code, reason phrase",
+        "Includes request and response bodies (with size limits)",
+        "Records timing: DNS lookup, connect, SSL/TLS, wait, download",
+        "Captures query strings and POST form data",
+        "Records redirect chains",
+        "Identifies blocked requests (CORS, CSP, etc.)",
+        "Includes TLS certificate information",
+        "Records content-type and encoding",
+        "Supports filtering by resource type, domain, or pattern",
+        "Exports to HAR format compatible with tools",
+        "Records WebSocket connections and messages",
+        "Handles binary data appropriately"
+      ]
+    },
+    {
+      "id": "FR-FC-007",
+      "name": "TLS Certificate Extraction",
+      "category": "Network Capture",
+      "description": "Extract TLS/SSL certificate information from secure connections including chain, subject, issuer, validity, and cipher suite",
+      "acceptance_criteria": [
+        "Extracts server certificate (leaf certificate)",
+        "Captures full certificate chain to root CA",
+        "Records subject distinguished name (CN, O, C, etc.)",
+        "Records issuer distinguished name",
+        "Includes validity period (notBefore, notAfter)",
+        "Captures public key and key size",
+        "Records certificate serial number",
+        "Includes signature algorithm and hash",
+        "Records certificate extensions (SAN, EKU, etc.)",
+        "Captures cipher suite information",
+        "Records protocol version (TLS 1.2, 1.3, etc.)",
+        "Identifies self-signed certificates",
+        "Checks certificate validity and expiration",
+        "Records OCSP stapling status"
+      ]
+    },
+    {
+      "id": "FR-FC-008",
+      "name": "Multi-Format Export",
+      "category": "Structured Export",
+      "description": "Export captured forensic data in JSON, CSV, XML, and HTML formats with hierarchical directory structure and integrity hashes",
+      "acceptance_criteria": [
+        "Supports JSON format with complete data structure",
+        "Supports CSV format with flattened records",
+        "Supports XML format with schema validation",
+        "Supports HTML format with interactive viewing",
+        "Creates organized directory structure",
+        "Includes metadata files (timestamps, source URLs, capture method)",
+        "Generates integrity hashes (SHA-256) for all files",
+        "Creates manifest file with file inventory",
+        "Supports compression (ZIP, TAR.GZ)",
+        "Preserves data relationships across formats",
+        "Handles large files with streaming",
+        "Includes README with format documentation"
+      ]
+    },
+    {
+      "id": "FR-FC-009",
+      "name": "Batch Operations",
+      "category": "Structured Export",
+      "description": "Perform forensic capture operations across multiple pages with parallel/sequential execution and progress tracking",
+      "acceptance_criteria": [
+        "Accepts array of URLs for batch processing",
+        "Supports parallel execution (configurable concurrency)",
+        "Provides sequential execution mode",
+        "Records success/failure for each URL",
+        "Includes partial failure handling (continue on error)",
+        "Provides progress callbacks",
+        "Returns aggregated results",
+        "Supports output organization by URL",
+        "Allows capture type filtering per URL",
+        "Records execution timing per URL",
+        "Handles timeout and retry logic",
+        "Provides cancellation capability"
+      ]
+    },
+    {
+      "id": "FR-FC-010",
+      "name": "Encrypted Export",
+      "category": "Structured Export",
+      "description": "Support encrypted export of sensitive forensic data using AES-256 encryption with password or key-based options",
+      "acceptance_criteria": [
+        "Uses AES-256-GCM encryption",
+        "Supports password-based key derivation (PBKDF2)",
+        "Supports direct key provision",
+        "Includes authentication tag (GCM mode)",
+        "Records encryption metadata (algorithm, salt, IV)",
+        "Supports compression before encryption",
+        "Provides secure key management",
+        "Includes decryption instructions",
+        "Validates integrity after decryption",
+        "Supports selective field encryption"
+      ]
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "category": "Performance",
+      "id": "NFR-PERF-001",
+      "requirement": "Capture Performance Targets",
+      "details": [
+        "HTML capture completes in less than 2 seconds per page",
+        "DOM snapshot completes in less than 1.5 seconds",
+        "JavaScript extraction completes in less than 1 second",
+        "CSS extraction completes in less than 1 second",
+        "Network capture (HAR) completes in less than 2 seconds",
+        "Batch operation processes 10 URLs in less than 45 seconds (parallel)",
+        "No memory leaks during batch operations",
+        "Memory usage remains under 500MB for 1000-element pages"
+      ]
+    },
+    {
+      "category": "Performance",
+      "id": "NFR-PERF-002",
+      "requirement": "Export Performance Targets",
+      "details": [
+        "JSON export completes in less than 3 seconds for full page capture",
+        "CSV export completes in less than 2 seconds",
+        "Compression (ZIP) completes in less than 5 seconds",
+        "Encryption (AES-256) completes in less than 4 seconds",
+        "Large file handling (more than 100MB) uses streaming"
+      ]
+    },
+    {
+      "category": "Accuracy & Fidelity",
+      "id": "NFR-ACC-001",
+      "requirement": "Content Fidelity",
+      "details": [
+        "100% of DOM elements captured without loss",
+        "HTML is character-for-character accurate",
+        "No content alteration or modification",
+        "All inline resources preserved",
+        "Whitespace and formatting preserved when requested"
+      ]
+    },
+    {
+      "category": "Accuracy & Fidelity",
+      "id": "NFR-ACC-002",
+      "requirement": "Forensic Integrity",
+      "details": [
+        "SHA-256 hash verification of all captured content",
+        "Chain of custody documentation without gaps",
+        "Timestamp accuracy within 100 milliseconds",
+        "All data verifiable against independent sources"
+      ]
+    },
+    {
+      "category": "Security",
+      "id": "NFR-SEC-001",
+      "requirement": "Data Protection",
+      "details": [
+        "Optional encryption for exported data (AES-256-GCM)",
+        "Secure handling of sensitive data (passwords redacted)",
+        "SSL/TLS for network capture",
+        "Audit logging of all export operations",
+        "Access control to forensic data"
+      ]
+    },
+    {
+      "category": "Security",
+      "id": "NFR-SEC-002",
+      "requirement": "Integrity Verification",
+      "details": [
+        "Cryptographic hashing of all evidence",
+        "Tamper detection capability",
+        "Chain of custody validation",
+        "Timestamp verification"
+      ]
+    },
+    {
+      "category": "Compatibility",
+      "id": "NFR-COMPAT-001",
+      "requirement": "Browser Compatibility",
+      "details": [
+        "Works with all 164 existing WebSocket commands",
+        "Compatible with existing evasion features",
+        "Compatible with proxy/Tor integration",
+        "Compatible with session management",
+        "Compatible with all 7 fingerprint profiles"
+      ]
+    },
+    {
+      "category": "Compatibility",
+      "id": "NFR-COMPAT-002",
+      "requirement": "Format Compatibility",
+      "details": [
+        "HAR format compatible with HAR viewer tools",
+        "JSON schema-compliant output",
+        "CSV follows RFC 4180 standard",
+        "HTML renders in all modern browsers",
+        "ZIP archives compatible with standard tools"
+      ]
+    },
+    {
+      "category": "Usability",
+      "id": "NFR-USAB-001",
+      "requirement": "API Simplicity",
+      "details": [
+        "Python client library with intuitive interface",
+        "JavaScript/Node.js client library",
+        "Comprehensive examples for common tasks",
+        "Clear error messages with recovery suggestions",
+        "Documentation for all commands and parameters"
+      ]
+    },
+    {
+      "category": "Usability",
+      "id": "NFR-USAB-002",
+      "requirement": "Documentation",
+      "details": [
+        "Complete API reference with examples",
+        "5-minute quick start guide",
+        "Integration guide for common platforms",
+        "Troubleshooting guide",
+        "Best practices document"
+      ]
+    }
+  ],
+  "api_contract": {
+    "protocol": "WebSocket",
+    "default_port": 8765,
+    "message_format": "JSON",
+    "commands": [
+      {
+        "name": "capture_html",
+        "category": "HTML Capture",
+        "description": "Capture complete rendered HTML",
+        "parameters": [
+          {"name": "format", "type": "string", "enum": ["raw", "prettified", "minified"], "required": false},
+          {"name": "include_comments", "type": "boolean", "required": false}
+        ],
+        "timeout_ms": 5000,
+        "retryable": true
+      },
+      {
+        "name": "capture_dom_snapshot",
+        "category": "HTML Capture",
+        "description": "Capture DOM structure with metadata",
+        "parameters": [
+          {"name": "include_styles", "type": "boolean", "required": false},
+          {"name": "include_text_nodes", "type": "boolean", "required": false}
+        ],
+        "timeout_ms": 4000,
+        "retryable": true
+      },
+      {
+        "name": "capture_scripts",
+        "category": "JavaScript Capture",
+        "description": "Extract all JavaScript code",
+        "parameters": [
+          {"name": "include_content", "type": "boolean", "required": false},
+          {"name": "include_source_maps", "type": "boolean", "required": false}
+        ],
+        "timeout_ms": 3000,
+        "retryable": true
+      },
+      {
+        "name": "capture_stylesheets",
+        "category": "CSS Capture",
+        "description": "Extract all CSS styling",
+        "parameters": [
+          {"name": "include_computed_styles", "type": "boolean", "required": false}
+        ],
+        "timeout_ms": 3000,
+        "retryable": true
+      },
+      {
+        "name": "capture_network_traffic",
+        "category": "Network Capture",
+        "description": "Capture HTTP/HTTPS traffic in HAR format",
+        "parameters": [
+          {"name": "include_bodies", "type": "boolean", "required": false},
+          {"name": "filter_by_type", "type": "string", "required": false}
+        ],
+        "timeout_ms": 5000,
+        "retryable": false
+      },
+      {
+        "name": "export_forensic_data",
+        "category": "Export",
+        "description": "Export all captured forensic data",
+        "parameters": [
+          {"name": "format", "type": "string", "enum": ["json", "csv", "xml", "html"], "required": true},
+          {"name": "output_path", "type": "string", "required": true},
+          {"name": "include_metadata", "type": "boolean", "required": false}
+        ],
+        "timeout_ms": 10000,
+        "retryable": true
+      },
+      {
+        "name": "batch_capture_forensic",
+        "category": "Batch",
+        "description": "Capture forensic data from multiple URLs",
+        "parameters": [
+          {"name": "urls", "type": "array", "required": true},
+          {"name": "capture_types", "type": "array", "required": false},
+          {"name": "parallel_count", "type": "integer", "required": false},
+          {"name": "output_directory", "type": "string", "required": true}
+        ],
+        "timeout_ms": 60000,
+        "retryable": true
+      }
+    ],
+    "response_structure": {
+      "success": {
+        "id": "string",
+        "command": "string",
+        "success": "boolean",
+        "data": "object",
+        "timestamp": "ISO8601",
+        "execution_time_ms": "number"
+      },
+      "error": {
+        "id": "string",
+        "command": "string",
+        "success": "boolean",
+        "error": "string",
+        "error_code": "string",
+        "recovery": {
+          "suggestion": "string",
+          "alternative_commands": "array"
+        },
+        "timestamp": "ISO8601"
+      }
+    }
+  },
+  "export_specification": {
+    "directory_structure": {
+      "root": "forensic-capture-YYYY-MM-DD/",
+      "subdirectories": [
+        "html/ (raw, prettified, minified HTML files)",
+        "dom/ (DOM snapshot JSON)",
+        "scripts/ (inline scripts, external references, analysis)",
+        "stylesheets/ (inline styles, external references, variables)",
+        "network/ (HAR archive, certificates, statistics)",
+        "screenshots/ (viewport and fullpage captures)"
+      ],
+      "metadata_files": [
+        "metadata.json (capture metadata and timing)",
+        "manifest.json (file inventory with hashes)",
+        "INTEGRITY_HASHES.txt (SHA-256 hashes for verification)",
+        "README.md (documentation)"
+      ]
+    },
+    "formats_supported": [
+      {"format": "JSON", "extension": ".json", "streaming": false},
+      {"format": "CSV", "extension": ".csv", "streaming": true},
+      {"format": "XML", "extension": ".xml", "streaming": false},
+      {"format": "HTML", "extension": ".html", "streaming": false},
+      {"format": "HAR", "extension": ".har", "streaming": true},
+      {"format": "ZIP", "extension": ".zip", "compression": true},
+      {"format": "TAR.GZ", "extension": ".tar.gz", "compression": true}
+    ],
+    "integrity_features": [
+      "SHA-256 hashing for all files",
+      "Manifest with file inventory",
+      "Timestamp verification",
+      "Optional encryption (AES-256-GCM)",
+      "Chain of custody documentation"
+    ]
+  }
+}

@@ -224,7 +224,7 @@ class MockDataAggregator extends EventEmitter {
 }
 
 // Test Suite
-describe('Dashboard Stress Tests - Large Dataset', function() {
+describe('Dashboard Stress Tests - Large Dataset', function () {
   this.timeout(60000);
 
   let dashboard;
@@ -237,8 +237,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     memoryBaseline = process.memoryUsage().heapUsed;
   });
 
-  describe('Scenario 1: 100+ Monitors Registration', function() {
-    it('should register 100 monitors within 100ms', function() {
+  describe('Scenario 1: 100+ Monitors Registration', () => {
+    it('should register 100 monitors within 100ms', () => {
       const startTime = Date.now();
 
       for (let i = 0; i < 100; i++) {
@@ -255,7 +255,7 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
       assert(elapsed < 100, `Registration should be <100ms, was ${elapsed}ms`);
     });
 
-    it('should handle 100 monitors with minimal memory overhead', function() {
+    it('should handle 100 monitors with minimal memory overhead', () => {
       const memoryAfter = process.memoryUsage().heapUsed;
       const increase = memoryAfter - memoryBaseline;
       const increasePerMonitor = increase / 100;
@@ -266,8 +266,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 2: 1000+ Changes Addition', function() {
-    it('should add 1000 changes across monitors in <2000ms', function() {
+  describe('Scenario 2: 1000+ Changes Addition', () => {
+    it('should add 1000 changes across monitors in <2000ms', () => {
       const startTime = Date.now();
       let changeCount = 0;
 
@@ -289,7 +289,7 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
       assert(elapsed < 2000, `Adding 1000 changes should be <2000ms, was ${elapsed}ms`);
     });
 
-    it('should maintain timeline ordering with 1000 changes', function() {
+    it('should maintain timeline ordering with 1000 changes', () => {
       const timeline = dashboard.timeline.slice(0, 100);
 
       for (let i = 0; i < timeline.length - 1; i++) {
@@ -298,7 +298,7 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
       }
     });
 
-    it('should aggregate 1000 changes by monitor in <500ms', function() {
+    it('should aggregate 1000 changes by monitor in <500ms', () => {
       const startTime = Date.now();
       const aggregated = dashboard.aggregateByMonitor({ limit: 50 });
       const elapsed = Date.now() - startTime;
@@ -309,8 +309,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 3: 50,000+ Alerts Performance', function() {
-    it('should create 50000 alerts efficiently', function() {
+  describe('Scenario 3: 50,000+ Alerts Performance', () => {
+    it('should create 50000 alerts efficiently', () => {
       const startTime = Date.now();
       let alertCount = 0;
 
@@ -332,13 +332,13 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
       assert(elapsed < 10000, `Adding 50000 alerts should be <10000ms, was ${elapsed}ms`);
     });
 
-    it('should track alert count metric accurately', function() {
+    it('should track alert count metric accurately', () => {
       const alertCountMetric = dashboard.metrics.get('alert_count');
       assert.strictEqual(alertCountMetric.value, 50000,
         'Alert count metric should reflect 50000 alerts');
     });
 
-    it('should filter alerts by monitor efficiently', function() {
+    it('should filter alerts by monitor efficiently', () => {
       const startTime = Date.now();
       const monitorAlerts = [];
 
@@ -354,8 +354,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 4: Memory Usage Under Load', function() {
-    it('should maintain bounded memory growth with 1000+ changes', function() {
+  describe('Scenario 4: Memory Usage Under Load', () => {
+    it('should maintain bounded memory growth with 1000+ changes', () => {
       const memoryBefore = process.memoryUsage().heapUsed;
 
       // Add more changes to existing monitors
@@ -379,7 +379,7 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
         `Per-change memory should be <1KB, was ${memoryPerChange}B`);
     });
 
-    it('should not leak memory with repeated operations', function() {
+    it('should not leak memory with repeated operations', () => {
       const measurements = [];
 
       for (let iteration = 0; iteration < 5; iteration++) {
@@ -407,8 +407,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 5: Sorting Performance with Large Datasets', function() {
-    it('should sort 1000+ changes by timestamp in <100ms', function() {
+  describe('Scenario 5: Sorting Performance with Large Datasets', () => {
+    it('should sort 1000+ changes by timestamp in <100ms', () => {
       const startTime = Date.now();
 
       const sorted = dashboard.timeline
@@ -420,7 +420,7 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
       assert(elapsed < 100, `Sorting should be <100ms, was ${elapsed}ms`);
     });
 
-    it('should filter timeline by category in <50ms', function() {
+    it('should filter timeline by category in <50ms', () => {
       const startTime = Date.now();
 
       const filtered = dashboard.timeline.filter(change =>
@@ -432,8 +432,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 6: Aggregation Time with Multiple Queries', function() {
-    it('should aggregate data by category in <200ms', function() {
+  describe('Scenario 6: Aggregation Time with Multiple Queries', () => {
+    it('should aggregate data by category in <200ms', () => {
       const startTime = Date.now();
 
       const categories = {};
@@ -449,7 +449,7 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
       assert(elapsed < 200, `Category aggregation should be <200ms, was ${elapsed}ms`);
     });
 
-    it('should perform concurrent aggregation queries', function() {
+    it('should perform concurrent aggregation queries', () => {
       const promises = [
         Promise.resolve(dashboard.aggregateByMonitor()),
         Promise.resolve(dashboard.aggregateByMonitor()),
@@ -465,13 +465,13 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 7: Timeline Retention Policy', function() {
-    it('should enforce maxTimelineEntries limit', function() {
+  describe('Scenario 7: Timeline Retention Policy', () => {
+    it('should enforce maxTimelineEntries limit', () => {
       assert(dashboard.timeline.length <= dashboard.options.maxTimelineEntries,
         `Timeline should respect max limit of ${dashboard.options.maxTimelineEntries}`);
     });
 
-    it('should remove oldest entries when limit exceeded', function() {
+    it('should remove oldest entries when limit exceeded', () => {
       const oldestTimestampBefore = dashboard.timeline[dashboard.timeline.length - 1].dashboardTimestamp;
 
       // Add more changes
@@ -489,8 +489,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 8: Concurrent Monitor Updates', function() {
-    it('should handle 10 concurrent monitor updates', function() {
+  describe('Scenario 8: Concurrent Monitor Updates', () => {
+    it('should handle 10 concurrent monitor updates', () => {
       const promises = [];
 
       for (let i = 0; i < 10; i++) {
@@ -511,8 +511,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 9: Monitor-specific Timeline Queries', function() {
-    it('should retrieve monitor-specific changes efficiently', function() {
+  describe('Scenario 9: Monitor-specific Timeline Queries', () => {
+    it('should retrieve monitor-specific changes efficiently', () => {
       const monitorId = 'monitor-0';
       const startTime = Date.now();
 
@@ -524,8 +524,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 10: Metric Calculation Performance', function() {
-    it('should calculate metrics efficiently with large datasets', function() {
+  describe('Scenario 10: Metric Calculation Performance', () => {
+    it('should calculate metrics efficiently with large datasets', () => {
       const startTime = Date.now();
 
       const changeFrequency = dashboard.stats.totalChanges /
@@ -537,8 +537,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 11: Large Monitor Comparison', function() {
-    it('should compare 50+ monitors performance in <1000ms', function() {
+  describe('Scenario 11: Large Monitor Comparison', () => {
+    it('should compare 50+ monitors performance in <1000ms', () => {
       const startTime = Date.now();
 
       const comparison = {};
@@ -556,8 +556,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 12: Dashboard State Serialization', function() {
-    it('should serialize dashboard state under 50MB', function() {
+  describe('Scenario 12: Dashboard State Serialization', () => {
+    it('should serialize dashboard state under 50MB', () => {
       const state = JSON.stringify({
         monitors: Array.from(dashboard.monitors.values()),
         changes: Array.from(dashboard.changes.values()),
@@ -571,8 +571,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 13: Cache Performance', function() {
-    it('should improve performance with category aggregation cache', function() {
+  describe('Scenario 13: Cache Performance', () => {
+    it('should improve performance with category aggregation cache', () => {
       const aggregator = new MockDataAggregator({ cacheTtl: 5000 });
 
       // Index changes
@@ -599,8 +599,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 14: Date Range Filtering', function() {
-    it('should filter changes by date range efficiently', function() {
+  describe('Scenario 14: Date Range Filtering', () => {
+    it('should filter changes by date range efficiently', () => {
       const aggregator = new MockDataAggregator();
 
       // Add timestamped changes
@@ -625,8 +625,8 @@ describe('Dashboard Stress Tests - Large Dataset', function() {
     });
   });
 
-  describe('Scenario 15: Scale Test Summary', function() {
-    it('should provide performance summary', function() {
+  describe('Scenario 15: Scale Test Summary', () => {
+    it('should provide performance summary', () => {
       const summary = {
         totalMonitors: dashboard.monitors.size,
         totalChanges: dashboard.stats.totalChanges,

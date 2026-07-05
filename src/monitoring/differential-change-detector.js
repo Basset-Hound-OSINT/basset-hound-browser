@@ -30,7 +30,7 @@ class DifferentialChangeDetector {
     };
 
     this.previousHashes = new Map(); // url → hash
-    this.changeCache = new Map();    // url → last change result
+    this.changeCache = new Map(); // url → last change result
   }
 
   /**
@@ -101,7 +101,9 @@ class DifferentialChangeDetector {
    * @private
    */
   _hashSnapshot(snapshot) {
-    if (!snapshot) return '';
+    if (!snapshot) {
+      return '';
+    }
 
     // Use only critical content for hash (ignore minor variations)
     const critical = {
@@ -119,7 +121,9 @@ class DifferentialChangeDetector {
    * @private
    */
   _hashHeaders(headers = {}) {
-    if (!headers || typeof headers !== 'object') return '';
+    if (!headers || typeof headers !== 'object') {
+      return '';
+    }
 
     // Hash only significant headers, ignore timestamps and dynamic fields
     const significant = {};

@@ -328,8 +328,8 @@ describe('Anonymity Profile Manager - Phase 4 Integration', () => {
     it('should vary data across different profiles', () => {
       // Find two profiles of different device types if possible
       const allProfiles = manager.getAvailableProfiles();
-      let profile1 = allProfiles[0];
-      let profile2 = allProfiles[allProfiles.length - 1]; // Last profile likely different type
+      const profile1 = allProfiles[0];
+      const profile2 = allProfiles[allProfiles.length - 1]; // Last profile likely different type
 
       manager.setProfile(profile1);
       const data1 = manager.getActiveProfile().fakeData;
@@ -439,7 +439,7 @@ describe('Anonymity Profile Manager - Phase 4 Integration', () => {
     it('should disable behavioral modules', () => {
       manager.setProfile('iPhone 15 Pro');
       manager.enableBehavioralModules();
-      let status = manager.getBehavioralStatus();
+      const status = manager.getBehavioralStatus();
       expect(status.mouse.enabled).toBe(true);
 
       const result = manager.disableBehavioralModules();

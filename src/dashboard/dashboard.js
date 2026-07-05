@@ -169,15 +169,15 @@ class CompetitorDashboard {
 
   handleDashboardUpdate(update) {
     switch (update.type) {
-      case 'change-added':
-        this.addChangeToTimeline(update.change);
-        break;
-      case 'alert-added':
-        this.addAlertToList(update.alert);
-        break;
-      case 'metrics-updated':
-        this.updateMetrics(update.metrics);
-        break;
+    case 'change-added':
+      this.addChangeToTimeline(update.change);
+      break;
+    case 'alert-added':
+      this.addAlertToList(update.alert);
+      break;
+    case 'metrics-updated':
+      this.updateMetrics(update.metrics);
+      break;
     }
   }
 
@@ -557,7 +557,9 @@ class CompetitorDashboard {
 
   updateChart(canvasId, data, label) {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+    if (!canvas) {
+      return;
+    }
 
     if (this.charts[canvasId]) {
       this.charts[canvasId].destroy();
@@ -684,9 +686,15 @@ class CompetitorDashboard {
   }
 
   formatDuration(ms) {
-    if (ms < 1000) return `${Math.round(ms)}ms`;
-    if (ms < 60000) return `${Math.round(ms / 1000)}s`;
-    if (ms < 3600000) return `${Math.round(ms / 60000)}m`;
+    if (ms < 1000) {
+      return `${Math.round(ms)}ms`;
+    }
+    if (ms < 60000) {
+      return `${Math.round(ms / 1000)}s`;
+    }
+    if (ms < 3600000) {
+      return `${Math.round(ms / 60000)}m`;
+    }
     return `${Math.round(ms / 3600000)}h`;
   }
 

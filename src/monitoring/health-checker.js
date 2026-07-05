@@ -333,7 +333,9 @@ class HealthChecker extends EventEmitter {
    */
   getComponentStatus(name) {
     const component = this.components.get(name);
-    if (!component) return null;
+    if (!component) {
+      return null;
+    }
 
     return {
       name: component.name,
@@ -424,7 +426,9 @@ class HealthChecker extends EventEmitter {
    * @private
    */
   _calculateSystemUptime() {
-    if (this.history.length === 0) return 100;
+    if (this.history.length === 0) {
+      return 100;
+    }
 
     const upCount = this.history.filter(h => h.status === HEALTH_STATUS.UP).length;
     return (upCount / this.history.length) * 100;

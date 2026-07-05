@@ -583,8 +583,12 @@ class ShodanClient extends EventEmitter {
   parseVulnSeverity(cveId) {
     // Simplified severity based on CVE year
     const year = parseInt(cveId.split('-')[1]);
-    if (year > 2022) return 'high';
-    if (year > 2020) return 'medium';
+    if (year > 2022) {
+      return 'high';
+    }
+    if (year > 2020) {
+      return 'medium';
+    }
     return 'low';
   }
 

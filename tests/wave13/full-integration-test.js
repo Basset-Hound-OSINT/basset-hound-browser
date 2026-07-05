@@ -787,7 +787,7 @@ describe('Wave 13: Full Integration Test (50+ Concurrent Clients)', () => {
       system.registerClient(`conflict_test_${i}`);
     }
 
-    let errors = [];
+    const errors = [];
 
     try {
       // Simultaneous operations across all subsystems

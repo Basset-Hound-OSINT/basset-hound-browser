@@ -9,8 +9,8 @@ try {
   uuidv4 = uuid.v4;
 } catch (e) {
   uuidv4 = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
   };
@@ -447,8 +447,12 @@ class ScriptManager {
    */
   getMatchingScripts(url) {
     return Array.from(this.scripts.values()).filter(s => {
-      if (!s.enabled) return false;
-      if (s.trigger !== TRIGGER_TYPES.ON_URL_MATCH) return false;
+      if (!s.enabled) {
+        return false;
+      }
+      if (s.trigger !== TRIGGER_TYPES.ON_URL_MATCH) {
+        return false;
+      }
       return this.runner.matchesUrl(s.urlPattern, url);
     });
   }

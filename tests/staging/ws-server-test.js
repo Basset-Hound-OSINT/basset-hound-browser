@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const zlib = require('zlib');
 
 // Create a WebSocket server for testing compression
-const server = new WebSocket.Server({ 
+const server = new WebSocket.Server({
   port: 8765,
   perMessageDeflate: {
     zlibDeflateOptions: {
@@ -26,16 +26,16 @@ let connectionCount = 0;
 server.on('connection', (ws) => {
   connectionCount++;
   console.log(`Client ${connectionCount} connected`);
-  
+
   ws.on('message', (message) => {
     // Echo back
-    ws.send(JSON.stringify({ 
-      received: true, 
+    ws.send(JSON.stringify({
+      received: true,
       size: message.length,
       timestamp: Date.now()
     }));
   });
-  
+
   ws.on('close', () => {
     console.log(`Client ${connectionCount} disconnected`);
   });

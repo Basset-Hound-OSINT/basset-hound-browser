@@ -388,8 +388,12 @@ describe('SSLConfigParser', () => {
     test('should load certificate and key files', () => {
       fs.existsSync.mockReturnValue(true);
       fs.readFileSync.mockImplementation((filePath) => {
-        if (filePath.includes('cert')) return Buffer.from('CERT_CONTENT');
-        if (filePath.includes('key')) return Buffer.from('KEY_CONTENT');
+        if (filePath.includes('cert')) {
+          return Buffer.from('CERT_CONTENT');
+        }
+        if (filePath.includes('key')) {
+          return Buffer.from('KEY_CONTENT');
+        }
         return Buffer.from('');
       });
 
@@ -409,9 +413,15 @@ describe('SSLConfigParser', () => {
     test('should load CA certificate when provided', () => {
       fs.existsSync.mockReturnValue(true);
       fs.readFileSync.mockImplementation((filePath) => {
-        if (filePath.includes('cert')) return Buffer.from('CERT_CONTENT');
-        if (filePath.includes('key')) return Buffer.from('KEY_CONTENT');
-        if (filePath.includes('ca')) return Buffer.from('CA_CONTENT');
+        if (filePath.includes('cert')) {
+          return Buffer.from('CERT_CONTENT');
+        }
+        if (filePath.includes('key')) {
+          return Buffer.from('KEY_CONTENT');
+        }
+        if (filePath.includes('ca')) {
+          return Buffer.from('CA_CONTENT');
+        }
         return Buffer.from('');
       });
 

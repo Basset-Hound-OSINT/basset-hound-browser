@@ -41,7 +41,7 @@ const TEST_WEBSITES = [
   { url: 'https://www.youtube.com', name: 'YouTube', category: 'Media' },
 
   // E-commerce (Very complex)
-  { url: 'https://www.amazon.com', name: 'Amazon', category: 'E-commerce' },
+  { url: 'https://www.amazon.com', name: 'Amazon', category: 'E-commerce' }
 ];
 
 class WebsiteTester {
@@ -301,7 +301,9 @@ class WebsiteTester {
         byCategory[site.category] = { passed: 0, total: 0 };
       }
       byCategory[site.category].total++;
-      if (site.success) byCategory[site.category].passed++;
+      if (site.success) {
+        byCategory[site.category].passed++;
+      }
     });
 
     report += `## Results by Category\n\n`;
@@ -451,7 +453,7 @@ async function main() {
     console.log(`  Total: ${results.totalTests}`);
     console.log(`  Passed: ${results.passed}`);
     console.log(`  Failed: ${results.failed}`);
-    console.log(`  Success Rate: ${((results.passed/results.totalTests)*100).toFixed(1)}%`);
+    console.log(`  Success Rate: ${((results.passed / results.totalTests) * 100).toFixed(1)}%`);
 
   } catch (error) {
     console.error('\n✗ Fatal error:', error.message);

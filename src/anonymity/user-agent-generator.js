@@ -21,55 +21,55 @@ class UserAgentGenerator {
       // iOS User Agents - iPhone
       'iPhone-Safari': [
         'Mozilla/5.0 (iPhone; CPU iPhone OS {osVersion} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Mobile/15E148 Safari/604.1',
-        'Mozilla/5.0 (iPhone; CPU iPhone OS {osVersion} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Mobile/15E148 Safari/605.1.15',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS {osVersion} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Mobile/15E148 Safari/605.1.15'
       ],
       // iOS User Agents - iPad
       'iPad-Safari': [
         'Mozilla/5.0 (iPad; CPU OS {osVersion} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Mobile/15E148 Safari/604.1',
-        'Mozilla/5.0 (iPad; CPU OS {osVersion} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Safari/605.1.15',
+        'Mozilla/5.0 (iPad; CPU OS {osVersion} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Safari/605.1.15'
       ],
       // Chrome on Android
       'Android-Chrome': [
         'Mozilla/5.0 (Linux; Android {osVersion}; {deviceModel}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Mobile Safari/537.36',
-        'Mozilla/5.0 (Linux; Android {osVersion}; {deviceModel}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36',
+        'Mozilla/5.0 (Linux; Android {osVersion}; {deviceModel}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36'
       ],
       // Firefox on Android
       'Android-Firefox': [
         'Mozilla/5.0 (Android; Mobile; rv:{browserVersion}.0) Gecko/{browserVersion}.0 Firefox/{browserVersion}.0',
-        'Mozilla/5.0 (Android {osVersion}; Mobile; rv:{browserVersion}.0) Gecko/{browserVersion}.0 Firefox/{browserVersion}.0',
+        'Mozilla/5.0 (Android {osVersion}; Mobile; rv:{browserVersion}.0) Gecko/{browserVersion}.0 Firefox/{browserVersion}.0'
       ],
       // Chrome on Windows
       'Windows-Chrome': [
         'Mozilla/5.0 (Windows NT {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36',
-        'Mozilla/5.0 (Windows NT {osVersion}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36',
+        'Mozilla/5.0 (Windows NT {osVersion}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36'
       ],
       // Chrome on macOS
       'macOS-Chrome': [
         'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36',
-        'Mozilla/5.0 (Macintosh; PPC Mac OS X {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36',
+        'Mozilla/5.0 (Macintosh; PPC Mac OS X {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36'
       ],
       // Safari on macOS
       'macOS-Safari': [
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Safari/605.1.15',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{browserVersion} Safari/605.1.15'
       ],
       // Firefox on Windows
       'Windows-Firefox': [
         'Mozilla/5.0 (Windows NT {osVersion}; Win64; x64; rv:{browserVersion}.0) Gecko/20100101 Firefox/{browserVersion}.0',
-        'Mozilla/5.0 (Windows NT {osVersion}; WOW64; rv:{browserVersion}.0) Gecko/20100101 Firefox/{browserVersion}.0',
+        'Mozilla/5.0 (Windows NT {osVersion}; WOW64; rv:{browserVersion}.0) Gecko/20100101 Firefox/{browserVersion}.0'
       ],
       // Firefox on macOS
       'macOS-Firefox': [
         'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/{browserVersion}',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}; rv:{browserVersion}.0) Gecko/20100101 Firefox/{browserVersion}.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}; rv:{browserVersion}.0) Gecko/20100101 Firefox/{browserVersion}.0'
       ],
       // Edge on Windows
       'Windows-Edge': [
-        'Mozilla/5.0 (Windows NT {osVersion}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36 Edg/{browserVersion}',
+        'Mozilla/5.0 (Windows NT {osVersion}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36 Edg/{browserVersion}'
       ],
       // Edge on macOS
       'macOS-Edge': [
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36 Edg/{browserVersion}',
-      ],
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X {osVersion}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{browserVersion} Safari/537.36 Edg/{browserVersion}'
+      ]
     };
   }
 
@@ -91,7 +91,7 @@ class UserAgentGenerator {
       'Windows-10': { Chrome: '122', Firefox: '123', Edge: '122' },
       // macOS to Safari/Chrome/Firefox versions
       'macOS-14': { Safari: '17.4', Chrome: '123', Firefox: '124' },
-      'macOS-13': { Safari: '16.7', Chrome: '122', Firefox: '123' },
+      'macOS-13': { Safari: '16.7', Chrome: '122', Firefox: '123' }
     };
   }
 
@@ -134,7 +134,7 @@ class UserAgentGenerator {
     const browserVersion = versionMap ? versionMap[browser] : '123';
 
     // Replace placeholders
-    let ua = template
+    const ua = template
       .replace('{osVersion}', osVersion)
       .replace('{browserVersion}', browserVersion)
       .replace('{deviceModel}', deviceModel || '');
@@ -154,14 +154,14 @@ class UserAgentGenerator {
           platform: 'iPhone',
           browser: 'Safari',
           osVersion: '17.4.1',
-          deviceModel: 'iPhone15,2',
+          deviceModel: 'iPhone15,2'
         };
       } else if (deviceType === 'tablet') {
         return {
           platform: 'iPad',
           browser: 'Safari',
           osVersion: '17.4.1',
-          deviceModel: 'iPad11,3',
+          deviceModel: 'iPad11,3'
         };
       } else {
         // Desktop/macOS
@@ -169,7 +169,7 @@ class UserAgentGenerator {
           platform: 'macOS',
           browser: 'Safari',
           osVersion: '14.1.1',
-          deviceModel: '',
+          deviceModel: ''
         };
       }
     }
@@ -180,7 +180,7 @@ class UserAgentGenerator {
           platform: 'Android',
           browser: 'Chrome',
           osVersion: '14.0',
-          deviceModel: 'Pixel 8',
+          deviceModel: 'Pixel 8'
         };
       } else {
         // Desktop/Windows
@@ -188,7 +188,7 @@ class UserAgentGenerator {
           platform: 'Windows',
           browser: 'Chrome',
           osVersion: '10.0',
-          deviceModel: '',
+          deviceModel: ''
         };
       }
     }
@@ -198,7 +198,7 @@ class UserAgentGenerator {
       platform: 'Windows',
       browser: 'Chrome',
       osVersion: '10.0',
-      deviceModel: '',
+      deviceModel: ''
     };
   }
 

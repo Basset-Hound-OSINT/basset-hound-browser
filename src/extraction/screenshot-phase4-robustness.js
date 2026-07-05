@@ -76,7 +76,9 @@ class BufferPoolManager {
    */
   release(bufferId) {
     const bufferInfo = this.activeBuffers.get(bufferId);
-    if (!bufferInfo) return;
+    if (!bufferInfo) {
+      return;
+    }
 
     // Clear buffer data to prevent holding references
     if (bufferInfo.data) {
@@ -94,7 +96,9 @@ class BufferPoolManager {
    */
   releasePool(poolId) {
     const pool = this.pools.get(poolId);
-    if (!pool) return;
+    if (!pool) {
+      return;
+    }
 
     for (const [bufferId, bufferInfo] of this.activeBuffers.entries()) {
       if (bufferInfo.pool === poolId) {
@@ -598,12 +602,24 @@ class ErrorRecoveryManager {
   _classifyError(error) {
     const msg = error.message.toLowerCase();
 
-    if (msg.includes('timeout')) return 'timeout';
-    if (msg.includes('memory') || msg.includes('heap')) return 'memory_exhaustion';
-    if (msg.includes('format')) return 'format_error';
-    if (msg.includes('selector')) return 'selector_not_found';
-    if (msg.includes('origin') || msg.includes('cross')) return 'cross_origin';
-    if (msg.includes('dom')) return 'dom_error';
+    if (msg.includes('timeout')) {
+      return 'timeout';
+    }
+    if (msg.includes('memory') || msg.includes('heap')) {
+      return 'memory_exhaustion';
+    }
+    if (msg.includes('format')) {
+      return 'format_error';
+    }
+    if (msg.includes('selector')) {
+      return 'selector_not_found';
+    }
+    if (msg.includes('origin') || msg.includes('cross')) {
+      return 'cross_origin';
+    }
+    if (msg.includes('dom')) {
+      return 'dom_error';
+    }
 
     return 'unknown_error';
   }

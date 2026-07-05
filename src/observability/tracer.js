@@ -164,7 +164,9 @@ class DistributedTracer extends EventEmitter {
    */
   _completeTrace(traceId) {
     const trace = this.traces.get(traceId);
-    if (!trace) return;
+    if (!trace) {
+      return;
+    }
 
     trace.endTime = performance.now();
     trace.duration = trace.endTime - trace.startTime;
@@ -432,7 +434,9 @@ class DistributedTracer extends EventEmitter {
    */
   getTrace(traceId) {
     const trace = this.traces.get(traceId);
-    if (!trace) return null;
+    if (!trace) {
+      return null;
+    }
 
     return {
       ...trace,
@@ -510,8 +514,12 @@ class Sampler {
   }
 
   shouldSample() {
-    if (this.samplingRate === 1.0) return true;
-    if (this.samplingRate === 0.0) return false;
+    if (this.samplingRate === 1.0) {
+      return true;
+    }
+    if (this.samplingRate === 0.0) {
+      return false;
+    }
     return Math.random() < this.samplingRate;
   }
 }

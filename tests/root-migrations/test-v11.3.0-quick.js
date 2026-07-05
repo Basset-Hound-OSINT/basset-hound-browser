@@ -26,7 +26,7 @@ ws.on('open', async () => {
     // TEST 1: Navigation (3 URLs)
     console.log('=== TEST 1: Navigation (3 URLs) ===');
     const urls = ['https://example.com', 'https://httpbin.org', 'https://example.org'];
-    
+
     for (const url of urls) {
       const t = Date.now();
       const result = await sendCommand({ command: 'navigate', params: { url } });
@@ -41,7 +41,7 @@ ws.on('open', async () => {
     console.log('=== TEST 2: Screenshots (2 captures) ===');
     // Set viewport size first
     await sendCommand({ command: 'set_viewport', params: { width: 1920, height: 1080 } });
-    
+
     for (let i = 0; i < 2; i++) {
       const t = Date.now();
       const result = await sendCommand({ command: 'screenshot', params: { format: 'png' } });
@@ -112,14 +112,14 @@ ws.on('open', async () => {
     console.log('=== TEST 5: Memory Monitoring ===');
     const memBefore = process.memoryUsage().heapUsed / 1024 / 1024;
     TEST_RESULTS.memory.peak = memBefore;
-    
+
     // Wait 5 seconds for memory stabilization
     await new Promise(resolve => setTimeout(resolve, 5000));
-    
+
     const memAfter = process.memoryUsage().heapUsed / 1024 / 1024;
     TEST_RESULTS.memory.final = memAfter;
     const memGrowth = memAfter - startMemory;
-    
+
     console.log(`Baseline: ${startMemory.toFixed(2)}MB`);
     console.log(`Peak: ${TEST_RESULTS.memory.peak.toFixed(2)}MB`);
     console.log(`Final: ${memAfter.toFixed(2)}MB`);
@@ -139,14 +139,14 @@ ws.on('open', async () => {
     const screenshotPass = TEST_RESULTS.screenshots.filter(r => r.status === 'PASS').length;
     const tabPass = TEST_RESULTS.tabs.filter(r => r.status === 'PASS').length;
     const contentPass = TEST_RESULTS.content.filter(r => r.status === 'PASS').length;
-    
+
     console.log(`Navigation: ${navPass}/${TEST_RESULTS.navigation.length}`);
     console.log(`Screenshots: ${screenshotPass}/${TEST_RESULTS.screenshots.length}`);
     console.log(`Tab Management: ${tabPass}/${TEST_RESULTS.tabs.length}`);
     console.log(`Content Extraction: ${contentPass}/${TEST_RESULTS.content.length}`);
     console.log(`Memory: ${TEST_RESULTS.memory.status}`);
-    
-    const totalTests = 
+
+    const totalTests =
       TEST_RESULTS.navigation.length +
       TEST_RESULTS.screenshots.length +
       TEST_RESULTS.tabs.length +
@@ -156,10 +156,10 @@ ws.on('open', async () => {
       screenshotPass +
       tabPass +
       contentPass;
-    
+
     const passRate = ((totalPass / totalTests) * 100).toFixed(1);
     console.log(`\nTotal: ${totalPass}/${totalTests} (${passRate}%)`);
-    
+
     const totalTime = Date.now() - startTime;
     console.log(`Total Time: ${(totalTime / 1000).toFixed(2)}s`);
 

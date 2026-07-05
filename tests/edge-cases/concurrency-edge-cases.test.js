@@ -230,7 +230,7 @@ class ConcurrencyEdgeCaseTester {
     await this.runTest('Handle overlapping check windows', async () => {
       const windows = [
         { target: 't1', start: 0, end: 100 },
-        { target: 't1', start: 50, end: 150 },  // Overlaps with first
+        { target: 't1', start: 50, end: 150 }, // Overlaps with first
         { target: 't2', start: 0, end: 100 }
       ];
 
@@ -249,7 +249,7 @@ class ConcurrencyEdgeCaseTester {
     await this.runTest('Detect concurrent access to same resource', async () => {
       const operations = [
         { id: 1, resource: 'target-1', type: 'read', start: 0, end: 50 },
-        { id: 2, resource: 'target-1', type: 'write', start: 30, end: 80 }  // Overlaps
+        { id: 2, resource: 'target-1', type: 'write', start: 30, end: 80 } // Overlaps
       ];
 
       const overlaps = [];
@@ -269,7 +269,7 @@ class ConcurrencyEdgeCaseTester {
     await this.runTest('Serialize conflicting operations', async () => {
       const conflicts = [
         { id: 1, type: 'read', resource: 'target-1' },
-        { id: 2, type: 'write', resource: 'target-1' }  // Conflicts with read
+        { id: 2, type: 'write', resource: 'target-1' } // Conflicts with read
       ];
 
       // Serialize by ordering
@@ -292,7 +292,7 @@ class ConcurrencyEdgeCaseTester {
       const requests = Array.from({ length: 10 }, (_, i) => ({ id: i }));
 
       let exhausted = false;
-      let availableCount = proxyPool.filter(p => p.available).length;
+      const availableCount = proxyPool.filter(p => p.available).length;
 
       if (requests.length > availableCount) {
         exhausted = true;
@@ -397,8 +397,12 @@ class ConcurrencyEdgeCaseTester {
     await this.runTest('Resolve races with atomic operations', async () => {
       let sharedState = 0;
       const operations = [
-        { fn: () => { sharedState = 1; } },
-        { fn: () => { sharedState = 2; } }
+        { fn: () => {
+          sharedState = 1;
+        } },
+        { fn: () => {
+          sharedState = 2;
+        } }
       ];
 
       // Serialize with lock
@@ -440,7 +444,7 @@ class ConcurrencyEdgeCaseTester {
 
     await this.runTest('Detect snapshot inconsistencies', async () => {
       const snapshot1 = { state: 'A', version: 1 };
-      const snapshot2 = { state: 'B', version: 1 };  // Same version, different state = inconsistency
+      const snapshot2 = { state: 'B', version: 1 }; // Same version, different state = inconsistency
 
       const inconsistent = snapshot1.version === snapshot2.version && snapshot1.state !== snapshot2.state;
 

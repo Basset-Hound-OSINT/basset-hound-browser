@@ -34,7 +34,7 @@ class MonitoringOrchestrator extends EventEmitter {
     super();
 
     this.options = {
-      dataDir: options.dataDir || path.join(process.cwd(), '.basset-hound', 'monitoring'),
+      dataDir: options.dataDir || path.join(process.cwd(), 'tmp', '.basset-hound', 'monitoring'),
       enableAppMetrics: options.enableAppMetrics !== false,
       enableSystemMetrics: options.enableSystemMetrics !== false,
       enableAlertRules: options.enableAlertRules !== false,
@@ -221,7 +221,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get Prometheus format metrics
    */
   getPrometheusMetrics() {
-    if (!this.prometheusExporter) return '';
+    if (!this.prometheusExporter) {
+      return '';
+    }
     return this.prometheusExporter.export();
   }
 
@@ -229,7 +231,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get active alerts
    */
   getActiveAlerts() {
-    if (!this.alertRules) return [];
+    if (!this.alertRules) {
+      return [];
+    }
     return this.alertRules.getActiveAlerts();
   }
 
@@ -237,7 +241,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get alert summary
    */
   getAlertSummary() {
-    if (!this.alertRules) return null;
+    if (!this.alertRules) {
+      return null;
+    }
     return this.alertRules.getSummary();
   }
 
@@ -245,7 +251,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get health status
    */
   getHealthStatus() {
-    if (!this.healthChecker) return null;
+    if (!this.healthChecker) {
+      return null;
+    }
     return this.healthChecker.getHealth();
   }
 
@@ -253,7 +261,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get open incidents
    */
   getOpenIncidents() {
-    if (!this.incidentTracker) return [];
+    if (!this.incidentTracker) {
+      return [];
+    }
     return this.incidentTracker.getOpenIncidents();
   }
 
@@ -261,7 +271,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get incident statistics
    */
   getIncidentStatistics(days = 30) {
-    if (!this.incidentTracker) return null;
+    if (!this.incidentTracker) {
+      return null;
+    }
     return this.incidentTracker.getStatistics(days);
   }
 
@@ -309,7 +321,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Get all alert rules
    */
   getAlertRules() {
-    if (!this.alertRules) return [];
+    if (!this.alertRules) {
+      return [];
+    }
     return this.alertRules.getRules();
   }
 
@@ -327,7 +341,9 @@ class MonitoringOrchestrator extends EventEmitter {
    * Force immediate health check
    */
   async checkHealth() {
-    if (!this.healthChecker) return null;
+    if (!this.healthChecker) {
+      return null;
+    }
     return this.healthChecker.checkNow();
   }
 
@@ -360,34 +376,34 @@ class MonitoringOrchestrator extends EventEmitter {
   _getComponentStatus() {
     return {
       appMetrics: {
-        enabled: !!this.appMetrics,
+        enabled: Boolean(this.appMetrics),
         status: this.appMetrics ? 'running' : 'disabled'
       },
       systemMetrics: {
-        enabled: !!this.systemMetrics,
+        enabled: Boolean(this.systemMetrics),
         status: this.systemMetrics ? 'running' : 'disabled'
       },
       prometheusExporter: {
-        enabled: !!this.prometheusExporter,
+        enabled: Boolean(this.prometheusExporter),
         status: this.prometheusExporter?.isRunning ? 'running' : 'disabled',
         url: this.prometheusExporter?.isRunning ?
           `http://localhost:${this.options.prometheusPort}/metrics` : null
       },
       alertRules: {
-        enabled: !!this.alertRules,
+        enabled: Boolean(this.alertRules),
         status: this.alertRules ? 'running' : 'disabled',
         rulesCount: this.alertRules?.rules.size || 0
       },
       alertRouter: {
-        enabled: !!this.alertRouter,
+        enabled: Boolean(this.alertRouter),
         status: this.alertRouter ? 'running' : 'disabled'
       },
       healthChecker: {
-        enabled: !!this.healthChecker,
+        enabled: Boolean(this.healthChecker),
         status: this.healthChecker ? 'running' : 'disabled'
       },
       incidentTracker: {
-        enabled: !!this.incidentTracker,
+        enabled: Boolean(this.incidentTracker),
         status: this.incidentTracker ? 'running' : 'disabled',
         incidentsCount: this.incidentTracker?.incidents.size || 0
       }
@@ -447,13 +463,27 @@ class MonitoringOrchestrator extends EventEmitter {
    * Cleanup and shutdown
    */
   destroy() {
-    if (this.appMetrics) this.appMetrics.destroy();
-    if (this.systemMetrics) this.systemMetrics.destroy();
-    if (this.prometheusExporter) this.prometheusExporter.destroy();
-    if (this.alertRules) this.alertRules.destroy();
-    if (this.alertRouter) this.alertRouter.destroy();
-    if (this.healthChecker) this.healthChecker.destroy();
-    if (this.incidentTracker) this.incidentTracker.destroy();
+    if (this.appMetrics) {
+      this.appMetrics.destroy();
+    }
+    if (this.systemMetrics) {
+      this.systemMetrics.destroy();
+    }
+    if (this.prometheusExporter) {
+      this.prometheusExporter.destroy();
+    }
+    if (this.alertRules) {
+      this.alertRules.destroy();
+    }
+    if (this.alertRouter) {
+      this.alertRouter.destroy();
+    }
+    if (this.healthChecker) {
+      this.healthChecker.destroy();
+    }
+    if (this.incidentTracker) {
+      this.incidentTracker.destroy();
+    }
 
     this.status = 'stopped';
     this.emit('orchestrator:stopped', { timestamp: Date.now() });

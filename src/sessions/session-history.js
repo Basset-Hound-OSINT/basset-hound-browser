@@ -207,7 +207,9 @@ class SessionHistoryManager {
    * @private
    */
   _sanitizeError(error) {
-    if (!error) return null;
+    if (!error) {
+      return null;
+    }
 
     const sanitized = error.toString();
     // Remove common sensitive patterns
@@ -227,7 +229,9 @@ class SessionHistoryManager {
     const sensitiveKeys = ['password', 'token', 'apiKey', 'authorization', 'creditCard'];
 
     const recurse = (obj) => {
-      if (typeof obj !== 'object' || obj === null) return;
+      if (typeof obj !== 'object' || obj === null) {
+        return;
+      }
 
       for (const key in obj) {
         const lowerKey = key.toLowerCase();
@@ -271,7 +275,9 @@ class SessionHistoryManager {
     ];
 
     const checkString = (str) => {
-      if (!str) return false;
+      if (!str) {
+        return false;
+      }
       return sensitivePatterns.some(pattern => pattern.test(str));
     };
 

@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. Evasion effectiveness figures (Canvas 82% / WebGL 90% / "85-90% across detection services") are simulator or hardcoded constants tested against fake `.test` endpoints, NOT live-detector validated — treat evasion as ~0% until proven (see `docs/research/bot-detection/BOT-DETECTION-GAP-ANALYSIS.md`). ~37 `src/evasion/*` modules are dead code that patch no live page API.
+
 # Basset Hound Browser v12.5.0 Release Notes
 
 **Release Date:** June 14, 2026  

@@ -333,7 +333,9 @@ class RingBuffer {
    * @returns {*} Most recent item or undefined
    */
   getLatest() {
-    if (this.count === 0) return undefined;
+    if (this.count === 0) {
+      return undefined;
+    }
     const index = (this.head - 1 + this.size) % this.size;
     return this.buffer[index];
   }

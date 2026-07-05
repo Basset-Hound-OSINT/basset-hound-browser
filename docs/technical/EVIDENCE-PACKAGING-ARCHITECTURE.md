@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. The described evidence WS commands (`evidence_capture_*`, 14-command API) do NOT exist / are never registered (`registerEvidenceCommands` is never called) and are passive (they hash caller-supplied data, capturing nothing live). Phase 29 chain-of-custody was explicitly REMOVED as out-of-scope. `export_format_har/warc` is wired but BROKEN (calls a nonexistent `getLogs()`).
+
 # Evidence Packaging & Chain of Custody - Architecture
 
 **Version:** v12.0.0  
@@ -451,7 +453,7 @@ const EventEmitter = require('events'); // Event emission
 
 - Evidence class: `evidence/evidence-collector.js`
 - Chain of custody: `evidence/chain-of-custody.js`
-- WebSocket commands: `websocket/commands/evidence-commands.js`
+- WebSocket commands: `websocket/commands/forensic/evidence/evidence-commands.js`
 - Tests: `tests/evidence-packaging/`
 
 ---

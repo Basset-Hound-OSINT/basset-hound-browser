@@ -20,10 +20,10 @@ wss.on('connection', (ws) => {
     messageCount++;
     try {
       const msg = JSON.parse(data.toString());
-      
+
       // Simulate realistic response times
       const responseDelay = Math.random() * 50;
-      
+
       setTimeout(() => {
         const response = {
           id: msg.id,

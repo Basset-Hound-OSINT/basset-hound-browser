@@ -58,7 +58,7 @@ describe('Cryptographic Strength Analysis', () => {
     });
 
     test('AES-256-GCM requires 32-byte key', () => {
-      const key = crypto.randomBytes(16);  // Wrong size
+      const key = crypto.randomBytes(16); // Wrong size
       const result = analyzer.validateCipherAlgorithm('aes-256-gcm', key);
       expect(result.valid).toBe(false);
       expect(result.issues.some(e => e.includes('Invalid key length'))).toBe(true);
@@ -94,7 +94,7 @@ describe('Cryptographic Strength Analysis', () => {
     });
 
     test('Weak HMAC key detected', () => {
-      const key = crypto.randomBytes(8);  // Too small
+      const key = crypto.randomBytes(8); // Too small
       const result = analyzer.validateHMACAlgorithm('sha256', key);
       expect(result.valid).toBe(true);
       expect(result.issues.length).toBeGreaterThan(0);
@@ -109,7 +109,7 @@ describe('Cryptographic Strength Analysis', () => {
 
   describe('Entropy Analysis', () => {
     test('Sufficient entropy is verified', () => {
-      const data = crypto.randomBytes(32);  // 256 bits
+      const data = crypto.randomBytes(32); // 256 bits
       const result = analyzer.analyzeEntropy(data, 128);
       expect(result.sufficient).toBe(true);
       expect(result.bits).toBe(256);
@@ -117,7 +117,7 @@ describe('Cryptographic Strength Analysis', () => {
     });
 
     test('Entropy analysis detects insufficient data', () => {
-      const data = crypto.randomBytes(8);  // 64 bits
+      const data = crypto.randomBytes(8); // 64 bits
       const result = analyzer.analyzeEntropy(data, 128);
       expect(result.sufficient).toBe(false);
       expect(result.issues.length).toBeGreaterThan(0);
@@ -126,14 +126,14 @@ describe('Cryptographic Strength Analysis', () => {
     test('Entropy analysis counts unique bytes', () => {
       const data = crypto.randomBytes(256);
       const result = analyzer.analyzeEntropy(data);
-      expect(result.uniqueBytes).toBeGreaterThan(150);  // Should have many unique values
+      expect(result.uniqueBytes).toBeGreaterThan(150); // Should have many unique values
     });
 
     test('Uniform data has measurable uniformity score', () => {
-      const data = Buffer.alloc(32, 0);  // All zeros
+      const data = Buffer.alloc(32, 0); // All zeros
       const result = analyzer.analyzeEntropy(data);
       expect(result.uniformity).toBeGreaterThanOrEqual(0);
-      expect(result.uniqueBytes).toBeLessThanOrEqual(1);  // Only one unique value
+      expect(result.uniqueBytes).toBeLessThanOrEqual(1); // Only one unique value
     });
   });
 
@@ -152,7 +152,7 @@ describe('Cryptographic Strength Analysis', () => {
     });
 
     test('Duplicate detection works', () => {
-      const result = analyzer.validateSecureRandomness(8, 1000);  // Very small samples
+      const result = analyzer.validateSecureRandomness(8, 1000); // Very small samples
       // Should rarely have duplicates with good randomness
       expect(result.duplicateRate).toBeLessThan(0.1);
     });
@@ -176,7 +176,7 @@ describe('Cryptographic Strength Analysis', () => {
 
     test('Weak salt detected', () => {
       const password = 'SecurePassword123456';
-      const salt = crypto.randomBytes(8);  // Too small
+      const salt = crypto.randomBytes(8); // Too small
       const result = analyzer.validateKeyDerivation(password, salt, 100000, 32);
       expect(result.valid).toBe(false);
       expect(result.issues.some(e => e.includes('at least 16 bytes'))).toBe(true);
@@ -271,13 +271,13 @@ describe('Cryptographic Strength Analysis', () => {
 
   describe('Edge Cases', () => {
     test('Very large key truncated to correct size', () => {
-      const key = crypto.randomBytes(32);  // Exact size
+      const key = crypto.randomBytes(32); // Exact size
       const result = analyzer.validateCipherAlgorithm('aes-256-gcm', key);
       expect(result.valid).toBe(true);
     });
 
     test('Algorithm case-sensitive', () => {
-      const result = analyzer.validateHashAlgorithm('SHA256');  // Uppercase
+      const result = analyzer.validateHashAlgorithm('SHA256'); // Uppercase
       expect(result.valid).toBe(false);
     });
 

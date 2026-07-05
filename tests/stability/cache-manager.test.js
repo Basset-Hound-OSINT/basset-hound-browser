@@ -357,7 +357,7 @@ describe('FileBasedCacheManager', () => {
       const meta = await cache.setFile('key1', data);
 
       // File should exist
-      let file = await cache.getFile('key1');
+      const file = await cache.getFile('key1');
       assert.ok(file);
 
       // File operations should work

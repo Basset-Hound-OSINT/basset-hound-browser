@@ -239,9 +239,15 @@ class OSINTIntegration {
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     const domainRegex = /^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i;
 
-    if (ipRegex.test(target)) return 'ip';
-    if (domainRegex.test(target)) return 'domain';
-    if (target.startsWith('http://') || target.startsWith('https://')) return 'url';
+    if (ipRegex.test(target)) {
+      return 'ip';
+    }
+    if (domainRegex.test(target)) {
+      return 'domain';
+    }
+    if (target.startsWith('http://') || target.startsWith('https://')) {
+      return 'url';
+    }
 
     return 'unknown';
   }

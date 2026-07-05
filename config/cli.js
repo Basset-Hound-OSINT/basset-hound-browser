@@ -103,6 +103,12 @@ const CLI_ARGS = {
     type: 'boolean',
     description: 'Run in headless mode'
   },
+  gui: {
+    flags: ['--gui'],
+    configPath: 'gui.enabled',
+    type: 'boolean',
+    description: 'Show the browser window (opt-in; default is headless/hidden). Requires a display.'
+  },
   disableGpu: {
     flags: ['--disable-gpu'],
     configPath: 'headless.disableGpu',
@@ -133,7 +139,7 @@ const CLI_ARGS = {
   // Proxy options
   proxy: {
     flags: ['--proxy'],
-    configPath: '_proxy',  // Special handling
+    configPath: '_proxy', // Special handling
     type: 'string',
     description: 'Proxy URL (e.g., http://host:port or socks5://user:pass@host:port)',
     metavar: 'URL'
@@ -187,7 +193,7 @@ const CLI_ARGS = {
   },
   userAgent: {
     flags: ['--user-agent', '-u'],
-    configPath: '_userAgent',  // Special handling
+    configPath: '_userAgent', // Special handling
     type: 'string',
     description: 'Custom user agent string',
     metavar: 'STRING'
@@ -207,7 +213,7 @@ const CLI_ARGS = {
   },
   geolocation: {
     flags: ['--geolocation', '--geo'],
-    configPath: '_geolocation',  // Special handling
+    configPath: '_geolocation', // Special handling
     type: 'string',
     description: 'Spoof geolocation (lat,lon format)',
     metavar: 'LAT,LON'
@@ -600,7 +606,7 @@ Options:
     'Configuration': ['config'],
     'Server': ['host', 'port', 'ssl', 'sslCert', 'sslKey', 'token', 'requireAuth'],
     'Browser': ['width', 'height', 'homePage', 'maxTabs', 'downloadPath'],
-    'Headless': ['headless', 'disableGpu', 'noSandbox', 'virtualDisplay', 'headlessPreset'],
+    'Headless': ['headless', 'gui', 'disableGpu', 'noSandbox', 'virtualDisplay', 'headlessPreset'],
     'Proxy & Network': ['proxy', 'proxyBypass', 'throttle', 'blockAds', 'blockTrackers'],
     'Tor': ['tor', 'embeddedTor', 'systemTor', 'torAutoDownload', 'noTorAutoDownload'],
     'Evasion': ['noEvasion', 'userAgent', 'randomizeFingerprint', 'timezone', 'geolocation', 'noHumanize'],
@@ -616,7 +622,9 @@ Options:
 
     for (const name of argNames) {
       const def = CLI_ARGS[name];
-      if (!def) continue;
+      if (!def) {
+        continue;
+      }
 
       const flags = def.flags.join(', ');
       const metavar = def.metavar ? ` <${def.metavar}>` : '';

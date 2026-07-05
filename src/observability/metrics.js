@@ -304,29 +304,29 @@ class MetricsAggregator extends EventEmitter {
       output += `# TYPE ${name} ${metric.type}\n`;
 
       switch (metric.type) {
-        case 'counter':
-        case 'gauge':
-          output += `${name} ${metric.value}\n`;
-          break;
+      case 'counter':
+      case 'gauge':
+        output += `${name} ${metric.value}\n`;
+        break;
 
-        case 'histogram':
-          for (const bucket of metric.buckets) {
-            output += `${name}_bucket{le="${bucket}"} ${metric.values[bucket]}\n`;
-          }
-          output += `${name}_bucket{le="+Inf"} ${metric.values['+Inf']}\n`;
-          output += `${name}_sum ${metric.sum}\n`;
-          output += `${name}_count ${metric.count}\n`;
-          break;
+      case 'histogram':
+        for (const bucket of metric.buckets) {
+          output += `${name}_bucket{le="${bucket}"} ${metric.values[bucket]}\n`;
+        }
+        output += `${name}_bucket{le="+Inf"} ${metric.values['+Inf']}\n`;
+        output += `${name}_sum ${metric.sum}\n`;
+        output += `${name}_count ${metric.count}\n`;
+        break;
 
-        case 'summary':
-          const sorted = [...metric.values].sort((a, b) => a - b);
-          for (const quantile of metric.quantiles) {
-            const index = Math.floor(quantile * sorted.length);
-            output += `${name}{quantile="${quantile}"} ${sorted[index] || 0}\n`;
-          }
-          output += `${name}_sum ${metric.sum}\n`;
-          output += `${name}_count ${metric.count}\n`;
-          break;
+      case 'summary':
+        const sorted = [...metric.values].sort((a, b) => a - b);
+        for (const quantile of metric.quantiles) {
+          const index = Math.floor(quantile * sorted.length);
+          output += `${name}{quantile="${quantile}"} ${sorted[index] || 0}\n`;
+        }
+        output += `${name}_sum ${metric.sum}\n`;
+        output += `${name}_count ${metric.count}\n`;
+        break;
       }
 
       output += '\n';
@@ -425,11 +425,21 @@ class MetricsAggregator extends EventEmitter {
     }
 
     let compliant = false;
-    if (operator === '<=') compliant = metric.value <= threshold;
-    if (operator === '>=') compliant = metric.value >= threshold;
-    if (operator === '==') compliant = metric.value === threshold;
-    if (operator === '<') compliant = metric.value < threshold;
-    if (operator === '>') compliant = metric.value > threshold;
+    if (operator === '<=') {
+      compliant = metric.value <= threshold;
+    }
+    if (operator === '>=') {
+      compliant = metric.value >= threshold;
+    }
+    if (operator === '==') {
+      compliant = metric.value === threshold;
+    }
+    if (operator === '<') {
+      compliant = metric.value < threshold;
+    }
+    if (operator === '>') {
+      compliant = metric.value > threshold;
+    }
 
     return {
       metricName,

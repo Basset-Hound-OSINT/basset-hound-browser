@@ -74,7 +74,7 @@ class MockDashboardEdgeCaseHandler {
   }
 }
 
-describe('Dashboard Edge Cases', function() {
+describe('Dashboard Edge Cases', function () {
   this.timeout(20000);
 
   let dashboard;
@@ -83,8 +83,8 @@ describe('Dashboard Edge Cases', function() {
     dashboard = new MockDashboardEdgeCaseHandler();
   });
 
-  describe('Scenario 1: Unicode and International Characters', function() {
-    it('should handle Unicode in monitor names', function() {
+  describe('Scenario 1: Unicode and International Characters', () => {
+    it('should handle Unicode in monitor names', () => {
       const names = [
         '日本語テキスト',
         'Текст на русском',
@@ -99,21 +99,21 @@ describe('Dashboard Edge Cases', function() {
       }
     });
 
-    it('should handle emoji in descriptions', function() {
+    it('should handle emoji in descriptions', () => {
       const description = 'Price drop 📉 for 🛍️ item at 💰 99.99';
       const processed = dashboard.processText(description);
 
       assert(processed.includes('📉'));
     });
 
-    it('should handle RTL text', function() {
+    it('should handle RTL text', () => {
       const rtlText = 'שלום עולם'; // Hebrew "Hello World"
       const processed = dashboard.processText(rtlText);
 
       assert(processed);
     });
 
-    it('should handle mixed direction text', function() {
+    it('should handle mixed direction text', () => {
       const mixed = 'Hello שלום مرحبا';
       const processed = dashboard.processText(mixed);
 
@@ -121,22 +121,22 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 2: Extremely Long Strings', function() {
-    it('should handle 500+ character competitor names', function() {
+  describe('Scenario 2: Extremely Long Strings', () => {
+    it('should handle 500+ character competitor names', () => {
       const longName = 'x'.repeat(500);
       const processed = dashboard.processText(longName);
 
       assert(processed.length <= 1000);
     });
 
-    it('should truncate at 1000 characters', function() {
+    it('should truncate at 1000 characters', () => {
       const veryLong = 'a'.repeat(2000);
       const processed = dashboard.processText(veryLong);
 
       assert.strictEqual(processed.length, 1000);
     });
 
-    it('should handle long change descriptions', function() {
+    it('should handle long change descriptions', () => {
       const longDescription = 'Change: '.repeat(200);
       const processed = dashboard.processText(longDescription);
 
@@ -144,8 +144,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 3: Special Characters in Data', function() {
-    it('should escape HTML special characters', function() {
+  describe('Scenario 3: Special Characters in Data', () => {
+    it('should escape HTML special characters', () => {
       const dangerous = '<script>alert("xss")</script>';
       const safe = dashboard.encodeSpecialChars(dangerous);
 
@@ -153,14 +153,14 @@ describe('Dashboard Edge Cases', function() {
       assert(safe.includes('&lt;'));
     });
 
-    it('should handle quotes in text', function() {
+    it('should handle quotes in text', () => {
       const quotes = 'He said "Hello" and \'goodbye\'';
       const safe = dashboard.encodeSpecialChars(quotes);
 
       assert(safe.includes('&quot;'));
     });
 
-    it('should handle ampersands', function() {
+    it('should handle ampersands', () => {
       const ampText = 'A & B & C';
       const safe = dashboard.encodeSpecialChars(ampText);
 
@@ -168,8 +168,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 4: Missing and Null Data Fields', function() {
-    it('should handle missing fields with defaults', function() {
+  describe('Scenario 4: Missing and Null Data Fields', () => {
+    it('should handle missing fields with defaults', () => {
       const result = dashboard.handleMissingFields({});
 
       assert.strictEqual(result.field1, 'default');
@@ -177,7 +177,7 @@ describe('Dashboard Edge Cases', function() {
       assert.strictEqual(result.field3, 'fallback');
     });
 
-    it('should handle undefined values', function() {
+    it('should handle undefined values', () => {
       const result = dashboard.handleMissingFields({
         field1: undefined,
         field2: undefined
@@ -186,14 +186,14 @@ describe('Dashboard Edge Cases', function() {
       assert.strictEqual(result.field1, 'default');
     });
 
-    it('should handle explicit null', function() {
+    it('should handle explicit null', () => {
       const result = dashboard.handleNullData(null);
 
       assert(result.handled);
       assert.strictEqual(result.value, null);
     });
 
-    it('should handle sparse objects', function() {
+    it('should handle sparse objects', () => {
       const sparse = {
         field1: 'value1'
         // field2 and field3 missing
@@ -205,41 +205,41 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 5: Timestamp Edge Cases', function() {
-    it('should handle Y2K timestamp', function() {
+  describe('Scenario 5: Timestamp Edge Cases', () => {
+    it('should handle Y2K timestamp', () => {
       const y2kTime = 946684800000; // Jan 1, 2000 00:00:00 UTC in ms
 
       const processed = dashboard.processTimestamp(y2kTime);
       assert.strictEqual(processed, y2kTime);
     });
 
-    it('should reject negative timestamps', function() {
+    it('should reject negative timestamps', () => {
       assert.throws(() => {
         dashboard.processTimestamp(-1000);
       });
     });
 
-    it('should handle very large timestamps', function() {
+    it('should handle very large timestamps', () => {
       const farFuture = 253402300800000; // Year 9999
       const processed = dashboard.processTimestamp(farFuture);
 
       assert(processed > 0);
     });
 
-    it('should handle timestamp 0', function() {
+    it('should handle timestamp 0', () => {
       const zero = 0;
       const processed = dashboard.processTimestamp(zero);
 
       assert.strictEqual(processed, 0);
     });
 
-    it('should reject non-numeric timestamps', function() {
+    it('should reject non-numeric timestamps', () => {
       assert.throws(() => {
         dashboard.processTimestamp('not-a-number');
       });
     });
 
-    it('should handle leap seconds (conceptually)', function() {
+    it('should handle leap seconds (conceptually)', () => {
       // June 30, 2012 had a leap second added
       const leapSecondTime = 1341100800000; // June 30, 2012
 
@@ -249,13 +249,13 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 6: Empty Collections', function() {
-    it('should handle empty monitor list', function() {
+  describe('Scenario 6: Empty Collections', () => {
+    it('should handle empty monitor list', () => {
       const emptyDashboard = new MockDashboardEdgeCaseHandler();
       assert.strictEqual(emptyDashboard.data.size, 0);
     });
 
-    it('should handle empty change history', function() {
+    it('should handle empty change history', () => {
       const history = [];
 
       for (const change of history) {
@@ -266,7 +266,7 @@ describe('Dashboard Edge Cases', function() {
       assert.strictEqual(history.length, 0);
     });
 
-    it('should handle empty alert list', function() {
+    it('should handle empty alert list', () => {
       const alerts = [];
 
       const unread = alerts.filter(a => !a.read);
@@ -274,24 +274,24 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 7: Zero and Negative Values', function() {
-    it('should handle zero price', function() {
+  describe('Scenario 7: Zero and Negative Values', () => {
+    it('should handle zero price', () => {
       const price = 0;
       assert(typeof price === 'number');
       assert.strictEqual(price, 0);
     });
 
-    it('should handle negative price changes', function() {
+    it('should handle negative price changes', () => {
       const change = -99.99;
       assert(change < 0);
     });
 
-    it('should handle zero duration', function() {
+    it('should handle zero duration', () => {
       const duration = 0;
       assert.strictEqual(duration, 0);
     });
 
-    it('should handle negative counts', function() {
+    it('should handle negative counts', () => {
       // Should be rejected
       const count = -5;
       if (count < 0) {
@@ -300,8 +300,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 8: Floating Point Precision', function() {
-    it('should handle price calculations with decimals', function() {
+  describe('Scenario 8: Floating Point Precision', () => {
+    it('should handle price calculations with decimals', () => {
       const price1 = 19.99;
       const price2 = 20.01;
       const diff = price2 - price1;
@@ -310,20 +310,20 @@ describe('Dashboard Edge Cases', function() {
       assert(Math.abs(diff - 0.02) < 0.001);
     });
 
-    it('should handle small percentage changes', function() {
+    it('should handle small percentage changes', () => {
       const percentChange = 0.0001; // 0.01% change
 
       assert(percentChange > 0);
     });
 
-    it('should handle very large numbers', function() {
+    it('should handle very large numbers', () => {
       const large = 999999999999.99;
       assert(typeof large === 'number');
     });
   });
 
-  describe('Scenario 9: Case Sensitivity', function() {
-    it('should handle case-sensitive IDs', function() {
+  describe('Scenario 9: Case Sensitivity', () => {
+    it('should handle case-sensitive IDs', () => {
       dashboard.addItem('Monitor-A', { name: 'A' });
       dashboard.addItem('monitor-a', { name: 'a' });
 
@@ -333,7 +333,7 @@ describe('Dashboard Edge Cases', function() {
       assert.notStrictEqual(itemA, itema);
     });
 
-    it('should handle mixed case in text', function() {
+    it('should handle mixed case in text', () => {
       const text = 'CaMeLcAsE';
       const processed = dashboard.processText(text);
 
@@ -341,22 +341,22 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 10: Type Coercion Edge Cases', function() {
-    it('should handle string to number coercion', function() {
+  describe('Scenario 10: Type Coercion Edge Cases', () => {
+    it('should handle string to number coercion', () => {
       const stringNum = '123';
       const num = parseInt(stringNum);
 
       assert.strictEqual(num, 123);
     });
 
-    it('should reject invalid number strings', function() {
+    it('should reject invalid number strings', () => {
       const invalid = '12.34.56';
       const parsed = parseInt(invalid);
 
       assert.strictEqual(parsed, 12); // parseInt stops at first non-digit
     });
 
-    it('should handle boolean to string', function() {
+    it('should handle boolean to string', () => {
       const bool = true;
       const str = String(bool);
 
@@ -364,8 +364,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 11: Whitespace Handling', function() {
-    it('should trim leading/trailing whitespace', function() {
+  describe('Scenario 11: Whitespace Handling', () => {
+    it('should trim leading/trailing whitespace', () => {
       const text = '   spaces   ';
       const processed = dashboard.processText(text);
 
@@ -373,14 +373,14 @@ describe('Dashboard Edge Cases', function() {
       assert(!processed.endsWith(' '));
     });
 
-    it('should handle tabs and newlines', function() {
+    it('should handle tabs and newlines', () => {
       const text = '\t\nMixed\r\nWhitespace\t';
       const processed = dashboard.processText(text);
 
       assert(processed.length > 0);
     });
 
-    it('should preserve internal whitespace', function() {
+    it('should preserve internal whitespace', () => {
       const text = '  word1   word2  ';
       const processed = dashboard.processText(text);
 
@@ -389,20 +389,20 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 12: Boundary Value Testing', function() {
-    it('should handle max safe integer', function() {
+  describe('Scenario 12: Boundary Value Testing', () => {
+    it('should handle max safe integer', () => {
       const maxInt = Number.MAX_SAFE_INTEGER;
       assert(maxInt > 0);
     });
 
-    it('should handle array length limits', function() {
+    it('should handle array length limits', () => {
       // JavaScript supports arrays up to 2^32-1 length theoretically
       // But practically limited by memory
       const arr = new Array(100000);
       assert.strictEqual(arr.length, 100000);
     });
 
-    it('should handle map size limits', function() {
+    it('should handle map size limits', () => {
       const map = new Map();
 
       for (let i = 0; i < 10000; i++) {
@@ -413,8 +413,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 13: Concurrent Access Edge Cases', function() {
-    it('should handle simultaneous read/write', async function() {
+  describe('Scenario 13: Concurrent Access Edge Cases', () => {
+    it('should handle simultaneous read/write', async () => {
       const operations = [];
 
       for (let i = 0; i < 100; i++) {
@@ -432,8 +432,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 14: Default Values and Fallbacks', function() {
-    it('should provide sensible defaults', function() {
+  describe('Scenario 14: Default Values and Fallbacks', () => {
+    it('should provide sensible defaults', () => {
       const config = {
         timeout: undefined,
         retries: null
@@ -449,8 +449,8 @@ describe('Dashboard Edge Cases', function() {
     });
   });
 
-  describe('Scenario 15: Edge Cases Summary', function() {
-    it('should handle all edge case categories', function() {
+  describe('Scenario 15: Edge Cases Summary', () => {
+    it('should handle all edge case categories', () => {
       const testCategories = [
         { name: 'Unicode', handled: true },
         { name: 'LongStrings', handled: true },

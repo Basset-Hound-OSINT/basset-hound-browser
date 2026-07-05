@@ -11,13 +11,13 @@ const {
   PLATFORM_CONFIGS,
   TIMEZONE_CONFIGS,
   CANVAS_NOISE_CONFIGS,
-  WEBGL_NOISE_CONFIGS,
+  WEBGL_NOISE_CONFIGS
 } = require('./evasion/fingerprint-profile');
 
 const {
   BehavioralProfile,
   MouseMovementAI,
-  TypingAI,
+  TypingAI
 } = require('./evasion/behavioral-ai');
 
 // Test results tracking
@@ -25,7 +25,7 @@ const results = {
   fingerprint: { passed: 0, failed: 0, tests: [] },
   canvas: { passed: 0, failed: 0, tests: [] },
   webgl: { passed: 0, failed: 0, tests: [] },
-  sessionCoherence: { passed: 0, failed: 0, tests: [] },
+  sessionCoherence: { passed: 0, failed: 0, tests: [] }
 };
 
 let totalTests = 0;
@@ -44,7 +44,7 @@ function testFingerprintValidation() {
     console.log('Test 1: Creating Windows fingerprint profile...');
     const { id: profileId1, profile: profile1 } = manager.createProfile({
       platform: 'windows',
-      timezone: 'America/New_York',
+      timezone: 'America/New_York'
     });
     totalTests++;
 
@@ -54,7 +54,7 @@ function testFingerprintValidation() {
       results.fingerprint.tests.push({
         name: 'Create Windows profile',
         status: 'PASS',
-        profileId: profileId1,
+        profileId: profileId1
       });
       console.log(`✓ PASS: Windows profile created (${profileId1})`);
     } else {
@@ -62,7 +62,7 @@ function testFingerprintValidation() {
       results.fingerprint.tests.push({
         name: 'Create Windows profile',
         status: 'FAIL',
-        error: 'Profile creation returned empty',
+        error: 'Profile creation returned empty'
       });
       console.log('✗ FAIL: Windows profile creation failed');
       return;
@@ -89,8 +89,8 @@ function testFingerprintValidation() {
           plugins: hasPlugins,
           languages: hasLanguages,
           timezone: hasTimezone,
-          platform: hasPlatform,
-        },
+          platform: hasPlatform
+        }
       });
       console.log('✓ PASS: All fingerprint properties present');
       console.log(`  - Platform: ${config.platformType}`);
@@ -107,8 +107,8 @@ function testFingerprintValidation() {
           plugins: !hasPlugins,
           languages: !hasLanguages,
           timezone: !hasTimezone,
-          platform: !hasPlatform,
-        },
+          platform: !hasPlatform
+        }
       });
       console.log('✗ FAIL: Missing required fingerprint properties');
     }
@@ -117,7 +117,7 @@ function testFingerprintValidation() {
     console.log('Test 3: Creating macOS fingerprint profile...');
     const { id: profileId2, profile: profile2 } = manager.createProfile({
       platform: 'macos',
-      timezone: 'Europe/London',
+      timezone: 'Europe/London'
     });
     totalTests++;
 
@@ -127,7 +127,7 @@ function testFingerprintValidation() {
       results.fingerprint.passed++;
       results.fingerprint.tests.push({
         name: 'Create macOS profile',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: macOS profile created with correct platform type');
     } else {
@@ -135,7 +135,7 @@ function testFingerprintValidation() {
       results.fingerprint.tests.push({
         name: 'Create macOS profile',
         status: 'FAIL',
-        error: `Platform type: ${config2 ? config2.platformType : 'none'}`,
+        error: `Platform type: ${config2 ? config2.platformType : 'none'}`
       });
       console.log('✗ FAIL: macOS profile platform type mismatch');
     }
@@ -143,7 +143,7 @@ function testFingerprintValidation() {
     // Test 4: Create Linux profile
     console.log('Test 4: Creating Linux fingerprint profile...');
     const { id: profileId3, profile: profile3 } = manager.createProfile({
-      platform: 'linux',
+      platform: 'linux'
     });
     totalTests++;
 
@@ -153,7 +153,7 @@ function testFingerprintValidation() {
       results.fingerprint.passed++;
       results.fingerprint.tests.push({
         name: 'Create Linux profile',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: Linux profile created with correct platform type');
     } else {
@@ -161,7 +161,7 @@ function testFingerprintValidation() {
       results.fingerprint.tests.push({
         name: 'Create Linux profile',
         status: 'FAIL',
-        error: `Platform type: ${config3 ? config3.platformType : 'none'}`,
+        error: `Platform type: ${config3 ? config3.platformType : 'none'}`
       });
       console.log('✗ FAIL: Linux profile platform type mismatch');
     }
@@ -177,7 +177,7 @@ function testFingerprintValidation() {
       results.fingerprint.passed++;
       results.fingerprint.tests.push({
         name: 'Fingerprint consistency',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: Fingerprint remains consistent');
     } else {
@@ -185,7 +185,7 @@ function testFingerprintValidation() {
       results.fingerprint.tests.push({
         name: 'Fingerprint consistency',
         status: 'FAIL',
-        error: 'Fingerprint data inconsistency',
+        error: 'Fingerprint data inconsistency'
       });
       console.log('✗ FAIL: Fingerprint inconsistency detected');
     }
@@ -195,7 +195,7 @@ function testFingerprintValidation() {
     results.fingerprint.tests.push({
       name: 'Fingerprint validation',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -209,7 +209,7 @@ function testCanvasEvasion() {
   try {
     const { profile } = new FingerprintProfileManager().createProfile({
       platform: 'windows',
-      canvasNoiseLevel: 'aggressive',
+      canvasNoiseLevel: 'aggressive'
     });
 
     // Test 1: Verify canvas noise configuration
@@ -223,7 +223,7 @@ function testCanvasEvasion() {
       results.canvas.tests.push({
         name: 'Canvas noise configuration',
         status: 'PASS',
-        level: config.evasion.canvas.level,
+        level: config.evasion.canvas.level
       });
       console.log(`✓ PASS: Canvas noise configured at ${config.evasion.canvas.level} level`);
       console.log(`  - Intensity: ${config.evasion.canvas.config.intensity}`);
@@ -235,7 +235,7 @@ function testCanvasEvasion() {
       results.canvas.tests.push({
         name: 'Canvas noise configuration',
         status: 'FAIL',
-        error: 'Missing canvas noise configuration',
+        error: 'Missing canvas noise configuration'
       });
       console.log('✗ FAIL: Canvas noise not configured');
     }
@@ -248,7 +248,7 @@ function testCanvasEvasion() {
     for (const level of levels) {
       const { profile: testProfile } = new FingerprintProfileManager().createProfile({
         platform: 'windows',
-        canvasNoiseLevel: level,
+        canvasNoiseLevel: level
       });
       if (testProfile.getConfig().evasion.canvas.level === level) {
         levelTestsPassed++;
@@ -262,7 +262,7 @@ function testCanvasEvasion() {
       results.canvas.tests.push({
         name: 'Canvas noise levels',
         status: 'PASS',
-        levelsSupported: levels.length,
+        levelsSupported: levels.length
       });
       console.log(`✓ PASS: All ${levels.length} canvas noise levels working`);
     } else {
@@ -270,7 +270,7 @@ function testCanvasEvasion() {
       results.canvas.tests.push({
         name: 'Canvas noise levels',
         status: 'FAIL',
-        error: `Only ${levelTestsPassed}/${levels.length} levels supported`,
+        error: `Only ${levelTestsPassed}/${levels.length} levels supported`
       });
       console.log(`✗ FAIL: Only ${levelTestsPassed}/${levels.length} canvas noise levels working`);
     }
@@ -285,14 +285,14 @@ function testCanvasEvasion() {
       results.canvas.passed++;
       results.canvas.tests.push({
         name: 'Canvas noise injection',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: Canvas noise injection capable');
     } else {
       results.canvas.failed++;
       results.canvas.tests.push({
         name: 'Canvas noise injection',
-        status: 'FAIL',
+        status: 'FAIL'
       });
       console.log('✗ FAIL: Canvas noise injection not available');
     }
@@ -302,7 +302,7 @@ function testCanvasEvasion() {
     results.canvas.tests.push({
       name: 'Canvas evasion',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -316,7 +316,7 @@ function testWebGLEvasion() {
   try {
     const { profile } = new FingerprintProfileManager().createProfile({
       platform: 'windows',
-      webglNoiseLevel: 'aggressive',
+      webglNoiseLevel: 'aggressive'
     });
 
     // Test 1: Verify WebGL noise configuration
@@ -330,7 +330,7 @@ function testWebGLEvasion() {
       results.webgl.tests.push({
         name: 'WebGL noise configuration',
         status: 'PASS',
-        level: configWG.evasion.webgl.level,
+        level: configWG.evasion.webgl.level
       });
       console.log(`✓ PASS: WebGL noise configured at ${configWG.evasion.webgl.level} level`);
       console.log(`  - Extension Randomization: ${configWG.evasion.webgl.config.randomizeExtensions}`);
@@ -340,7 +340,7 @@ function testWebGLEvasion() {
       results.webgl.tests.push({
         name: 'WebGL noise configuration',
         status: 'FAIL',
-        error: 'Missing WebGL noise configuration',
+        error: 'Missing WebGL noise configuration'
       });
       console.log('✗ FAIL: WebGL noise not configured');
     }
@@ -353,7 +353,7 @@ function testWebGLEvasion() {
     for (const level of levels) {
       const { profile: testProfile } = new FingerprintProfileManager().createProfile({
         platform: 'windows',
-        webglNoiseLevel: level,
+        webglNoiseLevel: level
       });
       const wgConfig = testProfile.getConfig();
       if (wgConfig.evasion && wgConfig.evasion.webgl && wgConfig.evasion.webgl.level === level) {
@@ -368,7 +368,7 @@ function testWebGLEvasion() {
       results.webgl.tests.push({
         name: 'WebGL noise levels',
         status: 'PASS',
-        levelsSupported: levels.length,
+        levelsSupported: levels.length
       });
       console.log(`✓ PASS: All ${levels.length} WebGL noise levels working`);
     } else {
@@ -376,7 +376,7 @@ function testWebGLEvasion() {
       results.webgl.tests.push({
         name: 'WebGL noise levels',
         status: 'FAIL',
-        error: `Only ${levelTestsPassed}/${levels.length} levels supported`,
+        error: `Only ${levelTestsPassed}/${levels.length} levels supported`
       });
       console.log(`✗ FAIL: Only ${levelTestsPassed}/${levels.length} WebGL noise levels working`);
     }
@@ -390,14 +390,14 @@ function testWebGLEvasion() {
       results.webgl.passed++;
       results.webgl.tests.push({
         name: 'WebGL precision noise',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: WebGL precision noise capable');
     } else {
       results.webgl.failed++;
       results.webgl.tests.push({
         name: 'WebGL precision noise',
-        status: 'FAIL',
+        status: 'FAIL'
       });
       console.log('✗ FAIL: WebGL precision noise not available');
     }
@@ -407,7 +407,7 @@ function testWebGLEvasion() {
     results.webgl.tests.push({
       name: 'WebGL evasion',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -431,14 +431,14 @@ function testSessionCoherence() {
       results.sessionCoherence.passed++;
       results.sessionCoherence.tests.push({
         name: 'Create behavioral profile',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: Behavioral profile created');
     } else {
       results.sessionCoherence.failed++;
       results.sessionCoherence.tests.push({
         name: 'Create behavioral profile',
-        status: 'FAIL',
+        status: 'FAIL'
       });
       console.log('✗ FAIL: Could not create behavioral profile');
       return;
@@ -456,7 +456,7 @@ function testSessionCoherence() {
       results.sessionCoherence.tests.push({
         name: 'Generate mouse path',
         status: 'PASS',
-        pointCount: path.points.length,
+        pointCount: path.points.length
       });
       console.log(`✓ PASS: Mouse path generated (${path.points.length} points)`);
     } else {
@@ -464,7 +464,7 @@ function testSessionCoherence() {
       results.sessionCoherence.tests.push({
         name: 'Generate mouse path',
         status: 'FAIL',
-        error: 'Mouse path generation failed or invalid result',
+        error: 'Mouse path generation failed or invalid result'
       });
       console.log('✗ FAIL: Mouse path generation failed');
     }
@@ -481,7 +481,7 @@ function testSessionCoherence() {
       results.sessionCoherence.tests.push({
         name: 'Generate typing events',
         status: 'PASS',
-        eventCount: typingEvents.length,
+        eventCount: typingEvents.length
       });
       console.log(`✓ PASS: Typing events generated (${typingEvents.length} events)`);
     } else {
@@ -489,7 +489,7 @@ function testSessionCoherence() {
       results.sessionCoherence.tests.push({
         name: 'Generate typing events',
         status: 'FAIL',
-        error: 'Typing events generation failed',
+        error: 'Typing events generation failed'
       });
       console.log('✗ FAIL: Typing events generation failed');
     }
@@ -505,7 +505,7 @@ function testSessionCoherence() {
       results.sessionCoherence.tests.push({
         name: 'Generate scroll behavior',
         status: 'PASS',
-        eventCount: scrollEvents.length,
+        eventCount: scrollEvents.length
       });
       console.log(`✓ PASS: Scroll behavior generated (${scrollEvents.length} events)`);
       // Verify scroll events have proper structure
@@ -518,7 +518,7 @@ function testSessionCoherence() {
       results.sessionCoherence.tests.push({
         name: 'Generate scroll behavior',
         status: 'FAIL',
-        error: 'Scroll generation failed or invalid result',
+        error: 'Scroll generation failed or invalid result'
       });
       console.log('✗ FAIL: Scroll behavior generation failed');
     }
@@ -528,7 +528,7 @@ function testSessionCoherence() {
     results.sessionCoherence.tests.push({
       name: 'Session coherence',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -596,9 +596,9 @@ function generateReport() {
           totalTests: totalTests,
           passedTests: passedTests,
           failedTests: totalTests - passedTests,
-          passRate: `${passRate}%`,
+          passRate: `${passRate}%`
         },
-        results: results,
+        results: results
       },
       null,
       2

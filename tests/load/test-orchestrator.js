@@ -225,7 +225,7 @@ class TestOrchestrator {
         total_phases: this.allResults.summary.total_phases_completed,
         total_tests: this.allResults.summary.total_tests,
         overall_success_rate: `${this.allResults.summary.overall_success_rate}%`,
-        total_messages_processed: this.allResults.summary.total_messages_received,
+        total_messages_processed: this.allResults.summary.total_messages_received
       },
 
       phase_results: {
@@ -244,7 +244,9 @@ class TestOrchestrator {
 
   _formatLoadTestResults() {
     const phase = this.allResults.orchestrator.phases.load;
-    if (!phase) return null;
+    if (!phase) {
+      return null;
+    }
 
     return {
       status: 'COMPLETED',
@@ -262,7 +264,9 @@ class TestOrchestrator {
 
   _formatSoakTestResults() {
     const phase = this.allResults.orchestrator.phases.soak;
-    if (!phase) return null;
+    if (!phase) {
+      return null;
+    }
 
     return {
       status: 'COMPLETED',
@@ -280,7 +284,9 @@ class TestOrchestrator {
 
   _formatChaosTestResults() {
     const phase = this.allResults.orchestrator.phases.chaos;
-    if (!phase) return null;
+    if (!phase) {
+      return null;
+    }
 
     return {
       status: 'COMPLETED',
@@ -297,7 +303,9 @@ class TestOrchestrator {
 
   _calculatePerformanceMetrics() {
     const load = this.allResults.orchestrator.phases.load;
-    if (!load || !load.tests || load.tests.length === 0) return null;
+    if (!load || !load.tests || load.tests.length === 0) {
+      return null;
+    }
 
     const throughputs = load.tests.map(t => parseFloat(t.throughput.avg_msgs_per_sec));
     const latencies = load.tests.map(t => t.latency.p99);
@@ -317,7 +325,9 @@ class TestOrchestrator {
     const metrics = this._calculatePerformanceMetrics();
     const recommendations = [];
 
-    if (!metrics) return recommendations;
+    if (!metrics) {
+      return recommendations;
+    }
 
     const avgThroughput = parseFloat(metrics.average_throughput);
     if (avgThroughput < 400) {

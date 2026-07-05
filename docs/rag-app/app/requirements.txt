@@ -1,0 +1,37 @@
+# ──────────────────────────────────────────────────────────────
+# RAG Bootstrap Dependencies
+# ──────────────────────────────────────────────────────────────
+
+# Core API framework
+fastapi[standard]
+uvicorn[standard]
+
+# Database & vector storage
+sqlalchemy[asyncio]
+asyncpg
+pgvector
+
+# Caching
+redis[hiredis]
+
+# Embeddings (optional - only needed if using sentence-transformers backend)
+# Default backend is Ollama (via httpx), which doesn't require this
+# Uncomment if you want to use EMBEDDING_BACKEND=sentence-transformers
+# sentence-transformers
+
+# Document processing
+pymupdf                    # PDF extraction
+python-multipart           # File upload support
+
+# Configuration & utilities
+pydantic-settings
+pyyaml
+
+# LLM & MCP integration
+httpx                      # Ollama API client
+fastmcp==2.1.2             # MCP server (pinned: constructor API drifts across
+                           # releases, e.g. description= kwarg; keep host and
+                           # container on this same version)
+
+# File watching (inotify for auto-ingest)
+inotify_simple             # Efficient file system monitoring

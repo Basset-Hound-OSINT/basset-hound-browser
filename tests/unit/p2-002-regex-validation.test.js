@@ -37,7 +37,7 @@ describe('P2-002: Regex Validation', () => {
         '(?P<name>test)', // Invalid named group
         '(?<>empty)', // Invalid empty group
         '[a-z-]', // Invalid range (not really, but edge case)
-        '(?P<', // Incomplete named group
+        '(?P<' // Incomplete named group
       ];
 
       for (const pattern of invalidPatterns) {
@@ -117,8 +117,12 @@ describe('P2-002: Regex Validation', () => {
 
     test('should handle null and undefined patterns', () => {
       function isSafePattern(p) {
-        if (p === null || p === undefined) return false;
-        if (typeof p !== 'string') return false;
+        if (p === null || p === undefined) {
+          return false;
+        }
+        if (typeof p !== 'string') {
+          return false;
+        }
         try {
           new RegExp(p);
           return true;
@@ -215,7 +219,7 @@ describe('P2-002: Regex Validation', () => {
         for (const [id, sig] of Object.entries(signatures)) {
           try {
             // Validate patterns
-            let valid = true;
+            const valid = true;
             if (sig.headers) {
               for (const [, pattern] of Object.entries(sig.headers)) {
                 if (typeof pattern === 'string' && pattern.startsWith('/')) {

@@ -29,10 +29,10 @@ class RealWorldTestRunner {
         totalTests: 0,
         passedTests: 0,
         failedTests: 0,
-        blockedTests: 0,
+        blockedTests: 0
       },
       tests: [],
-      detectionIndicators: [],
+      detectionIndicators: []
     };
     this.ws = null;
     this.serverProcess = null;
@@ -68,11 +68,11 @@ class RealWorldTestRunner {
 
       // Start the server process
       this.serverProcess = spawn('node', [
-        path.join(__dirname, '../../websocket/server.js'),
+        path.join(__dirname, '../../websocket/server.js')
       ], {
         cwd: path.join(__dirname, '../..'),
         stdio: ['ignore', 'pipe', 'pipe'],
-        detached: false,
+        detached: false
       });
 
       this.serverProcess.stderr.on('data', (data) => {
@@ -168,7 +168,7 @@ class RealWorldTestRunner {
         JSON.stringify({
           id: messageId,
           command,
-          args,
+          args
         })
       );
 
@@ -257,7 +257,7 @@ class RealWorldTestRunner {
         results.push({
           title: titleMatch ? titleMatch[1] : 'N/A',
           url: urlMatch ? urlMatch[1] : 'N/A',
-          snippet: snippetMatch ? snippetMatch[1] : '',
+          snippet: snippetMatch ? snippetMatch[1] : ''
         });
       }
     }
@@ -283,14 +283,14 @@ class RealWorldTestRunner {
       statusCode: null,
       contentLength: 0,
       resultsExtracted: 0,
-      blockingIndicators: [],
+      blockingIndicators: []
     };
 
     try {
       // Navigate to Google
       this.log('Navigating to Google...');
       const navResult = await this.sendCommand('navigate', {
-        url: 'https://www.google.com/',
+        url: 'https://www.google.com/'
       });
 
       testResult.statusCode = navResult.statusCode || 200;
@@ -309,7 +309,7 @@ class RealWorldTestRunner {
         // Search for query
         this.log(`Searching for: "${testResult.query}"`);
         const searchResult = await this.sendCommand('search', {
-          query: testResult.query,
+          query: testResult.query
         });
 
         // Extract results
@@ -350,7 +350,7 @@ class RealWorldTestRunner {
       'bot detection evasion',
       'javascript fingerprinting',
       'browser automation framework',
-      'anti-bot technology',
+      'anti-bot technology'
     ];
 
     const testResult = {
@@ -363,7 +363,7 @@ class RealWorldTestRunner {
       error: null,
       searchResults: [],
       blockingIndicators: [],
-      blockedOnSearch: null,
+      blockedOnSearch: null
     };
 
     let successCount = 0;
@@ -372,7 +372,7 @@ class RealWorldTestRunner {
       // Navigate to Google once
       this.log('Navigating to Google for multi-search test...');
       await this.sendCommand('navigate', {
-        url: 'https://www.google.com/',
+        url: 'https://www.google.com/'
       });
 
       // Perform multiple searches
@@ -382,7 +382,7 @@ class RealWorldTestRunner {
 
         try {
           const searchResult = await this.sendCommand('search', {
-            query,
+            query
           });
 
           const blockingIndicators = this.detectBotBlocking(searchResult);
@@ -402,7 +402,7 @@ class RealWorldTestRunner {
               successCount++;
               testResult.searchResults.push({
                 query,
-                count: results.length,
+                count: results.length
               });
             }
           }
@@ -449,13 +449,13 @@ class RealWorldTestRunner {
       error: null,
       statusCode: null,
       resultsExtracted: 0,
-      blockingIndicators: [],
+      blockingIndicators: []
     };
 
     try {
       this.log('Navigating to Bing...');
       const navResult = await this.sendCommand('navigate', {
-        url: 'https://www.bing.com/',
+        url: 'https://www.bing.com/'
       });
 
       testResult.statusCode = navResult.statusCode || 200;
@@ -471,7 +471,7 @@ class RealWorldTestRunner {
       if (testResult.statusCode === 200 && !testResult.blocked) {
         this.log(`Searching for: "${testResult.query}"`);
         const searchResult = await this.sendCommand('search', {
-          query: testResult.query,
+          query: testResult.query
         });
 
         if (searchResult.content) {
@@ -516,13 +516,13 @@ class RealWorldTestRunner {
       error: null,
       statusCode: null,
       resultsExtracted: 0,
-      blockingIndicators: [],
+      blockingIndicators: []
     };
 
     try {
       this.log('Navigating to DuckDuckGo...');
       const navResult = await this.sendCommand('navigate', {
-        url: 'https://duckduckgo.com/',
+        url: 'https://duckduckgo.com/'
       });
 
       testResult.statusCode = navResult.statusCode || 200;
@@ -537,7 +537,7 @@ class RealWorldTestRunner {
       if (testResult.statusCode === 200 && !testResult.blocked) {
         this.log(`Searching for: "${testResult.query}"`);
         const searchResult = await this.sendCommand('search', {
-          query: testResult.query,
+          query: testResult.query
         });
 
         if (searchResult.content) {
@@ -581,13 +581,13 @@ class RealWorldTestRunner {
       blocked: false,
       error: null,
       statusCode: null,
-      blockingIndicators: [],
+      blockingIndicators: []
     };
 
     try {
       this.log('Navigating to GitHub...');
       const navResult = await this.sendCommand('navigate', {
-        url: 'https://github.com/',
+        url: 'https://github.com/'
       });
 
       testResult.statusCode = navResult.statusCode || 200;
@@ -635,13 +635,13 @@ class RealWorldTestRunner {
       blocked: false,
       error: null,
       statusCode: null,
-      blockingIndicators: [],
+      blockingIndicators: []
     };
 
     try {
       this.log('Navigating to Wikipedia...');
       const navResult = await this.sendCommand('navigate', {
-        url: 'https://en.wikipedia.org/',
+        url: 'https://en.wikipedia.org/'
       });
 
       testResult.statusCode = navResult.statusCode || 200;
@@ -705,8 +705,8 @@ Generated: ${new Date().toISOString()}
 ## Test Results
 
 ${this.results.tests
-  .map(
-    (test, i) => `
+    .map(
+      (test, i) => `
 ### Test ${i + 1}: ${test.name}
 - **URL**: ${test.url}
 - **Status**: ${test.success ? '✓ PASSED' : '✗ FAILED'}
@@ -714,8 +714,8 @@ ${this.results.tests
 - **HTTP Status**: ${test.statusCode || 'N/A'}
 ${test.blockedOnSearch ? `- **Blocked on Search**: #${test.blockedOnSearch}` : ''}
 ${test.blockingIndicators.length > 0
-  ? `- **Detection Indicators**: ${test.blockingIndicators.join(', ')}`
-  : ''}
+    ? `- **Detection Indicators**: ${test.blockingIndicators.join(', ')}`
+    : ''}
 ${test.error ? `- **Error**: ${test.error}` : ''}
 ${test.resultsExtracted ? `- **Results Extracted**: ${test.resultsExtracted}` : ''}
 ${
@@ -724,8 +724,8 @@ ${
     : ''
 }
 `
-  )
-  .join('\n')}
+    )
+    .join('\n')}
 
 ## Blocking Indicators Detected
 ${

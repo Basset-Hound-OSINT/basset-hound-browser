@@ -236,7 +236,7 @@ describe('Performance and Regression Tests', () => {
   });
 
   const skipIfNoServer = (testFn) => {
-    return async function(...args) {
+    return async function (...args) {
       if (!client || !client.isConnected()) {
         console.log('Skipping test - WebSocket server not available');
         return;

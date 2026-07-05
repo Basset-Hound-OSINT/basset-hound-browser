@@ -26,7 +26,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'mouse-movement',
       enabled: true,
-      message: 'Mouse movement anonymization enabled',
+      message: 'Mouse movement anonymization enabled'
     };
   }
 
@@ -39,7 +39,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'mouse-movement',
       enabled: false,
-      message: 'Mouse movement anonymization disabled',
+      message: 'Mouse movement anonymization disabled'
     };
   }
 
@@ -59,7 +59,7 @@ class BehavioralAnonymizationCommands {
       module: 'keyboard-typing',
       enabled: true,
       typingSpeed: this.keyboardTyping.typingWPM,
-      message: 'Keyboard typing anonymization enabled',
+      message: 'Keyboard typing anonymization enabled'
     };
   }
 
@@ -72,7 +72,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'keyboard-typing',
       enabled: false,
-      message: 'Keyboard typing anonymization disabled',
+      message: 'Keyboard typing anonymization disabled'
     };
   }
 
@@ -85,7 +85,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'timing-randomization',
       enabled: true,
-      message: 'Timing randomization enabled',
+      message: 'Timing randomization enabled'
     };
   }
 
@@ -98,7 +98,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'timing-randomization',
       enabled: false,
-      message: 'Timing randomization disabled',
+      message: 'Timing randomization disabled'
     };
   }
 
@@ -111,7 +111,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'interaction-patterns',
       enabled: true,
-      message: 'Interaction pattern anonymization enabled',
+      message: 'Interaction pattern anonymization enabled'
     };
   }
 
@@ -124,7 +124,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'interaction-patterns',
       enabled: false,
-      message: 'Interaction pattern anonymization disabled',
+      message: 'Interaction pattern anonymization disabled'
     };
   }
 
@@ -151,10 +151,10 @@ class BehavioralAnonymizationCommands {
         'mouse-movement',
         'keyboard-typing',
         'timing-randomization',
-        'interaction-patterns',
+        'interaction-patterns'
       ],
       typingSpeed: this.keyboardTyping.typingWPM,
-      message: 'All behavioral anonymization enabled',
+      message: 'All behavioral anonymization enabled'
     };
   }
 
@@ -172,7 +172,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'all-behaviors',
       enabled: false,
-      message: 'All behavioral anonymization disabled',
+      message: 'All behavioral anonymization disabled'
     };
   }
 
@@ -187,13 +187,13 @@ class BehavioralAnonymizationCommands {
         mouseMovement: this.mouseMovement.getStatus(),
         keyboardTyping: this.keyboardTyping.getStatus(),
         timingRandomization: this.timingRandomization.getStatus(),
-        interactionPatterns: this.interactionPatterns.getStatus(),
+        interactionPatterns: this.interactionPatterns.getStatus()
       },
       overallEnabled:
         this.mouseMovement.enabled &&
         this.keyboardTyping.enabled &&
         this.timingRandomization.enabled &&
-        this.interactionPatterns.enabled,
+        this.interactionPatterns.enabled
     };
   }
 
@@ -204,7 +204,7 @@ class BehavioralAnonymizationCommands {
     if (!params || typeof params.wpm !== 'number') {
       return {
         success: false,
-        error: 'wpm parameter required (60-120)',
+        error: 'wpm parameter required (60-120)'
       };
     }
 
@@ -213,7 +213,7 @@ class BehavioralAnonymizationCommands {
       success: true,
       module: 'keyboard-typing',
       typingSpeed: this.keyboardTyping.typingWPM,
-      message: `Typing speed set to ${this.keyboardTyping.typingWPM} WPM`,
+      message: `Typing speed set to ${this.keyboardTyping.typingWPM} WPM`
     };
   }
 
@@ -231,7 +231,7 @@ class BehavioralAnonymizationCommands {
       return {
         success: false,
         error:
-          'params.startPos and params.endPos required {x: number, y: number}',
+          'params.startPos and params.endPos required {x: number, y: number}'
       };
     }
 
@@ -256,7 +256,7 @@ class BehavioralAnonymizationCommands {
       startPos: params.startPos,
       endPos: params.endPos,
       duration,
-      segments: path.length,
+      segments: path.length
     };
   }
 
@@ -268,7 +268,7 @@ class BehavioralAnonymizationCommands {
     if (!params || !params.text) {
       return {
         success: false,
-        error: 'params.text required (string to type)',
+        error: 'params.text required (string to type)'
       };
     }
 
@@ -279,7 +279,7 @@ class BehavioralAnonymizationCommands {
       text: params.text,
       sequence,
       totalDuration: sequence.reduce((sum, event) => sum + event.delay, 0),
-      events: sequence.length,
+      events: sequence.length
     };
   }
 
@@ -328,7 +328,7 @@ class BehavioralAnonymizationCommands {
     return {
       success: true,
       delayType,
-      delays,
+      delays
     };
   }
 
@@ -340,7 +340,7 @@ class BehavioralAnonymizationCommands {
     if (!params || !params.fields || !Array.isArray(params.fields)) {
       return {
         success: false,
-        error: 'params.fields required (array of {label, value, type, selector})',
+        error: 'params.fields required (array of {label, value, type, selector})'
       };
     }
 
@@ -355,7 +355,7 @@ class BehavioralAnonymizationCommands {
         actions.length > 0
           ? actions[actions.length - 1].timestamp || 0
           : 0,
-      steps: actions.length,
+      steps: actions.length
     };
   }
 
@@ -367,7 +367,7 @@ class BehavioralAnonymizationCommands {
     if (!params || !params.element) {
       return {
         success: false,
-        error: 'params.element required {x, y, width, height}',
+        error: 'params.element required {x, y, width, height}'
       };
     }
 
@@ -383,7 +383,7 @@ class BehavioralAnonymizationCommands {
         hoverPattern.length > 0
           ? hoverPattern[hoverPattern.length - 1].timestamp
           : 0,
-      steps: hoverPattern.length,
+      steps: hoverPattern.length
     };
   }
 
@@ -399,7 +399,7 @@ class BehavioralAnonymizationCommands {
     ) {
       return {
         success: false,
-        error: 'params.pageHeight and params.viewportHeight required (numbers)',
+        error: 'params.pageHeight and params.viewportHeight required (numbers)'
       };
     }
 
@@ -417,7 +417,7 @@ class BehavioralAnonymizationCommands {
         scrollPattern.length > 0
           ? scrollPattern[scrollPattern.length - 1].timestamp
           : 0,
-      actions: scrollPattern.length,
+      actions: scrollPattern.length
     };
   }
 
@@ -430,7 +430,7 @@ class BehavioralAnonymizationCommands {
     return {
       success: true,
       message: 'Behavioral state reset',
-      clearedHistory: true,
+      clearedHistory: true
     };
   }
 }

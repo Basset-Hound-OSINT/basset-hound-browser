@@ -37,7 +37,7 @@ ws.on('error', (err) => {
 
 ws.on('close', () => {
   console.log('\n==============================================');
-  console.log(`RESULTS: ${testsPassed}/${testsTotal} PASS (${((testsPassed/testsTotal)*100).toFixed(1)}%)`);
+  console.log(`RESULTS: ${testsPassed}/${testsTotal} PASS (${((testsPassed / testsTotal) * 100).toFixed(1)}%)`);
   console.log('==============================================');
   process.exit(testsPassed === testsTotal ? 0 : 1);
 });
@@ -57,7 +57,7 @@ function runNextTest() {
   }
 
   const id = ++messageId;
-  
+
   const timeout = setTimeout(() => {
     testsFailed++;
     console.log(`[FAIL] ${test.name} - TIMEOUT`);
@@ -73,7 +73,7 @@ function runNextTest() {
       const response = JSON.parse(data);
       if (response.id === id) {
         ws.removeListener('message', handler);
-        
+
         if (response.success) {
           testsPassed++;
           console.log(`[PASS] ${test.name}`);
@@ -84,7 +84,7 @@ function runNextTest() {
           testsFailed++;
           console.log(`[FAIL] ${test.name} - ${response.error || 'unknown error'}`);
         }
-        
+
         runIndex++;
         setTimeout(runNextTest, 500);
       }

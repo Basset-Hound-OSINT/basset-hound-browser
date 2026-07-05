@@ -33,13 +33,13 @@ class PathValidator {
   /**
    * Get the base application directory
    * @param {string} appBaseDir - Optional custom base directory
-   * @returns {string} Absolute path to .basset-hound directory
+   * @returns {string} Absolute path to tmp/.basset-hound directory
    */
   static getAppBaseDir(appBaseDir = null) {
     if (appBaseDir) {
       return path.resolve(appBaseDir);
     }
-    return path.join(process.cwd(), '.basset-hound');
+    return path.join(process.cwd(), 'tmp', '.basset-hound');
   }
 
   /**
@@ -85,7 +85,7 @@ class PathValidator {
 
       // Resolve to absolute paths
       const baseAbsolute = path.resolve(baseDir);
-      let inputAbsolute = path.resolve(inputPath);
+      const inputAbsolute = path.resolve(inputPath);
 
       // Check for null bytes (null byte injection)
       if (inputPath.includes('\0') || baseDir.includes('\0')) {

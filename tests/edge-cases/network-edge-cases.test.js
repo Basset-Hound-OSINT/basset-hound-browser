@@ -255,7 +255,7 @@ class NetworkEdgeCasesTester {
       for (let i = 0; i < 20; i++) {
         try {
           const response = await this.sendCommand('ping', { id: i }, 5000);
-          commands.push({ id: i, delivered: !!response });
+          commands.push({ id: i, delivered: Boolean(response) });
         } catch (e) {
           commands.push({ id: i, delivered: false });
         }
@@ -440,7 +440,7 @@ class NetworkEdgeCasesTester {
         const response = await this.sendCommand('processData', { data: largeData }, 10000);
         this.results.partitionTests.push({
           test: 'partial_message_handling',
-          largeMessageProcessed: !!response,
+          largeMessageProcessed: Boolean(response),
           passed: true
         });
         this.results.passed++;

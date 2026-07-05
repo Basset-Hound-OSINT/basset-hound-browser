@@ -202,11 +202,11 @@ describe('HOTPGenerator - RFC 4226 Compliance', () => {
     test('should reject malformed token', () => {
       const hotp = new HOTPGenerator(RFC_TEST_SECRET);
 
-      expect(hotp.validate('12345')).toEqual({ valid: false, counter: 0 });   // Too short
+      expect(hotp.validate('12345')).toEqual({ valid: false, counter: 0 }); // Too short
       expect(hotp.validate('1234567')).toEqual({ valid: false, counter: 0 }); // Too long
-      expect(hotp.validate('abc123')).toEqual({ valid: false, counter: 0 });  // Non-numeric
-      expect(hotp.validate('')).toEqual({ valid: false, counter: 0 });        // Empty
-      expect(hotp.validate(null)).toEqual({ valid: false, counter: 0 });      // Null
+      expect(hotp.validate('abc123')).toEqual({ valid: false, counter: 0 }); // Non-numeric
+      expect(hotp.validate('')).toEqual({ valid: false, counter: 0 }); // Empty
+      expect(hotp.validate(null)).toEqual({ valid: false, counter: 0 }); // Null
     });
 
     test('should validate token with lookahead', () => {

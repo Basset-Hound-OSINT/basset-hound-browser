@@ -423,7 +423,9 @@ describe('HeadlessAuthenticationManager', () => {
 
       mockBrowser.navigate = async () => {
         attempts++;
-        if (attempts < 2) throw new Error('Temporary error');
+        if (attempts < 2) {
+          throw new Error('Temporary error');
+        }
         return { success: true };
       };
 
@@ -442,7 +444,9 @@ describe('HeadlessAuthenticationManager', () => {
     test('should detect URL redirect', async () => {
       let urlChanges = false;
       mockBrowser.getUrl = async () => {
-        if (urlChanges) return 'https://example.com/dashboard';
+        if (urlChanges) {
+          return 'https://example.com/dashboard';
+        }
         urlChanges = true;
         return 'https://example.com/login';
       };
@@ -492,7 +496,7 @@ describe('HeadlessAuthenticationManager', () => {
       await authManager.executeAuthFlow('perf_test', {});
       const duration = Date.now() - start;
 
-      expect(duration).toBeLessThan(5000);  // Should complete in < 5 seconds
+      expect(duration).toBeLessThan(5000); // Should complete in < 5 seconds
     });
   });
 
@@ -524,7 +528,7 @@ describe('HeadlessAuthenticationManager', () => {
         password: undefined
       });
 
-      expect(result.success).toBe(true);  // Should still execute even with empty vars
+      expect(result.success).toBe(true); // Should still execute even with empty vars
     });
 
     test('should generate unique execution IDs', () => {

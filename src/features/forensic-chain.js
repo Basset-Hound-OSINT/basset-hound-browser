@@ -712,8 +712,8 @@ class ComplianceValidator {
     return {
       compliant: evidence.verifyIntegrity().valid && chainOfCustody.sealed,
       checks: {
-        identification: { pass: !!evidence.id },
-        collection: { pass: !!evidence.capturedAt },
+        identification: { pass: Boolean(evidence.id) },
+        collection: { pass: Boolean(evidence.capturedAt) },
         acquisition: { pass: evidence.verifyIntegrity().valid },
         preservation: { pass: chainOfCustody.sealed }
       }
@@ -750,7 +750,7 @@ class ComplianceValidator {
         noChangeToOriginal: { pass: evidence.verifyIntegrity().valid },
         accessibility: { pass: true },
         auditable: { pass: evidence.modifications.length > 0 },
-        responsible: { pass: !!evidence.collector }
+        responsible: { pass: Boolean(evidence.collector) }
       }
     };
   }

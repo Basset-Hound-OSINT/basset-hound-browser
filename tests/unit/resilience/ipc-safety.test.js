@@ -52,7 +52,7 @@ describe('IPCSafety', () => {
       const results = await Promise.all([promise1, promise2]);
 
       expect(results).toEqual(['result', 'result']);
-      expect(handler).toHaveBeenCalledTimes(1);  // Only called once
+      expect(handler).toHaveBeenCalledTimes(1); // Only called once
       expect(mockLogger.debug).toHaveBeenCalled();
     });
 
@@ -68,7 +68,7 @@ describe('IPCSafety', () => {
       // Second execution within window
       const result2 = await ipcSafety.executeOncePerSession(commandId, handler);
       expect(result2).toBe('result');
-      expect(handler).toHaveBeenCalledTimes(1);  // Still only called once
+      expect(handler).toHaveBeenCalledTimes(1); // Still only called once
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Returning cached result')
@@ -104,7 +104,7 @@ describe('IPCSafety', () => {
       try {
         // Third should exceed limit
         await ipcSafety.executeOncePerSession('cmd_3', handler);
-        expect(true).toBe(false);  // Should not reach here
+        expect(true).toBe(false); // Should not reach here
       } catch (error) {
         expect(error.message).toContain('Too many pending');
       }
@@ -118,7 +118,7 @@ describe('IPCSafety', () => {
 
       try {
         await ipcSafety.executeOncePerSession(commandId, handler);
-        expect(true).toBe(false);  // Should not reach here
+        expect(true).toBe(false); // Should not reach here
       } catch (error) {
         expect(error.message).toBe('Failed');
       }
@@ -126,7 +126,7 @@ describe('IPCSafety', () => {
       // Second call should return cached error
       try {
         await ipcSafety.executeOncePerSession(commandId, handler);
-        expect(true).toBe(false);  // Should not reach here
+        expect(true).toBe(false); // Should not reach here
       } catch (error) {
         expect(error.message).toBe('Failed');
       }
@@ -157,7 +157,7 @@ describe('IPCSafety', () => {
         await ipcSafety.executeOncePerSession('cmd_timeout', handler, {
           timeout: 100
         });
-        expect(true).toBe(false);  // Should not reach here
+        expect(true).toBe(false); // Should not reach here
       } catch (error) {
         expect(error.message).toContain('timed out');
       }
@@ -257,7 +257,7 @@ describe('IPCSafety', () => {
         deduplicationWindow: 50
       });
 
-      const handler = () => new Promise(resolve => setTimeout(resolve, 300000));  // Very long
+      const handler = () => new Promise(resolve => setTimeout(resolve, 300000)); // Very long
 
       // Add some operations
       ipcSafety.executeOncePerSession('stale_1', handler);
@@ -265,7 +265,7 @@ describe('IPCSafety', () => {
 
       // Manually mark as very old
       for (const pending of ipcSafety.pendingOperations.values()) {
-        pending.timestamp = Date.now() - 400000;  // 400 seconds old
+        pending.timestamp = Date.now() - 400000; // 400 seconds old
       }
 
       // Trigger cleanup
@@ -284,7 +284,7 @@ describe('IPCSafety', () => {
 
       try {
         await ipcSafety.executeOncePerSession('error_cmd', handler);
-        expect(true).toBe(false);  // Should not reach here
+        expect(true).toBe(false); // Should not reach here
       } catch (error) {
         expect(error.message).toBe('Handler crashed');
       }

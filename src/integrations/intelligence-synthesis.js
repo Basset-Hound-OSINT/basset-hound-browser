@@ -185,8 +185,12 @@ class IntelligenceSynthesis extends EventEmitter {
 
       // Extract threat attributes
       for (const threat of fusion.uniqueThreats) {
-        if (threat.actor) fusion.threatActors.add(threat.actor);
-        if (threat.campaign) fusion.campaigns.add(threat.campaign);
+        if (threat.actor) {
+          fusion.threatActors.add(threat.actor);
+        }
+        if (threat.campaign) {
+          fusion.campaigns.add(threat.campaign);
+        }
         if (threat.tactics) {
           threat.tactics.forEach(t => fusion.tactics.add(t));
         }
@@ -404,10 +408,18 @@ class IntelligenceSynthesis extends EventEmitter {
         totalScore += sourceScore;
 
         // Aggregate by severity
-        if (risks.critical) riskAggregation.aggregatedRisk.critical += risks.critical;
-        if (risks.high) riskAggregation.aggregatedRisk.high += risks.high;
-        if (risks.medium) riskAggregation.aggregatedRisk.medium += risks.medium;
-        if (risks.low) riskAggregation.aggregatedRisk.low += risks.low;
+        if (risks.critical) {
+          riskAggregation.aggregatedRisk.critical += risks.critical;
+        }
+        if (risks.high) {
+          riskAggregation.aggregatedRisk.high += risks.high;
+        }
+        if (risks.medium) {
+          riskAggregation.aggregatedRisk.medium += risks.medium;
+        }
+        if (risks.low) {
+          riskAggregation.aggregatedRisk.low += risks.low;
+        }
       }
 
       // Calculate overall risk
@@ -555,9 +567,15 @@ class IntelligenceSynthesis extends EventEmitter {
   calculateCorrelationConfidence(sourceResults) {
     const sourceCount = sourceResults.size;
 
-    if (sourceCount === 0) return 0;
-    if (sourceCount === 1) return 0.5;
-    if (sourceCount >= 3) return 0.95;
+    if (sourceCount === 0) {
+      return 0;
+    }
+    if (sourceCount === 1) {
+      return 0.5;
+    }
+    if (sourceCount >= 3) {
+      return 0.95;
+    }
 
     return 0.75;
   }
@@ -684,8 +702,8 @@ class IntelligenceSynthesis extends EventEmitter {
   assessInfrastructureResilience(hostData) {
     return {
       redundancy: hostData.length > 1 ? 'MULTIPLE_LOCATIONS' : 'SINGLE_LOCATION',
-        loadBalancing: hostData.filter(h => h.ports && h.ports.length > 3).length > 2 ? 'DETECTED' : 'NOT_DETECTED',
-        resilience_score: Math.min((hostData.length / 10) * 100, 100)
+      loadBalancing: hostData.filter(h => h.ports && h.ports.length > 3).length > 2 ? 'DETECTED' : 'NOT_DETECTED',
+      resilience_score: Math.min((hostData.length / 10) * 100, 100)
     };
   }
 
@@ -743,9 +761,15 @@ class IntelligenceSynthesis extends EventEmitter {
    * @private
    */
   generateScoringRecommendation(score) {
-    if (score > 85) return 'Highly actionable - Immediate investigation recommended';
-    if (score > 70) return 'Actionable - Consider for investigation';
-    if (score > 50) return 'Possibly actionable - Monitor for additional evidence';
+    if (score > 85) {
+      return 'Highly actionable - Immediate investigation recommended';
+    }
+    if (score > 70) {
+      return 'Actionable - Consider for investigation';
+    }
+    if (score > 50) {
+      return 'Possibly actionable - Monitor for additional evidence';
+    }
     return 'Low confidence - Require additional validation';
   }
 
@@ -758,7 +782,7 @@ class IntelligenceSynthesis extends EventEmitter {
       (risks.critical || 0) * 4 +
       (risks.high || 0) * 3 +
       (risks.medium || 0) * 2 +
-      (risks.low || 0) * 1
+      Number(risks.low || 0)
     ) / 10;
   }
 
@@ -900,9 +924,15 @@ class IntelligenceScoringEngine {
    * Calculate severity score
    */
   calculateSeverity(data) {
-    if (data.severity === 'critical') return 100;
-    if (data.severity === 'high') return 80;
-    if (data.severity === 'medium') return 60;
+    if (data.severity === 'critical') {
+      return 100;
+    }
+    if (data.severity === 'high') {
+      return 80;
+    }
+    if (data.severity === 'medium') {
+      return 60;
+    }
     return 40;
   }
 

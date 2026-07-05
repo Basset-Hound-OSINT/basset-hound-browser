@@ -23,7 +23,7 @@ According to the ROADMAP.md scope boundaries, investigation management features 
 |------|---------|-------|
 | `/home/devel/basset-hound-browser/evidence/evidence-collector.js` | Phase 18 - Simple capture API | ~379 |
 | `/home/devel/basset-hound-browser/evidence/evidence-manager.js` | Phase 29 - Full forensic manager | ~780 |
-| `/home/devel/basset-hound-browser/websocket/commands/evidence-commands.js` | Phase 18 WebSocket commands | ~324 |
+| `/home/devel/basset-hound-browser/websocket/commands/forensic/evidence/evidence-commands.js` | Phase 18 WebSocket commands | ~324 |
 | `/home/devel/basset-hound-browser/websocket/commands/evidence-chain-commands.js` | Phase 29 WebSocket commands | ~606 |
 | `/home/devel/basset-hound-browser/mcp/server.py` | MCP tools for both systems | ~200+ lines (evidence section) |
 
@@ -266,7 +266,7 @@ These external systems should:
 | File | Reason |
 |------|--------|
 | `/home/devel/basset-hound-browser/evidence/evidence-collector.js` | Already simplified and in scope |
-| `/home/devel/basset-hound-browser/websocket/commands/evidence-commands.js` | Already simplified and in scope |
+| `/home/devel/basset-hound-browser/websocket/commands/forensic/evidence/evidence-commands.js` | Already simplified and in scope |
 | `/home/devel/basset-hound-browser/tests/unit/evidence-collector.test.js` | Tests for retained code |
 
 ---

@@ -28,7 +28,9 @@ class CredentialSanitizer {
    * @returns {string} Hashed credential
    */
   hashCredentials(credentials, salt = null) {
-    if (!credentials) return null;
+    if (!credentials) {
+      return null;
+    }
 
     if (!salt) {
       salt = crypto.randomBytes(16).toString('hex');
@@ -66,7 +68,7 @@ class CredentialSanitizer {
 
       return {
         sanitized,
-        hasCredentials: !!credentials,
+        hasCredentials: Boolean(credentials),
         hostname: url.hostname,
         port: url.port || 80,
         credentialHash: credentials ? this.hashCredentials(credentials) : null
@@ -101,7 +103,9 @@ class CredentialSanitizer {
    * @returns {string} Safe identifier (ID or hostname)
    */
   getSafeProxyId(proxy) {
-    if (!proxy) return '[unknown-proxy]';
+    if (!proxy) {
+      return '[unknown-proxy]';
+    }
 
     // Prefer the proxy ID if available
     if (proxy.id) {
@@ -119,7 +123,9 @@ class CredentialSanitizer {
    * @returns {object} Sanitized proxy object
    */
   sanitizeProxyForLogging(proxy) {
-    if (!proxy) return null;
+    if (!proxy) {
+      return null;
+    }
 
     const sanitized = { ...proxy };
 
@@ -176,7 +182,9 @@ class CredentialSanitizer {
    * @returns {boolean} True if credentials detected
    */
   hasCredentialsExposed(message, proxyAddresses = []) {
-    if (!message) return false;
+    if (!message) {
+      return false;
+    }
 
     const msgStr = String(message);
 
@@ -213,7 +221,9 @@ class CredentialSanitizer {
    * @returns {object} Sanitized log data
    */
   sanitizeLogData(logData) {
-    if (!logData) return logData;
+    if (!logData) {
+      return logData;
+    }
 
     const sanitized = { ...logData };
 

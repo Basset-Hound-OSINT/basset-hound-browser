@@ -41,7 +41,9 @@ class PerformanceProfiler {
       const startMem = process.memoryUsage();
 
       this.ws.send(JSON.stringify(command), (err) => {
-        if (err) reject(err);
+        if (err) {
+          reject(err);
+        }
       });
 
       const handler = (msg) => {
@@ -124,7 +126,7 @@ class PerformanceProfiler {
       { name: 'get_image', cmd: { type: 'get_image' } }
     ];
 
-    for (const {name, cmd} of commands) {
+    for (const { name, cmd } of commands) {
       console.log(`\nTesting ${name} (10 iterations)...`);
       const results = [];
 
@@ -222,7 +224,9 @@ class PerformanceProfiler {
       } catch (e) {
         // Count failures
       }
-      if ((i + 1) % 20 === 0) process.stdout.write('.');
+      if ((i + 1) % 20 === 0) {
+        process.stdout.write('.');
+      }
     }
 
     const duration1 = Date.now() - start1;
@@ -250,7 +254,9 @@ class PerformanceProfiler {
       } catch (e) {
         // Count failures
       }
-      if ((i + 1) % 10 === 0) process.stdout.write('.');
+      if ((i + 1) % 10 === 0) {
+        process.stdout.write('.');
+      }
     }
 
     const duration2 = Date.now() - start2;
@@ -279,7 +285,9 @@ class PerformanceProfiler {
       } catch (e) {
         // Continue
       }
-      if ((i + 1) % 10 === 0) process.stdout.write('.');
+      if ((i + 1) % 10 === 0) {
+        process.stdout.write('.');
+      }
     }
 
     const cpuEnd = process.cpuUsage(cpuStart);

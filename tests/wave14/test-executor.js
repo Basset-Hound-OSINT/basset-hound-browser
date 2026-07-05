@@ -152,7 +152,7 @@ class TestExecutor {
   async generateComprehensiveReport() {
     this.log('Generating comprehensive performance report...');
 
-    let report = `
+    const report = `
 Wave 14 Comprehensive Performance Test Report
 Generated: ${new Date().toISOString()}
 

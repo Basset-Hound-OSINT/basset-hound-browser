@@ -479,10 +479,10 @@ describe('Phase 4 - Module 5: Cache Efficiency', () => {
 // Integrated Throughput Benchmarking
 // ==========================================
 
-describe('Phase 4 - Integrated Throughput Benchmarks', function() {
+describe('Phase 4 - Integrated Throughput Benchmarks', function () {
   this.timeout(180000); // 3 minutes for benchmarks
 
-  it('should sustain 500+ msg/sec at 50 concurrent', async function() {
+  it('should sustain 500+ msg/sec at 50 concurrent', async function () {
     if (process.env.SKIP_INTEGRATION === 'true') {
       this.skip();
     }
@@ -491,7 +491,7 @@ describe('Phase 4 - Integrated Throughput Benchmarks', function() {
     console.log('Integration test - requires running WebSocket server');
   });
 
-  it('should maintain <2.5ms P99 latency', async function() {
+  it('should maintain <2.5ms P99 latency', async function () {
     if (process.env.SKIP_INTEGRATION === 'true') {
       this.skip();
     }
@@ -499,7 +499,7 @@ describe('Phase 4 - Integrated Throughput Benchmarks', function() {
     console.log('Integration test - requires running WebSocket server');
   });
 
-  it('should not grow memory under load', async function() {
+  it('should not grow memory under load', async function () {
     if (process.env.SKIP_INTEGRATION === 'true') {
       this.skip();
     }

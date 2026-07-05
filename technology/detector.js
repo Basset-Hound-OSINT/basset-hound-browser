@@ -17,23 +17,23 @@ const { FINGERPRINTS, CATEGORIES, getFingerprint } = require('./fingerprints');
  * Detection confidence levels
  */
 const CONFIDENCE_LEVELS = {
-  LOW: 25,      // Single weak match
-  MEDIUM: 50,   // Single strong match or multiple weak matches
-  HIGH: 75,     // Multiple strong matches
-  CERTAIN: 100  // Version detected or very strong evidence
+  LOW: 25, // Single weak match
+  MEDIUM: 50, // Single strong match or multiple weak matches
+  HIGH: 75, // Multiple strong matches
+  CERTAIN: 100 // Version detected or very strong evidence
 };
 
 /**
  * Detection source weights for confidence calculation
  */
 const SOURCE_WEIGHTS = {
-  html: 15,        // HTML content patterns
-  scripts: 25,     // Script URL patterns (strong indicator)
-  css: 15,         // CSS file patterns
-  js: 20,          // JavaScript variable patterns
-  meta: 30,        // Meta tag patterns (usually explicit)
-  headers: 35,     // HTTP header patterns (very reliable)
-  cookies: 20      // Cookie patterns
+  html: 15, // HTML content patterns
+  scripts: 25, // Script URL patterns (strong indicator)
+  css: 15, // CSS file patterns
+  js: 20, // JavaScript variable patterns
+  meta: 30, // Meta tag patterns (usually explicit)
+  headers: 35, // HTTP header patterns (very reliable)
+  cookies: 20 // Cookie patterns
 };
 
 /**
@@ -160,7 +160,9 @@ class TechnologyDetector {
     };
 
     const patterns = fingerprint.patterns;
-    if (!patterns) return matches;
+    if (!patterns) {
+      return matches;
+    }
 
     // Match HTML patterns
     if (patterns.html && data.html) {
@@ -241,7 +243,9 @@ class TechnologyDetector {
   matchPatterns(patterns, content) {
     const matches = [];
 
-    if (!content || !patterns) return matches;
+    if (!content || !patterns) {
+      return matches;
+    }
 
     for (const pattern of patterns) {
       try {
@@ -273,13 +277,17 @@ class TechnologyDetector {
   matchMetaTags(patterns, metaTags) {
     const matches = [];
 
-    if (!metaTags || !patterns) return matches;
+    if (!metaTags || !patterns) {
+      return matches;
+    }
 
     // Normalize meta tags to array of objects
     const normalizedMeta = Array.isArray(metaTags) ? metaTags : [];
 
     for (const pattern of patterns) {
-      if (!pattern.name && !pattern.property) continue;
+      if (!pattern.name && !pattern.property) {
+        continue;
+      }
 
       for (const meta of normalizedMeta) {
         const metaName = meta.name || meta.property || '';
@@ -318,14 +326,18 @@ class TechnologyDetector {
   matchMetaInHtml(patterns, html) {
     const matches = [];
 
-    if (!html || !patterns) return matches;
+    if (!html || !patterns) {
+      return matches;
+    }
 
     // Extract meta tags from HTML
     const metaRegex = /<meta[^>]+>/gi;
     const metaTags = html.match(metaRegex) || [];
 
     for (const pattern of patterns) {
-      if (!pattern.name && !pattern.property) continue;
+      if (!pattern.name && !pattern.property) {
+        continue;
+      }
 
       for (const metaTag of metaTags) {
         // Check if meta tag matches pattern
@@ -364,7 +376,9 @@ class TechnologyDetector {
   matchHeaders(patterns, headers) {
     const matches = [];
 
-    if (!headers || !patterns) return matches;
+    if (!headers || !patterns) {
+      return matches;
+    }
 
     // Normalize headers to lowercase keys
     const normalizedHeaders = {};
@@ -373,7 +387,9 @@ class TechnologyDetector {
     }
 
     for (const pattern of patterns) {
-      if (!pattern.name) continue;
+      if (!pattern.name) {
+        continue;
+      }
 
       const headerName = pattern.name.toLowerCase();
       const headerValue = normalizedHeaders[headerName];
@@ -413,7 +429,9 @@ class TechnologyDetector {
   matchCookies(patterns, cookies) {
     const matches = [];
 
-    if (!cookies || !patterns) return matches;
+    if (!cookies || !patterns) {
+      return matches;
+    }
 
     // Build cookie string from various formats
     let cookieString = '';
@@ -422,8 +440,12 @@ class TechnologyDetector {
       cookieString = cookies;
     } else if (Array.isArray(cookies)) {
       cookieString = cookies.map(c => {
-        if (typeof c === 'string') return c;
-        if (c.name) return `${c.name}=${c.value || ''}`;
+        if (typeof c === 'string') {
+          return c;
+        }
+        if (c.name) {
+          return `${c.name}=${c.value || ''}`;
+        }
         return '';
       }).join('; ');
     } else if (typeof cookies === 'object') {

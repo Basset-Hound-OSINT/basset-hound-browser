@@ -46,7 +46,7 @@ class MockIpcMain extends EventEmitter {
 const Module = require('module');
 const originalRequire = Module.prototype.require;
 
-Module.prototype.require = function(id) {
+Module.prototype.require = function (id) {
   if (id === 'electron') {
     return {
       ipcMain: new MockIpcMain(),

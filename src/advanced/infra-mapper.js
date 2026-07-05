@@ -72,12 +72,24 @@ class AutonomousSystem {
     let score = 100;
 
     // Deduct for known issues
-    if (this.reputation.concerns.includes('hosting_provider')) score -= 5;
-    if (this.reputation.concerns.includes('datacenter')) score -= 3;
-    if (this.reputation.concerns.includes('vps_hosting')) score -= 5;
-    if (this.reputation.concerns.includes('anonymity_service')) score -= 20;
-    if (this.reputation.concerns.includes('proxy')) score -= 15;
-    if (this.reputation.concerns.includes('botnet')) score -= 50;
+    if (this.reputation.concerns.includes('hosting_provider')) {
+      score -= 5;
+    }
+    if (this.reputation.concerns.includes('datacenter')) {
+      score -= 3;
+    }
+    if (this.reputation.concerns.includes('vps_hosting')) {
+      score -= 5;
+    }
+    if (this.reputation.concerns.includes('anonymity_service')) {
+      score -= 20;
+    }
+    if (this.reputation.concerns.includes('proxy')) {
+      score -= 15;
+    }
+    if (this.reputation.concerns.includes('botnet')) {
+      score -= 50;
+    }
 
     this.reputation.score = Math.max(score, 0);
     return this.reputation.score;
@@ -260,7 +272,9 @@ class InfrastructureMapper extends EventEmitter {
     const visited = new Set();
 
     for (const [subnet, ipRange] of this.ipRanges) {
-      if (visited.has(subnet)) continue;
+      if (visited.has(subnet)) {
+        continue;
+      }
 
       const cluster = {
         id: `cluster-${clusters.length}`,
@@ -279,7 +293,9 @@ class InfrastructureMapper extends EventEmitter {
 
       // Find related subnets (same ASN or closely related)
       for (const [otherSubnet, otherRange] of this.ipRanges) {
-        if (visited.has(otherSubnet)) continue;
+        if (visited.has(otherSubnet)) {
+          continue;
+        }
 
         // Same ASN = related
         if (otherRange.asn === ipRange.asn) {
@@ -345,7 +361,9 @@ class InfrastructureMapper extends EventEmitter {
 
     // Simulate relationship discovery
     for (const asn of targetASNs) {
-      if (!this.autonomousSystems.has(asn)) continue;
+      if (!this.autonomousSystems.has(asn)) {
+        continue;
+      }
 
       const as = this.autonomousSystems.get(asn);
 

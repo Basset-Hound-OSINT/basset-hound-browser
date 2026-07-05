@@ -11,7 +11,7 @@ const crypto = require('crypto');
 
 class EnhancedScreenshotCapture {
   constructor() {
-    this.screenshotDir = path.join(require('os').homedir(), '.basset-hound', 'screenshots');
+    this.screenshotDir = path.join(require('os').homedir(), 'tmp', '.basset-hound', 'screenshots');
     this.ensureDirectory();
   }
 
@@ -142,21 +142,21 @@ class EnhancedScreenshotCapture {
       let image = sharp(imageBuffer);
 
       switch (format.toLowerCase()) {
-        case 'webp':
-          image = image.webp({ quality: options.quality || 75 });
-          break;
-        case 'jpeg':
-        case 'jpg':
-          image = image.jpeg({ quality: options.quality || 80, progressive: true });
-          break;
-        case 'png':
-        default:
-          image = image.png({ compressionLevel: options.compression || 6 });
-          break;
-        case 'gif':
-          // GIF conversion typically via ffmpeg in batch mode
-          image = image.png(); // Fallback to PNG for now
-          break;
+      case 'webp':
+        image = image.webp({ quality: options.quality || 75 });
+        break;
+      case 'jpeg':
+      case 'jpg':
+        image = image.jpeg({ quality: options.quality || 80, progressive: true });
+        break;
+      case 'png':
+      default:
+        image = image.png({ compressionLevel: options.compression || 6 });
+        break;
+      case 'gif':
+        // GIF conversion typically via ffmpeg in batch mode
+        image = image.png(); // Fallback to PNG for now
+        break;
       }
 
       const buffer = await image.toBuffer();
@@ -289,11 +289,15 @@ class EnhancedScreenshotCapture {
    * Calculate similarity between two hashes (Hamming distance)
    */
   calculateHashSimilarity(hash1, hash2) {
-    if (hash1.length !== hash2.length) return 0;
+    if (hash1.length !== hash2.length) {
+      return 0;
+    }
 
     let differences = 0;
     for (let i = 0; i < hash1.length; i++) {
-      if (hash1[i] !== hash2[i]) differences++;
+      if (hash1[i] !== hash2[i]) {
+        differences++;
+      }
     }
 
     return 1 - (differences / hash1.length);

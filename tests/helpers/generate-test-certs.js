@@ -237,14 +237,14 @@ function createSimplePEMFiles(caKeyPair, serverKeyPair) {
   // Real tests should use OpenSSL-generated certificates
   const certPlaceholder = `-----BEGIN CERTIFICATE-----
 ${Buffer.from(JSON.stringify({
-  type: 'self-signed-test-certificate',
-  subject: 'CN=localhost,O=Basset Hound Browser Tests',
-  issuer: 'CN=Test CA',
-  validFrom: notBefore.toISOString(),
-  validTo: notAfter.toISOString(),
-  publicKey: 'RSA-' + KEY_SIZE,
-  note: 'This is a placeholder. Use OpenSSL for real certificates.'
-})).toString('base64').match(/.{1,64}/g).join('\n')}
+    type: 'self-signed-test-certificate',
+    subject: 'CN=localhost,O=Basset Hound Browser Tests',
+    issuer: 'CN=Test CA',
+    validFrom: notBefore.toISOString(),
+    validTo: notAfter.toISOString(),
+    publicKey: 'RSA-' + KEY_SIZE,
+    note: 'This is a placeholder. Use OpenSSL for real certificates.'
+  })).toString('base64').match(/.{1,64}/g).join('\n')}
 -----END CERTIFICATE-----
 `;
 

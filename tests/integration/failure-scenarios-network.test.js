@@ -21,7 +21,7 @@ const fs = require('fs');
 const TEST_CONFIG = {
   results_dir: path.join(__dirname, '..', 'results'),
   maxRetries: 3,
-  timeoutMs: 5000,
+  timeoutMs: 5000
 };
 
 // Ensure results directory exists
@@ -33,7 +33,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -44,8 +44,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -58,7 +61,7 @@ class NetworkFailureSimulator {
       timeout: { rate: 0.3, canRetry: true },
       connectionReset: { rate: 0.2, canRetry: true },
       packetLoss: { rate: 0.15, canRetry: true },
-      dns: { rate: 0.05, canRetry: true },
+      dns: { rate: 0.05, canRetry: true }
     };
     this.failureLog = [];
   }
@@ -71,7 +74,7 @@ class NetworkFailureSimulator {
         timestamp: new Date().toISOString(),
         type: failureType,
         canRetry: this.failures[failureType].canRetry,
-        error: this.getErrorMessage(failureType),
+        error: this.getErrorMessage(failureType)
       };
 
       this.failureLog.push(failure);
@@ -79,14 +82,14 @@ class NetworkFailureSimulator {
       return {
         success: false,
         error: failure.error,
-        canRetry: failure.canRetry,
+        canRetry: failure.canRetry
       };
     }
 
     return {
       success: true,
       data: { result: 'success' },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 
@@ -104,7 +107,7 @@ class NetworkFailureSimulator {
       timeout: 'Request timeout after 5000ms',
       connectionReset: 'Connection reset by peer',
       packetLoss: 'Incomplete response received',
-      dns: 'DNS resolution failed',
+      dns: 'DNS resolution failed'
     };
     return messages[type] || 'Unknown error';
   }
@@ -112,7 +115,7 @@ class NetworkFailureSimulator {
   getFailureStats() {
     const stats = {
       total: this.failureLog.length,
-      byType: {},
+      byType: {}
     };
 
     for (const failure of this.failureLog) {
@@ -169,7 +172,7 @@ class RetryHandler {
     this.retryLog.push({
       timestamp: new Date().toISOString(),
       operation,
-      result,
+      result
     });
   }
 }
@@ -219,7 +222,9 @@ describe('Network Failure Scenarios', () => {
       let retryableCount = 0;
 
       for (const [type, config] of Object.entries(simulator.failures)) {
-        if (config.canRetry) retryableCount++;
+        if (config.canRetry) {
+          retryableCount++;
+        }
       }
 
       assert(retryableCount > 0);
@@ -232,7 +237,7 @@ describe('Network Failure Scenarios', () => {
         timeout: 'exponential_backoff',
         connectionReset: 'retry_with_new_connection',
         packetLoss: 'request_fragmentation',
-        dns: 'use_cached_resolution',
+        dns: 'use_cached_resolution'
       };
 
       assert(Object.keys(fallbacks).length === 4);
@@ -336,7 +341,9 @@ describe('Network Failure Scenarios', () => {
 
       for (let i = 0; i < 100; i++) {
         const result = simulator.simulateRequest();
-        if (result.success) successCount++;
+        if (result.success) {
+          successCount++;
+        }
       }
 
       assert(successCount > 0);
@@ -471,7 +478,9 @@ describe('Network Failure Scenarios', () => {
 
       for (let i = 0; i < 100; i++) {
         const result = simulator.simulateRequest();
-        if (result.success) successCount++;
+        if (result.success) {
+          successCount++;
+        }
       }
 
       // Should have some successes even with high failure rate
@@ -488,7 +497,7 @@ describe('Network Failure Scenarios', () => {
         timeout: 'use cached response',
         connectionReset: 'use backup server',
         packetLoss: 'increase packet size',
-        dns: 'use hardcoded IP',
+        dns: 'use hardcoded IP'
       };
 
       let fallbacksAvailable = 0;
@@ -510,7 +519,7 @@ describe('Network Failure Scenarios', () => {
         timestamp: new Date().toISOString(),
         totalFailures: stats.total,
         failuresByType: stats.byType,
-        retryRate: (retryHandler.retryLog.length / (stats.total + 100)) * 100,
+        retryRate: (retryHandler.retryLog.length / (stats.total + 100)) * 100
       };
 
       const reportPath = path.join(TEST_CONFIG.results_dir, `network-failures-${Date.now()}.json`);

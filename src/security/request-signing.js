@@ -23,12 +23,12 @@ class RequestSigner {
    */
   static DEFAULT_CONFIG = {
     algorithm: 'sha256',
-    maxRequestAge: 60000,        // 60 seconds
-    clockSkew: 5000,             // 5 seconds clock tolerance
+    maxRequestAge: 60000, // 60 seconds
+    clockSkew: 5000, // 5 seconds clock tolerance
     enableNonce: true,
-    nonceWindow: 300000,         // 5 minutes
+    nonceWindow: 300000, // 5 minutes
     enableTimestamp: true,
-    fieldsToSign: null,          // null = all fields, or array of field names
+    fieldsToSign: null, // null = all fields, or array of field names
     excludeFields: ['signature', 'nonce']
   };
 
@@ -52,8 +52,8 @@ class RequestSigner {
     }
 
     this.config = { ...RequestSigner.DEFAULT_CONFIG, ...config };
-    this.usedNonces = new Map();  // nonce -> timestamp (verified/used nonces)
-    this.createdNonces = new Set();  // nonces created by this signer
+    this.usedNonces = new Map(); // nonce -> timestamp (verified/used nonces)
+    this.createdNonces = new Set(); // nonces created by this signer
   }
 
   /**

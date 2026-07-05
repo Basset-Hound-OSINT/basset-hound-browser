@@ -1,0 +1,348 @@
+# Basset Hound Browser v12.9.0 Alert Rules
+# Production alerting rules for critical, warning, and info-level monitoring
+# Updated: 2026-07-03
+
+groups:
+  - name: basset_hound_v12_9_0_availability
+    interval: 30s
+    rules:
+      # CRITICAL: Service is down
+      - alert: ServiceUnavailable
+        expr: up{job="basset-hound-browser"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: service
+          slo: availability
+        annotations:
+          summary: "Basset Hound Browser service is down"
+          description: "Service has been unreachable for {{ $value }} minute(s)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/service-unavailable"
+          dashboard: "http://grafana:3000/d/basset-operations"
+
+      # WARNING: Health check failure rate elevated
+      - alert: HighHealthCheckFailureRate
+        expr: rate(basset_health_check_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: health
+          slo: availability
+        annotations:
+          summary: "High health check failure rate"
+          description: "{{ $value | humanizePercentage }} of health checks failing in last 5m"
+          runbook: "https://wiki.internal/basset-hound/runbooks/health-check-failures"
+
+      # WARNING: Container restart cycle detected
+      - alert: ContainerRestartCyclePossible
+        expr: increase(basset_container_restarts_total[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+          slo: availability
+        annotations:
+          summary: "Container restart cycle detected"
+          description: "{{ $value }} restarts detected in the last hour"
+          runbook: "https://wiki.internal/basset-hound/runbooks/restart-cycles"
+
+  - name: basset_hound_v12_9_0_latency
+    interval: 30s
+    rules:
+      # WARNING: P95 latency exceeds threshold
+      - alert: P95LatencyExceeded
+        expr: histogram_quantile(0.95, rate(basset_command_duration_ms[5m])) > 150
+        for: 3m
+        labels:
+          severity: warning
+          component: performance
+          slo: latency
+        annotations:
+          summary: "P95 latency exceeds warning threshold"
+          description: "P95 latency is {{ $value }}ms (threshold: 150ms)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-latency"
+          dashboard: "http://grafana:3000/d/basset-command-perf"
+
+      # CRITICAL: P99 latency exceeds threshold
+      - alert: P99LatencyExceeded
+        expr: histogram_quantile(0.99, rate(basset_command_duration_ms[5m])) > 600
+        for: 2m
+        labels:
+          severity: critical
+          component: performance
+          slo: latency
+        annotations:
+          summary: "P99 latency exceeds critical threshold"
+          description: "P99 latency is {{ $value }}ms (threshold: 600ms)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-latency"
+          dashboard: "http://grafana:3000/d/basset-command-perf"
+
+      # WARNING: Command latency spike detected
+      - alert: CommandLatencySpikeDetected
+        expr: increase(basset_command_duration_ms{quantile="max"}[1m]) > 1000
+        for: 1m
+        labels:
+          severity: warning
+          component: performance
+          slo: latency
+        annotations:
+          summary: "Command execution latency spike detected"
+          description: "Max command latency spiked to {{ $value }}ms"
+          runbook: "https://wiki.internal/basset-hound/runbooks/latency-spike"
+
+  - name: basset_hound_v12_9_0_throughput
+    interval: 30s
+    rules:
+      # WARNING: Throughput below minimum threshold
+      - alert: ThroughputBelowMinimum
+        expr: rate(basset_websocket_messages_sent_total[1m]) < 100
+        for: 5m
+        labels:
+          severity: warning
+          component: throughput
+          slo: throughput
+        annotations:
+          summary: "Throughput below minimum threshold"
+          description: "Current throughput: {{ $value | humanize }} msg/sec (target: 100+)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/low-throughput"
+          dashboard: "http://grafana:3000/d/basset-operations"
+
+      # CRITICAL: Throughput critically low
+      - alert: ThroughputCriticallyLow
+        expr: rate(basset_websocket_messages_sent_total[1m]) < 50
+        for: 2m
+        labels:
+          severity: critical
+          component: throughput
+          slo: throughput
+        annotations:
+          summary: "Throughput critically low"
+          description: "Current throughput: {{ $value | humanize }} msg/sec"
+          runbook: "https://wiki.internal/basset-hound/runbooks/low-throughput"
+
+      # WARNING: Request queue backlog accumulating
+      - alert: RequestQueueBacklogAccumulating
+        expr: increase(basset_request_queue_depth[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+          component: throughput
+          slo: throughput
+        annotations:
+          summary: "Request queue backlog accumulating"
+          description: "Queue depth increased by {{ $value }} requests in 5 minutes"
+          runbook: "https://wiki.internal/basset-hound/runbooks/queue-backlog"
+
+  - name: basset_hound_v12_9_0_error_rate
+    interval: 30s
+    rules:
+      # WARNING: Error rate exceeds threshold
+      - alert: ErrorRateExceeded
+        expr: >
+          rate(basset_command_errors_total[1m]) /
+          rate(basset_command_executions_total[1m]) > 0.001
+        for: 2m
+        labels:
+          severity: warning
+          component: errors
+          slo: error_rate
+        annotations:
+          summary: "Error rate exceeds warning threshold"
+          description: "Error rate: {{ $value | humanizePercentage }} (threshold: 0.1%)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-error-rate"
+          dashboard: "http://grafana:3000/d/basset-operations"
+
+      # CRITICAL: Error rate critically high
+      - alert: CriticalErrorRate
+        expr: >
+          rate(basset_command_errors_total[1m]) /
+          rate(basset_command_executions_total[1m]) > 0.005
+        for: 1m
+        labels:
+          severity: critical
+          component: errors
+          slo: error_rate
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Error rate: {{ $value | humanizePercentage }} (threshold: 0.5%)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-error-rate"
+
+      # WARNING: Error spike in specific command
+      - alert: CommandTypeErrorSpike
+        expr: increase(basset_command_errors_total[5m]) > 10
+        for: 1m
+        labels:
+          severity: warning
+          component: errors
+          slo: error_rate
+        annotations:
+          summary: "Error spike in command {{ $labels.command }}"
+          description: "{{ $value }} errors in last 5 minutes"
+          runbook: "https://wiki.internal/basset-hound/runbooks/command-error-spike"
+
+  - name: basset_hound_v12_9_0_resources
+    interval: 30s
+    rules:
+      # WARNING: High memory usage
+      - alert: HighMemoryUsage
+        expr: basset_process_heap_used_bytes / basset_process_heap_total_bytes > 0.75
+        for: 3m
+        labels:
+          severity: warning
+          component: memory
+          slo: resource_utilization
+        annotations:
+          summary: "High memory usage (warning)"
+          description: "Heap usage: {{ $value | humanizePercentage }} (threshold: 75%)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-memory"
+          dashboard: "http://grafana:3000/d/basset-system-health"
+
+      # CRITICAL: Critical memory usage
+      - alert: CriticalMemoryUsage
+        expr: basset_process_heap_used_bytes / basset_process_heap_total_bytes > 0.90
+        for: 2m
+        labels:
+          severity: critical
+          component: memory
+          slo: resource_utilization
+        annotations:
+          summary: "Critical memory usage"
+          description: "Heap usage: {{ $value | humanizePercentage }} (threshold: 90%)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/critical-memory"
+
+      # WARNING: High CPU load
+      - alert: HighCPULoad
+        expr: basset_system_load_average{interval="1m"} > 2
+        for: 5m
+        labels:
+          severity: warning
+          component: cpu
+          slo: resource_utilization
+        annotations:
+          summary: "High CPU load"
+          description: "1-minute load average: {{ $value }} (cores: {{ $labels.cores }})"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-cpu"
+
+      # CRITICAL: Critical CPU load
+      - alert: CriticalCPULoad
+        expr: basset_system_load_average{interval="1m"} > 4
+        for: 2m
+        labels:
+          severity: critical
+          component: cpu
+          slo: resource_utilization
+        annotations:
+          summary: "Critical CPU load"
+          description: "1-minute load average: {{ $value }}"
+          runbook: "https://wiki.internal/basset-hound/runbooks/critical-cpu"
+
+      # WARNING: High system memory usage
+      - alert: HighSystemMemoryUsage
+        expr: >
+          (basset_system_memory_total_bytes - basset_system_memory_free_bytes) /
+          basset_system_memory_total_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+          slo: resource_utilization
+        annotations:
+          summary: "High system memory usage"
+          description: "System memory: {{ $value | humanizePercentage }}"
+          runbook: "https://wiki.internal/basset-hound/runbooks/system-memory"
+
+  - name: basset_hound_v12_9_0_connections
+    interval: 30s
+    rules:
+      # WARNING: High active connections
+      - alert: HighActiveConnections
+        expr: basset_websocket_connections_active > 200
+        for: 3m
+        labels:
+          severity: warning
+          component: connections
+          slo: throughput
+        annotations:
+          summary: "High number of active WebSocket connections"
+          description: "Active connections: {{ $value }} (threshold: 200)"
+          runbook: "https://wiki.internal/basset-hound/runbooks/high-connections"
+          dashboard: "http://grafana:3000/d/basset-operations"
+
+      # WARNING: Connection error rate elevated
+      - alert: ConnectionErrorRate
+        expr: rate(basset_websocket_connection_errors_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          component: connections
+        annotations:
+          summary: "Elevated WebSocket connection error rate"
+          description: "Error rate: {{ $value }} errors/sec"
+          runbook: "https://wiki.internal/basset-hound/runbooks/connection-errors"
+
+      # WARNING: Rate limiting actively blocking requests
+      - alert: RateLimitingActive
+        expr: rate(basset_rate_limiter_requests_total{status="limited"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: ratelimit
+        annotations:
+          summary: "Rate limiting is actively blocking requests"
+          description: "{{ $value | humanizePercentage }} of requests rate limited"
+          runbook: "https://wiki.internal/basset-hound/runbooks/rate-limiting"
+
+  - name: basset_hound_v12_9_0_data_quality
+    interval: 30s
+    rules:
+      # WARNING: Request size violations detected
+      - alert: RequestSizeViolations
+        expr: rate(basset_request_size_violations_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          component: validation
+        annotations:
+          summary: "Request size violations detected"
+          description: "{{ $value }} violations/sec"
+          runbook: "https://wiki.internal/basset-hound/runbooks/size-violations"
+
+      # CRITICAL: Message drops detected
+      - alert: MessageDropDetected
+        expr: increase(basset_websocket_message_errors_total[5m]) > 5
+        for: 1m
+        labels:
+          severity: critical
+          component: messaging
+        annotations:
+          summary: "WebSocket message drops detected"
+          description: "{{ $value }} dropped messages in 5 minutes"
+          runbook: "https://wiki.internal/basset-hound/runbooks/message-drops"
+          dashboard: "http://grafana:3000/d/basset-operations"
+
+  - name: basset_hound_v12_9_0_health
+    interval: 30s
+    rules:
+      # CRITICAL: Heartbeat missing
+      - alert: HeartbeatMissing
+        expr: basset_health_last_heartbeat_ms_ago > 60000
+        for: 1m
+        labels:
+          severity: critical
+          component: health
+        annotations:
+          summary: "Service heartbeat missing"
+          description: "No heartbeat for {{ $value }}ms"
+          runbook: "https://wiki.internal/basset-hound/runbooks/missing-heartbeat"
+
+      # WARNING: Excessive heartbeat misses
+      - alert: ExcessiveHeartbeatMisses
+        expr: increase(basset_health_heartbeats_missed_total[1h]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: health
+        annotations:
+          summary: "Excessive heartbeat misses"
+          description: "{{ $value }} missed heartbeats in last hour"
+          runbook: "https://wiki.internal/basset-hound/runbooks/heartbeat-misses"

@@ -59,8 +59,8 @@ class TechnologyDetectorHandler {
       }
 
       // Get HTML from context if not provided
-      let html = params.html || context.pageContent || '';
-      let headers = params.headers || context.pageHeaders || {};
+      const html = params.html || context.pageContent || '';
+      const headers = params.headers || context.pageHeaders || {};
 
       // If we have a Puppeteer/Playwright page object, use it for active detection
       const page = context.page || null;

@@ -125,7 +125,7 @@ class MultiWaveIntegrationTest {
           });
           assert(response.ok, 'Monitoring start failed');
           const data = await response.json();
-          return !!data.monitoringId;
+          return Boolean(data.monitoringId);
         }
       },
       {
@@ -144,7 +144,7 @@ class MultiWaveIntegrationTest {
           });
           assert(response.ok, 'Alert trigger failed');
           const data = await response.json();
-          return !!data.alertId;
+          return Boolean(data.alertId);
         }
       },
       {
@@ -162,7 +162,7 @@ class MultiWaveIntegrationTest {
           });
           assert(response.ok, 'Action execution failed');
           const data = await response.json();
-          return !!data.actionId;
+          return Boolean(data.actionId);
         }
       },
       {
@@ -181,7 +181,7 @@ class MultiWaveIntegrationTest {
           const getResponse = await fetch(`http://localhost:${this.config.apiPort}/api/dashboard/state`);
           assert(getResponse.ok, 'State retrieval failed');
           const data = await getResponse.json();
-          return !!data.state;
+          return Boolean(data.state);
         }
       },
       {
@@ -263,7 +263,7 @@ class MultiWaveIntegrationTest {
           });
           assert(response.ok, 'Slack command execution failed');
           const data = await response.json();
-          return !!data.result;
+          return Boolean(data.result);
         }
       },
       {
@@ -748,7 +748,7 @@ class MultiWaveIntegrationTest {
           });
           assert(response.ok, 'Report generation failed');
           const data = await response.json();
-          return !!data.reportId;
+          return Boolean(data.reportId);
         }
       },
       {

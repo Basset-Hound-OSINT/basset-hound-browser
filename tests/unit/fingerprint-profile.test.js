@@ -11,7 +11,7 @@ const {
   CHROME_VERSIONS,
   SCREEN_CONFIGS,
   TIMEZONE_CONFIGS,
-  HARDWARE_CONFIGS,
+  HARDWARE_CONFIGS
 } = require('../../evasion/fingerprint-profile');
 
 describe('FingerprintProfile', () => {
@@ -197,7 +197,7 @@ describe('FingerprintProfile', () => {
         platform: 'windows',
         timezone: 'America/Chicago',
         tier: 'medium',
-        seed: 'test-seed',
+        seed: 'test-seed'
       });
 
       const json = original.toJSON();
@@ -214,7 +214,7 @@ describe('FingerprintProfile', () => {
         seed: 'test-seed',
         platformType: 'macos',
         timezone: 'Europe/London',
-        tier: 'high',
+        tier: 'high'
       };
 
       const profile = FingerprintProfile.fromJSON(config);
@@ -279,7 +279,7 @@ describe('FingerprintProfileManager', () => {
     test('passes options to profile', () => {
       const { profile } = manager.createProfile({
         platform: 'linux',
-        timezone: 'Europe/Paris',
+        timezone: 'Europe/Paris'
       });
 
       expect(profile.platformType).toBe('linux');
@@ -398,14 +398,14 @@ describe('FingerprintProfileManager', () => {
           seed: 'seed1',
           platformType: 'linux',
           timezone: 'Europe/Berlin',
-          tier: 'high',
+          tier: 'high'
         },
         imported2: {
           seed: 'seed2',
           platformType: 'windows',
           timezone: 'America/New_York',
-          tier: 'medium',
-        },
+          tier: 'medium'
+        }
       };
 
       manager.importProfiles(data);

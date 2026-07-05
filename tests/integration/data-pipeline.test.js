@@ -34,7 +34,9 @@ class MockDataStore {
 
   async find(entityType, query, options = {}) {
     const entities = this.data.get(entityType);
-    if (!entities) return [];
+    if (!entities) {
+      return [];
+    }
     let results = Array.from(entities.values());
 
     for (const [field, value] of Object.entries(query)) {
@@ -89,8 +91,8 @@ describe('Data Pipeline Integration Tests', () => {
       schema: {
         name: { type: 'string', required: true },
         email: { type: 'string', required: true },
-        age: { type: 'number' },
-      },
+        age: { type: 'number' }
+      }
     });
 
     mapper = new DataMapper();
@@ -101,21 +103,21 @@ describe('Data Pipeline Integration Tests', () => {
         id: { type: 'string' },
         name: { type: 'string' },
         email: { type: 'string' },
-        age: { type: 'number' },
-      },
+        age: { type: 'number' }
+      }
     });
 
     searchEngine = new SearchEngine();
     await searchEngine.createIndex('users', {
       id: { type: 'keyword' },
       name: { type: 'text' },
-      email: { type: 'keyword' },
+      email: { type: 'keyword' }
     });
 
     analytics = new AnalyticsStore();
     analytics.configureAggregation('user_operations', {
       intervals: ['hourly'],
-      retentionDays: 365,
+      retentionDays: 365
     });
 
     validator = new SchemaValidator({ enableCache: true });
@@ -123,8 +125,8 @@ describe('Data Pipeline Integration Tests', () => {
       properties: {
         name: { type: 'string', required: true },
         email: { type: 'string', required: true },
-        age: { type: 'number', minimum: 0, maximum: 150 },
-      },
+        age: { type: 'number', minimum: 0, maximum: 150 }
+      }
     });
   });
 
@@ -138,7 +140,7 @@ describe('Data Pipeline Integration Tests', () => {
       const userData = {
         name: 'John Doe',
         email: 'john@example.com',
-        age: 30,
+        age: 30
       };
 
       const validationResult = await validator.validate(userData, 'user');
@@ -150,7 +152,7 @@ describe('Data Pipeline Integration Tests', () => {
 
       // 3. Record operation in analytics
       analytics.record('user_operations', 1, {
-        tags: { operation: 'create', userId: user.id },
+        tags: { operation: 'create', userId: user.id }
       });
 
       // 4. Map to API response
@@ -161,13 +163,13 @@ describe('Data Pipeline Integration Tests', () => {
       await searchEngine.indexDocument('users', user.id, {
         id: user.id,
         name: user.name,
-        email: user.email,
+        email: user.email
       });
 
       // 6. Cache the result
       await cacheManager.set(`user:${user.id}`, user, {
         ttl: 3600000,
-        tags: ['user', `user:${user.id}`],
+        tags: ['user', `user:${user.id}`]
       });
 
       // 7. Verify cache hit
@@ -180,19 +182,19 @@ describe('Data Pipeline Integration Tests', () => {
       queryCache.registerQuery('get_users_by_age', {
         ttl: 300000,
         tags: ['users', 'age_filter'],
-        dependencies: ['user'],
+        dependencies: ['user']
       });
 
       // Create test data
       const user1 = await repository.create({
         name: 'User 1',
         email: 'user1@example.com',
-        age: 25,
+        age: 25
       });
       const user2 = await repository.create({
         name: 'User 2',
         email: 'user2@example.com',
-        age: 35,
+        age: 35
       });
 
       // Execute query with caching
@@ -227,7 +229,7 @@ describe('Data Pipeline Integration Tests', () => {
       const batchData = [
         { name: 'User 1', email: 'user1@example.com', age: 25 },
         { name: 'User 2', email: 'user2@example.com', age: 35 },
-        { name: 'User 3', email: 'user3@example.com', age: 45 },
+        { name: 'User 3', email: 'user3@example.com', age: 45 }
       ];
 
       // Validate batch
@@ -243,13 +245,13 @@ describe('Data Pipeline Integration Tests', () => {
         await searchEngine.indexDocument('users', user.id, {
           id: user.id,
           name: user.name,
-          email: user.email,
+          email: user.email
         });
       }
 
       // Record batch operation
       analytics.record('user_operations', results.length, {
-        tags: { operation: 'batch_create' },
+        tags: { operation: 'batch_create' }
       });
 
       // Verify search index
@@ -263,30 +265,30 @@ describe('Data Pipeline Integration Tests', () => {
       for (let i = 0; i < 5; i++) {
         const user = await repository.create({
           name: `Search User ${i}`,
-          email: `search${i}@example.com`,
+          email: `search${i}@example.com`
         });
         users.push(user);
 
         await searchEngine.indexDocument('users', user.id, {
           id: user.id,
           name: user.name,
-          email: user.email,
+          email: user.email
         });
 
         // Record search operation
         analytics.record('user_operations', 1, {
-          tags: { operation: 'index', userId: user.id },
+          tags: { operation: 'index', userId: user.id }
         });
       }
 
       // Perform search
       const searchResults = await searchEngine.search('users', 'Search', {
-        limit: 10,
+        limit: 10
       });
 
       // Record search metric
       analytics.record('search_metrics', searchResults.results.length, {
-        tags: { query: 'Search' },
+        tags: { query: 'Search' }
       });
 
       // Verify
@@ -301,12 +303,12 @@ describe('Data Pipeline Integration Tests', () => {
       // Create user
       const user = await repository.create({
         name: 'Original Name',
-        email: 'original@example.com',
+        email: 'original@example.com'
       });
 
       // Cache user
       await cacheManager.set(`user:${user.id}`, user, {
-        tags: ['user', `user:${user.id}`],
+        tags: ['user', `user:${user.id}`]
       });
 
       // Verify cached
@@ -325,7 +327,7 @@ describe('Data Pipeline Integration Tests', () => {
 
       // Record update in analytics
       analytics.record('user_operations', 1, {
-        tags: { operation: 'update', userId: user.id },
+        tags: { operation: 'update', userId: user.id }
       });
     });
 
@@ -334,7 +336,7 @@ describe('Data Pipeline Integration Tests', () => {
       const now = Date.now();
       for (let i = 0; i < 60; i++) {
         analytics.record('http_requests', 100 + Math.random() * 50, {
-          timestamp: now - i * 60000,
+          timestamp: now - i * 60000
         });
       }
 
@@ -348,7 +350,7 @@ describe('Data Pipeline Integration Tests', () => {
         seriesNames: ['http_requests'],
         startTime: now - 3600000,
         endTime: now,
-        formats: ['json'],
+        formats: ['json']
       });
 
       assert(report.json);
@@ -369,12 +371,12 @@ describe('Data Pipeline Integration Tests', () => {
                 type: 'object',
                 properties: {
                   notifications: { type: 'boolean' },
-                  language: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
+                  language: { type: 'string' }
+                }
+              }
+            }
+          }
+        }
       });
 
       // Validate complex data
@@ -385,9 +387,9 @@ describe('Data Pipeline Integration Tests', () => {
           bio: 'Developer',
           settings: {
             notifications: true,
-            language: 'en',
-          },
-        },
+            language: 'en'
+          }
+        }
       };
 
       const result = await validator.validate(complexData, 'complex_user');
@@ -402,7 +404,7 @@ describe('Data Pipeline Integration Tests', () => {
           repository.create({
             name: `Concurrent User ${i}`,
             email: `concurrent${i}@example.com`,
-            age: 20 + i,
+            age: 20 + i
           })
         );
       }
@@ -415,7 +417,7 @@ describe('Data Pipeline Integration Tests', () => {
         searchEngine.indexDocument('users', user.id, {
           id: user.id,
           name: user.name,
-          email: user.email,
+          email: user.email
         })
       );
 
@@ -430,7 +432,7 @@ describe('Data Pipeline Integration Tests', () => {
     it('should handle validation errors gracefully', async () => {
       const invalidData = {
         name: 'No Email User',
-        age: 'not a number', // Wrong type
+        age: 'not a number' // Wrong type
       };
 
       const result = await validator.validate(invalidData, 'user');
@@ -482,7 +484,7 @@ describe('Data Pipeline Integration Tests', () => {
       const batchSize = 100;
       const batchData = Array.from({ length: batchSize }, (_, i) => ({
         name: `Batch User ${i}`,
-        email: `batch${i}@example.com`,
+        email: `batch${i}@example.com`
       }));
 
       const start = Date.now();

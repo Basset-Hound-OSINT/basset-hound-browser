@@ -282,7 +282,9 @@ class AlertRulesEngine extends EventEmitter {
     const timestamp = Date.now();
 
     for (const [ruleId, rule] of this.rules) {
-      if (!rule.enabled) continue;
+      if (!rule.enabled) {
+        continue;
+      }
 
       try {
         this._evaluateRule(rule, timestamp);
@@ -420,7 +422,9 @@ class AlertRulesEngine extends EventEmitter {
 
     return alerts.sort((a, b) => {
       const severityDiff = severityOrder[a.severity] - severityOrder[b.severity];
-      if (severityDiff !== 0) return severityDiff;
+      if (severityDiff !== 0) {
+        return severityDiff;
+      }
       return b.timestamp - a.timestamp;
     });
   }
@@ -440,7 +444,9 @@ class AlertRulesEngine extends EventEmitter {
   getRules(onlyEnabled = false) {
     const rules = [];
     for (const rule of this.rules.values()) {
-      if (onlyEnabled && !rule.enabled) continue;
+      if (onlyEnabled && !rule.enabled) {
+        continue;
+      }
       rules.push({
         id: rule.id,
         name: rule.name,

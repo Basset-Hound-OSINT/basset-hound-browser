@@ -449,7 +449,9 @@ asyncTest('Processes 1000 alerts from queue', async () => {
   let processed = 0;
   for (const item of queue) {
     const result = await server.sendWebhook('queue-test', 'alert', item);
-    if (result.success) processed++;
+    if (result.success) {
+      processed++;
+    }
   }
 
   assert.strictEqual(processed, 1000, 'Should process all queue items');
@@ -498,7 +500,9 @@ asyncTest('Routes alerts to multiple channels', async () => {
   let routed = 0;
   for (const [webhookId] of server.webhooks.entries()) {
     const result = await server.sendWebhook(webhookId, 'alert', alert);
-    if (result.success) routed++;
+    if (result.success) {
+      routed++;
+    }
   }
 
   assert.strictEqual(routed, channels.length, 'Should route to all channels');
@@ -531,7 +535,9 @@ asyncTest('Routes different alert types to different channels', async () => {
   for (const alert of testAlerts) {
     for (const channel of routingRules[alert.severity]) {
       const result = await server.sendWebhook(channel, 'alert', alert);
-      if (result.success) totalRouted++;
+      if (result.success) {
+        totalRouted++;
+      }
     }
   }
 

@@ -21,7 +21,7 @@ describe('DbPool', () => {
       database: 'test_db',
       minConnections: 2,
       maxConnections: 5,
-      queryTimeoutMillis: 5000,
+      queryTimeoutMillis: 5000
     });
   });
 
@@ -148,7 +148,7 @@ describe('DbPool', () => {
 
     test('should handle query timeout', async () => {
       const shortTimeoutPool = new DbPool({
-        queryTimeoutMillis: 10,
+        queryTimeoutMillis: 10
       });
 
       await shortTimeoutPool.connect();

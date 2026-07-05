@@ -195,8 +195,12 @@ function setupServerHandlers() {
     const initialCount = sharedState.cookies.length;
 
     sharedState.cookies = sharedState.cookies.filter(c => {
-      if (sessionId && c.sessionId !== sessionId) return true;
-      if (domain && c.domain !== domain) return true;
+      if (sessionId && c.sessionId !== sessionId) {
+        return true;
+      }
+      if (domain && c.domain !== domain) {
+        return true;
+      }
       return false;
     });
 

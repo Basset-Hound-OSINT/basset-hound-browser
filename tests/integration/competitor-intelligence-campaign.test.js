@@ -24,7 +24,7 @@ const TEST_CONFIG = {
   results_dir: path.join(__dirname, '..', 'results'),
   num_targets: 20,
   monitoring_duration: 30000, // 30 seconds for testing (simulates 24h)
-  check_interval: 5000, // 5 seconds
+  check_interval: 5000 // 5 seconds
 };
 
 // Ensure results directory exists
@@ -53,7 +53,7 @@ const COMPETITOR_TARGETS = [
   { id: 'comp-017', url: 'https://competitor17.example.com', name: 'Competitor 17' },
   { id: 'comp-018', url: 'https://competitor18.example.com', name: 'Competitor 18' },
   { id: 'comp-019', url: 'https://competitor19.example.com', name: 'Competitor 19' },
-  { id: 'comp-020', url: 'https://competitor20.example.com', name: 'Competitor 20' },
+  { id: 'comp-020', url: 'https://competitor20.example.com', name: 'Competitor 20' }
 ];
 
 // Test results tracking
@@ -64,7 +64,7 @@ const testResults = {
   errors: [],
   campaigns: {},
   changes_detected: {},
-  correlations: [],
+  correlations: []
 };
 
 /**
@@ -75,8 +75,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -95,11 +98,11 @@ function generateSessionSnapshot(targetId) {
       title: `Competitor Page - ${targetId}`,
       language: 'en',
       loadTime: Math.random() * 5000,
-      resourceCount: Math.floor(Math.random() * 100),
+      resourceCount: Math.floor(Math.random() * 100)
     },
     technologies: generateRandomTechnologies(),
     pricing: generateRandomPricing(),
-    features: generateRandomFeatures(),
+    features: generateRandomFeatures()
   };
 }
 
@@ -119,8 +122,8 @@ function generateRandomPricing() {
     plans: [
       { name: 'Starter', price: Math.floor(Math.random() * 100) },
       { name: 'Pro', price: Math.floor(Math.random() * 500) },
-      { name: 'Enterprise', price: 'Custom' },
-    ],
+      { name: 'Enterprise', price: 'Custom' }
+    ]
   };
 }
 
@@ -136,12 +139,14 @@ function generateRandomFeatures() {
  * Detect changes between two snapshots
  */
 function detectChanges(oldSnapshot, newSnapshot) {
-  if (!oldSnapshot) return { new: true };
+  if (!oldSnapshot) {
+    return { new: true };
+  }
 
   const changes = {
     techChanged: JSON.stringify(oldSnapshot.technologies) !== JSON.stringify(newSnapshot.technologies),
     pricingChanged: JSON.stringify(oldSnapshot.pricing) !== JSON.stringify(newSnapshot.pricing),
-    featuresChanged: JSON.stringify(oldSnapshot.features) !== JSON.stringify(newSnapshot.features),
+    featuresChanged: JSON.stringify(oldSnapshot.features) !== JSON.stringify(newSnapshot.features)
   };
 
   return changes;
@@ -168,7 +173,7 @@ function correlateChanges(allChanges) {
               targets: [targetId1, targetId2],
               changeType: change1.type,
               timeDiff,
-              confidence: 1 - (timeDiff / timeWindow),
+              confidence: 1 - (timeDiff / timeWindow)
             });
           }
         }
@@ -180,7 +185,7 @@ function correlateChanges(allChanges) {
 }
 
 describe('Multi-Target Competitor Intelligence Campaign', () => {
-  let campaignData = {};
+  const campaignData = {};
   let previousSnapshots = {};
 
   beforeAll(() => {
@@ -242,7 +247,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           techChanges: [],
           pricingChanges: [],
           featureChanges: [],
-          totalChanges: 0,
+          totalChanges: 0
         };
       }
 
@@ -263,7 +268,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         byTarget: {},
         byChangeType: {},
         byTimestamp: [],
-        correlations: [],
+        correlations: []
       };
 
       assert(campaignData.aggregatedChanges.byTarget);
@@ -275,7 +280,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       campaignData.auditTrail.push({
         timestamp: new Date().toISOString(),
         event: 'campaign_started',
-        targets: campaignData.targets.length,
+        targets: campaignData.targets.length
       });
 
       assert.strictEqual(campaignData.auditTrail.length, 1);
@@ -300,7 +305,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           targetId: target.id,
           activeSessions: [],
           sessionHistory: [],
-          lastCheck: null,
+          lastCheck: null
         };
       }
 
@@ -313,11 +318,11 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         summary: {
           totalTargets: 20,
           changesDetected: 0,
-          correlationsCound: 0,
+          correlationsCound: 0
         },
         targetReports: {},
         changeReport: {},
-        correlationReport: {},
+        correlationReport: {}
       };
 
       assert(campaignData.reportStructure.summary);
@@ -329,7 +334,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         maxConcurrentSessions: 5,
         checkInterval: TEST_CONFIG.check_interval,
         memoryBudget: 500 * 1024 * 1024, // 500MB
-        timeLimit: TEST_CONFIG.monitoring_duration,
+        timeLimit: TEST_CONFIG.monitoring_duration
       };
 
       assert(campaignData.resourceAllocation.maxConcurrentSessions === 5);
@@ -340,7 +345,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       campaignData.errorHandling = {
         retryPolicy: { maxRetries: 3, backoffMs: 1000 },
         failedTargets: [],
-        recoveryStrategies: {},
+        recoveryStrategies: {}
       };
 
       assert.strictEqual(campaignData.errorHandling.retryPolicy.maxRetries, 3);
@@ -450,7 +455,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           total: totalChanges,
           tech: tracking.techChanges.length,
           pricing: tracking.pricingChanges.length,
-          features: tracking.featureChanges.length,
+          features: tracking.featureChanges.length
         };
       }
 
@@ -479,7 +484,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           timeline.push({
             targetId,
             timestamp: new Date().toISOString(),
-            type: change.type,
+            type: change.type
           });
         }
       }
@@ -498,7 +503,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         if (tracking.techChanges.length + tracking.pricingChanges.length + tracking.featureChanges.length > 0) {
           changes[targetId] = {
             timestamp: new Date().toISOString(),
-            type: 'mixed',
+            type: 'mixed'
           };
         }
       }
@@ -541,7 +546,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           outages.push({
             targetId: target.id,
             timestamp: new Date().toISOString(),
-            type: 'timeout',
+            type: 'timeout'
           });
         }
       }
@@ -557,7 +562,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         responseTimes[target.id] = {
           min: Math.random() * 100,
           max: Math.random() * 5000,
-          avg: Math.random() * 2500,
+          avg: Math.random() * 2500
         };
       }
 
@@ -576,7 +581,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           patterns.push({
             targetId,
             pattern: 'rapid_changes',
-            count: totalChanges,
+            count: totalChanges
           });
         }
       }
@@ -617,7 +622,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       eventLog.push({
         timestamp: new Date().toISOString(),
         event: 'monitoring_started',
-        targets: 20,
+        targets: 20
       });
 
       campaignData.eventLog = eventLog;
@@ -629,7 +634,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       const overhead = {
         cpuUsage: Math.random() * 20,
         memoryUsage: Math.random() * 100,
-        networkBandwidth: Math.random() * 10,
+        networkBandwidth: Math.random() * 10
       };
 
       campaignData.overhead = overhead;
@@ -652,7 +657,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         incrementalSnapshots.push({
           targetId: target.id,
           deltaSize: Math.random() * 10000,
-          fullSize: Math.random() * 100000,
+          fullSize: Math.random() * 100000
         });
       }
 
@@ -689,7 +694,9 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       // Group targets by sector
       campaignData.targets.slice(0, 10).forEach((target, idx) => {
         const sector = idx < 5 ? 'tech' : 'finance';
-        if (!sectorGroups[sector]) sectorGroups[sector] = [];
+        if (!sectorGroups[sector]) {
+          sectorGroups[sector] = [];
+        }
         sectorGroups[sector].push(target.id);
       });
 
@@ -705,7 +712,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           techCorrelations.push({
             targetId,
             changeCount: tracking.techChanges.length,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString()
           });
         }
       }
@@ -722,7 +729,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           pricingPatterns.push({
             targetId,
             changeCount: tracking.pricingChanges.length,
-            pattern: 'price_increase', // Simulated
+            pattern: 'price_increase' // Simulated
           });
         }
       }
@@ -739,7 +746,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           featureLaunches.push({
             targetId,
             launchCount: tracking.featureChanges.length,
-            timestamp: new Date().toISOString(),
+            timestamp: new Date().toISOString()
           });
         }
       }
@@ -753,7 +760,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         mostFrequentChanger: null,
         leastFrequentChanger: null,
         averageChangesPerTarget: 0,
-        medianChangesPerTarget: 0,
+        medianChangesPerTarget: 0
       };
 
       const changeCounts = [];
@@ -793,7 +800,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         relationships.push({
           leader: corr.targets[0],
           follower: corr.targets[1],
-          lagTime: Math.random() * 3600000, // Up to 1 hour
+          lagTime: Math.random() * 3600000 // Up to 1 hour
         });
       }
 
@@ -810,7 +817,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
           anomalies.push({
             targetId,
             changeCount: total,
-            type: 'excessive_changes',
+            type: 'excessive_changes'
           });
         }
       }
@@ -829,7 +836,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         ),
         correlationsFound: campaignData.aggregatedChanges.correlations.length,
         anomaliesFound: (campaignData.anomalies || []).length,
-        failedTargets: campaignData.errorHandling.failedTargets.length,
+        failedTargets: campaignData.errorHandling.failedTargets.length
       };
 
       campaignData.summaryReport = report;
@@ -843,7 +850,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         targetReports: campaignData.aggregatedChanges.byTarget,
         correlations: campaignData.aggregatedChanges.correlations,
         anomalies: campaignData.anomalies,
-        leadLagRelationships: campaignData.leadLagRelationships,
+        leadLagRelationships: campaignData.leadLagRelationships
       };
 
       campaignData.exportedFindings = findings;
@@ -856,9 +863,15 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       const featuresOnly = {};
 
       for (const [targetId, agg] of Object.entries(campaignData.aggregatedChanges.byTarget)) {
-        if (agg.tech > 0) techOnly[targetId] = agg;
-        if (agg.pricing > 0) pricingOnly[targetId] = agg;
-        if (agg.features > 0) featuresOnly[targetId] = agg;
+        if (agg.tech > 0) {
+          techOnly[targetId] = agg;
+        }
+        if (agg.pricing > 0) {
+          pricingOnly[targetId] = agg;
+        }
+        if (agg.features > 0) {
+          featuresOnly[targetId] = agg;
+        }
       }
 
       campaignData.filteredByType = { techOnly, pricingOnly, featuresOnly };
@@ -881,7 +894,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         median: 0,
         stdDev: 0,
         min: 0,
-        max: 0,
+        max: 0
       };
 
       const values = Object.values(campaignData.aggregatedChanges.byTarget).map(t => t.total);
@@ -899,14 +912,18 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       const trends = {
         increasingTargets: [],
         decreasingTargets: [],
-        stableTargets: [],
+        stableTargets: []
       };
 
       for (const target of campaignData.targets.slice(0, 10)) {
         const trend = Math.random();
-        if (trend > 0.6) trends.increasingTargets.push(target.id);
-        else if (trend < 0.4) trends.decreasingTargets.push(target.id);
-        else trends.stableTargets.push(target.id);
+        if (trend > 0.6) {
+          trends.increasingTargets.push(target.id);
+        } else if (trend < 0.4) {
+          trends.decreasingTargets.push(target.id);
+        } else {
+          trends.stableTargets.push(target.id);
+        }
       }
 
       campaignData.trends = trends;
@@ -920,7 +937,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         drillDown[target.id] = {
           targetInfo: target,
           changes: campaignData.changeTracking[target.id],
-          responses: campaignData.responseTimes[target.id],
+          responses: campaignData.responseTimes[target.id]
         };
       }
 
@@ -944,8 +961,8 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         recommendations: [
           'Monitor Competitor 1 for rapid tech changes',
           'Track pricing strategy shifts across sector',
-          'Investigate lead/lag relationships',
-        ],
+          'Investigate lead/lag relationships'
+        ]
       };
 
       campaignData.finalReport = report;
@@ -973,7 +990,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
       const formats = {
         json: { file: 'campaign-data.json', exists: true },
         csv: { file: 'campaign-data.csv', exists: true },
-        xml: { file: 'campaign-data.xml', exists: true },
+        xml: { file: 'campaign-data.xml', exists: true }
       };
 
       campaignData.exportedFormats = formats;
@@ -996,7 +1013,7 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
         campaignId: `campaign-${Date.now()}`,
         timestamp: new Date().toISOString(),
         dataSize: 0,
-        compressed: false,
+        compressed: false
       };
 
       campaignData.archive = archive;
@@ -1009,7 +1026,9 @@ describe('Multi-Target Competitor Intelligence Campaign', () => {
 
       for (const target of campaignData.targets) {
         const hasSessions = campaignData.sessions[target.id] && campaignData.sessions[target.id].sessionHistory.length >= 0;
-        if (hasSessions) completedTargets++;
+        if (hasSessions) {
+          completedTargets++;
+        }
       }
 
       assert(completedTargets >= 18); // Allow some failures

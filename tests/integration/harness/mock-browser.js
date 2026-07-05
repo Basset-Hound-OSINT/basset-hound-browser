@@ -162,100 +162,100 @@ class MockBrowser extends EventEmitter {
 
     try {
       switch (command) {
-        case 'ping':
-          return { success: true, message: 'pong', timestamp: Date.now() };
+      case 'ping':
+        return { success: true, message: 'pong', timestamp: Date.now() };
 
-        case 'status':
-          return {
-            success: true,
-            status: {
-              ready: true,
-              tabs: this.state.tabs.size,
-              activeTab: this.state.activeTabId,
-              sessions: this.state.sessions.size,
-              activeSession: this.state.activeSessionId,
-              recording: this.state.recording
-            }
-          };
+      case 'status':
+        return {
+          success: true,
+          status: {
+            ready: true,
+            tabs: this.state.tabs.size,
+            activeTab: this.state.activeTabId,
+            sessions: this.state.sessions.size,
+            activeSession: this.state.activeSessionId,
+            recording: this.state.recording
+          }
+        };
 
-        case 'navigate':
-          return this.handleNavigate(params);
+      case 'navigate':
+        return this.handleNavigate(params);
 
-        case 'get_url':
-          return { success: true, url: this.state.currentUrl };
+      case 'get_url':
+        return { success: true, url: this.state.currentUrl };
 
-        case 'click':
-          return this.handleClick(params);
+      case 'click':
+        return this.handleClick(params);
 
-        case 'fill':
-          return this.handleFill(params);
+      case 'fill':
+        return this.handleFill(params);
 
-        case 'get_content':
-          return this.handleGetContent(params);
+      case 'get_content':
+        return this.handleGetContent(params);
 
-        case 'screenshot':
-        case 'screenshot_viewport':
-          return this.handleScreenshot(params);
+      case 'screenshot':
+      case 'screenshot_viewport':
+        return this.handleScreenshot(params);
 
-        case 'screenshot_full_page':
-          return this.handleFullPageScreenshot(params);
+      case 'screenshot_full_page':
+        return this.handleFullPageScreenshot(params);
 
-        case 'screenshot_element':
-          return this.handleElementScreenshot(params);
+      case 'screenshot_element':
+        return this.handleElementScreenshot(params);
 
-        case 'execute_script':
-          return this.handleExecuteScript(params);
+      case 'execute_script':
+        return this.handleExecuteScript(params);
 
-        case 'wait_for_element':
-          return this.handleWaitForElement(params);
+      case 'wait_for_element':
+        return this.handleWaitForElement(params);
 
-        case 'scroll':
-          return this.handleScroll(params);
+      case 'scroll':
+        return this.handleScroll(params);
 
-        case 'get_cookies':
-          return this.handleGetCookies(params);
+      case 'get_cookies':
+        return this.handleGetCookies(params);
 
-        case 'set_cookies':
-          return this.handleSetCookies(params);
+      case 'set_cookies':
+        return this.handleSetCookies(params);
 
-        case 'get_page_state':
-          return this.handleGetPageState(params);
+      case 'get_page_state':
+        return this.handleGetPageState(params);
 
         // Tab management
-        case 'new_tab':
-          return this.handleNewTab(params);
+      case 'new_tab':
+        return this.handleNewTab(params);
 
-        case 'close_tab':
-          return this.handleCloseTab(params);
+      case 'close_tab':
+        return this.handleCloseTab(params);
 
-        case 'switch_tab':
-          return this.handleSwitchTab(params);
+      case 'switch_tab':
+        return this.handleSwitchTab(params);
 
-        case 'list_tabs':
-          return this.handleListTabs(params);
+      case 'list_tabs':
+        return this.handleListTabs(params);
 
         // Session management
-        case 'create_session':
-          return this.handleCreateSession(params);
+      case 'create_session':
+        return this.handleCreateSession(params);
 
-        case 'switch_session':
-          return this.handleSwitchSession(params);
+      case 'switch_session':
+        return this.handleSwitchSession(params);
 
-        case 'list_sessions':
-          return this.handleListSessions(params);
+      case 'list_sessions':
+        return this.handleListSessions(params);
 
         // Recording
-        case 'start_recording':
-          return this.handleStartRecording(params);
+      case 'start_recording':
+        return this.handleStartRecording(params);
 
-        case 'stop_recording':
-          return this.handleStopRecording(params);
+      case 'stop_recording':
+        return this.handleStopRecording(params);
 
-        case 'recording_status':
-          return { success: true, ...this.state.recording };
+      case 'recording_status':
+        return { success: true, ...this.state.recording };
 
-        default:
-          return { success: false, error: `Unknown command: ${command}` };
+      default:
+        return { success: false, error: `Unknown command: ${command}` };
       }
     } catch (error) {
       return { success: false, error: error.message };

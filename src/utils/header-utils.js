@@ -102,7 +102,9 @@ function formatHeaders(headers, keys = null) {
  */
 function getContentType(headers) {
   const contentType = getHeader(headers, 'content-type');
-  if (!contentType) return null;
+  if (!contentType) {
+    return null;
+  }
 
   // Extract main type without charset
   const match = contentType.match(/^([^;]+)/);
@@ -116,7 +118,9 @@ function getContentType(headers) {
  */
 function getCharset(headers) {
   const contentType = getHeader(headers, 'content-type');
-  if (!contentType) return null;
+  if (!contentType) {
+    return null;
+  }
 
   const match = contentType.match(/charset=([^;]+)/i);
   return match ? match[1].trim() : null;
@@ -129,7 +133,9 @@ function getCharset(headers) {
  */
 function getCompressionType(headers) {
   const encoding = getHeader(headers, 'content-encoding');
-  if (!encoding) return false;
+  if (!encoding) {
+    return false;
+  }
 
   const types = ['gzip', 'deflate', 'br', 'compress'];
   for (const type of types) {

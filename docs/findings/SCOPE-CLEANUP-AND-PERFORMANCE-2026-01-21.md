@@ -39,7 +39,7 @@ Cleaned up out-of-scope features and analyzed performance optimization opportuni
 
 ### Files Kept (In Scope)
 - `/evidence/evidence-collector.js` - Basic evidence capture
-- `/websocket/commands/evidence-commands.js` - Basic evidence commands
+- `/websocket/commands/forensic/evidence/evidence-commands.js` - Basic evidence commands
 
 **Reason:** Investigation management belongs in external systems (palletai, basset-hound). Browser captures raw evidence; external systems manage investigations.
 

@@ -18,56 +18,56 @@ const NETWORK_PRESETS = {
   // GPRS - 50 Kbps down, 20 Kbps up, 500ms latency
   gprs: {
     name: 'GPRS',
-    downloadSpeed: 50 * 1024 / 8,    // 50 Kbps = 6.25 KB/s = 6400 bytes/s
-    uploadSpeed: 20 * 1024 / 8,      // 20 Kbps = 2.5 KB/s = 2560 bytes/s
+    downloadSpeed: 50 * 1024 / 8, // 50 Kbps = 6.25 KB/s = 6400 bytes/s
+    uploadSpeed: 20 * 1024 / 8, // 20 Kbps = 2.5 KB/s = 2560 bytes/s
     latency: 500,
     offline: false
   },
   // EDGE - 250 Kbps down, 50 Kbps up, 300ms latency
   edge: {
     name: 'Regular 2G / EDGE',
-    downloadSpeed: 250 * 1024 / 8,   // 250 Kbps = 31.25 KB/s = 32000 bytes/s
-    uploadSpeed: 50 * 1024 / 8,      // 50 Kbps = 6.25 KB/s = 6400 bytes/s
+    downloadSpeed: 250 * 1024 / 8, // 250 Kbps = 31.25 KB/s = 32000 bytes/s
+    uploadSpeed: 50 * 1024 / 8, // 50 Kbps = 6.25 KB/s = 6400 bytes/s
     latency: 300,
     offline: false
   },
   // Regular 3G - 750 Kbps down, 250 Kbps up, 100ms latency
   '3g': {
     name: 'Regular 3G',
-    downloadSpeed: 750 * 1024 / 8,   // 750 Kbps = 93.75 KB/s = 96000 bytes/s
-    uploadSpeed: 250 * 1024 / 8,     // 250 Kbps = 31.25 KB/s = 32000 bytes/s
+    downloadSpeed: 750 * 1024 / 8, // 750 Kbps = 93.75 KB/s = 96000 bytes/s
+    uploadSpeed: 250 * 1024 / 8, // 250 Kbps = 31.25 KB/s = 32000 bytes/s
     latency: 100,
     offline: false
   },
   // Fast 3G - 1.5 Mbps down, 750 Kbps up, 40ms latency
   '3g-fast': {
     name: 'Fast 3G',
-    downloadSpeed: 1.5 * 1024 * 1024 / 8,  // 1.5 Mbps = 192 KB/s = 196608 bytes/s
-    uploadSpeed: 750 * 1024 / 8,           // 750 Kbps = 93.75 KB/s = 96000 bytes/s
+    downloadSpeed: 1.5 * 1024 * 1024 / 8, // 1.5 Mbps = 192 KB/s = 196608 bytes/s
+    uploadSpeed: 750 * 1024 / 8, // 750 Kbps = 93.75 KB/s = 96000 bytes/s
     latency: 40,
     offline: false
   },
   // 4G/LTE - 4 Mbps down, 3 Mbps up, 20ms latency
   '4g': {
     name: '4G / LTE',
-    downloadSpeed: 4 * 1024 * 1024 / 8,   // 4 Mbps = 512 KB/s = 524288 bytes/s
-    uploadSpeed: 3 * 1024 * 1024 / 8,     // 3 Mbps = 384 KB/s = 393216 bytes/s
+    downloadSpeed: 4 * 1024 * 1024 / 8, // 4 Mbps = 512 KB/s = 524288 bytes/s
+    uploadSpeed: 3 * 1024 * 1024 / 8, // 3 Mbps = 384 KB/s = 393216 bytes/s
     latency: 20,
     offline: false
   },
   // DSL - 2 Mbps down, 1 Mbps up, 5ms latency
   dsl: {
     name: 'DSL',
-    downloadSpeed: 2 * 1024 * 1024 / 8,   // 2 Mbps = 256 KB/s = 262144 bytes/s
-    uploadSpeed: 1 * 1024 * 1024 / 8,     // 1 Mbps = 128 KB/s = 131072 bytes/s
+    downloadSpeed: 2 * 1024 * 1024 / 8, // 2 Mbps = 256 KB/s = 262144 bytes/s
+    uploadSpeed: 1 * 1024 * 1024 / 8, // 1 Mbps = 128 KB/s = 131072 bytes/s
     latency: 5,
     offline: false
   },
   // WiFi - 30 Mbps down, 15 Mbps up, 2ms latency
   wifi: {
     name: 'WiFi',
-    downloadSpeed: 30 * 1024 * 1024 / 8,  // 30 Mbps = 3.84 MB/s = 3932160 bytes/s
-    uploadSpeed: 15 * 1024 * 1024 / 8,    // 15 Mbps = 1.92 MB/s = 1966080 bytes/s
+    downloadSpeed: 30 * 1024 * 1024 / 8, // 30 Mbps = 3.84 MB/s = 3932160 bytes/s
+    uploadSpeed: 15 * 1024 * 1024 / 8, // 15 Mbps = 1.92 MB/s = 1966080 bytes/s
     latency: 2,
     offline: false
   }
@@ -79,7 +79,7 @@ const NETWORK_PRESETS = {
  */
 class NetworkThrottler {
   constructor() {
-    this.downloadSpeed = -1;  // -1 means no throttling (unlimited)
+    this.downloadSpeed = -1; // -1 means no throttling (unlimited)
     this.uploadSpeed = -1;
     this.latency = 0;
     this.enabled = false;
@@ -94,8 +94,52 @@ class NetworkThrottler {
    * @param {Electron.WebContents} webContents - The webContents to throttle
    */
   initialize(webContents) {
+    // main.js initializes the throttler with the browser SHELL webContents. Page
+    // network traffic actually happens in the <webview> guest, so we keep the host
+    // reference as a fallback and resolve the live guest at attach time
+    // (see _resolveGuestWebContents / attachDebugger).
+    this._hostWebContents = webContents;
     this.webContents = webContents;
     console.log('[NetworkThrottler] Initialized');
+  }
+
+  /**
+   * Resolve the active <webview> guest WebContents.
+   *
+   * The throttler is initialized with the browser SHELL webContents, but CDP network
+   * emulation only affects the WebContents the debugger is attached to — and real page
+   * loads happen in the guest webview. This finds the live guest so throttling applies
+   * to the page. Falls back to the host webContents when no guest is attached.
+   *
+   * @returns {Electron.WebContents}
+   */
+  _resolveGuestWebContents() {
+    const host = this._hostWebContents || this.webContents;
+    try {
+      const { webContents } = require('electron');
+      const guests = webContents.getAllWebContents().filter((wc) => {
+        try {
+          return !wc.isDestroyed() && wc.getType() === 'webview';
+        } catch (e) {
+          return false;
+        }
+      });
+      if (guests.length === 0) {
+        return host;
+      }
+      // Prefer a guest currently showing a real (non-blank) page.
+      const live = guests.filter((wc) => {
+        try {
+          const u = wc.getURL();
+          return u && u !== 'about:blank';
+        } catch (e) {
+          return false;
+        }
+      });
+      return live[0] || guests[0] || host;
+    } catch (e) {
+      return host;
+    }
   }
 
   /**
@@ -103,19 +147,27 @@ class NetworkThrottler {
    * @returns {Promise<boolean>} - Whether the debugger was successfully attached
    */
   async attachDebugger() {
+    if (this.debuggerAttached) {
+      return true;
+    }
+
+    // Retarget the CDP debugger at the active <webview> guest before attaching.
+    // Attaching to the SHELL webContents (as initialized) throttles nothing the page
+    // loads; the guest is where navigation/network traffic occurs.
+    const target = this._resolveGuestWebContents();
+    if (target) {
+      this.webContents = target;
+    }
+
     if (!this.webContents) {
       console.error('[NetworkThrottler] No webContents available');
       return false;
     }
 
-    if (this.debuggerAttached) {
-      return true;
-    }
-
     try {
       this.webContents.debugger.attach('1.3');
       this.debuggerAttached = true;
-      console.log('[NetworkThrottler] Debugger attached');
+      console.log(`[NetworkThrottler] Debugger attached (target: ${(() => { try { return this.webContents.getType(); } catch (e) { return 'unknown'; } })()})`);
 
       // Enable Network domain
       await this.webContents.debugger.sendCommand('Network.enable');

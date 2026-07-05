@@ -21,8 +21,8 @@ describe('LoadBalancer', () => {
       backends: [
         { host: '127.0.0.1', port: 9001 },
         { host: '127.0.0.1', port: 9002 },
-        { host: '127.0.0.1', port: 9003 },
-      ],
+        { host: '127.0.0.1', port: 9003 }
+      ]
     });
   });
 
@@ -127,8 +127,8 @@ describe('LoadBalancer', () => {
         algorithm: 'leastconn',
         backends: [
           { host: '127.0.0.1', port: 9001 },
-          { host: '127.0.0.1', port: 9002 },
-        ],
+          { host: '127.0.0.1', port: 9002 }
+        ]
       });
 
       // Manually set connection counts
@@ -145,8 +145,8 @@ describe('LoadBalancer', () => {
         backends: [
           { host: '127.0.0.1', port: 9001 },
           { host: '127.0.0.1', port: 9002 },
-          { host: '127.0.0.1', port: 9003 },
-        ],
+          { host: '127.0.0.1', port: 9003 }
+        ]
       });
 
       const backends = new Set();
@@ -189,8 +189,8 @@ describe('LoadBalancer', () => {
         sessionAffinity: false,
         backends: [
           { host: '127.0.0.1', port: 9001 },
-          { host: '127.0.0.1', port: 9002 },
-        ],
+          { host: '127.0.0.1', port: 9002 }
+        ]
       });
 
       expect(lbNoAffinity.sessionAffinity.size).toBe(0);

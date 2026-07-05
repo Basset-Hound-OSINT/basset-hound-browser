@@ -567,13 +567,27 @@ class TorManager extends EventEmitter {
    * @returns {Object} Configuration result
    */
   configure(config) {
-    if (config.socksHost) this.socksHost = config.socksHost;
-    if (config.socksPort) this.socksPort = config.socksPort;
-    if (config.controlHost) this.controlHost = config.controlHost;
-    if (config.controlPort) this.controlPort = config.controlPort;
-    if (config.controlPassword !== undefined) this.controlPassword = config.controlPassword;
-    if (config.connectionTimeout) this.connectionTimeout = config.connectionTimeout;
-    if (config.circuitTimeout) this.circuitTimeout = config.circuitTimeout;
+    if (config.socksHost) {
+      this.socksHost = config.socksHost;
+    }
+    if (config.socksPort) {
+      this.socksPort = config.socksPort;
+    }
+    if (config.controlHost) {
+      this.controlHost = config.controlHost;
+    }
+    if (config.controlPort) {
+      this.controlPort = config.controlPort;
+    }
+    if (config.controlPassword !== undefined) {
+      this.controlPassword = config.controlPassword;
+    }
+    if (config.connectionTimeout) {
+      this.connectionTimeout = config.connectionTimeout;
+    }
+    if (config.circuitTimeout) {
+      this.circuitTimeout = config.circuitTimeout;
+    }
 
     console.log('[TorManager] Configuration updated');
 

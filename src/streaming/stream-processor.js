@@ -428,20 +428,20 @@ class StreamProcessor extends EventEmitter {
   _checkAlertCondition(rule, aggregated) {
     try {
       switch (rule.condition) {
-        case 'HIGH_SEVERITY':
-          return aggregated.severity === 'high' || aggregated.severity === 'critical';
+      case 'HIGH_SEVERITY':
+        return aggregated.severity === 'high' || aggregated.severity === 'critical';
 
-        case 'RAPID_CHANGES':
-          return aggregated.change_count > (rule.threshold || 10);
+      case 'RAPID_CHANGES':
+        return aggregated.change_count > (rule.threshold || 10);
 
-        case 'CRITICAL_CONTENT':
-          return aggregated.changes.some(c => ['js', 'css'].includes(c.type));
+      case 'CRITICAL_CONTENT':
+        return aggregated.changes.some(c => ['js', 'css'].includes(c.type));
 
-        case 'CUSTOM':
-          return rule.evaluator(aggregated);
+      case 'CUSTOM':
+        return rule.evaluator(aggregated);
 
-        default:
-          return false;
+      default:
+        return false;
       }
     } catch (error) {
       console.error('[StreamProcessor] Error checking alert condition:', error.message);

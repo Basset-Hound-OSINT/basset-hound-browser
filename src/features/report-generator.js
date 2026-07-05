@@ -492,8 +492,12 @@ class ReportGenerator extends EventEmitter {
 
     return reports
       .filter(r => {
-        if (filters.type && r.config.type !== filters.type) return false;
-        if (filters.status && r.status !== filters.status) return false;
+        if (filters.type && r.config.type !== filters.type) {
+          return false;
+        }
+        if (filters.status && r.status !== filters.status) {
+          return false;
+        }
         return true;
       })
       .map(r => ({

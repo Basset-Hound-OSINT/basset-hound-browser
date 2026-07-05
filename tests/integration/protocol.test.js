@@ -115,20 +115,20 @@ function setupProtocolHandlers() {
     const { type } = params;
 
     switch (type) {
-      case 'string':
-        return { success: true, result: 'string value' };
-      case 'number':
-        return { success: true, result: 42 };
-      case 'boolean':
-        return { success: true, result: true };
-      case 'array':
-        return { success: true, result: [1, 2, 3] };
-      case 'object':
-        return { success: true, result: { key: 'value' } };
-      case 'null':
-        return { success: true, result: null };
-      default:
-        return { success: false, error: 'Unknown type' };
+    case 'string':
+      return { success: true, result: 'string value' };
+    case 'number':
+      return { success: true, result: 42 };
+    case 'boolean':
+      return { success: true, result: true };
+    case 'array':
+      return { success: true, result: [1, 2, 3] };
+    case 'object':
+      return { success: true, result: { key: 'value' } };
+    case 'null':
+      return { success: true, result: null };
+    default:
+      return { success: false, error: 'Unknown type' };
     }
   });
 }
@@ -301,7 +301,7 @@ async function testMalformedMessageHandling() {
   console.log('\n--- Test: Malformed Message Handling ---');
 
   // Send raw malformed message
-  let errorReceived = false;
+  const errorReceived = false;
   extension.ws.send('not valid json{{}');
   await testUtils.delay(100);
   // The connection should still be alive

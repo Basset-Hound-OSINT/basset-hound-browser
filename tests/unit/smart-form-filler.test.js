@@ -7,7 +7,7 @@ const { SmartFormFiller, Form, FormField, FIELD_TYPES, FIELD_DETECTION_PATTERNS 
 // Mock webContents
 const createMockWebContents = () => {
   const webContents = {
-    executeJavaScript: jest.fn(),
+    executeJavaScript: jest.fn()
   };
 
   return webContents;

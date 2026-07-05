@@ -167,7 +167,9 @@ const typeConverters = {
    * @returns {boolean} Boolean value
    */
   boolean: (value) => {
-    if (typeof value === 'boolean') return value;
+    if (typeof value === 'boolean') {
+      return value;
+    }
     const lower = String(value).toLowerCase();
     return lower === 'true' || lower === '1' || lower === 'yes' || lower === 'on';
   },
@@ -198,7 +200,9 @@ const typeConverters = {
    * @returns {string[]} Array of strings
    */
   array: (value) => {
-    if (Array.isArray(value)) return value;
+    if (Array.isArray(value)) {
+      return value;
+    }
     return String(value).split(',').map(s => s.trim()).filter(s => s);
   },
 
@@ -208,7 +212,9 @@ const typeConverters = {
    * @returns {Object} Parsed object
    */
   json: (value) => {
-    if (typeof value === 'object') return value;
+    if (typeof value === 'object') {
+      return value;
+    }
     try {
       return JSON.parse(value);
     } catch (e) {
@@ -222,7 +228,9 @@ const typeConverters = {
    * @returns {string} String value
    */
   string: (value) => {
-    if (value === null || value === undefined) return null;
+    if (value === null || value === undefined) {
+      return null;
+    }
     return String(value);
   }
 };

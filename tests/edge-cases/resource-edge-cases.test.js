@@ -159,7 +159,7 @@ class ResourceEdgeCasesTester {
       assert(response.result, 'Command should succeed under memory stress');
       this.results.memoryExhaustionTests.push({
         test: 'memory_stressed_operations',
-        commandSuccess: !!response.result,
+        commandSuccess: Boolean(response.result),
         passed: true
       });
       this.results.passed++;
@@ -377,7 +377,9 @@ class ResourceEdgeCasesTester {
       } finally {
         // Cleanup
         for (const file of files) {
-          try { fs.unlinkSync(file); } catch (e) {}
+          try {
+            fs.unlinkSync(file);
+          } catch (e) {}
         }
       }
     } catch (e) {
@@ -465,7 +467,9 @@ class ResourceEdgeCasesTester {
       } finally {
         // Cleanup
         for (const ws of connections) {
-          try { ws.close(); } catch (e) {}
+          try {
+            ws.close();
+          } catch (e) {}
         }
       }
     } catch (e) {

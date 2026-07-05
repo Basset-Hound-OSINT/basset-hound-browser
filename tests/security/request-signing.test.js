@@ -110,7 +110,7 @@ describe('Request Signing & Verification', () => {
     });
 
     test('Expired request fails verification', () => {
-      const oldTimestamp = Date.now() - 120000;  // 2 minutes ago
+      const oldTimestamp = Date.now() - 120000; // 2 minutes ago
       const request = {
         action: 'test',
         timestamp: oldTimestamp,
@@ -124,14 +124,14 @@ describe('Request Signing & Verification', () => {
     });
 
     test('Future timestamp rejected (clock skew)', () => {
-      const futureTimestamp = Date.now() + 10000;  // 10 seconds in future
+      const futureTimestamp = Date.now() + 10000; // 10 seconds in future
       const request = {
         action: 'test',
         timestamp: futureTimestamp,
         nonce: 'test-nonce'
       };
 
-      signer.config.clockSkew = 5000;  // 5 second tolerance
+      signer.config.clockSkew = 5000; // 5 second tolerance
       const signed = signer.attachSignature(request);
 
       const result = signer.verify(signed);
@@ -181,7 +181,7 @@ describe('Request Signing & Verification', () => {
 
       const signed2 = signer2.attachSignature(request, { nonce });
       const verified2 = signer2.verify(signed2);
-      expect(verified2.valid).toBe(true);  // Nonce should be reusable after expiration
+      expect(verified2.valid).toBe(true); // Nonce should be reusable after expiration
     });
   });
 
@@ -199,7 +199,7 @@ describe('Request Signing & Verification', () => {
     });
 
     test('Old timestamp rejected', () => {
-      const oldTime = Date.now() - 70000;  // 70 seconds old
+      const oldTime = Date.now() - 70000; // 70 seconds old
       const request = {
         action: 'test',
         timestamp: oldTime,
@@ -213,7 +213,7 @@ describe('Request Signing & Verification', () => {
 
     test('Clock skew tolerance works', () => {
       const signer2 = new RequestSigner(signingKey, { clockSkew: 10000 });
-      const futureTime = Date.now() + 9000;  // 9 seconds in future (within tolerance)
+      const futureTime = Date.now() + 9000; // 9 seconds in future (within tolerance)
 
       const request = {
         action: 'test',
@@ -290,7 +290,7 @@ describe('Request Signing & Verification', () => {
       ];
 
       const signed = signer.signBatch(requests);
-      signed[1].action = 'modified';  // Corrupt one
+      signed[1].action = 'modified'; // Corrupt one
 
       const result = signer.verifyBatch(signed);
       expect(result.invalid).toEqual(1);
@@ -324,7 +324,7 @@ describe('Request Signing & Verification', () => {
 
     test('Invalid signing key rejected', () => {
       expect(() => new RequestSigner(null)).toThrow();
-      expect(() => new RequestSigner(crypto.randomBytes(16))).toThrow();  // Too small
+      expect(() => new RequestSigner(crypto.randomBytes(16))).toThrow(); // Too small
     });
 
     test('Invalid verification input handled gracefully', () => {

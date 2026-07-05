@@ -128,7 +128,9 @@ class BufferManager extends EventEmitter {
    * @param {Buffer} buffer - Buffer to release
    */
   release(buffer) {
-    if (!buffer) return;
+    if (!buffer) {
+      return;
+    }
 
     const poolType = buffer._poolType;
 
@@ -302,7 +304,9 @@ class CircularBuffer {
     const avail = this.capacity - this.length;
     const toWrite = Math.min(data.length, avail);
 
-    if (toWrite === 0) return 0;
+    if (toWrite === 0) {
+      return 0;
+    }
 
     // Single write if no wrap
     if (this.tail + toWrite <= this.capacity) {
@@ -328,7 +332,9 @@ class CircularBuffer {
   read(length) {
     const toRead = Math.min(length, this.length);
 
-    if (toRead === 0) return Buffer.alloc(0);
+    if (toRead === 0) {
+      return Buffer.alloc(0);
+    }
 
     const result = Buffer.allocUnsafe(toRead);
 
@@ -355,7 +361,9 @@ class CircularBuffer {
   peek(length) {
     const toRead = Math.min(length, this.length);
 
-    if (toRead === 0) return Buffer.alloc(0);
+    if (toRead === 0) {
+      return Buffer.alloc(0);
+    }
 
     const result = Buffer.allocUnsafe(toRead);
 

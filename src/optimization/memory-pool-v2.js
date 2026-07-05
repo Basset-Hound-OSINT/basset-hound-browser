@@ -40,7 +40,7 @@ class TypedPool extends EventEmitter {
       released: 0,
       poolSize: 0,
       peakUsage: 0,
-      misses: 0, // Times when pool was empty
+      misses: 0 // Times when pool was empty
     };
 
     this.inUse = new Set();
@@ -173,7 +173,7 @@ class TypedPool extends EventEmitter {
       poolSize: this.stats.poolSize,
       inUse: this.inUse.size,
       ...this.stats,
-      hitRate: (this.stats.reused / (this.stats.reused + this.stats.misses) * 100).toFixed(2) + '%',
+      hitRate: (this.stats.reused / (this.stats.reused + this.stats.misses) * 100).toFixed(2) + '%'
     };
   }
 
@@ -187,7 +187,7 @@ class TypedPool extends EventEmitter {
       released: 0,
       poolSize: 0,
       peakUsage: 0,
-      misses: 0,
+      misses: 0
     };
   }
 
@@ -213,7 +213,7 @@ class MemoryPoolV2 extends EventEmitter {
       minSize: options.minSize || 8,
       maxSize: options.maxSize || 256,
       highWatermark: options.highWatermark || 0.8,
-      lowWatermark: options.lowWatermark || 0.2,
+      lowWatermark: options.lowWatermark || 0.2
     };
 
     this.debug = options.debug || false;
@@ -245,7 +245,7 @@ class MemoryPoolV2 extends EventEmitter {
         },
         clear() {
           this.data = null;
-        },
+        }
       }),
       { minSize: 16, maxSize: 256 }
     );
@@ -268,7 +268,7 @@ class MemoryPoolV2 extends EventEmitter {
         },
         clear() {
           this.params = null;
-        },
+        }
       }),
       { minSize: 16, maxSize: 512 }
     );
@@ -291,7 +291,7 @@ class MemoryPoolV2 extends EventEmitter {
         },
         clear() {
           this.tags = {};
-        },
+        }
       }),
       { minSize: 8, maxSize: 128 }
     );
@@ -310,7 +310,7 @@ class MemoryPoolV2 extends EventEmitter {
         },
         clear() {
           this.context = null;
-        },
+        }
       }),
       { minSize: 8, maxSize: 128 }
     );
@@ -325,7 +325,7 @@ class MemoryPoolV2 extends EventEmitter {
         },
         clear() {
           this.entries.clear();
-        },
+        }
       }),
       { minSize: 8, maxSize: 256 }
     );
@@ -344,7 +344,7 @@ class MemoryPoolV2 extends EventEmitter {
 
     const mergedOptions = {
       ...this.poolOptions,
-      ...options,
+      ...options
     };
 
     const pool = new TypedPool(name, factory, mergedOptions);
@@ -448,7 +448,7 @@ class MemoryPoolV2 extends EventEmitter {
       totalReused,
       totalMisses,
       hitRate: (hitRate * 100).toFixed(2) + '%',
-      utilization: (totalInUse / totalObjects * 100).toFixed(2) + '%',
+      utilization: (totalInUse / totalObjects * 100).toFixed(2) + '%'
     };
   }
 
@@ -481,5 +481,5 @@ class MemoryPoolV2 extends EventEmitter {
 
 module.exports = {
   MemoryPoolV2,
-  TypedPool,
+  TypedPool
 };

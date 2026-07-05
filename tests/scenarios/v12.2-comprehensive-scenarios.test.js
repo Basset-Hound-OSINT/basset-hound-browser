@@ -180,7 +180,9 @@ class CampaignOrchestrator {
 
   async startCampaign(id, options = {}) {
     const campaign = this.campaigns.get(id);
-    if (!campaign) throw new Error(`Campaign ${id} not found`);
+    if (!campaign) {
+      throw new Error(`Campaign ${id} not found`);
+    }
 
     campaign.status = 'running';
     campaign.startedAt = Date.now();
@@ -194,7 +196,9 @@ class CampaignOrchestrator {
 
   async stopCampaign(id) {
     const campaign = this.campaigns.get(id);
-    if (!campaign) throw new Error(`Campaign ${id} not found`);
+    if (!campaign) {
+      throw new Error(`Campaign ${id} not found`);
+    }
 
     campaign.status = 'stopped';
     campaign.stoppedAt = Date.now();
@@ -208,7 +212,9 @@ class CampaignOrchestrator {
 
   async getCampaignResults(id) {
     const campaign = this.campaigns.get(id);
-    if (!campaign) throw new Error(`Campaign ${id} not found`);
+    if (!campaign) {
+      throw new Error(`Campaign ${id} not found`);
+    }
 
     const results = {
       campaignId: id,
@@ -257,18 +263,18 @@ class DataPipeline {
     await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
 
     switch (stageName) {
-      case 'extract':
-        return { extracted: true, raw: data };
-      case 'transform':
-        return { transformed: true, data };
-      case 'validate':
-        return { validated: true, data };
-      case 'enrich':
-        return { enriched: true, data, metadata: {} };
-      case 'export':
-        return { exported: true, format: 'json', data };
-      default:
-        throw new Error(`Unknown stage: ${stageName}`);
+    case 'extract':
+      return { extracted: true, raw: data };
+    case 'transform':
+      return { transformed: true, data };
+    case 'validate':
+      return { validated: true, data };
+    case 'enrich':
+      return { enriched: true, data, metadata: {} };
+    case 'export':
+      return { exported: true, format: 'json', data };
+    default:
+      throw new Error(`Unknown stage: ${stageName}`);
     }
   }
 

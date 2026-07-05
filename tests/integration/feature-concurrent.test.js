@@ -70,7 +70,9 @@ class ConcurrentOperationTracker {
   }
 
   getAverageDuration() {
-    if (this.completedOperations.length === 0) return 0;
+    if (this.completedOperations.length === 0) {
+      return 0;
+    }
     const total = this.completedOperations.reduce((sum, op) => sum + op.duration, 0);
     return total / this.completedOperations.length;
   }

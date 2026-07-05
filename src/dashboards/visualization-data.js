@@ -374,29 +374,29 @@ class VisualizationDataProcessor {
       let value;
 
       switch (aggregationType) {
-        case 'avg':
-          value = values.reduce((a, b) => a + b, 0) / values.length;
-          break;
-        case 'max':
-          value = Math.max(...values);
-          break;
-        case 'min':
-          value = Math.min(...values);
-          break;
-        case 'sum':
-          value = values.reduce((a, b) => a + b, 0);
-          break;
-        case 'count':
-          value = values.length;
-          break;
-        case 'p95':
-          value = this.percentile(values, 0.95);
-          break;
-        case 'p99':
-          value = this.percentile(values, 0.99);
-          break;
-        default:
-          value = values[values.length - 1];
+      case 'avg':
+        value = values.reduce((a, b) => a + b, 0) / values.length;
+        break;
+      case 'max':
+        value = Math.max(...values);
+        break;
+      case 'min':
+        value = Math.min(...values);
+        break;
+      case 'sum':
+        value = values.reduce((a, b) => a + b, 0);
+        break;
+      case 'count':
+        value = values.length;
+        break;
+      case 'p95':
+        value = this.percentile(values, 0.95);
+        break;
+      case 'p99':
+        value = this.percentile(values, 0.99);
+        break;
+      default:
+        value = values[values.length - 1];
       }
 
       return {
@@ -410,7 +410,9 @@ class VisualizationDataProcessor {
    * Calculate percentile from values
    */
   percentile(values, p) {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {
+      return 0;
+    }
     const sorted = [...values].sort((a, b) => a - b);
     const index = Math.ceil(sorted.length * p) - 1;
     return sorted[Math.max(0, index)];

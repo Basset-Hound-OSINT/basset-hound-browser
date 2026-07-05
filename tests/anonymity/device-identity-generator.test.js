@@ -245,7 +245,7 @@ describe('Device Identity Generator', () => {
     it('should reject invalid custom profile', () => {
       const generator = new DeviceIdentityGenerator();
       const invalidConfig = {
-        name: 'Invalid',
+        name: 'Invalid'
         // Missing required fields
       };
       assert.throws(() => generator.createCustomProfile('Invalid', invalidConfig));

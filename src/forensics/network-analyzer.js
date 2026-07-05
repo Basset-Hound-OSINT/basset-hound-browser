@@ -117,18 +117,20 @@ class NetworkAnalyzer {
    * Analyze security headers
    */
   analyzeSecurityHeaders(request) {
-    if (!request.response_headers) return;
+    if (!request.response_headers) {
+      return;
+    }
 
     const headers = request.response_headers;
 
     request.security = {
-      content_security_policy: !!headers['content-security-policy'],
-      x_frame_options: !!headers['x-frame-options'],
-      x_content_type_options: !!headers['x-content-type-options'],
-      strict_transport_security: !!headers['strict-transport-security'],
-      x_xss_protection: !!headers['x-xss-protection'],
-      referrer_policy: !!headers['referrer-policy'],
-      permissions_policy: !!headers['permissions-policy']
+      content_security_policy: Boolean(headers['content-security-policy']),
+      x_frame_options: Boolean(headers['x-frame-options']),
+      x_content_type_options: Boolean(headers['x-content-type-options']),
+      strict_transport_security: Boolean(headers['strict-transport-security']),
+      x_xss_protection: Boolean(headers['x-xss-protection']),
+      referrer_policy: Boolean(headers['referrer-policy']),
+      permissions_policy: Boolean(headers['permissions-policy'])
     };
 
     // Store header values
@@ -161,13 +163,27 @@ class NetworkAnalyzer {
     // Parse attributes
     parts.slice(1).forEach(attr => {
       const [key, val] = attr.trim().split('=');
-      if (key.toLowerCase() === 'path') cookie.path = val;
-      if (key.toLowerCase() === 'domain') cookie.domain = val;
-      if (key.toLowerCase() === 'expires') cookie.expires = val;
-      if (key.toLowerCase() === 'max-age') cookie.max_age = val;
-      if (key.toLowerCase() === 'secure') cookie.secure = true;
-      if (key.toLowerCase() === 'httponly') cookie.httponly = true;
-      if (key.toLowerCase() === 'samesite') cookie.samesite = val;
+      if (key.toLowerCase() === 'path') {
+        cookie.path = val;
+      }
+      if (key.toLowerCase() === 'domain') {
+        cookie.domain = val;
+      }
+      if (key.toLowerCase() === 'expires') {
+        cookie.expires = val;
+      }
+      if (key.toLowerCase() === 'max-age') {
+        cookie.max_age = val;
+      }
+      if (key.toLowerCase() === 'secure') {
+        cookie.secure = true;
+      }
+      if (key.toLowerCase() === 'httponly') {
+        cookie.httponly = true;
+      }
+      if (key.toLowerCase() === 'samesite') {
+        cookie.samesite = val;
+      }
     });
 
     this.cookies.push(cookie);
@@ -308,7 +324,9 @@ class NetworkAnalyzer {
     const topLevelDomains = ['localhost', '127.0.0.1', '192.168'];
 
     for (const tld of topLevelDomains) {
-      if (hostname.includes(tld)) return false;
+      if (hostname.includes(tld)) {
+        return false;
+      }
     }
 
     // Simple check: if not the primary domain, it's third-party
@@ -379,12 +397,24 @@ class NetworkAnalyzer {
    * Identify tracker type
    */
   identifyTrackerType(url) {
-    if (/google-analytics|ga\.js/.test(url)) return 'Google Analytics';
-    if (/facebook\.com\/tr|fbq/.test(url)) return 'Facebook Pixel';
-    if (/doubleclick\.net/.test(url)) return 'DoubleClick';
-    if (/segment\.com|analytics\.js/.test(url)) return 'Segment';
-    if (/mixpanel/.test(url)) return 'Mixpanel';
-    if (/hotjar/.test(url)) return 'Hotjar';
+    if (/google-analytics|ga\.js/.test(url)) {
+      return 'Google Analytics';
+    }
+    if (/facebook\.com\/tr|fbq/.test(url)) {
+      return 'Facebook Pixel';
+    }
+    if (/doubleclick\.net/.test(url)) {
+      return 'DoubleClick';
+    }
+    if (/segment\.com|analytics\.js/.test(url)) {
+      return 'Segment';
+    }
+    if (/mixpanel/.test(url)) {
+      return 'Mixpanel';
+    }
+    if (/hotjar/.test(url)) {
+      return 'Hotjar';
+    }
     return 'Unknown Tracker';
   }
 
@@ -401,12 +431,18 @@ class NetworkAnalyzer {
     };
 
     this.requests.forEach(req => {
-      if (req.url.startsWith('https')) security.https_requests++;
-      if (req.url.startsWith('http:')) security.http_requests++;
+      if (req.url.startsWith('https')) {
+        security.https_requests++;
+      }
+      if (req.url.startsWith('http:')) {
+        security.http_requests++;
+      }
 
       if (req.security) {
         const headerCount = Object.values(req.security).filter(v => v).length;
-        if (headerCount > 0) security.requests_with_security_headers++;
+        if (headerCount > 0) {
+          security.requests_with_security_headers++;
+        }
       }
     });
 
@@ -505,9 +541,9 @@ class NetworkAnalyzer {
         <table>
           <tr><th>Domain</th><th>Requests</th><th>Size</th><th>Type</th></tr>
           ${Object.entries(data.requests_by_domain)
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, 20)
-            .map(([domain, info]) => `
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 20)
+    .map(([domain, info]) => `
             <tr>
               <td>${domain}</td>
               <td>${info.count}</td>

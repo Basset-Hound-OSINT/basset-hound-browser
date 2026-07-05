@@ -18,7 +18,7 @@ const LOCALHOST_URL = 'http://localhost:8765';
 const DETECTION_SERVICES = {
   'bot.sannysoft.com': 'https://bot.sannysoft.com',
   'browserleaks.com': 'https://browserleaks.com',
-  'creepjs.com': 'https://creepjs.com',
+  'creepjs.com': 'https://creepjs.com'
 };
 
 // Test results tracking
@@ -27,7 +27,7 @@ const results = {
   canvas: { passed: 0, failed: 0, tests: [] },
   webgl: { passed: 0, failed: 0, tests: [] },
   detectionServices: { passed: 0, failed: 0, tests: [] },
-  sessionCoherence: { passed: 0, failed: 0, tests: [] },
+  sessionCoherence: { passed: 0, failed: 0, tests: [] }
 };
 
 let totalTests = 0;
@@ -90,7 +90,7 @@ async function testFingerprintValidation(ws) {
     console.log('Test 1: Creating fingerprint profile...');
     const createResult = await sendCommand(ws, 'create_fingerprint_profile', {
       platform: 'windows',
-      timezone: 'America/New_York',
+      timezone: 'America/New_York'
     });
     totalTests++;
 
@@ -100,7 +100,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Create fingerprint profile',
         status: 'PASS',
-        details: `Profile ID: ${createResult.profileId}`,
+        details: `Profile ID: ${createResult.profileId}`
       });
       console.log('✓ PASS: Fingerprint profile created');
     } else {
@@ -108,7 +108,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Create fingerprint profile',
         status: 'FAIL',
-        error: createResult.error,
+        error: createResult.error
       });
       console.log('✗ FAIL: Could not create fingerprint profile');
       return;
@@ -127,7 +127,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Get active fingerprint',
         status: 'PASS',
-        active: activeResult.active,
+        active: activeResult.active
       });
       console.log('✓ PASS: Retrieved active fingerprint');
     } else {
@@ -135,7 +135,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Get active fingerprint',
         status: 'FAIL',
-        error: activeResult.error,
+        error: activeResult.error
       });
       console.log('✗ FAIL: Could not retrieve active fingerprint');
     }
@@ -143,7 +143,7 @@ async function testFingerprintValidation(ws) {
     // Test 3: Apply fingerprint
     console.log('Test 3: Applying fingerprint to page...');
     const applyResult = await sendCommand(ws, 'apply_fingerprint', {
-      profileId: profileId,
+      profileId: profileId
     });
     totalTests++;
 
@@ -154,7 +154,7 @@ async function testFingerprintValidation(ws) {
         name: 'Apply fingerprint',
         status: 'PASS',
         platformType: applyResult.platformType,
-        timezone: applyResult.timezone,
+        timezone: applyResult.timezone
       });
       console.log('✓ PASS: Fingerprint applied successfully');
     } else {
@@ -162,7 +162,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Apply fingerprint',
         status: 'FAIL',
-        error: applyResult.error,
+        error: applyResult.error
       });
       console.log('✗ FAIL: Could not apply fingerprint');
     }
@@ -170,10 +170,10 @@ async function testFingerprintValidation(ws) {
     // Test 4: Validate fingerprint consistency (create and retrieve multiple times)
     console.log('Test 4: Testing fingerprint consistency...');
     const profileData1 = await sendCommand(ws, 'get_fingerprint_profile', {
-      profileId: profileId,
+      profileId: profileId
     });
     const profileData2 = await sendCommand(ws, 'get_fingerprint_profile', {
-      profileId: profileId,
+      profileId: profileId
     });
     totalTests++;
 
@@ -187,7 +187,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Fingerprint consistency',
         status: 'PASS',
-        consistency: '100%',
+        consistency: '100%'
       });
       console.log('✓ PASS: Fingerprint remains consistent across loads');
     } else {
@@ -195,7 +195,7 @@ async function testFingerprintValidation(ws) {
       results.fingerprint.tests.push({
         name: 'Fingerprint consistency',
         status: 'FAIL',
-        error: 'Inconsistent fingerprint data',
+        error: 'Inconsistent fingerprint data'
       });
       console.log('✗ FAIL: Fingerprint inconsistency detected');
     }
@@ -219,8 +219,8 @@ async function testFingerprintValidation(ws) {
           userAgent: hasUserAgent,
           plugins: hasPlugins,
           language: hasLanguage,
-          timezone: hasTimezone,
-        },
+          timezone: hasTimezone
+        }
       });
       console.log('✓ PASS: All required fingerprint properties present');
       console.log(`  - User Agent: ${profile.userAgent.substring(0, 80)}...`);
@@ -236,8 +236,8 @@ async function testFingerprintValidation(ws) {
           userAgent: !hasUserAgent,
           plugins: !hasPlugins,
           language: !hasLanguage,
-          timezone: !hasTimezone,
-        },
+          timezone: !hasTimezone
+        }
       });
       console.log('✗ FAIL: Missing required fingerprint properties');
     }
@@ -246,7 +246,7 @@ async function testFingerprintValidation(ws) {
     results.fingerprint.tests.push({
       name: 'Fingerprint validation',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -262,7 +262,7 @@ async function testCanvasEvasion(ws) {
     console.log('Test 1: Creating profile with canvas evasion...');
     const result = await sendCommand(ws, 'create_fingerprint_profile', {
       platform: 'windows',
-      canvasNoiseLevel: 'aggressive',
+      canvasNoiseLevel: 'aggressive'
     });
     totalTests++;
 
@@ -271,7 +271,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.passed++;
       results.canvas.tests.push({
         name: 'Create profile with canvas noise',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: Profile with canvas noise created');
     } else {
@@ -279,7 +279,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.tests.push({
         name: 'Create profile with canvas noise',
         status: 'FAIL',
-        error: result.error,
+        error: result.error
       });
       console.log('✗ FAIL: Could not create profile with canvas noise');
       return;
@@ -291,7 +291,7 @@ async function testCanvasEvasion(ws) {
     console.log('Test 2: Configuring canvas noise parameters...');
     const configResult = await sendCommand(ws, 'configure_canvas_noise', {
       profileId: profileId,
-      level: 'aggressive',
+      level: 'aggressive'
     });
     totalTests++;
 
@@ -301,7 +301,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.tests.push({
         name: 'Configure canvas noise',
         status: 'PASS',
-        level: configResult.canvasNoise.level,
+        level: configResult.canvasNoise.level
       });
       console.log('✓ PASS: Canvas noise configured');
       console.log(`  - Noise Level: ${configResult.canvasNoise.level}`);
@@ -313,7 +313,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.tests.push({
         name: 'Configure canvas noise',
         status: 'FAIL',
-        error: configResult.error,
+        error: configResult.error
       });
       console.log('✗ FAIL: Could not configure canvas noise');
     }
@@ -321,7 +321,7 @@ async function testCanvasEvasion(ws) {
     // Test 3: Verify evasion configuration
     console.log('Test 3: Verifying evasion configuration...');
     const evasionResult = await sendCommand(ws, 'get_evasion_config', {
-      profileId: profileId,
+      profileId: profileId
     });
     totalTests++;
 
@@ -342,7 +342,7 @@ async function testCanvasEvasion(ws) {
         results.canvas.tests.push({
           name: 'Verify evasion configuration',
           status: 'PASS',
-          config: canvasConfig.config,
+          config: canvasConfig.config
         });
         console.log('✓ PASS: Canvas evasion configuration verified');
         console.log(`  - Intensity: ${canvasConfig.config.intensity}`);
@@ -352,7 +352,7 @@ async function testCanvasEvasion(ws) {
         results.canvas.tests.push({
           name: 'Verify evasion configuration',
           status: 'FAIL',
-          error: 'Missing required canvas config parameters',
+          error: 'Missing required canvas config parameters'
         });
         console.log('✗ FAIL: Canvas evasion configuration incomplete');
       }
@@ -361,7 +361,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.tests.push({
         name: 'Verify evasion configuration',
         status: 'FAIL',
-        error: evasionResult.error,
+        error: evasionResult.error
       });
       console.log('✗ FAIL: Could not retrieve evasion configuration');
     }
@@ -374,7 +374,7 @@ async function testCanvasEvasion(ws) {
     for (const level of levels) {
       const levelResult = await sendCommand(ws, 'configure_canvas_noise', {
         profileId: profileId,
-        level: level,
+        level: level
       });
       if (levelResult.success) {
         levelTestsPassed++;
@@ -388,7 +388,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.tests.push({
         name: 'Canvas noise level variations',
         status: 'PASS',
-        levelsSupported: levels.length,
+        levelsSupported: levels.length
       });
       console.log(`✓ PASS: All ${levels.length} canvas noise levels supported`);
     } else {
@@ -396,7 +396,7 @@ async function testCanvasEvasion(ws) {
       results.canvas.tests.push({
         name: 'Canvas noise level variations',
         status: 'FAIL',
-        error: `Only ${levelTestsPassed}/${levels.length} levels supported`,
+        error: `Only ${levelTestsPassed}/${levels.length} levels supported`
       });
       console.log(
         `✗ FAIL: Only ${levelTestsPassed}/${levels.length} canvas noise levels working`
@@ -407,7 +407,7 @@ async function testCanvasEvasion(ws) {
     results.canvas.tests.push({
       name: 'Canvas evasion',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -423,7 +423,7 @@ async function testWebGLEvasion(ws) {
     console.log('Test 1: Creating profile with WebGL evasion...');
     const result = await sendCommand(ws, 'create_fingerprint_profile', {
       platform: 'windows',
-      webglNoiseLevel: 'aggressive',
+      webglNoiseLevel: 'aggressive'
     });
     totalTests++;
 
@@ -432,7 +432,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.passed++;
       results.webgl.tests.push({
         name: 'Create profile with WebGL noise',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: Profile with WebGL noise created');
     } else {
@@ -440,7 +440,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'Create profile with WebGL noise',
         status: 'FAIL',
-        error: result.error,
+        error: result.error
       });
       console.log('✗ FAIL: Could not create profile with WebGL noise');
       return;
@@ -452,7 +452,7 @@ async function testWebGLEvasion(ws) {
     console.log('Test 2: Configuring WebGL noise parameters...');
     const configResult = await sendCommand(ws, 'configure_webgl_noise', {
       profileId: profileId,
-      level: 'aggressive',
+      level: 'aggressive'
     });
     totalTests++;
 
@@ -462,7 +462,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'Configure WebGL noise',
         status: 'PASS',
-        level: configResult.webglNoise.level,
+        level: configResult.webglNoise.level
       });
       console.log('✓ PASS: WebGL noise configured');
       console.log(`  - Noise Level: ${configResult.webglNoise.level}`);
@@ -477,7 +477,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'Configure WebGL noise',
         status: 'FAIL',
-        error: configResult.error,
+        error: configResult.error
       });
       console.log('✗ FAIL: Could not configure WebGL noise');
     }
@@ -485,7 +485,7 @@ async function testWebGLEvasion(ws) {
     // Test 3: Verify WebGL configuration
     console.log('Test 3: Verifying WebGL configuration...');
     const evasionResult = await sendCommand(ws, 'get_evasion_config', {
-      profileId: profileId,
+      profileId: profileId
     });
     totalTests++;
 
@@ -505,7 +505,7 @@ async function testWebGLEvasion(ws) {
         results.webgl.tests.push({
           name: 'Verify WebGL configuration',
           status: 'PASS',
-          config: webglConfig.config,
+          config: webglConfig.config
         });
         console.log('✓ PASS: WebGL evasion configuration verified');
         console.log(
@@ -517,7 +517,7 @@ async function testWebGLEvasion(ws) {
         results.webgl.tests.push({
           name: 'Verify WebGL configuration',
           status: 'FAIL',
-          error: 'Missing required WebGL config parameters',
+          error: 'Missing required WebGL config parameters'
         });
         console.log('✗ FAIL: WebGL evasion configuration incomplete');
       }
@@ -526,7 +526,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'Verify WebGL configuration',
         status: 'FAIL',
-        error: evasionResult.error,
+        error: evasionResult.error
       });
       console.log('✗ FAIL: Could not retrieve WebGL configuration');
     }
@@ -539,7 +539,7 @@ async function testWebGLEvasion(ws) {
     for (const level of levels) {
       const levelResult = await sendCommand(ws, 'configure_webgl_noise', {
         profileId: profileId,
-        level: level,
+        level: level
       });
       if (levelResult.success) {
         levelTestsPassed++;
@@ -553,7 +553,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'WebGL noise level variations',
         status: 'PASS',
-        levelsSupported: levels.length,
+        levelsSupported: levels.length
       });
       console.log(`✓ PASS: All ${levels.length} WebGL noise levels supported`);
     } else {
@@ -561,7 +561,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'WebGL noise level variations',
         status: 'FAIL',
-        error: `Only ${levelTestsPassed}/${levels.length} levels supported`,
+        error: `Only ${levelTestsPassed}/${levels.length} levels supported`
       });
       console.log(
         `✗ FAIL: Only ${levelTestsPassed}/${levels.length} WebGL noise levels working`
@@ -573,8 +573,8 @@ async function testWebGLEvasion(ws) {
     const precisionResult = await sendCommand(ws, 'configure_webgl_noise', {
       profileId: profileId,
       customConfig: {
-        precisionNoise: true,
-      },
+        precisionNoise: true
+      }
     });
     totalTests++;
 
@@ -583,7 +583,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.passed++;
       results.webgl.tests.push({
         name: 'WebGL precision noise',
-        status: 'PASS',
+        status: 'PASS'
       });
       console.log('✓ PASS: WebGL precision noise configured');
     } else {
@@ -591,7 +591,7 @@ async function testWebGLEvasion(ws) {
       results.webgl.tests.push({
         name: 'WebGL precision noise',
         status: 'FAIL',
-        error: precisionResult.error,
+        error: precisionResult.error
       });
       console.log('✗ FAIL: Could not configure precision noise');
     }
@@ -600,7 +600,7 @@ async function testWebGLEvasion(ws) {
     results.webgl.tests.push({
       name: 'WebGL evasion',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -615,7 +615,7 @@ async function testSessionCoherence(ws) {
     // Test 1: Create behavioral profile
     console.log('Test 1: Creating behavioral profile...');
     const result = await sendCommand(ws, 'create_behavioral_profile', {
-      sessionId: `session_${Date.now()}`,
+      sessionId: `session_${Date.now()}`
     });
     totalTests++;
 
@@ -625,7 +625,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Create behavioral profile',
         status: 'PASS',
-        sessionId: result.sessionId,
+        sessionId: result.sessionId
       });
       console.log('✓ PASS: Behavioral profile created');
     } else {
@@ -633,7 +633,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Create behavioral profile',
         status: 'FAIL',
-        error: result.error,
+        error: result.error
       });
       console.log('✗ FAIL: Could not create behavioral profile');
       return;
@@ -646,7 +646,7 @@ async function testSessionCoherence(ws) {
     const mouseResult = await sendCommand(ws, 'generate_mouse_path', {
       sessionId: sessionId,
       start: { x: 100, y: 100 },
-      end: { x: 500, y: 400 },
+      end: { x: 500, y: 400 }
     });
     totalTests++;
 
@@ -657,7 +657,7 @@ async function testSessionCoherence(ws) {
         name: 'Generate mouse path',
         status: 'PASS',
         pointCount: mouseResult.pointCount,
-        duration: mouseResult.duration,
+        duration: mouseResult.duration
       });
       console.log('✓ PASS: Mouse path generated');
       console.log(`  - Points: ${mouseResult.pointCount}`);
@@ -668,7 +668,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Generate mouse path',
         status: 'FAIL',
-        error: mouseResult.error,
+        error: mouseResult.error
       });
       console.log('✗ FAIL: Could not generate mouse path');
     }
@@ -677,7 +677,7 @@ async function testSessionCoherence(ws) {
     console.log('Test 3: Generating human-like typing...');
     const typingResult = await sendCommand(ws, 'generate_typing_events', {
       sessionId: sessionId,
-      text: 'Hello World',
+      text: 'Hello World'
     });
     totalTests++;
 
@@ -688,7 +688,7 @@ async function testSessionCoherence(ws) {
         name: 'Generate typing events',
         status: 'PASS',
         eventCount: typingResult.eventCount,
-        wpm: typingResult.effectiveWPM,
+        wpm: typingResult.effectiveWPM
       });
       console.log('✓ PASS: Typing events generated');
       console.log(`  - Events: ${typingResult.eventCount}`);
@@ -698,7 +698,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Generate typing events',
         status: 'FAIL',
-        error: typingResult.error,
+        error: typingResult.error
       });
       console.log('✗ FAIL: Could not generate typing events');
     }
@@ -708,7 +708,7 @@ async function testSessionCoherence(ws) {
     const scrollResult = await sendCommand(ws, 'generate_scroll_behavior', {
       sessionId: sessionId,
       distance: 500,
-      direction: 'down',
+      direction: 'down'
     });
     totalTests++;
 
@@ -719,7 +719,7 @@ async function testSessionCoherence(ws) {
         name: 'Generate scroll behavior',
         status: 'PASS',
         eventCount: scrollResult.eventCount,
-        duration: scrollResult.totalDuration,
+        duration: scrollResult.totalDuration
       });
       console.log('✓ PASS: Scroll behavior generated');
       console.log(`  - Events: ${scrollResult.eventCount}`);
@@ -729,7 +729,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Generate scroll behavior',
         status: 'FAIL',
-        error: scrollResult.error,
+        error: scrollResult.error
       });
       console.log('✗ FAIL: Could not generate scroll behavior');
     }
@@ -737,10 +737,10 @@ async function testSessionCoherence(ws) {
     // Test 5: Verify behavioral profile consistency
     console.log('Test 5: Verifying behavioral profile consistency...');
     const profile1 = await sendCommand(ws, 'get_behavioral_profile', {
-      sessionId: sessionId,
+      sessionId: sessionId
     });
     const profile2 = await sendCommand(ws, 'get_behavioral_profile', {
-      sessionId: sessionId,
+      sessionId: sessionId
     });
     totalTests++;
 
@@ -754,7 +754,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Behavioral profile consistency',
         status: 'PASS',
-        consistency: '100%',
+        consistency: '100%'
       });
       console.log('✓ PASS: Behavioral profile remains consistent');
     } else {
@@ -762,7 +762,7 @@ async function testSessionCoherence(ws) {
       results.sessionCoherence.tests.push({
         name: 'Behavioral profile consistency',
         status: 'FAIL',
-        error: 'Profile inconsistency detected',
+        error: 'Profile inconsistency detected'
       });
       console.log('✗ FAIL: Behavioral profile inconsistency');
     }
@@ -771,7 +771,7 @@ async function testSessionCoherence(ws) {
     results.sessionCoherence.tests.push({
       name: 'Session coherence',
       status: 'ERROR',
-      error: error.message,
+      error: error.message
     });
   }
 }
@@ -810,7 +810,7 @@ async function testDetectionServices() {
         name: name,
         status: 'AVAILABLE',
         url: url,
-        statusCode: response.status,
+        statusCode: response.status
       });
       console.log(`✓ Available: ${name} (${response.status})`);
     } catch (error) {
@@ -820,7 +820,7 @@ async function testDetectionServices() {
         name: name,
         status: 'UNAVAILABLE',
         url: url,
-        error: error.message,
+        error: error.message
       });
       console.log(`✗ Unavailable: ${name} (${error.message})`);
     }
@@ -898,9 +898,9 @@ function generateReport() {
           totalTests: totalTests,
           passedTests: passedTests,
           failedTests: totalTests - passedTests,
-          passRate: `${((passedTests / totalTests) * 100).toFixed(1)}%`,
+          passRate: `${((passedTests / totalTests) * 100).toFixed(1)}%`
         },
-        results: results,
+        results: results
       },
       null,
       2
@@ -934,7 +934,9 @@ async function main() {
     ws.close();
   } catch (error) {
     console.error('✗ FATAL ERROR:', error.message);
-    if (ws) ws.close();
+    if (ws) {
+      ws.close();
+    }
     process.exit(1);
   }
 

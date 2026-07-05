@@ -345,11 +345,17 @@ class LatencyTester {
       };
 
       for (const lat of latencies) {
-        if (lat < 10) buckets['0-10ms']++;
-        else if (lat < 50) buckets['10-50ms']++;
-        else if (lat < 100) buckets['50-100ms']++;
-        else if (lat < 500) buckets['100-500ms']++;
-        else buckets['500ms+']++;
+        if (lat < 10) {
+          buckets['0-10ms']++;
+        } else if (lat < 50) {
+          buckets['10-50ms']++;
+        } else if (lat < 100) {
+          buckets['50-100ms']++;
+        } else if (lat < 500) {
+          buckets['100-500ms']++;
+        } else {
+          buckets['500ms+']++;
+        }
       }
 
       const distribution = Object.entries(buckets).map(([range, count]) => ({

@@ -316,9 +316,15 @@ class AlertManager extends EventEmitter {
 
     // Update stats
     this.stats.totalAlerts--;
-    if (!alert.read) this.stats.unreadCount--;
-    if (alert.acknowledged) this.stats.acknowledgedCount--;
-    if (alert.dismissed) this.stats.dismissedCount--;
+    if (!alert.read) {
+      this.stats.unreadCount--;
+    }
+    if (alert.acknowledged) {
+      this.stats.acknowledgedCount--;
+    }
+    if (alert.dismissed) {
+      this.stats.dismissedCount--;
+    }
 
     this.emit('alert-removed', { alertId });
 
@@ -573,7 +579,9 @@ class AlertManager extends EventEmitter {
    * @returns {void}
    */
   startAutoCleanup() {
-    if (this.cleanupTimer) return;
+    if (this.cleanupTimer) {
+      return;
+    }
 
     this.cleanupTimer = setInterval(() => {
       this.cleanupExpired();

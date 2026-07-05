@@ -223,7 +223,7 @@ class FeaturePerformanceTester {
         // Simulate monitoring: compare current vs. previous snapshot
         const monitorResult = {
           website,
-          changeDetected: Math.random() < 0.2,  // 20% change rate
+          changeDetected: Math.random() < 0.2, // 20% change rate
           duration: 0
         };
 
@@ -265,7 +265,7 @@ class FeaturePerformanceTester {
       totalAlerts: results.cycles.reduce((sum, c) => sum + c.alertsDispatched, 0),
       assessment: {
         avgMonitorUnder200ms: results.cycles[0].monitorResults.every(m => m.duration < 200),
-        alertLatencyUnder100ms: true  // Simulated
+        alertLatencyUnder100ms: true // Simulated
       }
     };
 
@@ -456,7 +456,7 @@ class FeaturePerformanceTester {
     const saveStart = performance.now();
     const saveDurations = [];
     for (let i = 0; i < 100; i++) {
-      const dataSize = 1 + Math.random() * 9;  // 1-10 MB
+      const dataSize = 1 + Math.random() * 9; // 1-10 MB
       const saveOpStart = performance.now();
       this.simulateCheckpointSave(dataSize);
       const saveOpDuration = performance.now() - saveOpStart;
@@ -527,28 +527,28 @@ class FeaturePerformanceTester {
 
   simulateCheckpointCreation(sessionId) {
     // Simulate checkpoint creation (serialize state)
-    const stateSize = Math.random() * 5000000;  // 0-5MB
+    const stateSize = Math.random() * 5000000; // 0-5MB
     return { sessionId, size: stateSize, timestamp: Date.now() };
   }
 
   simulateCheckpointSave(sizeInMB) {
     // Simulate disk write (assume 50MB/s write speed)
     const writeTime = (sizeInMB * 1024 * 1024) / (50 * 1024 * 1024);
-    return writeTime * 1000;  // Convert to ms
+    return writeTime * 1000; // Convert to ms
   }
 
   simulateRollback(sessionId) {
     // Simulate rollback operation (read from disk + deserialize)
-    const readTime = Math.random() * 100;  // 0-100ms
-    const deserializeTime = Math.random() * 50;  // 0-50ms
-    const applyTime = Math.random() * 30;  // 0-30ms
+    const readTime = Math.random() * 100; // 0-100ms
+    const deserializeTime = Math.random() * 50; // 0-50ms
+    const applyTime = Math.random() * 30; // 0-30ms
     return readTime + deserializeTime + applyTime;
   }
 
   simulateHistoryQuery(sessionId) {
     // Simulate history query (search through checkpoint history)
-    const searchTime = Math.random() * 30;  // 0-30ms
-    const filterTime = Math.random() * 15;  // 0-15ms
+    const searchTime = Math.random() * 30; // 0-30ms
+    const filterTime = Math.random() * 15; // 0-15ms
     return searchTime + filterTime;
   }
 

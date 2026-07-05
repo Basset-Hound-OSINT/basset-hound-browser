@@ -222,7 +222,9 @@ class TimelineGenerator {
   compareTimelines(monitoringIds) {
     const timelines = monitoringIds.map(id => {
       const tl = this.timelines.get(id);
-      if (!tl) throw new Error(`Timeline not found: ${id}`);
+      if (!tl) {
+        throw new Error(`Timeline not found: ${id}`);
+      }
       return tl;
     });
 
@@ -351,16 +353,16 @@ class TimelineGenerator {
     const includeVisualDiffs = options.includeVisualDiffs === true;
 
     switch (format.toLowerCase()) {
-      case 'json':
-        return this._exportJSON(timeline, includeSnapshots, includeVisualDiffs);
-      case 'csv':
-        return this._exportCSV(timeline);
-      case 'html':
-        return this._exportHTML(timeline, includeSnapshots);
-      case 'markdown':
-        return this._exportMarkdown(timeline);
-      default:
-        throw new Error(`Unsupported format: ${format}`);
+    case 'json':
+      return this._exportJSON(timeline, includeSnapshots, includeVisualDiffs);
+    case 'csv':
+      return this._exportCSV(timeline);
+    case 'html':
+      return this._exportHTML(timeline, includeSnapshots);
+    case 'markdown':
+      return this._exportMarkdown(timeline);
+    default:
+      throw new Error(`Unsupported format: ${format}`);
     }
   }
 
@@ -445,7 +447,9 @@ class TimelineGenerator {
 
   _updateStatistics(timeline) {
     const changes = timeline.changes;
-    if (changes.length === 0) return;
+    if (changes.length === 0) {
+      return;
+    }
 
     // Largest change
     timeline.statistics.largestChange = changes.reduce((max, c) =>

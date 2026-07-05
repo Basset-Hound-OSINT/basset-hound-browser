@@ -260,7 +260,9 @@ perfTest('Group 10K changes by type', () => {
 
   const grouped = {};
   changes.forEach(c => {
-    if (!grouped[c.type]) grouped[c.type] = [];
+    if (!grouped[c.type]) {
+      grouped[c.type] = [];
+    }
     grouped[c.type].push(c);
   });
   return { groups: Object.keys(grouped).length };
@@ -327,7 +329,9 @@ perfTest('Build timeline from 10K changes', () => {
   const timeline = {};
   changes.forEach(c => {
     const hour = Math.floor(c.timestamp / 3600000);
-    if (!timeline[hour]) timeline[hour] = [];
+    if (!timeline[hour]) {
+      timeline[hour] = [];
+    }
     timeline[hour].push(c);
   });
 

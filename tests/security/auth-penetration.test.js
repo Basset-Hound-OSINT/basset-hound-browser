@@ -13,7 +13,7 @@
 const WebSocket = require('ws');
 const assert = require('assert');
 
-describe('Authentication Penetration Tests', function() {
+describe('Authentication Penetration Tests', function () {
   this.timeout(30000);
 
   const WS_URL = 'ws://localhost:8765';

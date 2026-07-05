@@ -285,12 +285,24 @@ class BatchExtractor {
    */
   _emptyResults(extractionTypes = {}) {
     const results = {};
-    if (extractionTypes.links) results.links = [];
-    if (extractionTypes.forms) results.forms = [];
-    if (extractionTypes.images) results.images = [];
-    if (extractionTypes.scripts) results.scripts = [];
-    if (extractionTypes.meta) results.meta = [];
-    if (extractionTypes.headings) results.headings = [];
+    if (extractionTypes.links) {
+      results.links = [];
+    }
+    if (extractionTypes.forms) {
+      results.forms = [];
+    }
+    if (extractionTypes.images) {
+      results.images = [];
+    }
+    if (extractionTypes.scripts) {
+      results.scripts = [];
+    }
+    if (extractionTypes.meta) {
+      results.meta = [];
+    }
+    if (extractionTypes.headings) {
+      results.headings = [];
+    }
     return results;
   }
 }

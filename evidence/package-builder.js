@@ -63,7 +63,7 @@ class EvidencePackage {
       sealTime: new Date().toISOString(),
       sealedBy: options.sealedBy || 'system',
       entryCount: this.manifest.entries.length,
-      manifestHash: this.manifest.manifestHash,
+      manifestHash: this.manifest.manifestHash
     };
 
     // Generate seal signature
@@ -77,8 +77,8 @@ class EvidencePackage {
       genTime: new Date().toISOString(),
       messageImprint: {
         hashAlgorithm: 'sha256',
-        hashedMessage: this.sealHash,
-      },
+        hashedMessage: this.sealHash
+      }
     };
 
     this.sealed = true;
@@ -94,7 +94,7 @@ class EvidencePackage {
     return {
       success: true,
       sealData,
-      timestampToken: this.timestampToken,
+      timestampToken: this.timestampToken
     };
   }
 
@@ -106,7 +106,7 @@ class EvidencePackage {
       packageId: this.packageId,
       manifestId: this.manifest.id,
       entriesHash: this.manifest.manifestHash,
-      createdAt: this.createdAt,
+      createdAt: this.createdAt
     });
 
     return crypto.createHash('sha256').update(data).digest('hex');
@@ -134,7 +134,7 @@ class EvidencePackage {
     const result = {
       valid: true,
       issues: [],
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     // Check seal status
@@ -173,7 +173,7 @@ class EvidencePackage {
       sealedAt: this.sealedAt,
       manifestValid: manifestVerification.valid,
       entriesVerified: manifestVerification.entriesVerified,
-      entriesTotal: manifestVerification.entriesTotal,
+      entriesTotal: manifestVerification.entriesTotal
     };
 
     return result;
@@ -193,20 +193,20 @@ class EvidencePackage {
         created: this.createdAt,
         sealed: this.sealed,
         sealedAt: this.sealedAt,
-        sealHash: this.sealHash,
+        sealHash: this.sealHash
       },
       manifest: this.manifest.exportAsJSON(),
       verification: verification,
       complianceStatement: this._generateComplianceStatement(),
       signatureData: {
         sealSignature: this.sealSignature,
-        timestampToken: this.timestampToken,
+        timestampToken: this.timestampToken
       },
       exportInfo: {
         exportTime: new Date().toISOString(),
         exportFormat: 'court',
-        exportedBy: 'system',
-      },
+        exportedBy: 'system'
+      }
     };
   }
 
@@ -222,7 +222,7 @@ class EvidencePackage {
         id: this.manifest.id,
         created: this.manifest.createdAt,
         url: this.manifest.metadata.url,
-        summary: this.manifest.getSummary(),
+        summary: this.manifest.getSummary()
       },
       evidence: this.manifest.entries.map(e => ({
         id: e.id,
@@ -230,12 +230,12 @@ class EvidencePackage {
         capturedAt: e.capturedAt,
         url: e.url,
         hashes: e.hashes,
-        metadata: e.metadata,
+        metadata: e.metadata
       })),
       exportInfo: {
         exportTime: new Date().toISOString(),
-        exportFormat: 'analysis',
-      },
+        exportFormat: 'analysis'
+      }
     };
   }
 
@@ -334,7 +334,9 @@ class EvidencePackage {
    * Escape XML special characters
    */
   _escapeXML(str) {
-    if (!str) return '';
+    if (!str) {
+      return '';
+    }
     return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -359,7 +361,7 @@ the integrity of the evidence.`,
       hashAlgorithms: ['MD5', 'SHA-1', 'SHA-256'],
       software: `${this.manifest.metadata.softwareName} v${this.manifest.metadata.softwareVersion}`,
       sealed: this.sealed,
-      timestamp,
+      timestamp
     };
   }
 
@@ -374,7 +376,7 @@ the integrity of the evidence.`,
       time: new Date().toISOString(),
       format,
       destination,
-      actor: 'system',
+      actor: 'system'
     });
 
     this.manifest.addCustodyEntry(
@@ -396,7 +398,7 @@ the integrity of the evidence.`,
       sealedAt: this.sealedAt,
       ...summary,
       exports: this.exports.length,
-      custodyEntries: this.manifest.custodyChain.length,
+      custodyEntries: this.manifest.custodyChain.length
     };
   }
 
@@ -429,7 +431,7 @@ the integrity of the evidence.`,
           sealed: this.sealed,
           exportedAt: new Date().toISOString(),
           estimatedSize: this._estimatePackageSize(),
-          duration: Date.now() - startTime,
+          duration: Date.now() - startTime
         };
       }
 
@@ -450,7 +452,7 @@ the integrity of the evidence.`,
         exportedAt: new Date().toISOString(),
         entries: this.manifest.entries.length,
         estimatedSize: this._estimatePackageSize(),
-        duration: Date.now() - startTime,
+        duration: Date.now() - startTime
         // In production:
         // filePath: '/path/to/package.zip',
         // checksum: 'sha256_hash',
@@ -459,7 +461,7 @@ the integrity of the evidence.`,
       return {
         success: false,
         error: error.message,
-        duration: Date.now() - startTime,
+        duration: Date.now() - startTime
       };
     }
   }
@@ -478,7 +480,7 @@ the integrity of the evidence.`,
     // Each entry
     this.manifest.entries.forEach(entry => {
       total += entry.size || 0;
-      total += 500;  // Metadata overhead
+      total += 500; // Metadata overhead
     });
 
     // Chain of custody
@@ -488,7 +490,7 @@ the integrity of the evidence.`,
     total += JSON.stringify({
       sealHash: this.sealHash,
       sealSignature: this.sealSignature,
-      timestampToken: this.timestampToken,
+      timestampToken: this.timestampToken
     }).length;
 
     return total;
@@ -511,16 +513,16 @@ the integrity of the evidence.`,
       policyId: options.policyId || '1.2.840.113549.1.9.16.3.3',
       messageImprint: {
         hashAlgorithm: 'sha256',
-        hashedMessage: this.sealHash,
+        hashedMessage: this.sealHash
       },
       serialNumber: crypto.randomBytes(16).toString('hex'),
       genTime: new Date().toISOString(),
       accuracy: {
         seconds: 1,
-        millis: 0,
+        millis: 0
       },
       nonce: crypto.randomBytes(8).toString('hex'),
-      tsa: options.authority || 'freetsa.org',
+      tsa: options.authority || 'freetsa.org'
     };
 
     // Record in manifest custody chain
@@ -549,13 +551,13 @@ the integrity of the evidence.`,
     return {
       success: result.success,
       duration,
-      performanceOk: duration < 100,  // Target: <100ms for seal
+      performanceOk: duration < 100, // Target: <100ms for seal
       sealData: result.sealData,
       metrics: {
         entriesProcessed: this.manifest.entries.length,
         durationMs: duration,
-        entriesPerMs: (this.manifest.entries.length / duration).toFixed(2),
-      },
+        entriesPerMs: (this.manifest.entries.length / duration).toFixed(2)
+      }
     };
   }
 
@@ -572,16 +574,16 @@ the integrity of the evidence.`,
       sealedAt: this.sealedAt,
       sealing: {
         completed: this.sealed,
-        estimatedDuration: '<100ms',  // Target
+        estimatedDuration: '<100ms' // Target
       },
       manifest: {
         entries: this.manifest.entries.length,
-        estimatedSize: this._estimatePackageSize(),
+        estimatedSize: this._estimatePackageSize()
       },
       exports: {
         completed: this.exports.length,
-        formats: [...new Set(this.exports.map(e => e.format))],
-      },
+        formats: [...new Set(this.exports.map(e => e.format))]
+      }
     };
   }
 }
@@ -614,7 +616,7 @@ class PackageBuilder {
     this.custodyManager.initializeChain(manifestId, {
       capturedBy: options.capturedBy || 'system',
       capturedAt: manifest.createdAt,
-      url: options.url,
+      url: options.url
     });
 
     return manifest;
@@ -706,7 +708,7 @@ class PackageBuilder {
       totalEvidence: Array.from(this.manifests.values()).reduce(
         (sum, m) => sum + m.entries.length,
         0
-      ),
+      )
     };
   }
 
@@ -722,7 +724,7 @@ class PackageBuilder {
       succeeded: 0,
       failed: 0,
       packages: [],
-      startTime: new Date().toISOString(),
+      startTime: new Date().toISOString()
     };
 
     for (const pkg of this.packages.values()) {
@@ -732,7 +734,7 @@ class PackageBuilder {
           results.packages.push({
             packageId: pkg.packageId,
             success: true,
-            tokenSerialNumber: token.serialNumber,
+            tokenSerialNumber: token.serialNumber
           });
           results.requested++;
           results.succeeded++;
@@ -740,7 +742,7 @@ class PackageBuilder {
           results.packages.push({
             packageId: pkg.packageId,
             success: false,
-            error: error.message,
+            error: error.message
           });
           results.requested++;
           results.failed++;
@@ -767,8 +769,8 @@ class PackageBuilder {
         allSealed: true,
         allValid: true,
         totalEntries: 0,
-        standards: ['ISO/IEC 27037:2012', 'NIST SP 800-155', 'ACPO Guidelines'],
-      },
+        standards: ['ISO/IEC 27037:2012', 'NIST SP 800-155', 'ACPO Guidelines']
+      }
     };
 
     for (const pkg of this.packages.values()) {
@@ -779,11 +781,15 @@ class PackageBuilder {
         sealed: pkg.sealed,
         valid: verification.valid,
         entryCount: pkg.manifest.entries.length,
-        exported: pkg.exports.length,
+        exported: pkg.exports.length
       });
 
-      if (!pkg.sealed) report.summary.allSealed = false;
-      if (!verification.valid) report.summary.allValid = false;
+      if (!pkg.sealed) {
+        report.summary.allSealed = false;
+      }
+      if (!verification.valid) {
+        report.summary.allValid = false;
+      }
       report.summary.totalEntries += pkg.manifest.entries.length;
     }
 
@@ -797,5 +803,5 @@ class PackageBuilder {
 
 module.exports = {
   EvidencePackage,
-  PackageBuilder,
+  PackageBuilder
 };

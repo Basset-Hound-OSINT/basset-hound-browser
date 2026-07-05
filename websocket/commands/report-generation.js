@@ -10,7 +10,7 @@
  */
 
 const { ReportGenerator } = require('../../src/reporting/report-generator');
-const { createLogger } = require('../../src/logging');
+const { createLogger } = require('../../logging');
 
 const logger = createLogger('ReportGenerationCommands');
 
@@ -472,7 +472,9 @@ function initializeReportHandlers(managers = {}) {
             hash: reportMeta.hash
           });
 
-          if (++count >= limit) break;
+          if (++count >= limit) {
+            break;
+          }
         }
       }
 
@@ -542,9 +544,13 @@ function initializeReportHandlers(managers = {}) {
       let reportCount = 0;
 
       for (const [reportId, reportMeta] of reportStore.entries()) {
-        if (reportId.startsWith('template_')) continue;
+        if (reportId.startsWith('template_')) {
+          continue;
+        }
 
-        if (sessionId && reportMeta.sessionId !== sessionId) continue;
+        if (sessionId && reportMeta.sessionId !== sessionId) {
+          continue;
+        }
 
         stats.totalReports++;
         stats.byFormat[reportMeta.format] = (stats.byFormat[reportMeta.format] || 0) + 1;
@@ -615,7 +621,9 @@ function initializeReportHandlers(managers = {}) {
  * Helper to format bytes
  */
 function _formatBytes(bytes) {
-  if (typeof bytes !== 'number' || bytes === 0) return '0 B';
+  if (typeof bytes !== 'number' || bytes === 0) {
+    return '0 B';
+  }
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));

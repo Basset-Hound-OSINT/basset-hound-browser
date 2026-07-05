@@ -25,7 +25,7 @@ describe('CompressionPipeline', () => {
     it('should select gzip for PNG', () => {
       const codec = pipeline.getOptimalCodec('image/png');
       expect(codec.codec).toBe('gzip');
-      expect(codec.level).toBe(9);  // High compression for PNG
+      expect(codec.level).toBe(9); // High compression for PNG
     });
 
     it('should select deflate for JPEG', () => {
@@ -249,11 +249,11 @@ describe('Compression Performance', () => {
     const result = await pipeline.compressOptimized(repetitiveData);
 
     expect(result.success).toBe(true);
-    expect(parseFloat(result.ratio)).toBeGreaterThan(95);  // >95% reduction
+    expect(parseFloat(result.ratio)).toBeGreaterThan(95); // >95% reduction
   });
 
   it('should handle large data efficiently', async () => {
-    const largeData = Buffer.alloc(10 * 1024 * 1024);  // 10MB
+    const largeData = Buffer.alloc(10 * 1024 * 1024); // 10MB
     largeData.fill('A');
 
     const start = Date.now();
@@ -261,7 +261,7 @@ describe('Compression Performance', () => {
     const duration = Date.now() - start;
 
     expect(result.success).toBe(true);
-    expect(duration).toBeLessThan(5000);  // Should complete in reasonable time
+    expect(duration).toBeLessThan(5000); // Should complete in reasonable time
   });
 
   it('should maintain compression ratio across formats', async () => {

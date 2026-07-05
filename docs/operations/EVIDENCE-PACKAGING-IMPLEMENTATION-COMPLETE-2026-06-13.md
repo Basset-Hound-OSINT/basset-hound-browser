@@ -120,7 +120,7 @@ The Evidence Packaging & Chain of Custody system has been successfully completed
 
 ### 2. WebSocket Commands Enhanced
 
-**File:** `websocket/commands/evidence-packaging.js`
+**File:** `websocket/commands/forensic/packaging/evidence-packaging.js`
 
 **Original 14 Commands:**
 1. `create_evidence_manifest`
@@ -520,7 +520,7 @@ All WebSocket commands validate:
    - Added bulk timestamp capability
    - Added compliance report generation
 
-4. **websocket/commands/evidence-packaging.js**
+4. **websocket/commands/forensic/packaging/evidence-packaging.js**
    - Added 5 new commands
    - Enhanced validation on existing commands
    - Added RFC 3161 handling

@@ -4,13 +4,12 @@ package-lock.json
 npm-debug.log*
 yarn-error.log
 
-# Temporary files and directories
-tmp/
-tmp/*
-!tmp/.gitkeep
-**test-data/*
+# Temporary files and directories (KEEP MINIMAL AT ROOT)
+/tmp/**/*
+!/tmp/
+!/tmp/.gitkeep
 
-# Electron build
+# Electron build artifacts
 dist/
 out/
 release/
@@ -20,12 +19,14 @@ release/
 *.deb
 *.rpm
 
-# Test artifacts
+# Test artifacts and outputs (use designated test directories)
 coverage/
-test-results/
 tests/results/*
 !tests/results/.gitkeep
-!tests/results/*.md
+tests/output/*
+!tests/output/.gitkeep
+tests/certs/*
+!tests/certs/.gitkeep
 tests/screenshots/
 tests/reports/
 reports/
@@ -33,25 +34,32 @@ test-user-data*/
 *.log
 **/test-certs*/
 
-# Test session & temporary test data (consolidated)
+# Legacy test directories (consolidate to tests/output)
+test-data
 test-sessions/
 tmp_tests/
 .test-sessions*
 .test-scratch*
 tests/tmp/
 
-# Centralized test outputs (Phase B cleanup)
-tests/output/*
-!tests/output/.gitkeep
-
-# IDE
+# IDE and editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# Claude Code and project-specific settings (keep directories, ignore contents)
+.claude/**/*
+!.claude/.gitkeep
+.basset-hound/**/*
+!.basset-hound/.gitkeep
+blocking-data/**/*
+!blocking-data/.gitkeep
+backups/**/*
+!backups/.gitkeep
+
+# OS files
 .DS_Store
 Thumbs.db
 
@@ -65,13 +73,21 @@ cookies/data/
 screenshots/*.png
 recordings/*.webm
 
-# Temporary
+# Temporary/build files
 *.tmp
 *.bak
+*.temp
+*.swap
+*.dist
+*.egg-info/
 
-# Build logs (don't commit to root)
+# Build logs and output
 buildlog.txt
 buildlog*.txt
+dist-cache/
+build/
+/logs/**/*
+!logs/.gitkeep
 
 # Embedded Tor (development/testing)
 tor_tmp/
@@ -96,14 +112,91 @@ downloads/
 *.rar
 *.7z
 
-# Python (for any scripts)
+# Python scripts and caches
 __pycache__/
 *.py[cod]
 venv/
-**/.claude/
 
-# Python cache and coverage
+# Python cache
 .mypy_cache/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Jest and test caches
+/.jest-cache/
+.jest-cache
+.jest-cache/
+*.cache/
+
+# Build directories
+/<rootDir>/
+rootDir
+
+# Root-level generated files (ENFORCEMENT - MUST BE IN tmp/ OR docs/archive/)
+# *** CRITICAL RULE: All generated data goes to ./tmp/ ***
+# Do NOT create or commit: .md reports, .txt reports, .json output, logs, screenshots, etc. in root
+#
+# ALLOWED in root ONLY: package.json, package-lock.json, README.md, .gitignore, .dockerignore, Makefile
+#
+# Generated files placement:
+#   - Test results → tmp/test-results/
+#   - Reports → tmp/reports/
+#   - Screenshots → tmp/screenshots/
+#   - Logs → tmp/logs/
+#   - Build artifacts → tmp/build/
+#   - Temporary data → tmp/data/
+#   - Historical records → docs/archive/generated/ (if tracked in git)
+#   - Handoff docs → docs/handoffs/ (for future developers)
+#
+# Examples (WRONG → RIGHT):
+#   ./PHASE1-COMPLETION.md → ./docs/archive/generated/PHASE1-COMPLETION.md
+#   ./test-results.json → ./tmp/test-results/test-results.json
+#   ./debug.log → ./tmp/logs/debug.log
+#   ./screenshot-0.png → ./tmp/screenshots/screenshot-0.png
+#
+# Reference: docs/DATA-ORGANIZATION-ENFORCEMENT.md
+
+# Keep examples/ tracked (but not generated artifacts inside them)
+# Structure:
+#   examples/api-usage/ - track source examples
+#   examples/forensic-export/ - track source examples
+#   examples/integration/ - track source examples
+
+# Runtime outputs and state files
+*.state
+*.cache
+*.session
+runtime-cache/
+
+# Generated API documentation (auto-built from registry at startup)
+openapi.json
+openapi.yaml
+api-schema.json
+
+# ── Large test-artifact & screenshot dumps (cleaned 2026-07) ──
+# Regenerable junk; old copies remain recoverable via `git checkout origin/main -- <path>`.
+/archives/
+/screenshots/
+/results/
+/reports/
+/coverage/
+**/test-screenshots/
+**/test-artifacts-*/
+# Python caches (rag-app, mcp, clients)
+.pytest_cache/
+__pycache__/
+*.pyc
+# Dev TLS certs — generate locally, never commit private keys
+/certs/
+*.pem
+*.key
+# Runtime/build scratch dirs at repo root
+/disk-cache/
+/blocking-data/
+/test-data/
+/<rootDir>/
+# Forensic/evidence CAPTURE OUTPUTS (the evidence/*.js source stays tracked)
+/evidence-output/
+**/forensic-output/
+**/captures-output/

@@ -29,9 +29,9 @@ describe('ImageValidator', () => {
     it('should validate valid WebP data', () => {
       // WebP signature: RIFF ... WEBP
       const webpBuffer = Buffer.from([
-        0x52, 0x49, 0x46, 0x46,  // RIFF
-        0x00, 0x00, 0x00, 0x00,  // size
-        0x57, 0x45, 0x42, 0x50,  // WEBP
+        0x52, 0x49, 0x46, 0x46, // RIFF
+        0x00, 0x00, 0x00, 0x00, // size
+        0x57, 0x45, 0x42, 0x50, // WEBP
         ...Array(100).fill(0)
       ]);
       const result = ImageValidator.validateImageData(webpBuffer);
@@ -159,7 +159,7 @@ describe('ImageValidator', () => {
     });
 
     it('should warn about extreme aspect ratios', () => {
-      const result = ImageValidator.validateDimensions(3000, 100);  // 30:1 ratio
+      const result = ImageValidator.validateDimensions(3000, 100); // 30:1 ratio
       expect(result.warnings.length).toBeGreaterThan(0);
       expect(result.warnings[0]).toContain('aspect ratio');
     });
@@ -216,7 +216,7 @@ describe('ImageValidator', () => {
 
     it('should handle custom threshold', () => {
       const buffer = Buffer.alloc(200, 0xFF);
-      const result = ImageValidator.detectBlankImage(buffer, 0.99);  // Higher threshold
+      const result = ImageValidator.detectBlankImage(buffer, 0.99); // Higher threshold
       expect(result.confidence).toBeGreaterThan(0.95);
     });
   });
@@ -234,7 +234,7 @@ describe('ImageValidator', () => {
         randomBuffer[i] = i;
       }
       const entropy = ImageValidator.calculateEntropy(randomBuffer);
-      expect(entropy).toBeGreaterThan(7);  // Close to theoretical maximum 8
+      expect(entropy).toBeGreaterThan(7); // Close to theoretical maximum 8
     });
 
     it('should handle empty buffer', () => {

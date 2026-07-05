@@ -152,7 +152,7 @@ class NetworkAnomaliesTester {
   calculateAdaptiveBackoff(attemptNumber, maxBackoff = 32000) {
     // Exponential backoff with jitter
     const baseDelay = Math.min(Math.pow(2, attemptNumber) * 1000, maxBackoff);
-    const jitter = Math.random() * baseDelay * 0.1;  // 10% jitter
+    const jitter = Math.random() * baseDelay * 0.1; // 10% jitter
     return Math.floor(baseDelay + jitter);
   }
 
@@ -191,7 +191,7 @@ class NetworkAnomaliesTester {
       const totalLatency = this.simulateLatency(normalLatency, additionalLatency);
 
       assert(totalLatency >= 5000, 'Should simulate 5000+ ms latency');
-      assert(totalLatency < 30000, 'Should not timeout');  // TIMEOUT = 30000
+      assert(totalLatency < 30000, 'Should not timeout'); // TIMEOUT = 30000
     });
 
     await this.runTest('Continue operation despite high latency', async () => {
@@ -239,7 +239,7 @@ class NetworkAnomaliesTester {
     await this.runTest('Recover from packet loss with retransmission', async () => {
       const initialLoss = this.simulatePacketLoss(100, 0.30);
       // Retry failed packets
-      const retryLoss = this.simulatePacketLoss(initialLoss.lost, 0.10);  // 10% loss on retry
+      const retryLoss = this.simulatePacketLoss(initialLoss.lost, 0.10); // 10% loss on retry
 
       const finalSuccess = initialLoss.successful + (retryLoss.successful);
       assert(finalSuccess >= 97, `Should recover to ${finalSuccess} successful`);
@@ -276,7 +276,7 @@ class NetworkAnomaliesTester {
     await this.runTest('Implement flap dampening', async () => {
       const connections = Array.from({ length: 20 }, (_, i) => ({
         id: i,
-        flapped: Math.random() > 0.7  // 30% chance of flap
+        flapped: Math.random() > 0.7 // 30% chance of flap
       }));
 
       const flappedCount = connections.filter(c => c.flapped).length;
@@ -305,7 +305,7 @@ class NetworkAnomaliesTester {
 
     await this.runTest('Handle partial response recovery', async () => {
       const fullResponse = { data: 'x'.repeat(10000) };
-      const partialResponse = { data: 'x'.repeat(5000) };  // Only half received
+      const partialResponse = { data: 'x'.repeat(5000) }; // Only half received
 
       // Simulate completion of partial response
       const recovered = partialResponse.data.length >= fullResponse.data.length / 2;
@@ -315,7 +315,7 @@ class NetworkAnomaliesTester {
     await this.runTest('Prevent timeout cascades', async () => {
       const operations = [
         { id: 1, timedOut: true },
-        { id: 2, timedOut: false },  // Next op doesn't timeout
+        { id: 2, timedOut: false }, // Next op doesn't timeout
         { id: 3, timedOut: false },
         { id: 4, timedOut: true },
         { id: 5, timedOut: false }

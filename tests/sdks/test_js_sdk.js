@@ -25,9 +25,13 @@ class MockWebSocket extends EventEmitter {
     setImmediate(() => {
       if (!this.shouldFail) {
         this.readyState = 1; // OPEN
-        if (this.onopen) this.onopen({ type: 'open' });
+        if (this.onopen) {
+          this.onopen({ type: 'open' });
+        }
       } else {
-        if (this.onerror) this.onerror(new Error('Connection failed'));
+        if (this.onerror) {
+          this.onerror(new Error('Connection failed'));
+        }
       }
     });
   }
@@ -61,7 +65,9 @@ class MockWebSocket extends EventEmitter {
         });
       }
     } catch (e) {
-      if (this.onerror) this.onerror(e);
+      if (this.onerror) {
+        this.onerror(e);
+      }
     }
   }
 
@@ -98,11 +104,15 @@ class MockWebSocket extends EventEmitter {
 
   close() {
     this.readyState = 3; // CLOSED
-    if (this.onclose) this.onclose({ type: 'close' });
+    if (this.onclose) {
+      this.onclose({ type: 'close' });
+    }
   }
 
   simulateError(error) {
-    if (this.onerror) this.onerror(error);
+    if (this.onerror) {
+      this.onerror(error);
+    }
   }
 
   simulateMessage(data) {

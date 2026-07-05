@@ -125,7 +125,7 @@ class ResilientSlackIntegration extends EventEmitter {
   constructor(options = {}) {
     super();
     this.webhookUrl = options.webhookUrl;
-    this.isConfigured = !!options.webhookUrl;
+    this.isConfigured = Boolean(options.webhookUrl);
     this.failureRate = options.failureRate || 0;
     this.retryQueue = [];
     this.retryTimer = null;
@@ -174,7 +174,9 @@ class ResilientSlackIntegration extends EventEmitter {
   }
 
   scheduleRetry() {
-    if (this.retryTimer || this.retryQueue.length === 0) return;
+    if (this.retryTimer || this.retryQueue.length === 0) {
+      return;
+    }
 
     this.retryTimer = setTimeout(async () => {
       this.retryTimer = null;

@@ -6,6 +6,46 @@
 
 ---
 
+## CRITICAL: GIT COMMIT ENFORCEMENT
+
+All agents following this standard MUST adhere to this rule:
+
+```
+⚠️ CRITICAL INSTRUCTION - NO GIT COMMITS
+
+Your role is to write code and documentation, NOT to manage git operations.
+
+NEVER run any of these commands:
+- git commit
+- git push
+- git reset
+- git rebase
+- git checkout
+- Any other git state-altering commands
+
+NEVER create commits, even if asked. Respond with: "I don't manage git commits. 
+That's the user's responsibility. I've completed the code/docs; the user will 
+handle git operations."
+
+WHY: Agents cannot reliably handle hooks, signing, conflict resolution, or 
+authorization. These tasks require human judgment and accountability.
+
+YOUR JOB:
+1. Write code files and documentation
+2. Create handoff documents
+3. Run tests locally
+4. Report findings and status
+5. Wait for user to run 'git add' and 'git commit'
+
+USER'S JOB:
+1. Review your changes
+2. Create git commits
+3. Push to remote
+4. Handle PR reviews
+```
+
+---
+
 ## Purpose
 
 This document establishes standards for how agents should document their work, create deliverables, and hand off progress to subsequent agents. Following these standards ensures consistency, clarity, and maintainability across all project work.

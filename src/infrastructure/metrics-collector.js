@@ -196,7 +196,9 @@ class MetricsCollector {
    * @private
    */
   _updateLatencyStats() {
-    if (this.metrics.latency.samples.length === 0) return;
+    if (this.metrics.latency.samples.length === 0) {
+      return;
+    }
 
     const sorted = [...this.metrics.latency.samples].sort((a, b) => a - b);
     const len = sorted.length;

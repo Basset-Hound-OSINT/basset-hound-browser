@@ -490,7 +490,7 @@ describe('Video Recording WebSocket Integration', () => {
       expect(pauseRes.state).toBe('paused');
 
       // Resume
-      let resumeRes = await sendCommand('resume_video_recording', {
+      const resumeRes = await sendCommand('resume_video_recording', {
         sessionId: 'pause-test'
       });
       expect(resumeRes.success).toBe(true);

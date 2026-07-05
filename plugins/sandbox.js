@@ -21,7 +21,7 @@ const SANDBOX_STATE = {
  * Resource limit defaults
  */
 const DEFAULT_LIMITS = {
-  timeout: 30000,           // 30 seconds
+  timeout: 30000, // 30 seconds
   memoryLimit: 50 * 1024 * 1024, // 50MB
   maxLoopIterations: 100000,
   maxRecursionDepth: 100,
@@ -315,7 +315,7 @@ class PluginSandbox extends EventEmitter {
       name: `Plugin:${pluginName}`,
       codeGeneration: {
         strings: false, // Disable eval-like functions
-        wasm: false     // Disable WebAssembly
+        wasm: false // Disable WebAssembly
       }
     });
 

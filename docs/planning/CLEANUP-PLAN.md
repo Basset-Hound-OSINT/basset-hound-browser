@@ -254,7 +254,7 @@ This document outlines the removal of **8,296 lines** of out-of-scope code acros
 
 ### 2.1 Evidence Collection (Partial Removal)
 
-**File:** `/home/devel/basset-hound-browser/websocket/commands/evidence-commands.js`
+**File:** `/home/devel/basset-hound-browser/websocket/commands/forensic/evidence/evidence-commands.js`
 **Current Lines:** ~784 lines
 **After Cleanup:** ~400 lines
 
@@ -835,7 +835,7 @@ network:
    - Keep forensic capture methods
    - Simplify to return individual captures
 
-2. Refactor `websocket/commands/evidence-commands.js`:
+2. Refactor `websocket/commands/forensic/evidence/evidence-commands.js`:
    - Remove package commands
    - Simplify capture commands
    - Rename for clarity

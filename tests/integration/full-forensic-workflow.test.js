@@ -17,7 +17,9 @@ describe('Full Forensic Workflow Integration', () => {
   }, 30000);
 
   afterAll(() => {
-    if (ws) ws.close();
+    if (ws) {
+      ws.close();
+    }
   });
 
   describe('Complete Investigation Workflow', () => {

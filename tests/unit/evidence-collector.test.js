@@ -9,7 +9,7 @@ const {
   EvidencePackage,
   EvidenceCollector,
   EVIDENCE_TYPES,
-  ARCHIVE_FORMATS,
+  ARCHIVE_FORMATS
 } = require('../../evidence/evidence-collector');
 
 describe('Evidence', () => {
@@ -43,7 +43,7 @@ describe('Evidence', () => {
       const metadata = {
         url: 'https://example.com',
         title: 'Test Page',
-        capturedBy: 'investigator',
+        capturedBy: 'investigator'
       };
 
       const evidence = new Evidence(EVIDENCE_TYPES.SCREENSHOT, 'data', metadata);
@@ -92,7 +92,7 @@ describe('Evidence', () => {
   describe('getSummary()', () => {
     test('returns evidence summary without data', () => {
       const evidence = new Evidence(EVIDENCE_TYPES.SCREENSHOT, 'large-data', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       const summary = evidence.getSummary();
@@ -110,7 +110,7 @@ describe('Evidence', () => {
   describe('toJSON()', () => {
     test('serializes complete evidence', () => {
       const evidence = new Evidence(EVIDENCE_TYPES.SCREENSHOT, 'test-data', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       evidence.addCustodyEntry('reviewed', 'analyst');
 
@@ -142,7 +142,7 @@ describe('EvidencePackage', () => {
         description: 'Test description',
         investigationId: 'INV-001',
         caseNumber: 'CASE-2024-001',
-        tags: ['fraud', 'urgent'],
+        tags: ['fraud', 'urgent']
       });
 
       expect(pkg.name).toBe('Test Package');
@@ -334,7 +334,7 @@ describe('EvidencePackage', () => {
     test('returns package summary', () => {
       const pkg = new EvidencePackage({
         name: 'Test Package',
-        caseNumber: 'CASE-001',
+        caseNumber: 'CASE-001'
       });
       const evidence = new Evidence(EVIDENCE_TYPES.SCREENSHOT, 'test-data');
       pkg.addEvidence(evidence);
@@ -354,10 +354,10 @@ describe('EvidencePackage', () => {
     test('exports sealed package', () => {
       const pkg = new EvidencePackage({
         name: 'Court Package',
-        caseNumber: 'CASE-001',
+        caseNumber: 'CASE-001'
       });
       const evidence = new Evidence(EVIDENCE_TYPES.SCREENSHOT, 'test-data', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       pkg.addEvidence(evidence);
       pkg.addAnnotation('Important finding', 'analyst');
@@ -384,7 +384,7 @@ describe('EvidencePackage', () => {
     test('certification statement includes key info', () => {
       const pkg = new EvidencePackage({
         name: 'Test',
-        caseNumber: 'CASE-001',
+        caseNumber: 'CASE-001'
       });
       const evidence = new Evidence(EVIDENCE_TYPES.SCREENSHOT, 'test-data');
       pkg.addEvidence(evidence);
@@ -422,7 +422,9 @@ describe('EvidenceCollector', () => {
 
     test('emits packageCreated event', () => {
       let emitted = null;
-      collector.on('packageCreated', (data) => { emitted = data; });
+      collector.on('packageCreated', (data) => {
+        emitted = data;
+      });
 
       collector.createPackage({ name: 'Test' });
 
@@ -463,7 +465,7 @@ describe('EvidenceCollector', () => {
     test('captureScreenshot()', () => {
       const evidence = collector.captureScreenshot('base64-data', {
         url: 'https://example.com',
-        fullPage: true,
+        fullPage: true
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.SCREENSHOT);
@@ -473,7 +475,7 @@ describe('EvidenceCollector', () => {
 
     test('capturePageArchive()', () => {
       const evidence = collector.capturePageArchive('<html>...</html>', 'html', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.PAGE_ARCHIVE);
@@ -483,12 +485,12 @@ describe('EvidenceCollector', () => {
     test('captureNetworkHAR()', () => {
       const harData = {
         log: {
-          entries: [{}, {}, {}],
-        },
+          entries: [{}, {}, {}]
+        }
       };
 
       const evidence = collector.captureNetworkHAR(harData, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.NETWORK_HAR);
@@ -498,7 +500,7 @@ describe('EvidenceCollector', () => {
     test('captureDOMSnapshot()', () => {
       const evidence = collector.captureDOMSnapshot('<html>...</html>', {
         url: 'https://example.com',
-        nodeCount: 100,
+        nodeCount: 100
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.DOM_SNAPSHOT);
@@ -508,11 +510,11 @@ describe('EvidenceCollector', () => {
     test('captureConsoleLogs()', () => {
       const logs = [
         { level: 'error', message: 'Error 1' },
-        { level: 'warn', message: 'Warning 1' },
+        { level: 'warn', message: 'Warning 1' }
       ];
 
       const evidence = collector.captureConsoleLogs(logs, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.CONSOLE_LOG);
@@ -522,11 +524,11 @@ describe('EvidenceCollector', () => {
     test('captureCookies()', () => {
       const cookies = [
         { name: 'session', value: 'abc' },
-        { name: 'user', value: 'xyz' },
+        { name: 'user', value: 'xyz' }
       ];
 
       const evidence = collector.captureCookies(cookies, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.COOKIES);
@@ -536,11 +538,11 @@ describe('EvidenceCollector', () => {
     test('captureLocalStorage()', () => {
       const storage = {
         key1: 'value1',
-        key2: 'value2',
+        key2: 'value2'
       };
 
       const evidence = collector.captureLocalStorage(storage, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       expect(evidence.type).toBe(EVIDENCE_TYPES.LOCAL_STORAGE);
@@ -557,7 +559,9 @@ describe('EvidenceCollector', () => {
 
     test('emits evidenceCaptured event', () => {
       let emitted = null;
-      collector.on('evidenceCaptured', (data) => { emitted = data; });
+      collector.on('evidenceCaptured', (data) => {
+        emitted = data;
+      });
 
       collector.captureScreenshot('data', { url: 'test' });
 
@@ -572,13 +576,13 @@ describe('EvidenceCollector', () => {
 
       const captureFunction = async (type) => {
         switch (type) {
-          case 'screenshot': return 'screenshot-data';
-          case 'archive': return '<html>archive</html>';
-          case 'dom': return '<html>dom</html>';
-          case 'cookies': return [{ name: 'test', value: '123' }];
-          case 'localStorage': return { key: 'value' };
-          case 'consoleLogs': return [{ level: 'log', message: 'test' }];
-          default: return null;
+        case 'screenshot': return 'screenshot-data';
+        case 'archive': return '<html>archive</html>';
+        case 'dom': return '<html>dom</html>';
+        case 'cookies': return [{ name: 'test', value: '123' }];
+        case 'localStorage': return { key: 'value' };
+        case 'consoleLogs': return [{ level: 'log', message: 'test' }];
+        default: return null;
         }
       };
 
@@ -589,7 +593,7 @@ describe('EvidenceCollector', () => {
           dom: true,
           cookies: true,
           localStorage: true,
-          consoleLogs: true,
+          consoleLogs: true
         },
         { url: 'https://example.com', title: 'Test Page' },
         captureFunction
@@ -615,7 +619,9 @@ describe('EvidenceCollector', () => {
       collector.captureScreenshot('data', { url: 'test' });
 
       let emitted = null;
-      collector.on('packageSealed', (data) => { emitted = data; });
+      collector.on('packageSealed', (data) => {
+        emitted = data;
+      });
 
       collector.sealActivePackage('test');
 

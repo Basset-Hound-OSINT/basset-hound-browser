@@ -14,8 +14,8 @@
 
 class BatchCoalescer {
   constructor(options = {}) {
-    this.maxWaitTime = options.maxWaitTime || 100;      // ms, max wait before executing
-    this.batchSize = options.batchSize || 10;           // max operations per batch
+    this.maxWaitTime = options.maxWaitTime || 100; // ms, max wait before executing
+    this.batchSize = options.batchSize || 10; // max operations per batch
     this.enabled = options.enabled !== false;
 
     // Operation type definitions
@@ -54,7 +54,7 @@ class BatchCoalescer {
 
     // Queue management
     this.operationQueues = new Map(); // operationType -> queue
-    this.pendingTimers = new Map();   // operationType -> timeoutId
+    this.pendingTimers = new Map(); // operationType -> timeoutId
     this.metrics = {
       totalOperations: 0,
       totalBatches: 0,
@@ -194,31 +194,31 @@ class BatchCoalescer {
    */
   _extractBatchParams(operationType, operations) {
     switch (operationType) {
-      case 'monitor_change':
-        return {
-          monitors: operations.map(op => op.monitorId)
-        };
+    case 'monitor_change':
+      return {
+        monitors: operations.map(op => op.monitorId)
+      };
 
-      case 'extract_text':
-      case 'extract_links':
-        return {
-          selectors: operations.map(op => op.selector),
-          sessionIds: operations.map(op => op.sessionId)
-        };
+    case 'extract_text':
+    case 'extract_links':
+      return {
+        selectors: operations.map(op => op.selector),
+        sessionIds: operations.map(op => op.sessionId)
+      };
 
-      case 'check_status':
-        return {
-          sessionIds: operations.map(op => op.sessionId),
-          components: operations.map(op => op.component)
-        };
+    case 'check_status':
+      return {
+        sessionIds: operations.map(op => op.sessionId),
+        components: operations.map(op => op.component)
+      };
 
-      case 'ping':
-        return {
-          sessionIds: operations.map(op => op.sessionId)
-        };
+    case 'ping':
+      return {
+        sessionIds: operations.map(op => op.sessionId)
+      };
 
-      default:
-        return { operations };
+    default:
+      return { operations };
     }
   }
 
@@ -257,7 +257,7 @@ class BatchCoalescer {
       status[operationType] = {
         queueSize: queue.length,
         config: config,
-        hasPendingTimeout: !!timeoutId,
+        hasPendingTimeout: Boolean(timeoutId),
         readyForBatch: queue.length >= config.maxBatchSize * 0.5
       };
     }
@@ -290,7 +290,9 @@ class BatchCoalescer {
    * @private
    */
   _updateMetrics() {
-    if (this.metrics.batchSizes.length === 0) return;
+    if (this.metrics.batchSizes.length === 0) {
+      return;
+    }
 
     const sum = this.metrics.batchSizes.reduce((a, b) => a + b, 0);
     this.metrics.avgBatchSize = Math.round(sum / this.metrics.batchSizes.length);

@@ -11,7 +11,7 @@ class ChangeDetector {
   constructor() {
     this.snapshots = new Map();
     this.diffHistory = [];
-    this.snapshotDir = path.join(require('os').homedir(), '.basset-hound', 'snapshots');
+    this.snapshotDir = path.join(require('os').homedir(), 'tmp', '.basset-hound', 'snapshots');
     this.ensureDirectory();
   }
 
@@ -525,7 +525,9 @@ class ChangeDetector {
   saveSnapshot(url, snapshot = null) {
     try {
       const snap = snapshot || this.snapshots.get(url);
-      if (!snap) throw new Error(`No snapshot for ${url}`);
+      if (!snap) {
+        throw new Error(`No snapshot for ${url}`);
+      }
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `snapshot-${url.replace(/[^\w-]/g, '_')}-${timestamp}.json`;

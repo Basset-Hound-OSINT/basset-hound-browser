@@ -317,37 +317,37 @@ function errorResponse(error, context = {}) {
 
   let code = 'ERROR';
   let statusCode = 500;
-  let message = error.message || 'Unknown error';
+  const message = error.message || 'Unknown error';
 
   // Map error codes to HTTP status codes
   if (error.code) {
     switch (error.code) {
-      case 'VALIDATION_ERROR':
-        code = 'VALIDATION_ERROR';
-        statusCode = 400;
-        break;
-      case 'AUTH_ERROR':
-        code = 'UNAUTHORIZED';
-        statusCode = 401;
-        break;
-      case 'TIMEOUT':
-        code = 'TIMEOUT';
-        statusCode = 408;
-        break;
-      case 'NOT_FOUND':
-        code = 'NOT_FOUND';
-        statusCode = 404;
-        break;
-      case 'CONFLICT':
-        code = 'CONFLICT';
-        statusCode = 409;
-        break;
-      case 'RESOURCE_ERROR':
-        code = 'RESOURCE_ERROR';
-        statusCode = 503;
-        break;
-      default:
-        code = error.code;
+    case 'VALIDATION_ERROR':
+      code = 'VALIDATION_ERROR';
+      statusCode = 400;
+      break;
+    case 'AUTH_ERROR':
+      code = 'UNAUTHORIZED';
+      statusCode = 401;
+      break;
+    case 'TIMEOUT':
+      code = 'TIMEOUT';
+      statusCode = 408;
+      break;
+    case 'NOT_FOUND':
+      code = 'NOT_FOUND';
+      statusCode = 404;
+      break;
+    case 'CONFLICT':
+      code = 'CONFLICT';
+      statusCode = 409;
+      break;
+    case 'RESOURCE_ERROR':
+      code = 'RESOURCE_ERROR';
+      statusCode = 503;
+      break;
+    default:
+      code = error.code;
     }
   }
 

@@ -115,7 +115,7 @@ test('Handles basic emoji in monitor names', () => {
 
   names.forEach(name => {
     assert(name.includes('🚀') || name.includes('🔴') || name.includes('⚡') || name.includes('💼'),
-           `Name "${name}" should contain emoji`);
+      `Name "${name}" should contain emoji`);
     assert(name.length > 0, `Name "${name}" should not be empty`);
   });
 
@@ -291,7 +291,7 @@ test('Handles combining diacritical marks', () => {
   const names = [
     'Montréal', // é with combining accent
     'naïve', // ï with combining diaeresis
-    'café', // é with combining accent
+    'café' // é with combining accent
   ];
 
   names.forEach(name => {
@@ -358,9 +358,9 @@ test('NFD (Composed) vs NFC (Decomposed) compatibility', () => {
   const decomposed = 'café'; // e + combining acute accent
 
   assert(composed.length !== decomposed.length,
-         'Composed and decomposed should have different lengths');
+    'Composed and decomposed should have different lengths');
   assert(composed.normalize('NFC') === decomposed.normalize('NFC'),
-         'Should match after NFC normalization');
+    'Should match after NFC normalization');
 
   console.log('  → NFD/NFC normalization verified');
 });

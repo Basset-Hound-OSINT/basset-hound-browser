@@ -21,8 +21,8 @@ const DeviceIdentityGenerator = require('../../src/anonymity/device-identity-gen
 /**
  * Module instances (initialized when commands are registered)
  */
-let fingerprinterInstances = new Map();
-let deviceGeneratorInstances = new Map();
+const fingerprinterInstances = new Map();
+const deviceGeneratorInstances = new Map();
 let generatorInstance = null;
 
 /**

@@ -17,12 +17,12 @@ const TEST_RESULTS = {
     packetLoss: { passed: 0, failed: 0 },
     connectionDrops: { passed: 0, failed: 0 },
     dnsFailures: { passed: 0, failed: 0 },
-    slowConnection: { passed: 0, failed: 0 },
+    slowConnection: { passed: 0, failed: 0 }
   },
   totalTests: 0,
   totalPassed: 0,
   totalFailed: 0,
-  errors: [],
+  errors: []
 };
 
 /**
@@ -59,11 +59,15 @@ class NetworkChaosClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('Connection timeout'));
+          if (!this.connected) {
+            reject(new Error('Connection timeout'));
+          }
         }, timeout);
       } catch (err) {
         reject(err);
@@ -72,7 +76,9 @@ class NetworkChaosClient {
   }
 
   async sendCommand(command, params = {}, timeout = TEST_TIMEOUT) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     const requestId = ++this.requestId;
     return new Promise((resolve, reject) => {
@@ -85,7 +91,7 @@ class NetworkChaosClient {
         resolve: (msg) => {
           clearTimeout(timer);
           resolve(msg);
-        },
+        }
       });
 
       try {
@@ -99,7 +105,9 @@ class NetworkChaosClient {
   }
 
   disconnect() {
-    if (this.ws) this.ws.close();
+    if (this.ws) {
+      this.ws.close();
+    }
   }
 }
 
@@ -118,7 +126,7 @@ async function testHighLatency(client) {
       await client.sendCommand('injectNetworkCondition', {
         condition: 'latency',
         value: 5000,
-        duration: 30000,
+        duration: 30000
       });
       results.passed++;
     } catch (e) {
@@ -130,7 +138,7 @@ async function testHighLatency(client) {
       console.log('  [2/3] Operations proceed despite latency');
       const start = Date.now();
       const op = await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       }, 20000); // Longer timeout
       const elapsed = Date.now() - start;
 
@@ -149,7 +157,7 @@ async function testHighLatency(client) {
     try {
       console.log('  [3/3] Latency condition removed');
       await client.sendCommand('clearNetworkCondition', {
-        condition: 'latency',
+        condition: 'latency'
       });
       results.passed++;
     } catch (e) {
@@ -164,7 +172,7 @@ async function testHighLatency(client) {
     TEST_RESULTS.scenarios.highLatency = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       scenario: 'highLatency',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 3 };
   }
@@ -185,7 +193,7 @@ async function testPacketLoss(client) {
       await client.sendCommand('injectNetworkCondition', {
         condition: 'packetLoss',
         value: 25,
-        duration: 30000,
+        duration: 30000
       });
       results.passed++;
     } catch (e) {
@@ -201,7 +209,7 @@ async function testPacketLoss(client) {
           await client.sendCommand('navigate', {
             url: 'https://example.com',
             retryOnFailure: true,
-            maxRetries: 3,
+            maxRetries: 3
           }, 10000);
           successCount++;
         } catch (e) {
@@ -222,7 +230,7 @@ async function testPacketLoss(client) {
     try {
       console.log('  [3/3] Packet loss condition removed');
       await client.sendCommand('clearNetworkCondition', {
-        condition: 'packetLoss',
+        condition: 'packetLoss'
       });
       results.passed++;
     } catch (e) {
@@ -237,7 +245,7 @@ async function testPacketLoss(client) {
     TEST_RESULTS.scenarios.packetLoss = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       scenario: 'packetLoss',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 3 };
   }
@@ -256,7 +264,7 @@ async function testConnectionDrops(client) {
     try {
       console.log('  [1/3] Initial operation succeeds');
       await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       results.passed++;
     } catch (e) {
@@ -269,18 +277,18 @@ async function testConnectionDrops(client) {
       await client.sendCommand('injectNetworkCondition', {
         condition: 'connectionDrop',
         probability: 0.2, // 20% chance per request
-        duration: 30000,
+        duration: 30000
       });
 
       // Multiple requests, some will fail
-      let totalRequests = 10;
+      const totalRequests = 10;
       let failedRequests = 0;
       for (let i = 0; i < totalRequests; i++) {
         try {
           await client.sendCommand('navigate', {
             url: `https://example.com/page${i}`,
             retryOnFailure: true,
-            maxRetries: 2,
+            maxRetries: 2
           }, 10000);
         } catch (e) {
           failedRequests++;
@@ -301,7 +309,7 @@ async function testConnectionDrops(client) {
     try {
       console.log('  [3/3] Connection drop condition removed');
       await client.sendCommand('clearNetworkCondition', {
-        condition: 'connectionDrop',
+        condition: 'connectionDrop'
       });
       results.passed++;
     } catch (e) {
@@ -316,7 +324,7 @@ async function testConnectionDrops(client) {
     TEST_RESULTS.scenarios.connectionDrops = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       scenario: 'connectionDrops',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 3 };
   }
@@ -335,7 +343,7 @@ async function testDNSFailures(client) {
     try {
       console.log('  [1/3] Normal DNS resolution works');
       await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       results.passed++;
     } catch (e) {
@@ -348,13 +356,13 @@ async function testDNSFailures(client) {
       await client.sendCommand('injectNetworkCondition', {
         condition: 'dnsFailure',
         domains: ['*.competitor.com', '*.example.com'],
-        duration: 20000,
+        duration: 20000
       });
 
       // Attempt to navigate to affected domain
       try {
         await client.sendCommand('navigate', {
-          url: 'https://competitor.example.com',
+          url: 'https://competitor.example.com'
         }, 5000);
         results.failed++; // Should have failed
       } catch (e) {
@@ -370,11 +378,11 @@ async function testDNSFailures(client) {
     try {
       console.log('  [3/3] DNS resolution restored');
       await client.sendCommand('clearNetworkCondition', {
-        condition: 'dnsFailure',
+        condition: 'dnsFailure'
       });
       // Should be able to navigate now
       await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       results.passed++;
     } catch (e) {
@@ -389,7 +397,7 @@ async function testDNSFailures(client) {
     TEST_RESULTS.scenarios.dnsFailures = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       scenario: 'dnsFailures',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 3 };
   }
@@ -412,7 +420,7 @@ async function testSlowConnection(client) {
         downlink: 50, // kbps
         uplink: 20, // kbps
         latency: 400, // ms
-        duration: 30000,
+        duration: 30000
       });
       results.passed++;
     } catch (e) {
@@ -425,7 +433,7 @@ async function testSlowConnection(client) {
       const op = await client.sendCommand('navigate', {
         url: 'https://example.com',
         optimizeForSlowConnection: true,
-        disableImages: true,
+        disableImages: true
       }, 30000); // Longer timeout for slow connection
 
       if (op.status === 'success' || op.optimized === true) {
@@ -443,7 +451,7 @@ async function testSlowConnection(client) {
     try {
       console.log('  [3/3] Normal connection restored');
       await client.sendCommand('clearNetworkCondition', {
-        condition: 'bandwidth',
+        condition: 'bandwidth'
       });
       results.passed++;
     } catch (e) {
@@ -458,7 +466,7 @@ async function testSlowConnection(client) {
     TEST_RESULTS.scenarios.slowConnection = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       scenario: 'slowConnection',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 3 };
   }
@@ -528,7 +536,9 @@ async function runNetworkChaosTests() {
     console.error('Test suite error:', error.message);
     return 1;
   } finally {
-    if (client) client.disconnect();
+    if (client) {
+      client.disconnect();
+    }
   }
 }
 

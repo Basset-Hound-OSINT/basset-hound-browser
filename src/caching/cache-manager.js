@@ -73,7 +73,9 @@ class CacheManager {
    */
   warmCache(name, warmingFn) {
     const cache = this.caches.get(name);
-    if (!cache) return;
+    if (!cache) {
+      return;
+    }
 
     cache.warmupActive = true;
     const startTime = Date.now();
@@ -96,7 +98,9 @@ class CacheManager {
    */
   isCacheExpired(name) {
     const cache = this.caches.get(name);
-    if (!cache || !cache.lastWarmed) return true;
+    if (!cache || !cache.lastWarmed) {
+      return true;
+    }
 
     const age = Date.now() - cache.lastWarmed;
     return age > cache.ttl;
@@ -143,15 +147,15 @@ class CacheManager {
    */
   _getDefaultTTLConfig() {
     return {
-      'tech-signatures': 3600000,      // 1 hour
-      'fingerprints': 300000,          // 5 minutes
-      'html-content': 600000,          // 10 minutes
-      'metadata': 120000,              // 2 minutes
-      'links': 300000,                 // 5 minutes
-      'forms': 300000,                 // 5 minutes
-      'images': 300000,                // 5 minutes
-      'scripts': 300000,               // 5 minutes
-      'detection-results': 300000      // 5 minutes
+      'tech-signatures': 3600000, // 1 hour
+      'fingerprints': 300000, // 5 minutes
+      'html-content': 600000, // 10 minutes
+      'metadata': 120000, // 2 minutes
+      'links': 300000, // 5 minutes
+      'forms': 300000, // 5 minutes
+      'images': 300000, // 5 minutes
+      'scripts': 300000, // 5 minutes
+      'detection-results': 300000 // 5 minutes
     };
   }
 

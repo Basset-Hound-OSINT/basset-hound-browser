@@ -10,8 +10,8 @@ try {
   uuidv4 = uuid.v4;
 } catch (e) {
   uuidv4 = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
   };
@@ -121,14 +121,24 @@ class Profile {
    * @param {Object} updates - Settings to update
    */
   update(updates) {
-    if (updates.name !== undefined) this.name = updates.name;
-    if (updates.userAgent !== undefined) this.userAgent = updates.userAgent;
+    if (updates.name !== undefined) {
+      this.name = updates.name;
+    }
+    if (updates.userAgent !== undefined) {
+      this.userAgent = updates.userAgent;
+    }
     if (updates.fingerprint !== undefined) {
       this.fingerprint = { ...this.fingerprint, ...updates.fingerprint };
     }
-    if (updates.proxy !== undefined) this.proxy = updates.proxy;
-    if (updates.cookies !== undefined) this.cookies = updates.cookies;
-    if (updates.localStorage !== undefined) this.localStorage = updates.localStorage;
+    if (updates.proxy !== undefined) {
+      this.proxy = updates.proxy;
+    }
+    if (updates.cookies !== undefined) {
+      this.cookies = updates.cookies;
+    }
+    if (updates.localStorage !== undefined) {
+      this.localStorage = updates.localStorage;
+    }
 
     this.updatedAt = new Date().toISOString();
   }
@@ -350,7 +360,7 @@ class ProfileManager {
         updatedAt: profile.updatedAt,
         isActive: id === this.activeProfileId,
         userAgent: profile.userAgent.substring(0, 50) + '...',
-        hasProxy: !!profile.proxy
+        hasProxy: Boolean(profile.proxy)
       });
     }
 
@@ -447,7 +457,9 @@ class ProfileManager {
     // Apply Accept-Language header based on profile language settings
     const languages = profile.fingerprint.languages || ['en-US', 'en'];
     const acceptLanguage = languages.map((lang, i) => {
-      if (i === 0) return lang;
+      if (i === 0) {
+        return lang;
+      }
       const q = (1 - i * 0.1).toFixed(1);
       return `${lang};q=${q}`;
     }).join(',');
@@ -500,7 +512,9 @@ class ProfileManager {
     }
 
     const profile = this.profiles.get(this.activeProfileId);
-    if (!profile) return;
+    if (!profile) {
+      return;
+    }
 
     try {
       // Get current cookies

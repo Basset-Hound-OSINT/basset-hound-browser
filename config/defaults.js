@@ -8,6 +8,8 @@
  */
 const serverDefaults = {
   // WebSocket server settings
+  // C-1: loopback-only by default. This is now wired through to the server
+  // listen() call; set BASSET_WS_BIND=0.0.0.0 to expose on all interfaces.
   host: '127.0.0.1',
   port: 8765,
 
@@ -28,14 +30,14 @@ const serverDefaults = {
 
   // Heartbeat settings
   heartbeat: {
-    interval: 30000,  // 30 seconds
-    timeout: 60000    // 60 seconds
+    interval: 30000, // 30 seconds
+    timeout: 60000 // 60 seconds
   },
 
   // Error recovery settings
   errorRecovery: {
     maxRetries: 3,
-    retryDelay: 1000  // Base delay in ms (exponential backoff applied)
+    retryDelay: 1000 // Base delay in ms (exponential backoff applied)
   }
 };
 
@@ -63,7 +65,7 @@ const browserDefaults = {
   // Session recovery
   recovery: {
     enabled: true,
-    autoSaveInterval: 30000,  // 30 seconds
+    autoSaveInterval: 30000, // 30 seconds
     maxRecoveryAttempts: 3,
     stateVersion: 1
   },
@@ -71,12 +73,12 @@ const browserDefaults = {
   // DevTools settings
   devTools: {
     enabled: true,
-    defaultMode: 'right'  // 'right', 'bottom', 'undocked', 'detach'
+    defaultMode: 'right' // 'right', 'bottom', 'undocked', 'detach'
   },
 
   // Download settings
   downloads: {
-    path: null,  // Will use system downloads folder
+    path: null, // Will use system downloads folder
     askBeforeDownload: false,
     maxConcurrent: 5
   },
@@ -104,7 +106,7 @@ const evasionDefaults = {
   userAgent: {
     randomize: true,
     rotateOnNavigation: false,
-    category: 'desktop'  // 'desktop', 'mobile', 'bot', 'random'
+    category: 'desktop' // 'desktop', 'mobile', 'bot', 'random'
   },
 
   // WebGL settings
@@ -116,7 +118,7 @@ const evasionDefaults = {
   // Canvas settings
   canvas: {
     noise: true,
-    noiseFactor: 5  // 0-10
+    noiseFactor: 5 // 0-10
   },
 
   // Audio context settings
@@ -128,14 +130,14 @@ const evasionDefaults = {
   // Hardware spoofing
   hardware: {
     spoof: true,
-    concurrency: null,  // null = random between 4-16
-    memory: null        // null = random between 4-32 GB
+    concurrency: null, // null = random between 4-16
+    memory: null // null = random between 4-32 GB
   },
 
   // Timezone spoofing
   timezone: {
     spoof: false,
-    value: null  // null = system timezone
+    value: null // null = system timezone
   },
 
   // Geolocation spoofing
@@ -174,7 +176,7 @@ const networkDefaults = {
   // Proxy settings
   proxy: {
     enabled: false,
-    type: 'http',  // 'http', 'https', 'socks4', 'socks5'
+    type: 'http', // 'http', 'https', 'socks4', 'socks5'
     host: null,
     port: null,
     username: null,
@@ -189,9 +191,9 @@ const networkDefaults = {
     controlPort: 9051,
     dataDirectory: null,
     // Embedded vs System Tor
-    useEmbedded: true,     // Default to embedded Tor when enabled
-    useSystem: false,       // Use system-installed Tor instead
-    autoDownload: true      // Auto-download embedded Tor if not present
+    useEmbedded: true, // Default to embedded Tor when enabled
+    useSystem: false, // Use system-installed Tor instead
+    autoDownload: true // Auto-download embedded Tor if not present
   },
 
   // Proxy chain settings
@@ -203,10 +205,10 @@ const networkDefaults = {
   // Network throttling
   throttling: {
     enabled: false,
-    preset: null,  // 'slow3G', 'fast3G', '4G', 'offline', etc.
-    download: null,  // bytes per second
-    upload: null,    // bytes per second
-    latency: null    // milliseconds
+    preset: null, // 'slow3G', 'fast3G', '4G', 'offline', etc.
+    download: null, // bytes per second
+    upload: null, // bytes per second
+    latency: null // milliseconds
   },
 
   // Request interception
@@ -220,7 +222,7 @@ const networkDefaults = {
 
   // SSL/Certificate settings
   certificates: {
-    ignoreCertificateErrors: false,  // Set to true to bypass certificate errors (security risk - use with caution)
+    ignoreCertificateErrors: false, // Set to true to bypass certificate errors (security risk - use with caution)
     clientCertificates: []
   },
 
@@ -238,7 +240,7 @@ const networkDefaults = {
  */
 const loggingDefaults = {
   // General logging
-  level: 'info',  // 'error', 'warn', 'info', 'debug', 'trace'
+  level: 'info', // 'error', 'warn', 'info', 'debug', 'trace'
 
   // Console logging
   console: {
@@ -250,7 +252,7 @@ const loggingDefaults = {
   // File logging
   file: {
     enabled: false,
-    path: null,  // Will use userData/logs directory
+    path: null, // Will use userData/logs directory
     maxSize: '10m',
     maxFiles: 5,
     rotate: true
@@ -287,7 +289,7 @@ const automationDefaults = {
   // Script execution
   scripts: {
     enabled: true,
-    storagePath: null,  // Will use app directory
+    storagePath: null, // Will use app directory
     timeout: 30000,
     sandboxed: true
   },
@@ -298,14 +300,14 @@ const automationDefaults = {
     format: 'webm',
     quality: 'high',
     fps: 30,
-    maxDuration: 3600  // 1 hour
+    maxDuration: 3600 // 1 hour
   },
 
   // Screenshots
   screenshots: {
-    format: 'png',  // 'png', 'jpeg', 'webp'
-    quality: 90,    // 1-100, for jpeg/webp
-    path: null      // Will use app directory
+    format: 'png', // 'png', 'jpeg', 'webp'
+    quality: 90, // 1-100, for jpeg/webp
+    path: null // Will use app directory
   }
 };
 
@@ -315,7 +317,7 @@ const automationDefaults = {
 const profileDefaults = {
   // Profile management
   enabled: true,
-  storagePath: null,  // Will use userData/profiles
+  storagePath: null, // Will use userData/profiles
 
   // Default profile settings
   defaultProfile: null,
@@ -352,7 +354,7 @@ const headlessDefaults = {
   offscreenRendering: false,
 
   // Preset mode
-  preset: null  // 'server', 'docker', 'ci', 'minimal'
+  preset: null // 'server', 'docker', 'ci', 'minimal'
 };
 
 /**
@@ -362,7 +364,7 @@ const memoryDefaults = {
   // Memory monitoring
   monitoring: {
     enabled: true,
-    interval: 60000  // 60 seconds
+    interval: 60000 // 60 seconds
   },
 
   // Memory thresholds (percentage of available memory)
@@ -382,7 +384,7 @@ const memoryDefaults = {
 
   // Cache settings
   cache: {
-    maxSize: null,  // null = auto
+    maxSize: null, // null = auto
     clearOnMemoryPressure: true
   }
 };
@@ -394,7 +396,7 @@ const updaterDefaults = {
   // Update checking
   enabled: true,
   checkOnStartup: true,
-  checkInterval: 3600000,  // 1 hour in milliseconds
+  checkInterval: 3600000, // 1 hour in milliseconds
 
   // Download behavior
   autoDownload: false,
@@ -406,8 +408,8 @@ const updaterDefaults = {
 
   // Provider settings (GitHub by default)
   provider: 'github',
-  owner: null,       // GitHub owner/org
-  repo: null,        // GitHub repo name
+  owner: null, // GitHub owner/org
+  repo: null, // GitHub repo name
 
   // Update server (for custom server)
   updateServerUrl: null,

@@ -218,7 +218,7 @@ describe('ScreenshotObjectPool', () => {
       const obj2 = pool.acquire();
 
       pool.release(obj1);
-      const obj3 = pool.acquire();  // Reused
+      const obj3 = pool.acquire(); // Reused
 
       pool.release(obj2);
       pool.release(obj3);
@@ -327,7 +327,7 @@ describe('Performance Tests', () => {
     }
 
     const duration = Date.now() - start;
-    expect(duration).toBeLessThan(100);  // Should be very fast
+    expect(duration).toBeLessThan(100); // Should be very fast
 
     pool.clear();
   });

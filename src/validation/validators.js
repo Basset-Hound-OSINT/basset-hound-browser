@@ -390,7 +390,7 @@ class Validators {
 
     // Basic syntax check - can execute
     try {
-      new Function(code);  // Throws if syntax is invalid
+      new Function(code); // Throws if syntax is invalid
     } catch (error) {
       throw new Error(`Invalid JavaScript syntax: ${error.message}`);
     }
@@ -513,8 +513,12 @@ class Validators {
     }
 
     if (typeof value === 'string') {
-      if (value.toLowerCase() === 'true' || value === '1') return true;
-      if (value.toLowerCase() === 'false' || value === '0') return false;
+      if (value.toLowerCase() === 'true' || value === '1') {
+        return true;
+      }
+      if (value.toLowerCase() === 'false' || value === '0') {
+        return false;
+      }
     }
 
     throw new Error(`Invalid ${name}: must be boolean, got "${value}"`);

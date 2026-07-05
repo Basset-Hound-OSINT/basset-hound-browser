@@ -89,7 +89,9 @@ class ProxyIntelligenceService {
 
     if (healthyProxies.length === 0) {
       // Fall back to all proxies if no healthy ones
-      if (this.proxies.size === 0) return null;
+      if (this.proxies.size === 0) {
+        return null;
+      }
       return this._rotateProxy(Array.from(this.proxies.values()));
     }
 
@@ -112,7 +114,9 @@ class ProxyIntelligenceService {
    */
   recordSuccess(proxyId, responseTime = 0) {
     const proxy = this.proxies.get(proxyId);
-    if (!proxy) return;
+    if (!proxy) {
+      return;
+    }
 
     proxy.successCount++;
     proxy.lastUsedAt = Date.now();
@@ -134,7 +138,9 @@ class ProxyIntelligenceService {
    */
   recordFailure(proxyId, reason = 'unknown') {
     const proxy = this.proxies.get(proxyId);
-    if (!proxy) return;
+    if (!proxy) {
+      return;
+    }
 
     proxy.failureCount++;
     proxy.lastUsedAt = Date.now();
@@ -245,22 +251,24 @@ class ProxyIntelligenceService {
    * @private
    */
   _rotateProxy(proxies) {
-    if (proxies.length === 0) return null;
+    if (proxies.length === 0) {
+      return null;
+    }
 
     let selected;
 
     switch (this.rotationStrategy) {
-      case 'random':
-        selected = proxies[Math.floor(Math.random() * proxies.length)];
-        break;
-      case 'health-based':
-        selected = this._selectHealthBasedProxy(proxies);
-        break;
-      case 'round-robin':
-      default:
-        selected = proxies[this.currentRotationIndex % proxies.length];
-        this.currentRotationIndex++;
-        break;
+    case 'random':
+      selected = proxies[Math.floor(Math.random() * proxies.length)];
+      break;
+    case 'health-based':
+      selected = this._selectHealthBasedProxy(proxies);
+      break;
+    case 'round-robin':
+    default:
+      selected = proxies[this.currentRotationIndex % proxies.length];
+      this.currentRotationIndex++;
+      break;
     }
 
     this.stats.rotationsPerformed++;

@@ -1,6 +1,11 @@
 /**
  * Basset Hound Browser - Storage Manager Unit Tests
  * Tests for localStorage, sessionStorage, and IndexedDB management
+ *
+ * FIXED: Race conditions eliminated with jest.useFakeTimers()
+ * - All async operations now use jest.advanceTimersByTime() instead of real delays
+ * - Tests complete much faster with deterministic timing
+ * - No intermittent failures
  */
 
 // Mock Electron
@@ -29,26 +34,33 @@ describe('StorageManager', () => {
   let mockWebviewResponse;
 
   beforeEach(() => {
+    // Use fake timers to eliminate race conditions
+    jest.useFakeTimers('modern');
+
     mockWebviewResponse = { success: true, data: {} };
 
     mockMainWindow = {
       webContents: {
         send: jest.fn().mockImplementation((channel, data) => {
-          // Simulate async response
+          // Simulate async response with fake timers
           if (channel === 'execute-storage-operation') {
-            setTimeout(() => {
-              storageManager.handleOperationResponse(
-                data.operationId,
-                mockWebviewResponse,
-                null
-              );
-            }, 10);
+            jest.advanceTimersByTime(10);
+            storageManager.handleOperationResponse(
+              data.operationId,
+              mockWebviewResponse,
+              null
+            );
           }
         })
       }
     };
 
     storageManager = new StorageManager(mockMainWindow);
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   describe('Constructor', () => {
@@ -80,7 +92,7 @@ describe('StorageManager', () => {
     test('should resolve pending operation', () => {
       const mockResolve = jest.fn();
       const mockReject = jest.fn();
-      const timeout = setTimeout(() => {}, 10000);
+      const timeout = jest.fn(); // Use a mock instead of real timeout
 
       storageManager.pendingOperations.set('test-op', {
         resolve: mockResolve,
@@ -98,7 +110,7 @@ describe('StorageManager', () => {
     test('should reject on error', () => {
       const mockResolve = jest.fn();
       const mockReject = jest.fn();
-      const timeout = setTimeout(() => {}, 10000);
+      const timeout = jest.fn(); // Use a mock instead of real timeout
 
       storageManager.pendingOperations.set('test-op', {
         resolve: mockResolve,
@@ -366,7 +378,7 @@ describe('StorageManager', () => {
         mockWebviewResponse = {
           success: true,
           data: {},
-          databases: []  // For indexedDB
+          databases: [] // For indexedDB
         };
 
         const result = await storageManager.exportStorageToFile(
@@ -460,13 +472,12 @@ describe('StorageManager', () => {
   describe('Error Handling', () => {
     test('should handle webview execution error', async () => {
       mockMainWindow.webContents.send = jest.fn().mockImplementation((channel, data) => {
-        setTimeout(() => {
-          storageManager.handleOperationResponse(
-            data.operationId,
-            null,
-            'Execution failed'
-          );
-        }, 10);
+        jest.advanceTimersByTime(10);
+        storageManager.handleOperationResponse(
+          data.operationId,
+          null,
+          'Execution failed'
+        );
       });
 
       const result = await storageManager.getLocalStorage('https://example.com');
@@ -483,12 +494,13 @@ describe('StorageManager', () => {
       storageManager._executeInWebview = async (script) => {
         return new Promise((resolve, reject) => {
           const opId = storageManager._generateOperationId();
-          const timeout = setTimeout(() => {
-            reject(new Error('Operation timed out'));
-          }, 50);
+          const timeout = jest.fn(); // Use mock timeout
 
           storageManager.pendingOperations.set(opId, { resolve, reject, timeout });
-          mockMainWindow.webContents.send('execute-storage-operation', { operationId: opId, script });
+
+          // Simulate timeout with fake timers
+          jest.advanceTimersByTime(50);
+          reject(new Error('Operation timed out'));
         });
       };
 
@@ -533,21 +545,27 @@ describe('StorageManager Edge Cases', () => {
   let mockMainWindow;
 
   beforeEach(() => {
+    jest.useFakeTimers('modern');
+
     mockMainWindow = {
       webContents: {
         send: jest.fn().mockImplementation((channel, data) => {
-          setTimeout(() => {
-            storageManager.handleOperationResponse(
-              data.operationId,
-              { success: true },
-              null
-            );
-          }, 10);
+          jest.advanceTimersByTime(10);
+          storageManager.handleOperationResponse(
+            data.operationId,
+            { success: true },
+            null
+          );
         })
       }
     };
 
     storageManager = new StorageManager(mockMainWindow);
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
   });
 
   test('should handle empty origin string', async () => {

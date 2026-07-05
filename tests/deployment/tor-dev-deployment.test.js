@@ -19,7 +19,9 @@ describe('Tor Deployment - Development Environment', () => {
   }, 30000);
 
   afterAll(() => {
-    if (ws) ws.close();
+    if (ws) {
+      ws.close();
+    }
   });
 
   describe('Tor Master Switch', () => {

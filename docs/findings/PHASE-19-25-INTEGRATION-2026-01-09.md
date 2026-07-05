@@ -323,7 +323,7 @@ All required files verified:
 ✓ websocket/commands/form-commands.js
 ✓ websocket/commands/profile-template-commands.js
 ✓ websocket/commands/proxy-pool-commands.js
-✓ websocket/commands/network-forensics-commands.js
+✓ websocket/commands/forensic/network/network-forensics-commands.js
 ✓ websocket/commands/recording-commands.js
 ✓ websocket/commands/screenshot-commands.js
 ✓ websocket/commands/monitoring-commands.js

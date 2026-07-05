@@ -1,0 +1,7 @@
+# Basset Hound Browser — MCP server dependencies
+#
+# Both are already present in this environment; pins match what is installed
+# and known-good. fastmcp's constructor/tool API has drifted across releases,
+# so keep the pin unless you re-verify against a newer version.
+fastmcp==2.1.2
+websockets>=11,<17

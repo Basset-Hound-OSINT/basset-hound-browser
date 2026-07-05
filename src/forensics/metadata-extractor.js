@@ -10,7 +10,7 @@ const { execSync } = require('child_process');
 
 class MetadataExtractor {
   constructor() {
-    this.extractionDir = path.join(require('os').homedir(), '.basset-hound', 'metadata');
+    this.extractionDir = path.join(require('os').homedir(), 'tmp', '.basset-hound', 'metadata');
     this.ensureDirectory();
   }
 
@@ -48,17 +48,17 @@ class MetadataExtractor {
       };
 
       switch (fileType.toLowerCase()) {
-        case 'image':
-          metadata.extracted = await this.extractImageMetadata(buffer, filepath);
-          break;
-        case 'pdf':
-          metadata.extracted = await this.extractPDFMetadata(buffer, filepath);
-          break;
-        case 'document':
-          metadata.extracted = await this.extractDocumentMetadata(buffer);
-          break;
-        default:
-          metadata.extracted = await this.extractGenericMetadata(buffer);
+      case 'image':
+        metadata.extracted = await this.extractImageMetadata(buffer, filepath);
+        break;
+      case 'pdf':
+        metadata.extracted = await this.extractPDFMetadata(buffer, filepath);
+        break;
+      case 'document':
+        metadata.extracted = await this.extractDocumentMetadata(buffer);
+        break;
+      default:
+        metadata.extracted = await this.extractGenericMetadata(buffer);
       }
 
       metadata.chain_of_custody = {
@@ -468,13 +468,19 @@ class MetadataExtractor {
     const metadata = {};
 
     const authorMatch = rtfStr.match(/\\author\s+([^}\\]+)/);
-    if (authorMatch) metadata.author = authorMatch[1].trim();
+    if (authorMatch) {
+      metadata.author = authorMatch[1].trim();
+    }
 
     const titleMatch = rtfStr.match(/\\title\s+([^}\\]+)/);
-    if (titleMatch) metadata.title = titleMatch[1].trim();
+    if (titleMatch) {
+      metadata.title = titleMatch[1].trim();
+    }
 
     const subjectMatch = rtfStr.match(/\\subject\s+([^}\\]+)/);
-    if (subjectMatch) metadata.subject = subjectMatch[1].trim();
+    if (subjectMatch) {
+      metadata.subject = subjectMatch[1].trim();
+    }
 
     return metadata;
   }
@@ -484,9 +490,15 @@ class MetadataExtractor {
    */
   detectEncoding(buffer) {
     // Check for BOM
-    if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) return 'UTF-8';
-    if (buffer[0] === 0xFF && buffer[1] === 0xFE) return 'UTF-16LE';
-    if (buffer[0] === 0xFE && buffer[1] === 0xFF) return 'UTF-16BE';
+    if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+      return 'UTF-8';
+    }
+    if (buffer[0] === 0xFF && buffer[1] === 0xFE) {
+      return 'UTF-16LE';
+    }
+    if (buffer[0] === 0xFE && buffer[1] === 0xFF) {
+      return 'UTF-16BE';
+    }
 
     return 'Unknown';
   }

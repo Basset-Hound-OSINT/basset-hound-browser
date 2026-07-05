@@ -195,7 +195,7 @@ class QuickValidation {
     const connectedClients = (await Promise.all(clients)).filter(c => c !== null);
     console.log(`  Created ${connectedClients.length} parallel connections`);
 
-    let messageIndex = 0;
+    const messageIndex = 0;
     while (Date.now() - phaseStart < duration && this.testActive) {
       // Send from main connection
       try {

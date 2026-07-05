@@ -1,0 +1,129 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# RAG Bootstrap - Git Ignore Configuration
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Centralized Data Directory
+# ──────────────────────────────────────────────────────────────────────────────
+# All runtime data is stored in data/ and excluded from version control.
+# This directory is auto-created by Docker on first startup.
+# Structure:
+#   data/docker/postgres/  - Database files
+#   data/docker/redis/     - Cache persistence
+#   data/cache/            - Embedding caches
+#   data/logs/             - Application logs
+#   data/exports/          - Generated exports
+#   data/registry/         - Metadata registries
+data/
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Environment Files
+# ──────────────────────────────────────────────────────────────────────────────
+# .env contains instance-specific configuration (ports, passwords, etc.)
+# .env.example is committed as a template
+.env
+.env.local
+.env.*.local
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Python
+# ──────────────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Testing
+# ──────────────────────────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ──────────────────────────────────────────────────────────────────────────────
+# IDEs and Editors
+# ──────────────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ──────────────────────────────────────────────────────────────────────────────
+# OS-specific
+# ──────────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Logs and Databases
+# ──────────────────────────────────────────────────────────────────────────────
+*.log
+*.sqlite
+*.sqlite3
+*.db
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Generated Benchmark Output
+# ──────────────────────────────────────────────────────────────────────────────
+# results/ holds generated benchmark artifacts (see scripts/run_benchmark.sh);
+# regenerable, not source. NOTE: results/performance_benchmarks.json was
+# committed before this rule and stays tracked until removed with
+# `git rm --cached`.
+results/
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Temporary Files
+# ──────────────────────────────────────────────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Docker (but not docker-compose.yml)
+# ──────────────────────────────────────────────────────────────────────────────
+# We keep docker-compose.yml in version control
+# But ignore any local overrides
+docker-compose.override.yml
+docker-compose.local.yml

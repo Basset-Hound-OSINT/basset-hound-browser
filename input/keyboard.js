@@ -423,7 +423,7 @@ function getFullKeyPressScript(key, options = {}) {
             target.value = value.substring(0, start) + value.substring(start + 1);
           }
           target.selectionStart = target.selectionEnd = start;
-        } else if (!${!!KEY_CODES[key]}) {
+        } else if (!${Boolean(KEY_CODES[key])}) {
           target.value = value.substring(0, start) + key + value.substring(end);
           target.selectionStart = target.selectionEnd = start + 1;
         }
@@ -877,7 +877,7 @@ function estimateTypingDuration(text, options = {}) {
     let delay = baseDelay;
 
     if (i > 0) {
-      const pair = (text[i-1] + text[i]).toLowerCase();
+      const pair = (text[i - 1] + text[i]).toLowerCase();
       if (TYPING_PATTERNS.fastPairs.includes(pair)) {
         delay *= 0.6;
       }

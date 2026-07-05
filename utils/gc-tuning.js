@@ -15,7 +15,7 @@
 let v8;
 let heapSnapshotStream;
 let gcTracker;
-let heapSnapshot = null;
+const heapSnapshot = null;
 let allocationTracker = null;
 let adaptiveGCManager = null;
 
@@ -31,10 +31,10 @@ try {
  */
 function initializeGCTuning(options = {}) {
   const {
-    maxHeapSize = 512,  // MB
+    maxHeapSize = 512, // MB
     enableGCMonitoring = true,
     enablePeriodicCleanup = true,
-    cleanupInterval = 60000,  // 1 minute
+    cleanupInterval = 60000, // 1 minute
     gcEventLog = null
   } = options;
 
@@ -85,7 +85,9 @@ function initializeGCTuning(options = {}) {
  * @param {string} logFile - Optional log file path
  */
 function setupGCMonitoring(logFile = null) {
-  if (!v8) return;
+  if (!v8) {
+    return;
+  }
 
   gcTracker = {
     events: [],

@@ -260,7 +260,9 @@ class TechEvolutionMonitor {
   detectTechUpdates(oldStack, newStack) {
     const updates = [];
 
-    if (!oldStack || !newStack) return updates;
+    if (!oldStack || !newStack) {
+      return updates;
+    }
 
     // Framework updates
     const oldFrameworks = new Set(oldStack.frameworks);
@@ -368,17 +370,17 @@ class TechEvolutionMonitor {
       {
         date: '2023-06-01',
         frameworks: ['React'],
-        libraries: ['Bootstrap', 'Lodash', 'Axios']  // jQuery removed
+        libraries: ['Bootstrap', 'Lodash', 'Axios'] // jQuery removed
       },
       {
         date: '2024-01-01',
         frameworks: ['React'],
-        libraries: ['Bootstrap', 'Axios', 'Chart.js']  // Lodash removed
+        libraries: ['Bootstrap', 'Axios', 'Chart.js'] // Lodash removed
       },
       {
         date: '2024-06-01',
         frameworks: ['React', 'Next.js'],
-        libraries: ['Axios', 'Chart.js']  // Bootstrap removed
+        libraries: ['Axios', 'Chart.js'] // Bootstrap removed
       }
     ];
   }

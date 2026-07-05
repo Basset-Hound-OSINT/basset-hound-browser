@@ -16,7 +16,9 @@ describe('Tor Deployment - Headless Environment', () => {
   }, 30000);
 
   afterAll(() => {
-    if (ws) ws.close();
+    if (ws) {
+      ws.close();
+    }
   });
 
   describe('Headless Startup with Tor', () => {

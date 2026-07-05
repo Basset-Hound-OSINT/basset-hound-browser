@@ -116,7 +116,9 @@ class SessionManagementService {
    */
   destroySession(sessionId) {
     const session = this.sessions.get(sessionId);
-    if (!session) return false;
+    if (!session) {
+      return false;
+    }
 
     // Calculate session duration
     const duration = Date.now() - session.createdAt;

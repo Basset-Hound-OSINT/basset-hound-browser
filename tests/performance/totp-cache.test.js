@@ -152,7 +152,7 @@ describe('TOTPCache - Performance Optimization #4', () => {
     beforeEach(() => {
       totp = new TOTPGenerator(RFC_TEST_SECRET, {
         cacheSize: 500,
-        cacheMaxAge: 60000,
+        cacheMaxAge: 60000
       });
     });
 
@@ -163,7 +163,7 @@ describe('TOTPCache - Performance Optimization #4', () => {
 
     test('should use custom cache size', () => {
       const customTotp = new TOTPGenerator(RFC_TEST_SECRET, {
-        cacheSize: 1000,
+        cacheSize: 1000
       });
 
       expect(customTotp.cache.max).toBe(1000);
@@ -233,7 +233,7 @@ describe('TOTPCache - Performance Optimization #4', () => {
     test('should work correctly with different time windows', () => {
       const totp60 = new TOTPGenerator(RFC_TEST_SECRET, {
         window: 60,
-        cacheSize: 500,
+        cacheSize: 500
       });
 
       const token1 = totp60.generate();
@@ -278,7 +278,7 @@ describe('TOTPCache - Performance Optimization #4', () => {
   describe('Cache Performance Metrics', () => {
     test('should expand cache from 100 to 500 entries', () => {
       const totp = new TOTPGenerator(RFC_TEST_SECRET, {
-        cacheSize: 500,
+        cacheSize: 500
       });
 
       expect(totp.cache.max).toBe(500);
@@ -286,7 +286,7 @@ describe('TOTPCache - Performance Optimization #4', () => {
 
     test('should show memory overhead is acceptable', () => {
       const totp = new TOTPGenerator(RFC_TEST_SECRET, {
-        cacheSize: 500,
+        cacheSize: 500
       });
 
       // Fill cache partially
@@ -302,7 +302,7 @@ describe('TOTPCache - Performance Optimization #4', () => {
 
     test('should demonstrate +10% cache hit improvement', () => {
       const totp = new TOTPGenerator(RFC_TEST_SECRET, {
-        cacheSize: 500,
+        cacheSize: 500
       });
 
       // Simulate repeated token requests (typical usage)

@@ -153,10 +153,18 @@ class UpdateNotification {
       const progressDetails = this.container.querySelector('.update-progress-details');
       const progressSpeed = this.container.querySelector('.update-progress-speed');
 
-      if (progressFill) progressFill.style.width = `${percent}%`;
-      if (progressPercent) progressPercent.textContent = `${percent}%`;
-      if (progressDetails) progressDetails.textContent = `${transferred} / ${total}`;
-      if (progressSpeed) progressSpeed.textContent = speed;
+      if (progressFill) {
+        progressFill.style.width = `${percent}%`;
+      }
+      if (progressPercent) {
+        progressPercent.textContent = `${percent}%`;
+      }
+      if (progressDetails) {
+        progressDetails.textContent = `${transferred} / ${total}`;
+      }
+      if (progressSpeed) {
+        progressSpeed.textContent = speed;
+      }
     }
 
     this.show();
@@ -337,11 +345,15 @@ class UpdateNotification {
    * @returns {string} Formatted string
    */
   formatBytes(bytes) {
-    if (bytes === undefined || bytes === null || bytes <= 0 || !isFinite(bytes)) return '0 B';
+    if (bytes === undefined || bytes === null || bytes <= 0 || !isFinite(bytes)) {
+      return '0 B';
+    }
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    if (i < 0 || i >= sizes.length) return '0 B';
+    if (i < 0 || i >= sizes.length) {
+      return '0 B';
+    }
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 

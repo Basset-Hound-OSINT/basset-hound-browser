@@ -265,7 +265,7 @@ EOF
 setup_docker_compose() {
     log_header "Setting Up Docker Compose (Monitoring Stack)"
 
-    local compose_file="$PROJECT_ROOT/docker-compose.monitoring.yml"
+    local compose_file="$PROJECT_ROOT/config/docker/docker-compose.monitoring.yml"
 
     if [ ! -f "$compose_file" ]; then
         cat > "$compose_file" << 'EOF'
@@ -383,13 +383,13 @@ This document describes the monitoring infrastructure for Basset Hound Browser v
 
 ```bash
 # Start monitoring stack
-docker-compose -f docker-compose.monitoring.yml up -d
+docker-compose -f config/docker/docker-compose.monitoring.yml up -d
 
 # Check status
-docker-compose -f docker-compose.monitoring.yml ps
+docker-compose -f config/docker/docker-compose.monitoring.yml ps
 
 # View logs
-docker-compose -f docker-compose.monitoring.yml logs -f
+docker-compose -f config/docker/docker-compose.monitoring.yml logs -f
 ```
 
 ### Manual Setup
@@ -549,10 +549,10 @@ Configuration files created:
   • config/grafana/provisioning/
   • config/health-check-config.json
   • config/logging-config.json
-  • docker-compose.monitoring.yml
+  • config/docker/docker-compose.monitoring.yml
 
 To start monitoring:
-  ${BLUE}docker-compose -f docker-compose.monitoring.yml up -d${NC}
+  ${BLUE}docker-compose -f config/docker/docker-compose.monitoring.yml up -d${NC}
 
 To access dashboards:
   • Grafana: http://localhost:3000

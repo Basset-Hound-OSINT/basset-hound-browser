@@ -382,7 +382,9 @@ class WindowPool extends EventEmitter {
    * @private
    */
   async _disposeEntry(entry) {
-    if (!entry) return;
+    if (!entry) {
+      return;
+    }
 
     entry.state = PoolEntryState.DISPOSED;
 
@@ -400,7 +402,9 @@ class WindowPool extends EventEmitter {
    * @private
    */
   async _disposeWrapper(wrapper) {
-    if (!wrapper) return;
+    if (!wrapper) {
+      return;
+    }
 
     wrapper.state = WindowState.CLOSING;
 

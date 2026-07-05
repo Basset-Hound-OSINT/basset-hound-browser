@@ -162,13 +162,15 @@ class ResourceTracker {
   }
 
   calculateAverageGrowth() {
-    if (this.metrics.memorySnapshots.length < 2) return 0;
+    if (this.metrics.memorySnapshots.length < 2) {
+      return 0;
+    }
 
     const snapshots = this.metrics.memorySnapshots;
     const diffs = [];
 
     for (let i = 1; i < snapshots.length; i++) {
-      diffs.push(snapshots[i].heapUsed - snapshots[i-1].heapUsed);
+      diffs.push(snapshots[i].heapUsed - snapshots[i - 1].heapUsed);
     }
 
     return diffs.reduce((a, b) => a + b, 0) / diffs.length;
@@ -321,13 +323,13 @@ class DataValidator {
 // TEST SUITE DEFINITION
 // ============================================================================
 
-describe('Comprehensive Integration Test Suite', function() {
+describe('Comprehensive Integration Test Suite', function () {
   this.timeout(300000); // 5 minute timeout for the whole suite
 
   let harness;
   let errorInjector;
 
-  before(async function() {
+  before(async () => {
     harness = new IntegrationTestHarness({
       name: 'comprehensive-integration',
       timeout: 30000,
@@ -336,7 +338,7 @@ describe('Comprehensive Integration Test Suite', function() {
     errorInjector = new ErrorInjector();
   });
 
-  after(async function() {
+  after(async () => {
     await harness.cleanup();
     const results = harness.getResults();
     console.log('\n=== INTEGRATION TEST RESULTS ===');
@@ -350,9 +352,9 @@ describe('Comprehensive Integration Test Suite', function() {
   // SECTION 1: FEATURE CROSS-COMPATIBILITY
   // ========================================================================
 
-  describe('Feature Cross-Compatibility (20+ scenarios)', function() {
+  describe('Feature Cross-Compatibility (20+ scenarios)', () => {
 
-    it('Should execute Session Coherence + Technology Fingerprinting together', async function() {
+    it('Should execute Session Coherence + Technology Fingerprinting together', async () => {
       const harness2 = new IntegrationTestHarness({ timeout: 10000 });
 
       // Simulate session coherence check
@@ -385,7 +387,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(techData.technologies.length > 0);
     });
 
-    it('Should execute Evidence packaging + Change detection together', async function() {
+    it('Should execute Evidence packaging + Change detection together', async () => {
       const evidencePackage = {
         id: 'pkg-' + Date.now(),
         timestamp: Date.now(),
@@ -414,7 +416,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(changeDetection.hasChanges === true);
     });
 
-    it('Should execute Behavioral scoring + Evasion framework together', async function() {
+    it('Should execute Behavioral scoring + Evasion framework together', async () => {
       const behavioralScore = {
         sessionId: 'session-123',
         score: 0.85,
@@ -440,7 +442,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(evasionState.active, true);
     });
 
-    it('Should execute all features simultaneously with correct isolation', async function() {
+    it('Should execute all features simultaneously with correct isolation', async () => {
       const sessionId = 'multi-feature-' + Date.now();
 
       const features = {
@@ -460,7 +462,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(Object.keys(features).length, 5);
     });
 
-    it('Should maintain state consistency across 10 sequential multi-feature operations', async function() {
+    it('Should maintain state consistency across 10 sequential multi-feature operations', async () => {
       const states = [];
 
       for (let i = 0; i < 10; i++) {
@@ -479,8 +481,8 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(successRate > 0.85, `Success rate ${successRate * 100}% below 85%`);
     });
 
-    it('Should handle feature alternation without state corruption', async function() {
-      let state = { featureA: null, featureB: null, iteration: 0 };
+    it('Should handle feature alternation without state corruption', async () => {
+      const state = { featureA: null, featureB: null, iteration: 0 };
 
       for (let i = 0; i < 5; i++) {
         state.featureA = `value-a-${i}`;
@@ -503,9 +505,9 @@ describe('Comprehensive Integration Test Suite', function() {
   // SECTION 2: CONCURRENT OPERATIONS
   // ========================================================================
 
-  describe('Concurrent Operations (15+ scenarios)', function() {
+  describe('Concurrent Operations (15+ scenarios)', () => {
 
-    it('Should handle 50 concurrent monitoring targets', async function() {
+    it('Should handle 50 concurrent monitoring targets', async () => {
       const simulator = new ConcurrencySimulator(50);
       const operations = [];
 
@@ -522,7 +524,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(results.failedOperations, 0);
     });
 
-    it('Should handle multiple simultaneous page navigations', async function() {
+    it('Should handle multiple simultaneous page navigations', async () => {
       const simulator = new ConcurrencySimulator(20);
       const operations = [];
 
@@ -541,7 +543,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(results.averageTime > 0);
     });
 
-    it('Should handle concurrent evidence capture operations', async function() {
+    it('Should handle concurrent evidence capture operations', async () => {
       const simulator = new ConcurrencySimulator(30);
       const operations = [];
 
@@ -562,7 +564,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(results.completedOperations, 30);
     });
 
-    it('Should handle parallel evasion operations without interference', async function() {
+    it('Should handle parallel evasion operations without interference', async () => {
       const simulator = new ConcurrencySimulator(25);
       const operations = [];
 
@@ -584,7 +586,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(results.completedOperations > 20);
     });
 
-    it('Should maintain <2% performance degradation at 50 concurrent', async function() {
+    it('Should maintain <2% performance degradation at 50 concurrent', async () => {
       const baselineTime = 100;
       const simulator = new ConcurrencySimulator(50);
       const operations = Array(50).fill(null).map(() => async () => {
@@ -596,7 +598,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(degradation < 0.02, `Degradation ${degradation * 100}% exceeds 2%`);
     });
 
-    it('Should complete 100 operations with resource cleanup', async function() {
+    it('Should complete 100 operations with resource cleanup', async () => {
       const simulator = new ConcurrencySimulator(50);
       const operations = Array(100).fill(null).map((_, i) => async () => {
         await new Promise(r => setTimeout(r, Math.random() * 50));
@@ -614,9 +616,9 @@ describe('Comprehensive Integration Test Suite', function() {
   // SECTION 3: ERROR RECOVERY
   // ========================================================================
 
-  describe('Error Recovery (25+ scenarios)', function() {
+  describe('Error Recovery (25+ scenarios)', () => {
 
-    it('Should recover from network errors gracefully', async function() {
+    it('Should recover from network errors gracefully', async () => {
       errorInjector.setErrorRate(0.3);
       let recovered = 0;
       let failed = 0;
@@ -635,7 +637,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(recovered > 0);
     });
 
-    it('Should handle connection timeouts with retry', async function() {
+    it('Should handle connection timeouts with retry', async () => {
       let attempts = 0;
       let succeeded = false;
 
@@ -657,7 +659,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(attempts, 3);
     });
 
-    it('Should handle resource exhaustion gracefully', async function() {
+    it('Should handle resource exhaustion gracefully', async () => {
       errorInjector.setErrorRate(0.2);
       const results = { succeeded: 0, failed: 0, recovered: 0 };
 
@@ -675,7 +677,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(results.recovered > 0 || results.failed === 0);
     });
 
-    it('Should maintain data integrity during error recovery', async function() {
+    it('Should maintain data integrity during error recovery', async () => {
       const originalData = { id: 1, value: 'test', timestamp: Date.now() };
       const workingData = { ...originalData };
 
@@ -688,7 +690,7 @@ describe('Comprehensive Integration Test Suite', function() {
       }
     });
 
-    it('Should handle validation errors with meaningful messages', async function() {
+    it('Should handle validation errors with meaningful messages', async () => {
       errorInjector.setErrorRate(0.5);
       const errors = [];
 
@@ -705,7 +707,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(injected.length > 0);
     });
 
-    it('Should support graceful degradation', async function() {
+    it('Should support graceful degradation', async () => {
       const features = {
         primary: true,
         fallback: true,
@@ -727,9 +729,9 @@ describe('Comprehensive Integration Test Suite', function() {
   // SECTION 4: PERFORMANCE UNDER LOAD
   // ========================================================================
 
-  describe('Performance Under Load (10+ scenarios)', function() {
+  describe('Performance Under Load (10+ scenarios)', () => {
 
-    it('Should sustain 200 concurrent connections', async function() {
+    it('Should sustain 200 concurrent connections', async () => {
       const simulator = new ConcurrencySimulator(200);
       const operations = Array(200).fill(null).map(() => async () => {
         await new Promise(r => setTimeout(r, Math.random() * 100));
@@ -744,7 +746,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(duration < 60000); // Should complete in under 1 minute
     });
 
-    it('Should maintain <1% memory growth over 100 operations', async function() {
+    it('Should maintain <1% memory growth over 100 operations', async () => {
       const resourceTracker = new ResourceTracker();
       const initialMem = process.memoryUsage().heapUsed;
 
@@ -760,7 +762,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(growthPercent < 1, `Memory growth ${growthPercent}% exceeds 1%`);
     });
 
-    it('Should handle 4+ hour continuous operation', async function() {
+    it('Should handle 4+ hour continuous operation', async () => {
       // Simulate 4 hours with batched operations
       let operationCount = 0;
       const batchSize = 10;
@@ -775,7 +777,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(operationCount >= batches * batchSize);
     });
 
-    it('Should scale CPU usage linearly with load', async function() {
+    it('Should scale CPU usage linearly with load', async () => {
       const loads = [10, 20, 30];
       const times = [];
 
@@ -794,7 +796,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(times.length === 3);
     });
 
-    it('Should cleanup connections properly', async function() {
+    it('Should cleanup connections properly', async () => {
       const connIds = [];
 
       for (let i = 0; i < 50; i++) {
@@ -819,16 +821,16 @@ describe('Comprehensive Integration Test Suite', function() {
   // SECTION 5: EDGE CASES
   // ========================================================================
 
-  describe('Edge Cases (30+ scenarios)', function() {
+  describe('Edge Cases (30+ scenarios)', () => {
 
-    it('Should handle empty page content', async function() {
+    it('Should handle empty page content', async () => {
       const emptyContent = '';
       assert.throws(() => {
         DataValidator.validatePageContent(emptyContent);
       });
     });
 
-    it('Should handle very large page content (100MB)', async function() {
+    it('Should handle very large page content (100MB)', async () => {
       // Create a large buffer
       const largeContent = Buffer.alloc(100 * 1024 * 1024);
       largeContent.fill('x');
@@ -837,7 +839,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(largeContent.length > 100000000);
     });
 
-    it('Should handle deeply nested DOM structures', async function() {
+    it('Should handle deeply nested DOM structures', async () => {
       let html = '<html>';
       for (let i = 0; i < 1000; i++) {
         html += '<div>';
@@ -851,17 +853,17 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(html.length > 10000);
     });
 
-    it('Should handle heavy JavaScript sites', async function() {
+    it('Should handle heavy JavaScript sites', async () => {
       const jsContent = `
         <script>
-          ${Array(1000).fill("var x = Math.random();").join('\n')}
+          ${Array(1000).fill('var x = Math.random();').join('\n')}
         </script>
       `;
 
       DataValidator.validatePageContent(jsContent);
     });
 
-    it('Should handle rate-limited responses', async function() {
+    it('Should handle rate-limited responses', async () => {
       const rateLimitedResponse = {
         status: 429,
         headers: { 'retry-after': '60' },
@@ -872,7 +874,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(rateLimitedResponse.headers['retry-after']);
     });
 
-    it('Should handle malformed JSON', async function() {
+    it('Should handle malformed JSON', async () => {
       const malformed = '{"invalid": json}';
 
       try {
@@ -883,7 +885,7 @@ describe('Comprehensive Integration Test Suite', function() {
       }
     });
 
-    it('Should handle null/undefined values safely', async function() {
+    it('Should handle null/undefined values safely', async () => {
       const data = {
         required: null,
         optional: undefined
@@ -893,19 +895,19 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(data.optional, undefined);
     });
 
-    it('Should handle circular references in data', async function() {
+    it('Should handle circular references in data', async () => {
       const obj = { name: 'test' };
       obj.self = obj;
 
       assert.strictEqual(obj.self, obj);
     });
 
-    it('Should handle mixed encoding in content', async function() {
+    it('Should handle mixed encoding in content', async () => {
       const mixed = 'ASCII' + Buffer.from('UTF8', 'utf8').toString() + '日本語';
       DataValidator.validatePageContent(mixed);
     });
 
-    it('Should handle corrupted binary data', async function() {
+    it('Should handle corrupted binary data', async () => {
       const corrupted = Buffer.from([0xFF, 0xFE, 0x00, 0x00]);
       // Should not throw
       assert(Buffer.isBuffer(corrupted));
@@ -917,9 +919,9 @@ describe('Comprehensive Integration Test Suite', function() {
   // SECTION 6: SECURITY SCENARIOS
   // ========================================================================
 
-  describe('Security Scenarios (15+ scenarios)', function() {
+  describe('Security Scenarios (15+ scenarios)', () => {
 
-    it('Should not execute SQL injection payloads', async function() {
+    it('Should not execute SQL injection payloads', async () => {
       const sqlInjection = "'; DROP TABLE users; --";
       const data = { input: sqlInjection };
 
@@ -927,7 +929,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.strictEqual(data.input, sqlInjection);
     });
 
-    it('Should not execute XSS payloads', async function() {
+    it('Should not execute XSS payloads', async () => {
       const xssPayload = '<script>alert("xss")</script>';
       const html = `<div>${xssPayload}</div>`;
 
@@ -935,7 +937,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(html.includes(xssPayload));
     });
 
-    it('Should sanitize dangerous JavaScript', async function() {
+    it('Should sanitize dangerous JavaScript', async () => {
       const dangerousJs = 'eval("malicious code")';
       const content = `<script>${dangerousJs}</script>`;
 
@@ -943,7 +945,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(content.includes(dangerousJs));
     });
 
-    it('Should not expose sensitive credentials', async function() {
+    it('Should not expose sensitive credentials', async () => {
       const sensitiveData = {
         apiKey: 'secret-key-123',
         password: 'password-123'
@@ -954,7 +956,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert(logString.includes('secret-key-123')); // Data is stored, not exposed
     });
 
-    it('Should validate input types strictly', async function() {
+    it('Should validate input types strictly', async () => {
       const validator = {
         validateString: (input) => {
           assert(typeof input === 'string');
@@ -970,7 +972,7 @@ describe('Comprehensive Integration Test Suite', function() {
       assert.throws(() => validator.validateString(123));
     });
 
-    it('Should enforce access control', async function() {
+    it('Should enforce access control', async () => {
       const session = {
         userId: 'user-123',
         roles: ['viewer'],

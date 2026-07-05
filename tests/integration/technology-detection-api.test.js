@@ -52,7 +52,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -70,7 +72,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies_from_html', params, callback);
 
@@ -85,7 +89,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies_from_html', params, callback);
 
@@ -96,7 +102,9 @@ describe('Technology Detection API Integration', () => {
 
     it('should handle null parameters gracefully', async () => {
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', null, callback);
 
@@ -130,7 +138,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -159,7 +169,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -189,7 +201,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -225,7 +239,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -245,7 +261,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -262,7 +280,9 @@ describe('Technology Detection API Integration', () => {
       const params = {}; // Invalid - missing html
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies_from_html', params, callback);
 
@@ -279,7 +299,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -311,7 +333,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       const startTime = Date.now();
       await mockServer.emit('detect_technologies', params, callback);
@@ -333,7 +357,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       const startTime = Date.now();
       await mockServer.emit('detect_technologies', params, callback);
@@ -381,7 +407,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -399,7 +427,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -414,7 +444,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -437,7 +469,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -451,7 +485,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -465,7 +501,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -481,7 +519,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -501,7 +541,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -515,7 +557,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 
@@ -532,7 +576,9 @@ describe('Technology Detection API Integration', () => {
       };
 
       let response = null;
-      const callback = (result) => { response = result; };
+      const callback = (result) => {
+        response = result;
+      };
 
       await mockServer.emit('detect_technologies', params, callback);
 

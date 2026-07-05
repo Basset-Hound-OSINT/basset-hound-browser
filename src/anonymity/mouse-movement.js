@@ -65,7 +65,7 @@ class MouseMovement {
       path.push({
         x: Math.round(point.x),
         y: Math.round(point.y),
-        timestamp: elapsedTime,
+        timestamp: elapsedTime
       });
 
       // Add hesitation points (5-20% chance to pause mid-move)
@@ -74,7 +74,7 @@ class MouseMovement {
         path.push({
           x: Math.round(point.x),
           y: Math.round(point.y),
-          timestamp: elapsedTime + (50 + Math.random() * 150),
+          timestamp: elapsedTime + (50 + Math.random() * 150)
         });
       }
     }
@@ -141,7 +141,7 @@ class MouseMovement {
         mt3 * p0.y +
         3 * mt2 * t * p1.y +
         3 * mt * t2 * p2.y +
-        t3 * p3.y,
+        t3 * p3.y
     };
   }
 
@@ -166,12 +166,12 @@ class MouseMovement {
     // Control points form natural curve
     const cp1 = {
       x: startPos.x + dx * 0.25 + perpX * 0.3,
-      y: startPos.y + dy * 0.25 + perpY * 0.3,
+      y: startPos.y + dy * 0.25 + perpY * 0.3
     };
 
     const cp2 = {
       x: startPos.x + dx * 0.75 + perpX * 0.7,
-      y: startPos.y + dy * 0.75 + perpY * 0.7,
+      y: startPos.y + dy * 0.75 + perpY * 0.7
     };
 
     return [cp1, cp2];
@@ -184,7 +184,7 @@ class MouseMovement {
   _getJitter() {
     return {
       x: (Math.random() - 0.5) * 4, // ±2px
-      y: (Math.random() - 0.5) * 4, // ±2px
+      y: (Math.random() - 0.5) * 4 // ±2px
     };
   }
 
@@ -216,7 +216,7 @@ class MouseMovement {
     const overshootAmount = 1 + Math.random() * 0.3; // 100-130% overshoot
     const overshootPos = {
       x: targetPos.x + (targetPos.x - startPos.x) * (overshootAmount - 1),
-      y: targetPos.y + (targetPos.y - startPos.y) * (overshootAmount - 1),
+      y: targetPos.y + (targetPos.y - startPos.y) * (overshootAmount - 1)
     };
 
     const distance1 = Math.sqrt(
@@ -262,8 +262,8 @@ class MouseMovement {
         'variable-speed',
         'hesitation-points',
         'overshooting',
-        'micro-jitter',
-      ],
+        'micro-jitter'
+      ]
     };
   }
 }

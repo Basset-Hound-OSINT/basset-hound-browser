@@ -76,7 +76,7 @@ describe('Security Incident Detection', () => {
       }
 
       const result = detector.detectBruteForce({
-        ip: '192.168.1.2',  // Different IP
+        ip: '192.168.1.2', // Different IP
         success: false
       });
 
@@ -119,7 +119,7 @@ describe('Security Incident Detection', () => {
       const attempt = {
         userId: 'user1',
         fromRole: 'user',
-        toRole: 'superadmin'  // Not allowed
+        toRole: 'superadmin' // Not allowed
       };
 
       const result = detector.detectPrivilegeEscalation(attempt);
@@ -175,7 +175,7 @@ describe('Security Incident Detection', () => {
       const result = detector.detectSuspiciousDataAccess({
         userId: 'user1',
         resourceType: 'keys',
-        count: 150  // Bulk access to sensitive data
+        count: 150 // Bulk access to sensitive data
       });
 
       expect(result.detected).toBe(true);
@@ -186,7 +186,7 @@ describe('Security Incident Detection', () => {
     test('Normal resource usage not detected', () => {
       const resources = {
         clientId: 'client1',
-        usage: 0.5,  // 50% usage
+        usage: 0.5, // 50% usage
         resource: 'memory'
       };
 
@@ -197,7 +197,7 @@ describe('Security Incident Detection', () => {
     test('High resource usage detected', () => {
       const resources = {
         clientId: 'client1',
-        usage: 0.95,  // 95% usage
+        usage: 0.95, // 95% usage
         resource: 'memory'
       };
 

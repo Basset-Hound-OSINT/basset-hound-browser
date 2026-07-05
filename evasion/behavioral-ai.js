@@ -35,7 +35,7 @@ const PHYSICS = {
 
   // Overshoot parameters
   OVERSHOOT_PROBABILITY: 0.12,
-  OVERSHOOT_DISTANCE_FACTOR: 0.08,
+  OVERSHOOT_DISTANCE_FACTOR: 0.08
 };
 
 /**
@@ -55,7 +55,7 @@ const TYPING = {
   COMMON_DIGRAPHS: [
     'th', 'he', 'in', 'er', 'an', 're', 'on', 'at', 'en', 'nd',
     'ti', 'es', 'or', 'te', 'of', 'ed', 'is', 'it', 'al', 'ar',
-    'st', 'to', 'nt', 'ng', 'se', 'ha', 'as', 'ou', 'io', 'le',
+    'st', 'to', 'nt', 'ng', 'se', 'ha', 'as', 'ou', 'io', 'le'
   ],
 
   // Hand alternation (faster when switching hands)
@@ -71,7 +71,7 @@ const TYPING = {
 
   // Typing error parameters
   ERROR_RATE: 0.02,
-  ERROR_CORRECTION_DELAY: 150,
+  ERROR_CORRECTION_DELAY: 150
 };
 
 /**
@@ -161,7 +161,7 @@ class BehavioralProfile {
       mouseSpeedBase: this.mouseSpeedBase,
       mousePrecision: this.mousePrecision,
       tremorIntensity: this.tremorIntensity,
-      reactionTimeBase: this.reactionTimeBase,
+      reactionTimeBase: this.reactionTimeBase
     };
   }
 }
@@ -215,7 +215,7 @@ class MouseMovementAI {
       points.push({
         x: start.x + (end.x - start.x) * s,
         y: start.y + (end.y - start.y) * s,
-        t: (duration * t),
+        t: (duration * t)
       });
     }
 
@@ -242,7 +242,7 @@ class MouseMovementAI {
       return {
         ...point,
         x: point.x + tremorX,
-        y: point.y + tremorY,
+        y: point.y + tremorY
       };
     });
   }
@@ -274,7 +274,7 @@ class MouseMovementAI {
       correctedPoints[i] = {
         ...correctedPoints[i],
         x: correctedPoints[i].x + overshootX * correctionFactor,
-        y: correctedPoints[i].y + overshootY * correctionFactor,
+        y: correctedPoints[i].y + overshootY * correctionFactor
       };
     }
 
@@ -306,14 +306,14 @@ class MouseMovementAI {
     const overshootPoint = {
       x: target.x + Math.cos(angle) * overshootDistance,
       y: target.y + Math.sin(angle) * overshootDistance,
-      t: lastPoint.t + 50,
+      t: lastPoint.t + 50
     };
 
     // Correction back to target
     const correctionPoint = {
       x: target.x,
       y: target.y,
-      t: lastPoint.t + 100,
+      t: lastPoint.t + 100
     };
 
     return [...points, overshootPoint, correctionPoint];
@@ -350,7 +350,7 @@ class MouseMovementAI {
       duration: points[points.length - 1].t,
       distance,
       targetWidth,
-      fittsTime: duration,
+      fittsTime: duration
     };
   }
 
@@ -428,7 +428,7 @@ class MouseMovementAI {
         deltaY: Math.round(deltaY),
         duration: Math.round(scrollDuration),
         t: currentTime,
-        position: currentPosition, // Track absolute scroll position
+        position: currentPosition // Track absolute scroll position
       });
 
       // Occasional longer pause (user reading content)
@@ -471,8 +471,12 @@ class TypingAI {
    */
   getKeyHand(key) {
     const lower = key.toLowerCase();
-    if (TYPING.LEFT_HAND_KEYS.includes(lower)) return 'left';
-    if (TYPING.RIGHT_HAND_KEYS.includes(lower)) return 'right';
+    if (TYPING.LEFT_HAND_KEYS.includes(lower)) {
+      return 'left';
+    }
+    if (TYPING.RIGHT_HAND_KEYS.includes(lower)) {
+      return 'right';
+    }
     return 'either';
   }
 
@@ -592,12 +596,12 @@ class TypingAI {
         events.push({
           type: 'keydown',
           key: wrongChar,
-          t: currentTime,
+          t: currentTime
         });
         events.push({
           type: 'keyup',
           key: wrongChar,
-          t: currentTime + holdDuration,
+          t: currentTime + holdDuration
         });
 
         // Pause and backspace
@@ -605,12 +609,12 @@ class TypingAI {
         events.push({
           type: 'keydown',
           key: 'Backspace',
-          t: currentTime,
+          t: currentTime
         });
         events.push({
           type: 'keyup',
           key: 'Backspace',
-          t: currentTime + 50,
+          t: currentTime + 50
         });
 
         // Type correct character
@@ -621,12 +625,12 @@ class TypingAI {
       events.push({
         type: 'keydown',
         key: char,
-        t: currentTime,
+        t: currentTime
       });
       events.push({
         type: 'keyup',
         key: char,
-        t: currentTime + holdDuration,
+        t: currentTime + holdDuration
       });
 
       prevChar = char;
@@ -644,7 +648,7 @@ class TypingAI {
     const keyboard = [
       'qwertyuiop',
       'asdfghjkl',
-      'zxcvbnm',
+      'zxcvbnm'
     ];
 
     const lower = key.toLowerCase();
@@ -677,7 +681,9 @@ class TypingAI {
    * Calculate typing speed from events
    */
   calculateTypingSpeed(events, textLength) {
-    if (events.length < 2) return 0;
+    if (events.length < 2) {
+      return 0;
+    }
 
     const duration = events[events.length - 1].t - events[0].t;
     const minutes = duration / 60000;
@@ -731,7 +737,7 @@ class HoneypotDetector {
     // Check suspicious names
     const suspiciousNames = [
       'honeypot', 'honey', 'pot', 'trap', 'ohnohoney', 'website', 'url',
-      'email2', 'phone2', 'address2', 'fax', 'confirm_email', 'your-website',
+      'email2', 'phone2', 'address2', 'fax', 'confirm_email', 'your-website'
     ];
 
     const name = (element.name || '').toLowerCase();
@@ -756,7 +762,7 @@ class HoneypotDetector {
     return {
       isHoneypot: indicators.length >= 2,
       indicators,
-      confidence: Math.min(1, indicators.length * 0.3),
+      confidence: Math.min(1, indicators.length * 0.3)
     };
   }
 
@@ -863,7 +869,7 @@ class RateLimitAdapter {
     return {
       currentDelay: this.currentDelay,
       successStreak: this.successStreak,
-      failureCount: this.failureCount,
+      failureCount: this.failureCount
     };
   }
 }
@@ -875,5 +881,5 @@ module.exports = {
   HoneypotDetector,
   RateLimitAdapter,
   PHYSICS,
-  TYPING,
+  TYPING
 };

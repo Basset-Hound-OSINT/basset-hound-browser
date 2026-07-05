@@ -467,19 +467,33 @@ class CompetitivePatternDetector extends EventEmitter {
    * @private
    */
   categorizePrice(priceRange) {
-    if (!priceRange) return 'unknown';
+    if (!priceRange) {
+      return 'unknown';
+    }
 
     if (typeof priceRange === 'object') {
       const avg = (priceRange.min + priceRange.max) / 2;
-      if (avg < 50) return 'budget';
-      if (avg < 200) return 'midmarket';
-      if (avg < 1000) return 'premium';
+      if (avg < 50) {
+        return 'budget';
+      }
+      if (avg < 200) {
+        return 'midmarket';
+      }
+      if (avg < 1000) {
+        return 'premium';
+      }
       return 'enterprise';
     }
 
-    if (priceRange < 50) return 'budget';
-    if (priceRange < 200) return 'midmarket';
-    if (priceRange < 1000) return 'premium';
+    if (priceRange < 50) {
+      return 'budget';
+    }
+    if (priceRange < 200) {
+      return 'midmarket';
+    }
+    if (priceRange < 1000) {
+      return 'premium';
+    }
     return 'enterprise';
   }
 
@@ -536,7 +550,7 @@ class CompetitivePatternDetector extends EventEmitter {
    */
   comparePositioning(before, after) {
     let changes = 0;
-    let competitors = new Set([
+    const competitors = new Set([
       ...Object.keys(before.positioning),
       ...Object.keys(after.positioning)
     ]);

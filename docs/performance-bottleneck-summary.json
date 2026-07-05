@@ -1,0 +1,332 @@
+{
+  "analysis_metadata": {
+    "date": "2026-06-21",
+    "type": "Lightweight Static Code Analysis",
+    "methodology": "Code path analysis, architectural review - no heavy load testing",
+    "scope": "164 WebSocket commands across 55 handler modules",
+    "status": "COMPLETE"
+  },
+  "executive_summary": {
+    "slowest_operations": 10,
+    "total_commands": 164,
+    "handler_modules": 55,
+    "key_finding": "I/O operations (40%), DOM/JavaScript (35%), Memory (15%), Format conversion (10%) are primary bottlenecks",
+    "expected_improvement": "40-50% latency reduction for exports, 20-30% for DOM, 15-25% overall throughput"
+  },
+  "top_10_slowest_commands": [
+    {
+      "rank": 1,
+      "command": "export_format_sqlite",
+      "latency_ms": "1500-3000",
+      "severity": "CRITICAL",
+      "category": "I/O Operations",
+      "root_cause": "SQLite database creation and write operations block event loop",
+      "quick_fix": "Use worker threads for database operations, implement batch INSERT",
+      "estimated_improvement_percent": -60
+    },
+    {
+      "rank": 2,
+      "command": "dom_snapshot_full",
+      "latency_ms": "800-1200",
+      "severity": "CRITICAL",
+      "category": "DOM/JavaScript",
+      "root_cause": "Full DOM traversal with computed style access forces reflow/repaint",
+      "quick_fix": "Cache computed styles, sample large DOMs, defer with requestIdleCallback",
+      "estimated_improvement_percent": -25
+    },
+    {
+      "rank": 3,
+      "command": "captureScreenshot",
+      "latency_ms": "600-900",
+      "severity": "CRITICAL",
+      "category": "I/O Operations",
+      "root_cause": "Electron screenshot rendering + compression in main thread",
+      "quick_fix": "Implement screenshot queue, skip format conversion for single format",
+      "estimated_improvement_percent": -30
+    },
+    {
+      "rank": 4,
+      "command": "export_format_warc",
+      "latency_ms": "800-1500",
+      "severity": "HIGH",
+      "category": "I/O Operations",
+      "root_cause": "WARC format construction with full metadata collection",
+      "quick_fix": "Implement streaming JSON writer, pre-allocate buffers",
+      "estimated_improvement_percent": -40
+    },
+    {
+      "rank": 5,
+      "command": "getDOM_with_Styles",
+      "latency_ms": "400-700",
+      "severity": "HIGH",
+      "category": "DOM/JavaScript",
+      "root_cause": "Repeated DOM queries for same data (3+ IPC calls per operation)",
+      "quick_fix": "Add request-scoped DOM cache, batch queries",
+      "estimated_improvement_percent": -40
+    },
+    {
+      "rank": 6,
+      "command": "executeJavaScript_Complex",
+      "latency_ms": "300-600",
+      "severity": "HIGH",
+      "category": "DOM/JavaScript",
+      "root_cause": "IPC round-trip overhead per context switch (50-100ms)",
+      "quick_fix": "Implement JavaScript context pool, pre-compile scripts",
+      "estimated_improvement_percent": -20
+    },
+    {
+      "rank": 7,
+      "command": "export_format_har",
+      "latency_ms": "500-900",
+      "severity": "HIGH",
+      "category": "Format Conversion",
+      "root_cause": "HAR format construction with large object graph in memory",
+      "quick_fix": "Use streaming JSON writer, object pooling",
+      "estimated_improvement_percent": -35
+    },
+    {
+      "rank": 8,
+      "command": "batch_operations_export",
+      "latency_ms": "1000-2000",
+      "severity": "HIGH",
+      "category": "I/O Operations",
+      "root_cause": "Sequential batch processing (not parallelized)",
+      "quick_fix": "Parallelize with Promise.all, implement streaming",
+      "estimated_improvement_percent": -50
+    },
+    {
+      "rank": 9,
+      "command": "memory_profiling_full",
+      "latency_ms": "200-400",
+      "severity": "MEDIUM",
+      "category": "Memory Operations",
+      "root_cause": "Full memory introspection + GC triggering",
+      "quick_fix": "Implement sampling strategy (every 30s), use delta approach",
+      "estimated_improvement_percent": -50
+    },
+    {
+      "rank": 10,
+      "command": "forensic_correlation_analysis",
+      "latency_ms": "400-800",
+      "severity": "MEDIUM",
+      "category": "Analysis Operations",
+      "root_cause": "Linear scans of evidence collections without indexing",
+      "quick_fix": "Implement indexed lookups, memoize patterns",
+      "estimated_improvement_percent": -30
+    }
+  ],
+  "bottleneck_categories": {
+    "I/O_Operations": {
+      "percentage_of_slowdown": 40,
+      "command_count": 20,
+      "average_latency_ms": "500-2000",
+      "root_causes": [
+        "Disk access and buffer allocation",
+        "Sequential write operations",
+        "No streaming output",
+        "No batch write optimization"
+      ],
+      "critical_issues": [
+        "SQLite export blocks event loop",
+        "File operations after processing (wasted compute)",
+        "No batch write optimization",
+        "No streaming implementation"
+      ],
+      "priority": "CRITICAL"
+    },
+    "DOM_JavaScript_Operations": {
+      "percentage_of_slowdown": 35,
+      "command_count": 45,
+      "average_latency_ms": "300-1200",
+      "root_causes": [
+        "IPC round-trip overhead 50-100ms per call",
+        "Synchronous DOM operations forcing reflow/repaint",
+        "No query caching or batching",
+        "Multiple querySelector calls instead of batching"
+      ],
+      "critical_issues": [
+        "Reflow/repaint cycles per element access",
+        "Repeated IPC calls for same DOM (3+ per request)",
+        "No DOM caching within request scope",
+        "No batch JavaScript execution API"
+      ],
+      "priority": "HIGH"
+    },
+    "Memory_Operations": {
+      "percentage_of_slowdown": 15,
+      "command_count": 25,
+      "average_latency_ms": "100-400",
+      "root_causes": [
+        "Garbage collection pressure from large allocations",
+        "Buffer allocation without pooling",
+        "Memory history tracking overhead",
+        "Uncompressed screenshot caches"
+      ],
+      "critical_issues": [
+        "GC pause blocks all operations",
+        "Buffer pool exhaustion triggers allocation",
+        "Memory history buffer wastes resources",
+        "Uncompressed screenshots spike memory"
+      ],
+      "priority": "MEDIUM"
+    },
+    "Format_Conversion": {
+      "percentage_of_slowdown": 10,
+      "command_count": 12,
+      "average_latency_ms": "300-1500",
+      "root_causes": [
+        "CPU-intensive encoding/compression",
+        "Format conversion always happens (even if single format)",
+        "Multiple codec operations in sequence",
+        "No output streaming"
+      ],
+      "critical_issues": [
+        "PNG compression with quality 1.0 is slow",
+        "WebP format conversion overhead",
+        "No format pre-selection optimization",
+        "Compression blocks main thread"
+      ],
+      "priority": "MEDIUM"
+    }
+  },
+  "architectural_bottlenecks": [
+    {
+      "id": 1,
+      "name": "IPC Serialization Overhead",
+      "severity": "CRITICAL",
+      "location": "websocket/server.js",
+      "cost_ms": "50-100 per round-trip",
+      "frequency": "45+ command handlers",
+      "solution": "Implement JavaScript context pooling, batch operations",
+      "expected_improvement_percent": -80
+    },
+    {
+      "id": 2,
+      "name": "Synchronous DOM Operations Forcing Reflow",
+      "severity": "CRITICAL",
+      "location": "src/extraction/dom-snapshot.js",
+      "cost_ms": "200-400 for 1000+ elements",
+      "frequency": "20+ command handlers",
+      "solution": "Cache computed styles, element sampling, requestIdleCallback",
+      "expected_improvement_percent": -50
+    },
+    {
+      "id": 3,
+      "name": "No Response Streaming",
+      "severity": "HIGH",
+      "location": "websocket/commands/export-formats.js",
+      "cost_ms": "Peak memory spikes, latency for large exports",
+      "frequency": "12 export handlers",
+      "solution": "Implement streaming JSON writer with backpressure",
+      "expected_improvement_percent": -50
+    },
+    {
+      "id": 4,
+      "name": "Linear Search in Buffer Pool",
+      "severity": "MEDIUM",
+      "location": "websocket/response-serializer.js",
+      "cost_impact": "O(n) per serialization, 100+ per second",
+      "frequency": "Every WebSocket message",
+      "solution": "Replace with heap-based free list",
+      "expected_improvement_percent": 5
+    },
+    {
+      "id": 5,
+      "name": "Missing Command Coalescing",
+      "severity": "MEDIUM",
+      "location": "Multiple command handlers",
+      "cost_ms": "Repeated DOM access, redundant calculations",
+      "frequency": "Common in batch/export workflows",
+      "solution": "Implement batching API for related operations",
+      "expected_improvement_percent": -30
+    }
+  ],
+  "optimization_roadmap": {
+    "phase_1": {
+      "duration": "1 week",
+      "focus": "Quick wins",
+      "expected_improvement_percent": -30,
+      "tasks": [
+        {
+          "priority": 1,
+          "task": "Response streaming for exports",
+          "effort_hours": 10,
+          "improvement_percent": -40,
+          "affected_commands": 12
+        },
+        {
+          "priority": 2,
+          "task": "DOM query caching",
+          "effort_hours": 8,
+          "improvement_percent": -20,
+          "affected_commands": 20
+        },
+        {
+          "priority": 3,
+          "task": "JavaScript context pool",
+          "effort_hours": 13,
+          "improvement_percent": -15,
+          "affected_commands": 45
+        }
+      ]
+    },
+    "phase_2": {
+      "duration": "1-2 weeks",
+      "focus": "Performance impact",
+      "expected_improvement_percent": -20,
+      "tasks": [
+        {
+          "priority": 4,
+          "task": "Buffer pool optimization",
+          "effort_hours": 8,
+          "improvement_percent": 5,
+          "affected_commands": "All"
+        },
+        {
+          "priority": 5,
+          "task": "Command batching API",
+          "effort_hours": 20,
+          "improvement_percent": -30,
+          "affected_commands": 8
+        },
+        {
+          "priority": 6,
+          "task": "DOM element sampling",
+          "effort_hours": 10,
+          "improvement_percent": -25,
+          "affected_commands": 20
+        }
+      ]
+    },
+    "phase_3": {
+      "duration": "2-3 weeks",
+      "focus": "Architectural improvements",
+      "expected_improvement_percent": -25,
+      "tasks": [
+        {
+          "priority": 7,
+          "task": "Worker thread pool for format conversion",
+          "effort_hours": 24,
+          "improvement_percent": -50,
+          "affected_commands": 12
+        },
+        {
+          "priority": 8,
+          "task": "Electron IPC dispatcher pool",
+          "effort_hours": 22,
+          "improvement_percent": -30,
+          "affected_commands": 45
+        }
+      ]
+    }
+  },
+  "expected_outcomes": {
+    "export_latency_reduction_percent": -40,
+    "dom_extraction_latency_reduction_percent": -30,
+    "overall_throughput_improvement_percent": 20,
+    "peak_memory_reduction_percent": -50,
+    "baseline_throughput_msg_sec": "285-481",
+    "post_optimization_throughput_msg_sec": "330-575"
+  },
+  "full_analysis_location": "/home/devel/basset-hound-browser/docs/PERFORMANCE-BOTTLENECK-ANALYSIS-2026-06-21.md"
+}

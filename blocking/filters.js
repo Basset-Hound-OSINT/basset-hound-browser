@@ -140,7 +140,7 @@ const AD_DOMAINS = [
   'trustx.org',
   'w55c.net',
   'yieldmo.com',
-  'zemanta.com',
+  'zemanta.com'
 ];
 
 /**
@@ -284,7 +284,7 @@ const TRACKER_DOMAINS = [
   'quantummetric.com',
   'cdn.speedcurve.com',
   'lux.speedcurve.com',
-  'speedcurve.com',
+  'speedcurve.com'
 ];
 
 /**
@@ -345,7 +345,7 @@ const SOCIAL_WIDGET_DOMAINS = [
   'apis.google.com/js/plusone.js',
   'badge.stumbleupon.com',
   'tumblr.com/share',
-  'bufferapp.com',
+  'bufferapp.com'
 ];
 
 /**
@@ -480,7 +480,7 @@ const CRYPTO_MINER_DOMAINS = [
   'mxcdn.science',
   'mxcdn.stream',
   'mxcdn.trade',
-  'mxcdn.win',
+  'mxcdn.win'
 ];
 
 /**
@@ -506,26 +506,26 @@ const BUILTIN_FILTERS = {
     name: 'Advertisements',
     description: 'Blocks common advertising networks and ad servers',
     patterns: generatePatternsFromDomains(AD_DOMAINS),
-    enabled: true,
+    enabled: true
   },
   trackers: {
     name: 'Trackers',
     description: 'Blocks analytics and tracking services',
     patterns: generatePatternsFromDomains(TRACKER_DOMAINS),
-    enabled: true,
+    enabled: true
   },
   social: {
     name: 'Social Media Widgets',
     description: 'Blocks social media sharing buttons and embedded content',
     patterns: generatePatternsFromDomains(SOCIAL_WIDGET_DOMAINS),
-    enabled: false,
+    enabled: false
   },
   cryptominers: {
     name: 'Cryptocurrency Miners',
     description: 'Blocks browser-based cryptocurrency mining scripts',
     patterns: generatePatternsFromDomains(CRYPTO_MINER_DOMAINS),
-    enabled: true,
-  },
+    enabled: true
+  }
 };
 
 /**
@@ -551,7 +551,7 @@ const ADDITIONAL_PATTERNS = {
     // Query patterns
     '*://*/*?*ad=*',
     '*://*/*?*ads=*',
-    '*://*/*?*advert*=*',
+    '*://*/*?*advert*=*'
   ],
   trackers: [
     // Common tracking endpoints
@@ -568,8 +568,8 @@ const ADDITIONAL_PATTERNS = {
     '*://*/*?*utm_*=*',
     '*://*/*?*fbclid=*',
     '*://*/*?*gclid=*',
-    '*://*/*?*_ga=*',
-  ],
+    '*://*/*?*_ga=*'
+  ]
 };
 
 /**
@@ -587,7 +587,7 @@ function parseEasyList(content) {
     blockPatterns: [],
     allowPatterns: [],
     elementHideRules: [],
-    errors: [],
+    errors: []
   };
 
   const lines = content.split('\n');
@@ -621,7 +621,7 @@ function parseEasyList(content) {
         const [domains, selector] = line.split('##');
         result.elementHideRules.push({
           domains: domains ? domains.split(',') : ['*'],
-          selector: selector,
+          selector: selector
         });
         continue;
       }
@@ -650,7 +650,7 @@ function parseEasyList(content) {
       result.errors.push({
         line: i + 1,
         content: line,
-        error: error.message,
+        error: error.message
       });
     }
   }
@@ -664,12 +664,16 @@ function parseEasyList(content) {
  * @returns {string|null} - Glob pattern or null if not convertible
  */
 function convertEasyListPatternToGlob(pattern) {
-  if (!pattern) return null;
+  if (!pattern) {
+    return null;
+  }
 
   // Remove options part (after $)
   let cleanPattern = pattern.split('$')[0];
 
-  if (!cleanPattern) return null;
+  if (!cleanPattern) {
+    return null;
+  }
 
   // Handle domain anchors (||)
   if (cleanPattern.startsWith('||')) {
@@ -724,7 +728,7 @@ function getBuiltinPatterns(categories = []) {
   // Remove duplicates
   return {
     blockPatterns: [...new Set(blockPatterns)],
-    allowPatterns: [],
+    allowPatterns: []
   };
 }
 
@@ -739,7 +743,7 @@ function getFilterListInfo() {
       name: filter.name,
       description: filter.description,
       patternCount: filter.patterns.length,
-      enabled: filter.enabled,
+      enabled: filter.enabled
     };
   }
   return info;
@@ -756,7 +760,7 @@ const EASYLIST_URLS = {
   fanboyAnnoyance: 'https://easylist.to/easylist/fanboy-annoyance.txt',
   antiadblock: 'https://easylist-downloads.adblockplus.org/antiadblockfilters.txt',
   uBlockAnnoyances: 'https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances.txt',
-  peterlowe: 'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext',
+  peterlowe: 'https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext'
 };
 
 module.exports = {
@@ -771,5 +775,5 @@ module.exports = {
   convertEasyListPatternToGlob,
   getBuiltinPatterns,
   getFilterListInfo,
-  generatePatternsFromDomains,
+  generatePatternsFromDomains
 };

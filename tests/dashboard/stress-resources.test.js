@@ -37,7 +37,9 @@ class MemoryMonitor {
   }
 
   getGrowthRate() {
-    if (this.snapshots.length < 2) return 0;
+    if (this.snapshots.length < 2) {
+      return 0;
+    }
 
     const first = this.snapshots[0];
     const last = this.snapshots[this.snapshots.length - 1];
@@ -45,12 +47,16 @@ class MemoryMonitor {
     const timeElapsed = (last.elapsed - first.elapsed) / 1000; // seconds
     const memoryGrowth = last.heapUsed - first.heapUsed;
 
-    if (timeElapsed === 0) return 0;
+    if (timeElapsed === 0) {
+      return 0;
+    }
     return memoryGrowth / timeElapsed; // bytes per second
   }
 
   getTrend() {
-    if (this.snapshots.length < 3) return 'insufficient_data';
+    if (this.snapshots.length < 3) {
+      return 'insufficient_data';
+    }
 
     // Check last 3 snapshots
     const recent = this.snapshots.slice(-3);
@@ -62,8 +68,12 @@ class MemoryMonitor {
 
     const avgDiff = diffs.reduce((a, b) => a + b) / diffs.length;
 
-    if (avgDiff > 1024 * 100) return 'growing'; // >100KB growth
-    if (avgDiff < -1024 * 100) return 'shrinking';
+    if (avgDiff > 1024 * 100) {
+      return 'growing';
+    } // >100KB growth
+    if (avgDiff < -1024 * 100) {
+      return 'shrinking';
+    }
     return 'stable';
   }
 
@@ -191,7 +201,7 @@ class ResourceAwareDashboard extends EventEmitter {
 }
 
 // Test Suite
-describe('Dashboard Stress Tests - Memory & Resources', function() {
+describe('Dashboard Stress Tests - Memory & Resources', function () {
   this.timeout(180000); // 3 minutes for extended tests
 
   let dashboard;
@@ -202,8 +212,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     memoryMonitor = new MemoryMonitor();
   });
 
-  describe('Scenario 1: Continuous Updates for 1+ Hour (Simulated)', function() {
-    it('should handle 1-hour operation window (compressed time)', async function() {
+  describe('Scenario 1: Continuous Updates for 1+ Hour (Simulated)', () => {
+    it('should handle 1-hour operation window (compressed time)', async () => {
       const durationMs = 30000; // 30 seconds represents 1 hour
       const endTime = Date.now() + durationMs;
 
@@ -254,8 +264,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 2: Memory Leak Detection', function() {
-    it('should not leak memory with repeated add/cleanup cycles', function() {
+  describe('Scenario 2: Memory Leak Detection', () => {
+    it('should not leak memory with repeated add/cleanup cycles', () => {
       const measurements = [];
 
       for (let cycle = 0; cycle < 5; cycle++) {
@@ -290,8 +300,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 3: Unbounded Allocation Detection', function() {
-    it('should prevent unbounded array growth', function() {
+  describe('Scenario 3: Unbounded Allocation Detection', () => {
+    it('should prevent unbounded array growth', () => {
       const initialSize = dashboard.timeline.length;
 
       // Simulate many updates
@@ -311,7 +321,7 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
       console.log(`  Final size: ${finalSize}`);
     });
 
-    it('should enforce per-monitor change limits', function() {
+    it('should enforce per-monitor change limits', () => {
       // Add many changes to one monitor
       for (let i = 0; i < 1000; i++) {
         dashboard.addChange('monitor-1', {
@@ -323,7 +333,7 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
       assert(changes.length <= 500, `Per-monitor changes should be limited to 500`);
     });
 
-    it('should enforce alert limit', function() {
+    it('should enforce alert limit', () => {
       // Add many alerts
       for (let i = 0; i < 200000; i++) {
         dashboard.addAlert('monitor-0', {
@@ -335,8 +345,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 4: Garbage Collection Effectiveness', function() {
-    it('should allow garbage collection after cleanup', function() {
+  describe('Scenario 4: Garbage Collection Effectiveness', () => {
+    it('should allow garbage collection after cleanup', () => {
       const before = process.memoryUsage().heapUsed;
 
       // Create large temporary dataset
@@ -371,8 +381,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 5: Handle Large Object Sizes', function() {
-    it('should handle large change objects efficiently', function() {
+  describe('Scenario 5: Handle Large Object Sizes', () => {
+    it('should handle large change objects efficiently', () => {
       const largeData = 'x'.repeat(10000); // 10KB string
 
       for (let i = 0; i < 100; i++) {
@@ -388,8 +398,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 6: Monitor Creation Stress', function() {
-    it('should handle creation of 100 monitors efficiently', function() {
+  describe('Scenario 6: Monitor Creation Stress', () => {
+    it('should handle creation of 100 monitors efficiently', () => {
       const before = process.memoryUsage().heapUsed;
 
       for (let i = 100; i < 200; i++) {
@@ -408,8 +418,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 7: Array and Map Performance', function() {
-    it('should maintain efficient data structure access', function() {
+  describe('Scenario 7: Array and Map Performance', () => {
+    it('should maintain efficient data structure access', () => {
       const startTime = Date.now();
       let accessCount = 0;
 
@@ -427,8 +437,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 8: Long-Running Memory Stability', function() {
-    it('should maintain stable memory over 100 operations', function() {
+  describe('Scenario 8: Long-Running Memory Stability', () => {
+    it('should maintain stable memory over 100 operations', () => {
       const snapshots = [];
 
       for (let op = 0; op < 100; op++) {
@@ -461,8 +471,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 9: External Memory Tracking', function() {
-    it('should track external memory usage', function() {
+  describe('Scenario 9: External Memory Tracking', () => {
+    it('should track external memory usage', () => {
       const usage = process.memoryUsage();
 
       console.log(`\nMemory Usage Breakdown:`);
@@ -479,8 +489,8 @@ describe('Dashboard Stress Tests - Memory & Resources', function() {
     });
   });
 
-  describe('Scenario 10: Resource Cleanup on Shutdown', function() {
-    it('should properly cleanup resources', function() {
+  describe('Scenario 10: Resource Cleanup on Shutdown', () => {
+    it('should properly cleanup resources', () => {
       const beforeCleanup = process.memoryUsage().heapUsed;
 
       // Clear all data

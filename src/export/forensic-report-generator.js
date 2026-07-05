@@ -144,14 +144,19 @@ class ForensicReportGenerator {
           </thead>
           <tbody>
             ${manifest.files.map(file => {
-              const ext = path.extname(file.filename).toLowerCase();
-              let type = 'File';
-              if (file.filename.includes('screenshot')) type = 'Screenshot';
-              else if (file.filename.includes('har-logs')) type = 'Network Log (HAR)';
-              else if (file.filename.includes('metadata')) type = 'Metadata';
-              else if (file.filename.includes('forensic')) type = 'Forensic Data';
+    const ext = path.extname(file.filename).toLowerCase();
+    let type = 'File';
+    if (file.filename.includes('screenshot')) {
+      type = 'Screenshot';
+    } else if (file.filename.includes('har-logs')) {
+      type = 'Network Log (HAR)';
+    } else if (file.filename.includes('metadata')) {
+      type = 'Metadata';
+    } else if (file.filename.includes('forensic')) {
+      type = 'Forensic Data';
+    }
 
-              return `
+    return `
                 <tr>
                   <td class="filename">${this.escapeHtml(file.filename)}</td>
                   <td>${type}</td>
@@ -159,7 +164,7 @@ class ForensicReportGenerator {
                   <td>${file.timestamp}</td>
                 </tr>
               `;
-            }).join('')}
+  }).join('')}
           </tbody>
         </table>
       </div>
@@ -586,8 +591,12 @@ class ForensicReportGenerator {
     report += `Package ID:         ${manifest.packageId}\n`;
     report += `Description:        ${manifest.description}\n`;
     report += `Investigator:       ${manifest.analystName}\n`;
-    if (forensicMeta.agency) report += `Agency:             ${forensicMeta.agency}\n`;
-    if (forensicMeta.investigatorId) report += `Investigator ID:    ${forensicMeta.investigatorId}\n`;
+    if (forensicMeta.agency) {
+      report += `Agency:             ${forensicMeta.agency}\n`;
+    }
+    if (forensicMeta.investigatorId) {
+      report += `Investigator ID:    ${forensicMeta.investigatorId}\n`;
+    }
     report += `Created:            ${manifest.createdAt}\n`;
     report += `Package Size:       ${this.formatBytes(manifest.packageSize)}\n`;
     report += `File Count:         ${manifest.fileCount}\n\n`;
@@ -623,8 +632,12 @@ class ForensicReportGenerator {
 
     const created = manifest.chainOfCustody.created;
     report += `Created By:         ${created.by}\n`;
-    if (created.id) report += `ID:                 ${created.id}\n`;
-    if (created.agency) report += `Agency:             ${created.agency}\n`;
+    if (created.id) {
+      report += `ID:                 ${created.id}\n`;
+    }
+    if (created.agency) {
+      report += `Agency:             ${created.agency}\n`;
+    }
     report += `Timestamp:          ${created.timestamp}\n`;
     report += `Action:             ${created.action}\n`;
     report += `Notes:              ${created.notes}\n\n`;
@@ -635,7 +648,9 @@ class ForensicReportGenerator {
         report += `\nTransfer ${index + 1}:\n`;
         report += `  Timestamp:        ${event.timestamp}\n`;
         report += `  Handler:          ${event.by}\n`;
-        if (event.id) report += `  ID:               ${event.id}\n`;
+        if (event.id) {
+          report += `  ID:               ${event.id}\n`;
+        }
         report += `  Action:           ${event.action}\n`;
         report += `  Notes:            ${event.notes}\n`;
       });
@@ -687,7 +702,9 @@ class ForensicReportGenerator {
    * @private
    */
   escapeHtml(text) {
-    if (!text) return '';
+    if (!text) {
+      return '';
+    }
     const map = {
       '&': '&amp;',
       '<': '&lt;',
@@ -703,7 +720,9 @@ class ForensicReportGenerator {
    * @private
    */
   formatBytes(bytes) {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));

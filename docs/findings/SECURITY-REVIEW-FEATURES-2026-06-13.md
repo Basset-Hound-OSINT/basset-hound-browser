@@ -592,7 +592,7 @@ class Evidence {
 ### Intermodule Communication
 
 **Finding:** ✅ SECURE  
-- WebSocket commands properly isolate modules (websocket/commands/evidence-commands.js)
+- WebSocket commands properly isolate modules (websocket/commands/forensic/evidence/evidence-commands.js)
 - Each module maintains separate state
 - No shared global state between coherence, fingerprint, and evidence systems
 - Command handlers return safe serializable objects

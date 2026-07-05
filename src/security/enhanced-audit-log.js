@@ -25,8 +25,8 @@ class EnhancedAuditLog {
    */
   static DEFAULT_CONFIG = {
     // Storage
-    logDir: null,                      // Use default or provided path
-    maxLogSize: 100 * 1024 * 1024,    // 100MB
+    logDir: null, // Use default or provided path
+    maxLogSize: 100 * 1024 * 1024, // 100MB
     maxLogAge: 90 * 24 * 60 * 60 * 1000, // 90 days
 
     // Encryption
@@ -77,6 +77,7 @@ class EnhancedAuditLog {
     if (!this.config.logDir) {
       this.config.logDir = path.join(
         process.env.HOME || '/tmp',
+        'tmp',
         '.basset-hound',
         'audit'
       );
@@ -364,7 +365,9 @@ class EnhancedAuditLog {
    * Flush log buffer to disk
    */
   flush() {
-    if (this.logBuffer.length === 0) return;
+    if (this.logBuffer.length === 0) {
+      return;
+    }
 
     const timestamp = Date.now();
     const filename = `audit-${timestamp}.log`;
@@ -428,7 +431,9 @@ class EnhancedAuditLog {
     try {
       const files = fs.readdirSync(this.config.logDir);
       for (const file of files) {
-        if (!file.startsWith('audit-')) continue;
+        if (!file.startsWith('audit-')) {
+          continue;
+        }
 
         const filepath = path.join(this.config.logDir, file);
         const stats = fs.statSync(filepath);

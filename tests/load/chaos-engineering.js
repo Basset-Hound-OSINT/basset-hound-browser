@@ -24,7 +24,7 @@ const CONFIG = {
   // Test parameters
   CONNECTION_COUNT: 50,
   MESSAGE_RATE: 10,
-  TEST_DURATION: 60000, // 1 minute per test
+  TEST_DURATION: 60000 // 1 minute per test
 };
 
 /**
@@ -568,7 +568,7 @@ async function runAllTests() {
     new ConnectionDropTest(0.1), // 10% drop rate
     new ConnectionDropTest(0.25), // 25% drop rate
     new HighMemoryTest(100), // 100MB pressure
-    new HighMemoryTest(500), // 500MB pressure
+    new HighMemoryTest(500) // 500MB pressure
   ];
 
   for (const test of tests) {

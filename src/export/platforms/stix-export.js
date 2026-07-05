@@ -186,9 +186,15 @@ class STIXExport extends PlatformIntegration {
     // Create file hash observables
     if (data.hashes) {
       const hashes = [];
-      if (data.hashes.md5) hashes.push({ algorithm: 'MD5', hash_value: data.hashes.md5 });
-      if (data.hashes.sha1) hashes.push({ algorithm: 'SHA-1', hash_value: data.hashes.sha1 });
-      if (data.hashes.sha256) hashes.push({ algorithm: 'SHA-256', hash_value: data.hashes.sha256 });
+      if (data.hashes.md5) {
+        hashes.push({ algorithm: 'MD5', hash_value: data.hashes.md5 });
+      }
+      if (data.hashes.sha1) {
+        hashes.push({ algorithm: 'SHA-1', hash_value: data.hashes.sha1 });
+      }
+      if (data.hashes.sha256) {
+        hashes.push({ algorithm: 'SHA-256', hash_value: data.hashes.sha256 });
+      }
 
       hashes.forEach(hashObj => {
         const hashObservableId = `observed-data--${this._generateUUID()}`;

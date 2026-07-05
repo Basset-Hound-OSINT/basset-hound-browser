@@ -130,7 +130,9 @@ class DataExporter extends EventEmitter {
    */
   async executeExport(jobId) {
     const job = this.jobs.get(jobId);
-    if (!job) return;
+    if (!job) {
+      return;
+    }
 
     this.activeJobs.add(jobId);
     job.status = 'processing';
@@ -242,8 +244,12 @@ class DataExporter extends EventEmitter {
       ...data.map(row =>
         headers.map(h => {
           const value = row[h];
-          if (value === null || value === undefined) return '';
-          if (typeof value === 'object') return `"${JSON.stringify(value)}"`;
+          if (value === null || value === undefined) {
+            return '';
+          }
+          if (typeof value === 'object') {
+            return `"${JSON.stringify(value)}"`;
+          }
           const str = String(value);
           return str.includes(',') || str.includes('"') || str.includes('\n')
             ? `"${str.replace(/"/g, '""')}"` : str;
@@ -310,7 +316,9 @@ class DataExporter extends EventEmitter {
    */
   getJobStatus(jobId) {
     const job = this.jobs.get(jobId);
-    if (!job) return null;
+    if (!job) {
+      return null;
+    }
 
     return {
       id: job.id,
@@ -350,9 +358,15 @@ class DataExporter extends EventEmitter {
 
     return jobs
       .filter(j => {
-        if (filters.status && j.status !== filters.status) return false;
-        if (filters.dataType && j.dataType !== filters.dataType) return false;
-        if (filters.format && j.format !== filters.format) return false;
+        if (filters.status && j.status !== filters.status) {
+          return false;
+        }
+        if (filters.dataType && j.dataType !== filters.dataType) {
+          return false;
+        }
+        if (filters.format && j.format !== filters.format) {
+          return false;
+        }
         return true;
       })
       .map(j => ({
@@ -371,7 +385,9 @@ class DataExporter extends EventEmitter {
    */
   cancelJob(jobId) {
     const job = this.jobs.get(jobId);
-    if (!job) return false;
+    if (!job) {
+      return false;
+    }
 
     if (job.status === 'pending' || job.status === 'processing') {
       job.status = 'cancelled';

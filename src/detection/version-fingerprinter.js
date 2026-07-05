@@ -128,7 +128,9 @@ class VersionFingerprinter {
     const patterns = this._getHeaderPatterns(techName);
 
     Object.entries(headers).forEach(([headerName, headerValue]) => {
-      if (!headerValue) return;
+      if (!headerValue) {
+        return;
+      }
       const headerStr = String(headerValue);
 
       patterns.forEach(pattern => {
@@ -189,7 +191,9 @@ class VersionFingerprinter {
     }
 
     scripts.forEach(script => {
-      if (typeof script !== 'string') return;
+      if (typeof script !== 'string') {
+        return;
+      }
 
       const patterns = this._getScriptPatterns(techName);
       patterns.forEach(pattern => {
@@ -215,7 +219,9 @@ class VersionFingerprinter {
    */
   _extractFromValue(techName, value, type) {
     const results = [];
-    if (!value) return results;
+    if (!value) {
+      return results;
+    }
 
     const str = String(value);
     const patterns = this._getValuePatterns(techName);
@@ -367,7 +373,9 @@ class VersionFingerprinter {
    * @private
    */
   _normalizeVersion(versionStr) {
-    if (!versionStr) return null;
+    if (!versionStr) {
+      return null;
+    }
 
     // SECURITY FIX: Sanitize version string first
     const sanitizationResult = this.sanitizer.sanitize(String(versionStr));
@@ -379,7 +387,7 @@ class VersionFingerprinter {
       return null; // Return null for invalid versions
     }
 
-    let normalized = sanitizationResult.sanitized.trim();
+    const normalized = sanitizationResult.sanitized.trim();
 
     // Handle revision numbers (e.g., 'r73')
     if (/^r\d+$/i.test(normalized)) {
@@ -413,7 +421,9 @@ class VersionFingerprinter {
    * @static
    */
   static compareVersions(v1, v2) {
-    if (!v1 || !v2) return false;
+    if (!v1 || !v2) {
+      return false;
+    }
     return v1.toLowerCase() === v2.toLowerCase();
   }
 
@@ -422,7 +432,9 @@ class VersionFingerprinter {
    * @static
    */
   static isVersionGreater(v1, v2) {
-    if (!v1 || !v2) return false;
+    if (!v1 || !v2) {
+      return false;
+    }
 
     const normalize = (v) => {
       const parts = v.split(/[-.]/).map(p => {
@@ -439,8 +451,12 @@ class VersionFingerprinter {
     const [v1Major, v1Minor, v1Patch] = normalize(v1);
     const [v2Major, v2Minor, v2Patch] = normalize(v2);
 
-    if (v1Major !== v2Major) return v1Major > v2Major;
-    if (v1Minor !== v2Minor) return v1Minor > v2Minor;
+    if (v1Major !== v2Major) {
+      return v1Major > v2Major;
+    }
+    if (v1Minor !== v2Minor) {
+      return v1Minor > v2Minor;
+    }
     return v1Patch > v2Patch;
   }
 
@@ -449,7 +465,9 @@ class VersionFingerprinter {
    * @static
    */
   static isInVersionRange(version, minVersion, maxVersion) {
-    if (!version) return false;
+    if (!version) {
+      return false;
+    }
     if (minVersion && !VersionFingerprinter.isVersionGreater(version, minVersion) &&
         !VersionFingerprinter.compareVersions(version, minVersion)) {
       return false;

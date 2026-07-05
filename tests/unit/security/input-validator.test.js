@@ -417,7 +417,7 @@ describe('InputValidator - Security Hardening Phase 2', () => {
 
   describe('Edge Cases', () => {
     test('should handle deeply nested objects', () => {
-      let nested = { command: 'test', params: {} };
+      const nested = { command: 'test', params: {} };
       let current = nested.params;
 
       for (let i = 0; i < 15; i++) {

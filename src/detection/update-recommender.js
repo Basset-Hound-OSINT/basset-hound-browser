@@ -308,7 +308,9 @@ class UpdateRecommender {
    * @private
    */
   _isVersionGreater(v1, v2) {
-    if (!v1 || !v2) return false;
+    if (!v1 || !v2) {
+      return false;
+    }
 
     const normalize = (v) => {
       const parts = v.split(/[.-]/).map(p => {
@@ -321,8 +323,12 @@ class UpdateRecommender {
     const [v1Major, v1Minor, v1Patch] = normalize(v1);
     const [v2Major, v2Minor, v2Patch] = normalize(v2);
 
-    if (v1Major !== v2Major) return v1Major > v2Major;
-    if (v1Minor !== v2Minor) return v1Minor > v2Minor;
+    if (v1Major !== v2Major) {
+      return v1Major > v2Major;
+    }
+    if (v1Minor !== v2Minor) {
+      return v1Minor > v2Minor;
+    }
     return v1Patch > v2Patch;
   }
 
@@ -331,8 +337,12 @@ class UpdateRecommender {
    * @private
    */
   _compareVersions(v1, v2) {
-    if (this._isVersionGreater(v1, v2)) return 1;
-    if (this._isVersionGreater(v2, v1)) return -1;
+    if (this._isVersionGreater(v1, v2)) {
+      return 1;
+    }
+    if (this._isVersionGreater(v2, v1)) {
+      return -1;
+    }
     return 0;
   }
 
@@ -341,7 +351,9 @@ class UpdateRecommender {
    * @private
    */
   _isMajorVersionChange(fromVersion, toVersion) {
-    if (!fromVersion || !toVersion) return false;
+    if (!fromVersion || !toVersion) {
+      return false;
+    }
 
     const getMajor = (v) => {
       const match = v.match(/^(\d+)/);

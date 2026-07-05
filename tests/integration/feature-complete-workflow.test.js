@@ -51,7 +51,9 @@ class ComprehensiveDashboard extends EventEmitter {
 
   addMonitorToCampaign(campaignId, monitorConfig) {
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign) throw new Error('Campaign not found');
+    if (!campaign) {
+      throw new Error('Campaign not found');
+    }
 
     const monitor = {
       id: `monitor-${Date.now()}`,
@@ -91,7 +93,9 @@ class ComprehensiveDashboard extends EventEmitter {
 
   getCampaignMetrics(campaignId) {
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign) return null;
+    if (!campaign) {
+      return null;
+    }
 
     return {
       campaignId,
@@ -194,9 +198,15 @@ class SimpleProxyManager {
   }
 
   selectPartner(strategy) {
-    if (strategy === 'cheapest') return 'datacenter-1';
-    if (strategy === 'fastest') return 'datacenter-1';
-    if (strategy === 'geo-aware') return 'rotating-1';
+    if (strategy === 'cheapest') {
+      return 'datacenter-1';
+    }
+    if (strategy === 'fastest') {
+      return 'datacenter-1';
+    }
+    if (strategy === 'geo-aware') {
+      return 'rotating-1';
+    }
     return 'rotating-1';
   }
 }

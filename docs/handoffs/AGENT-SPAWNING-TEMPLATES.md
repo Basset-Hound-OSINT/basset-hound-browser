@@ -1,8 +1,287 @@
 # Agent Spawning Templates for Phase 2 & v12.8.0
 
-**Version:** 1.0  
+**Version:** 1.2  
 **Created:** June 15, 2026  
+**Last Updated:** June 21, 2026 (Data Organization Enforcement Added)
 **Purpose:** Ready-to-use agent prompts for Phase 2 and v12.8.0 autonomous development
+
+---
+
+## 🚨 CRITICAL: MANDATORY DATA ORGANIZATION ENFORCEMENT (UPDATED JUNE 21, 2026)
+
+**THIS IS THE SINGLE MOST IMPORTANT RULE FOR ALL AGENTS**
+
+**THE RULE:** Generated data MUST go to `./tmp/` or `docs/archive/generated/`. NOTHING else may be created in root.
+
+### Non-Negotiable Standards
+
+1. **Root Directory Whitelist (ONLY these files allowed):**
+   - `package.json`, `package-lock.json`
+   - `README.md` (DO NOT put other .md files here)
+   - `.gitignore`, `.dockerignore`, `.eslintrc.json`, `.eslintignore`
+   - `SECURITY.md` (existing security documentation only)
+
+2. **All Generated Files Must Go Here:**
+   - **Test reports** → `tmp/test-results/[report-name]`
+   - **Performance metrics** → `tmp/reports/[metric-name]`
+   - **Screenshots** → `tmp/screenshots/[name]`
+   - **Logs** → `tmp/logs/[log-name]`
+   - **Build artifacts** → `tmp/build/[name]`
+   - **Temporary data** → `tmp/data/[name]`
+   - **Handoff documentation** → `docs/handoffs/[name]` (for knowledge transfer only)
+   - **Archive documentation** → `docs/archive/generated/[name]` (for historical records only)
+
+3. **Enforcement Verification (MANDATORY - do this before finishing):**
+   ```bash
+   find . -maxdepth 1 \( -name "*.md" ! -name "README.md" -o -name "*.txt" -o -name "*.json" ! -name "package.json" ! -name "package-lock.json" ! -name ".eslintrc.json" \)
+   ```
+   **Expected result:** EMPTY (no files should be found)
+   **If any files appear:** MOVE THEM IMMEDIATELY to proper location
+
+4. **Completion Checklist (REQUIRED in summary):**
+   - [ ] No files created in root directory
+   - [ ] All generated files organized to proper subdirectories
+   - [ ] Verification command run and returned empty
+   - [ ] File movements documented in final report
+
+**Rationale:** Keeps repository clean, prevents accidental commits, enables safe CI/CD, maintains professional structure.
+
+**Reference:** `/docs/DATA-ORGANIZATION-ENFORCEMENT.md` (complete guide)
+
+---
+
+## CRITICAL: API-FIRST ARCHITECTURE (UPDATED JUNE 20, 2026)
+
+**IMPORTANT - SDK Development is BLACKLISTED**
+
+For all agents spawned with these templates:
+- ✅ DO: Focus on API quality, command semantics, error handling
+- ✅ DO: Create example scripts in multiple languages (not maintained SDKs)
+- ✅ DO: Improve auto-generated API documentation (OpenAPI/Swagger)
+- ❌ DON'T: Maintain Python SDKs, JavaScript clients, or other language-specific SDKs
+- ❌ DON'T: Build SDK libraries with versioning and release cycles
+
+**What This Means:**
+Users write integration scripts in their language of choice using:
+1. Standard WebSocket libraries (available everywhere)
+2. Auto-generated API documentation (OpenAPI/Swagger)
+3. Example scripts (reference implementations)
+
+**If your feature includes SDK work:**
+- REPLACE with: "Create example scripts in Python, JavaScript, Go, Java showing this feature"
+- REPLACE with: "Update OpenAPI/Swagger docs for these new API commands"
+- REPLACE with: "Create integration guide for popular frameworks"
+
+See: `/docs/DEVELOPMENT-BLACKLIST.md` for full details
+
+---
+
+## CRITICAL: REPOSITORY ORGANIZATION ENFORCEMENT
+
+**This applies to EVERY agent spawned with these templates:**
+
+```
+CRITICAL INSTRUCTION - Repository Organization:
+
+NEVER create files in the project root directory. The root should contain ONLY:
+- package.json
+- package-lock.json  
+- README.md
+- .gitignore
+- .dockerignore
+- Makefile (if applicable)
+
+For all other files, use proper subdirectories:
+
+📁 Documentation (ALL .md files except README.md) → docs/ with subdirectories:
+   ├── docs/api/               - WebSocket API docs, command reference
+   ├── docs/guides/            - Deployment, integration, user guides
+   ├── docs/security/          - Security docs, hardening, vulnerability reports
+   ├── docs/testing/           - Testing strategies, test results, real-world results
+   ├── docs/research/          - Research documents, analysis, design docs
+   ├── docs/archive/           - Historical records, completed phases
+   ├── docs/compliance/        - Compliance and standards
+   ├── docs/deployment/        - Deployment procedures and runbooks
+   ├── docs/advanced/          - Advanced features documentation
+   ├── docs/customer-success/  - Customer docs, FAQs, examples
+   ├── docs/core/              - Core architecture documentation
+   └── docs/analysis/          - Code and performance analysis
+
+📁 Configuration Files → config/
+   Examples: app.config.json, database.config.json, env templates
+
+📁 Automation Scripts → scripts/
+   Examples: deploy.sh, build.sh, test-runner.sh
+
+ENFORCE THIS:
+1. Before finalizing your work, VERIFY no files were created in the root directory
+2. Command: find . -maxdepth 1 -type f -name "*.md" ! -name "README.md"
+3. If you created any files, move them to the appropriate directory IMMEDIATELY
+4. Report the file placements in your summary
+
+EXAMPLES:
+❌ WRONG: ./DEPLOYMENT-GUIDE.md
+✅ RIGHT: ./docs/guides/DEPLOYMENT-GUIDE.md
+
+❌ WRONG: ./REAL-WORLD-TEST-RESULTS.md
+✅ RIGHT: ./docs/testing/REAL-WORLD-TEST-RESULTS.md
+
+❌ WRONG: ./deploy-automation.sh
+✅ RIGHT: ./scripts/deploy-automation.sh
+```
+
+---
+
+## FILE PLACEMENT RULES (ENFORCEMENT STANDARD)
+
+**Apply these rules to EVERY FILE you create. Automated placement verification is required.**
+
+### Directory Mapping by File Type
+
+| File Type | Destination | Example |
+|-----------|-------------|---------|
+| **Documentation** (.md) | `docs/[category]/` | `docs/guides/DEPLOYMENT.md` |
+| **Generated Reports** | `docs/archive/generated/` | `docs/archive/generated/TEST-RESULTS.md` |
+| **API Documentation** | `docs/api/` | `docs/api/websocket-commands.md` |
+| **Integration Guides** | `docs/guides/` | `docs/guides/python-integration.md` |
+| **Security Docs** | `docs/security/` | `docs/security/vulnerability-disclosure.md` |
+| **Real-World Testing** | `docs/testing/` | `docs/testing/real-world-results.md` |
+| **Test Certificates** | `tests/certs/` | `tests/certs/localhost.crt` |
+| **Test Outputs** | `tests/results/` OR `tests/output/` | `tests/results/jest-output.json` |
+| **Temporary Files** | `tmp/` | `tmp/debug-logs.txt` |
+| **Configuration** | `config/` | `config/app.config.json` |
+| **Scripts** | `scripts/` | `scripts/deploy.sh` |
+| **Examples** | `examples/[category]/` | `examples/api-usage/websocket-client.py` |
+| **Source Code** | `src/` | `src/websocket/commands.js` |
+| **Research** | `docs/research/` | `docs/research/evasion-techniques.md` |
+| **Archived Content** | `docs/archive/` | `docs/archive/v11-implementation/` |
+
+### Verification Checklist (Before Finalizing)
+
+```bash
+# Run this command - should return NO FILES in root directory
+find . -maxdepth 1 -type f -name "*.md" ! -name "README.md"
+find . -maxdepth 1 -type f -name "*.txt"
+find . -maxdepth 1 -type f -name "*.json" ! -name "package.json" ! -name "package-lock.json"
+
+# Expected: No output (empty result set)
+# If any files appear, MOVE THEM IMMEDIATELY to the correct directory
+```
+
+### Examples of WRONG vs RIGHT
+
+| WRONG (At Root) | CORRECT (In docs/) |
+|-----------------|-------------------|
+| `./PHASE1-COMPLETION.md` | `./docs/archive/generated/PHASE1-COMPLETION.md` |
+| `./DEPLOYMENT-COMPLETE.txt` | `./docs/archive/generated/DEPLOYMENT-COMPLETE.txt` |
+| `./API-REFERENCE.md` | `./docs/api/API-REFERENCE.md` |
+| `./REAL-WORLD-RESULTS.md` | `./docs/testing/REAL-WORLD-RESULTS.md` |
+| `./security-findings.md` | `./docs/security/security-findings.md` |
+| `./research-analysis.md` | `./docs/research/research-analysis.md` |
+
+### Root Directory - ALLOWED FILES ONLY
+
+```
+/home/devel/basset-hound-browser/
+├── package.json                    ✅ KEEP
+├── package-lock.json              ✅ KEEP
+├── README.md                       ✅ KEEP
+├── .gitignore                      ✅ KEEP
+├── .dockerignore                   ✅ KEEP
+├── Makefile                        ✅ KEEP (if applicable)
+└── [NOTHING ELSE]                  ❌ NOT HERE
+```
+
+### If You Create Generated Files
+
+- **Test reports** → `tests/results/` or `tests/output/`
+- **Performance metrics** → `docs/archive/generated/` + documented in reports
+- **Completion summaries** → `docs/handoffs/` (for handoff documentation) or `docs/archive/generated/` (for historical records)
+- **Screenshots/artifacts** → `tmp/` (temporary) or `docs/archive/` (if historical value)
+
+---
+
+## CRITICAL: EXAMPLES POLICY
+
+**This applies to EVERY agent spawned with these templates:**
+
+```
+⚠️ CRITICAL INSTRUCTION - EXAMPLES ARE CURATED, NOT AUTO-UPDATED
+
+DO NOT automatically update examples/ directory when features are added.
+
+WHEN TO UPDATE EXAMPLES:
+✅ Only when you have EXPLICIT human/operator approval
+✅ When a feature warrants a new example (major new capability)
+✅ When an example has a documented bug or security issue
+✅ When an example's pattern is no longer supported (breaking API change)
+
+WHEN NOT TO UPDATE EXAMPLES:
+❌ Automatically on every feature addition
+❌ To maintain "perfect" consistency with latest API state
+❌ To chase feature additions in real time
+❌ To provide examples for every possible API combination
+❌ Without explicit human review and approval
+
+RATIONALE:
+- Examples are curated, high-quality reference material
+- Auto-update cycles create endless churn with minimal user benefit
+- Only important patterns get examples; users read the API reference for edge cases
+- Examples reflect stable, well-tested patterns, not cutting-edge feature combinations
+- Human approval ensures examples match actual best practices
+
+IMPLEMENTATION:
+- Examples live in: examples/[category]/ (tracked in git)
+- Generated artifacts: .claude/, blocking-data/, backups/ (NOT tracked)
+- Example updates require: (1) Code change, (2) Proposal, (3) Human approval, (4) Git commit
+
+IF A FEATURE NEEDS AN EXAMPLE:
+1. Document what the example should show
+2. Propose the example to the human operator
+3. Wait for explicit approval
+4. Only then implement the example
+5. Include rationale in the commit message
+```
+
+---
+
+## CRITICAL: GIT COMMIT ENFORCEMENT
+
+**This applies to EVERY agent spawned with these templates:**
+
+```
+⚠️ CRITICAL INSTRUCTION - NO GIT COMMITS
+
+Your role is to write code and documentation, NOT to manage git operations.
+
+NEVER run any of these commands:
+- git commit
+- git push
+- git reset
+- git rebase
+- git checkout
+- Any other git state-altering commands
+
+NEVER create commits, even if asked. Respond with: "I don't manage git commits. 
+That's the user's responsibility. I've completed the code/docs; the user will 
+handle git operations."
+
+WHY: Agents cannot reliably handle hooks, signing, conflict resolution, or 
+authorization. These tasks require human judgment and accountability.
+
+YOUR JOB:
+1. Write code files (src/, tests/, etc.)
+2. Write documentation (docs/)
+3. Run tests locally
+4. Report findings and status
+5. Wait for user to run 'git add' and 'git commit'
+
+USER'S JOB:
+1. Review your changes
+2. Create git commits
+3. Push to remote
+4. Handle PR reviews
+```
 
 ---
 

@@ -406,22 +406,30 @@ class ErrorTracer extends EventEmitter {
 
       if (criteria.errorType) {
         totalCriteria++;
-        if (error.errorType === criteria.errorType) matches++;
+        if (error.errorType === criteria.errorType) {
+          matches++;
+        }
       }
 
       if (criteria.errorCode) {
         totalCriteria++;
-        if (error.errorCode === criteria.errorCode) matches++;
+        if (error.errorCode === criteria.errorCode) {
+          matches++;
+        }
       }
 
       if (criteria.component) {
         totalCriteria++;
-        if (error.component === criteria.component) matches++;
+        if (error.component === criteria.component) {
+          matches++;
+        }
       }
 
       if (criteria.severity) {
         totalCriteria++;
-        if (error.severity === criteria.severity) matches++;
+        if (error.severity === criteria.severity) {
+          matches++;
+        }
       }
 
       if (criteria.timeWindow && (now - error.timestamp) < criteria.timeWindow) {
@@ -562,7 +570,9 @@ class ErrorTracer extends EventEmitter {
    */
   _buildErrorTree(errorId) {
     const error = this.errors.get(errorId);
-    if (!error) return;
+    if (!error) {
+      return;
+    }
 
     const tree = {
       errorId,

@@ -1,6 +1,30 @@
 const { session } = require('electron');
 const fs = require('fs').promises;
 const path = require('path');
+const os = require('os');
+const { PathValidator } = require('../utils/path-validator');
+
+/**
+ * H-2/H-3: allowed directories for param-derived cookie file export/import.
+ * Confines attacker-controlled filepaths to the app's own data areas, preventing
+ * arbitrary file write (export) and arbitrary file read (import). Extend via
+ * BASSET_ALLOWED_WRITE_DIRS (path-delimiter separated list of absolute dirs).
+ */
+function buildCookieAllowedDirs() {
+  const dirs = [
+    path.join(process.cwd(), 'exports'),
+    path.join(process.cwd(), 'data'),
+    path.join(process.cwd(), 'tmp'),
+    path.join(process.cwd(), 'downloads'),
+    os.tmpdir()
+  ];
+  if (process.env.BASSET_ALLOWED_WRITE_DIRS) {
+    for (const d of process.env.BASSET_ALLOWED_WRITE_DIRS.split(path.delimiter)) {
+      if (d && d.trim()) dirs.push(path.resolve(d.trim()));
+    }
+  }
+  return dirs;
+}
 
 /**
  * Cookie export/import formats
@@ -18,6 +42,8 @@ const COOKIE_FORMATS = {
 class CookieManager {
   constructor(electronSession = null) {
     this.session = electronSession || session.defaultSession;
+    // H-2/H-3: path validator confining param-derived file export/import to allowed dirs
+    this.pathValidator = new PathValidator({ allowedDirs: buildCookieAllowedDirs() });
   }
 
   /**
@@ -47,11 +73,78 @@ class CookieManager {
         return { success: false, error: 'URL is required' };
       }
 
-      const cookies = await this.session.cookies.get({ url });
+      // Primary: Electron's native url filter (works on the current Electron build).
+      let cookies = await this.session.cookies.get({ url });
+
+      // Defensive fallback: some Electron versions have returned an empty list from
+      // `cookies.get({ url })` even when matching cookies exist in the jar (while the
+      // `{ domain }` and `{}` filters return them correctly). If the native url filter
+      // comes back empty, resolve the applicable cookies ourselves from the full jar
+      // using standard RFC 6265 host/path/secure matching, so a URL-filtered read stays
+      // consistent with get_all_cookies.
+      if (!cookies || cookies.length === 0) {
+        let parsed;
+        try {
+          parsed = new URL(url);
+        } catch (e) {
+          return { success: false, error: `Invalid URL: ${url}` };
+        }
+        const all = await this.session.cookies.get({});
+        cookies = all.filter(cookie => this.cookieMatchesUrl(cookie, parsed));
+      }
+
       return { success: true, cookies };
     } catch (error) {
       return { success: false, error: error.message };
     }
+  }
+
+  /**
+   * Determine whether a stored cookie would be sent to the given URL, using
+   * standard cookie host/path/secure matching (RFC 6265). Used as a fallback for
+   * getCookies() because Electron's native `cookies.get({ url })` returns nothing
+   * in this build.
+   * @param {Object} cookie - Cookie object from session.cookies.get({})
+   * @param {URL} parsedUrl - Parsed request URL
+   * @returns {boolean} True if the cookie applies to the URL
+   */
+  cookieMatchesUrl(cookie, parsedUrl) {
+    const host = parsedUrl.hostname.toLowerCase();
+    const isHttps = parsedUrl.protocol === 'https:';
+    const reqPath = parsedUrl.pathname || '/';
+
+    // Secure cookies only travel over https.
+    if (cookie.secure && !isHttps) {
+      return false;
+    }
+
+    // Domain match. Electron stores host-only cookies with a bare domain and
+    // domain (subdomain-matching) cookies with a leading dot.
+    const cookieDomain = (cookie.domain || '').toLowerCase();
+    if (!cookieDomain) {
+      return false;
+    }
+    const hostOnly = cookie.hostOnly !== undefined
+      ? cookie.hostOnly
+      : !cookieDomain.startsWith('.');
+    const bareDomain = cookieDomain.startsWith('.') ? cookieDomain.slice(1) : cookieDomain;
+    const domainOk = hostOnly
+      ? host === bareDomain
+      : (host === bareDomain || host.endsWith('.' + bareDomain));
+    if (!domainOk) {
+      return false;
+    }
+
+    // Path match (RFC 6265 §5.1.4 path-match).
+    const cookiePath = cookie.path || '/';
+    const pathOk = reqPath === cookiePath ||
+      (reqPath.startsWith(cookiePath) &&
+        (cookiePath.endsWith('/') || reqPath.charAt(cookiePath.length) === '/'));
+    if (!pathOk) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
@@ -176,14 +269,14 @@ class CookieManager {
       const cookies = await this.session.cookies.get(filter);
 
       switch (format.toLowerCase()) {
-        case COOKIE_FORMATS.JSON:
-          return this.exportToJSON(cookies);
-        case COOKIE_FORMATS.NETSCAPE:
-          return this.exportToNetscape(cookies);
-        case COOKIE_FORMATS.EDIT_THIS_COOKIE:
-          return this.exportToEditThisCookie(cookies);
-        default:
-          return { success: false, error: `Unknown format: ${format}` };
+      case COOKIE_FORMATS.JSON:
+        return this.exportToJSON(cookies);
+      case COOKIE_FORMATS.NETSCAPE:
+        return this.exportToNetscape(cookies);
+      case COOKIE_FORMATS.EDIT_THIS_COOKIE:
+        return this.exportToEditThisCookie(cookies);
+      default:
+        return { success: false, error: `Unknown format: ${format}` };
       }
     } catch (error) {
       return { success: false, error: error.message };
@@ -264,17 +357,17 @@ class CookieManager {
       const detectedFormat = format === 'auto' ? this.detectFormat(data) : format;
 
       switch (detectedFormat.toLowerCase()) {
-        case COOKIE_FORMATS.JSON:
-          cookies = this.parseJSON(data);
-          break;
-        case COOKIE_FORMATS.NETSCAPE:
-          cookies = this.parseNetscape(data);
-          break;
-        case COOKIE_FORMATS.EDIT_THIS_COOKIE:
-          cookies = this.parseEditThisCookie(data);
-          break;
-        default:
-          return { success: false, error: `Unknown format: ${format}` };
+      case COOKIE_FORMATS.JSON:
+        cookies = this.parseJSON(data);
+        break;
+      case COOKIE_FORMATS.NETSCAPE:
+        cookies = this.parseNetscape(data);
+        break;
+      case COOKIE_FORMATS.EDIT_THIS_COOKIE:
+        cookies = this.parseEditThisCookie(data);
+        break;
+      default:
+        return { success: false, error: `Unknown format: ${format}` };
       }
 
       if (!cookies || cookies.length === 0) {
@@ -441,6 +534,13 @@ class CookieManager {
    */
   async exportToFile(filepath, format = COOKIE_FORMATS.JSON, filter = {}) {
     try {
+      // H-2: validate the attacker-controllable path before writing.
+      const validation = this.pathValidator.validatePath(filepath, 'write');
+      if (!validation.valid) {
+        return { success: false, error: `Path validation failed: ${validation.error}` };
+      }
+      const safePath = validation.realPath;
+
       const result = await this.exportCookies(format, filter);
 
       if (!result.success) {
@@ -448,15 +548,15 @@ class CookieManager {
       }
 
       // Ensure directory exists
-      const dir = path.dirname(filepath);
+      const dir = path.dirname(safePath);
       await fs.mkdir(dir, { recursive: true });
 
       // Write the file
-      await fs.writeFile(filepath, result.data, 'utf8');
+      await fs.writeFile(safePath, result.data, 'utf8');
 
       return {
         success: true,
-        filepath,
+        filepath: safePath,
         count: result.cookies.length,
         format: result.format
       };
@@ -473,11 +573,18 @@ class CookieManager {
    */
   async importFromFile(filepath, format = 'auto') {
     try {
+      // H-3: validate the attacker-controllable path before reading.
+      const validation = this.pathValidator.validatePath(filepath, 'read');
+      if (!validation.valid) {
+        return { success: false, error: `Path validation failed: ${validation.error}` };
+      }
+      const safePath = validation.realPath;
+
       // Check if file exists
-      await fs.access(filepath);
+      await fs.access(safePath);
 
       // Read the file
-      const data = await fs.readFile(filepath, 'utf8');
+      const data = await fs.readFile(safePath, 'utf8');
 
       // Import the cookies
       return await this.importCookies(data, format);
@@ -544,8 +651,12 @@ class CookieManager {
 
       for (const cookie of cookies) {
         domains.add(cookie.domain);
-        if (cookie.secure) secureCookies++;
-        if (cookie.httpOnly) httpOnlyCookies++;
+        if (cookie.secure) {
+          secureCookies++;
+        }
+        if (cookie.httpOnly) {
+          httpOnlyCookies++;
+        }
         if (!cookie.expirationDate) {
           sessionCookies++;
         } else {

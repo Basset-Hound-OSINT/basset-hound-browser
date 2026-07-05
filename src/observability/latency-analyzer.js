@@ -147,11 +147,15 @@ class LatencyAnalyzer extends EventEmitter {
 
     const visited = new Set();
     const processSpan = (spanId, level = 0) => {
-      if (visited.has(spanId)) return;
+      if (visited.has(spanId)) {
+        return;
+      }
       visited.add(spanId);
 
       const span = this.spanLatencies.get(spanId);
-      if (!span) return;
+      if (!span) {
+        return;
+      }
 
       if (!hierarchy.levels[level]) {
         hierarchy.levels[level] = [];
@@ -436,7 +440,9 @@ class LatencyAnalyzer extends EventEmitter {
    * Update component latency
    */
   _updateComponentLatency(component, duration) {
-    if (!component) return;
+    if (!component) {
+      return;
+    }
 
     if (!this.componentLatencies.has(component)) {
       this.recordComponentLatency(component, { duration });
@@ -500,13 +506,17 @@ class LatencyAnalyzer extends EventEmitter {
    * Calculate percentile value
    */
   _percentile(arr, p) {
-    if (arr.length === 0) return 0;
+    if (arr.length === 0) {
+      return 0;
+    }
     const index = (p / 100) * (arr.length - 1);
     const lower = Math.floor(index);
     const upper = Math.ceil(index);
     const weight = index % 1;
 
-    if (lower === upper) return arr[lower];
+    if (lower === upper) {
+      return arr[lower];
+    }
     return arr[lower] * (1 - weight) + arr[upper] * weight;
   }
 
@@ -514,7 +524,9 @@ class LatencyAnalyzer extends EventEmitter {
    * Calculate standard deviation
    */
   _calculateStdDev(arr) {
-    if (arr.length === 0) return 0;
+    if (arr.length === 0) {
+      return 0;
+    }
     const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
     const squareDiffs = arr.map(v => Math.pow(v - avg, 2));
     const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / arr.length;
@@ -526,9 +538,15 @@ class LatencyAnalyzer extends EventEmitter {
    */
   _calculateBottleneckSeverity(latency, avg) {
     const ratio = latency / avg;
-    if (ratio > 5) return 'critical';
-    if (ratio > 3) return 'high';
-    if (ratio > 2) return 'medium';
+    if (ratio > 5) {
+      return 'critical';
+    }
+    if (ratio > 3) {
+      return 'high';
+    }
+    if (ratio > 2) {
+      return 'medium';
+    }
     return 'low';
   }
 
@@ -536,15 +554,21 @@ class LatencyAnalyzer extends EventEmitter {
    * Analyze trend direction
    */
   _analyzeTrend(values) {
-    if (values.length < 2) return 'insufficient_data';
+    if (values.length < 2) {
+      return 'insufficient_data';
+    }
     const recent = values.slice(-10);
     const older = values.slice(0, Math.max(1, Math.floor(values.length / 2)));
     const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
     const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
     const change = ((recentAvg - olderAvg) / olderAvg) * 100;
 
-    if (change > 10) return 'increasing';
-    if (change < -10) return 'decreasing';
+    if (change > 10) {
+      return 'increasing';
+    }
+    if (change < -10) {
+      return 'decreasing';
+    }
     return 'stable';
   }
 

@@ -168,12 +168,12 @@ class AlgorithmSelector extends EventEmitter {
   _scoreComplexity(complexity, size) {
     // Rough scoring based on complexity class
     switch (complexity) {
-      case 'O(1)': return 1;
-      case 'O(log n)': return Math.log2(size + 1);
-      case 'O(n)': return size;
-      case 'O(n log n)': return size * Math.log2(size + 1);
-      case 'O(n²)': return size * size;
-      default: return size; // Default to linear
+    case 'O(1)': return 1;
+    case 'O(log n)': return Math.log2(size + 1);
+    case 'O(n)': return size;
+    case 'O(n log n)': return size * Math.log2(size + 1);
+    case 'O(n²)': return size * size;
+    default: return size; // Default to linear
     }
   }
 
@@ -224,7 +224,9 @@ class SortingAlgorithms {
    * Quick sort - optimal for medium arrays
    */
   static quickSort(arr) {
-    if (arr.length <= 1) return arr;
+    if (arr.length <= 1) {
+      return arr;
+    }
 
     const pivot = arr[Math.floor(arr.length / 2)];
     const left = arr.filter(x => x < pivot);
@@ -242,7 +244,9 @@ class SortingAlgorithms {
    * Merge sort - optimal for large arrays
    */
   static mergeSort(arr) {
-    if (arr.length <= 1) return arr;
+    if (arr.length <= 1) {
+      return arr;
+    }
 
     const mid = Math.floor(arr.length / 2);
     const left = this.mergeSort(arr.slice(0, mid));
@@ -323,7 +327,9 @@ class SearchAlgorithms {
    */
   static linearSearch(arr, target) {
     for (let i = 0; i < arr.length; i++) {
-      if (arr[i] === target) return i;
+      if (arr[i] === target) {
+        return i;
+      }
     }
     return -1;
   }
@@ -337,7 +343,9 @@ class SearchAlgorithms {
     while (left <= right) {
       const mid = Math.floor((left + right) / 2);
 
-      if (arr[mid] === target) return mid;
+      if (arr[mid] === target) {
+        return mid;
+      }
       if (arr[mid] < target) {
         left = mid + 1;
       } else {
@@ -359,7 +367,9 @@ class SearchAlgorithms {
         ((target - arr[left]) / (arr[right] - arr[left])) * (right - left)
       );
 
-      if (arr[pos] === target) return pos;
+      if (arr[pos] === target) {
+        return pos;
+      }
       if (arr[pos] < target) {
         left = pos + 1;
       } else {
@@ -381,15 +391,21 @@ class SearchAlgorithms {
     while (arr[Math.min(step, n) - 1] < target) {
       prev = step;
       step += Math.floor(Math.sqrt(n));
-      if (prev >= n) return -1;
+      if (prev >= n) {
+        return -1;
+      }
     }
 
     while (arr[prev] < target) {
       prev++;
-      if (prev === Math.min(step, n)) return -1;
+      if (prev === Math.min(step, n)) {
+        return -1;
+      }
     }
 
-    if (arr[prev] === target) return prev;
+    if (arr[prev] === target) {
+      return prev;
+    }
     return -1;
   }
 }
@@ -400,26 +416,26 @@ class SearchAlgorithms {
 class DataStructureSelector {
   static selectStructure(useCase, size) {
     switch (useCase) {
-      case 'frequent-lookups':
-        return size < 100 ? 'array' : 'hashmap';
+    case 'frequent-lookups':
+      return size < 100 ? 'array' : 'hashmap';
 
-      case 'frequent-inserts':
-        return size < 1000 ? 'array' : 'linkedlist';
+    case 'frequent-inserts':
+      return size < 1000 ? 'array' : 'linkedlist';
 
-      case 'sorted-access':
-        return 'tree';
+    case 'sorted-access':
+      return 'tree';
 
-      case 'cache':
-        return 'lru-cache';
+    case 'cache':
+      return 'lru-cache';
 
-      case 'queue':
-        return size < 10000 ? 'array-queue' : 'linked-queue';
+    case 'queue':
+      return size < 10000 ? 'array-queue' : 'linked-queue';
 
-      case 'priority':
-        return 'heap';
+    case 'priority':
+      return 'heap';
 
-      default:
-        return 'array';
+    default:
+      return 'array';
     }
   }
 }

@@ -18,12 +18,12 @@
 class MessageBatcher {
   constructor(options = {}) {
     this.batchTimeWindow = options.batchTimeWindow || 100; // ms
-    this.batchSize = options.batchSize || 10;              // min messages to batch
-    this.maxBatchSize = options.maxBatchSize || 100;       // max messages per batch
+    this.batchSize = options.batchSize || 10; // min messages to batch
+    this.maxBatchSize = options.maxBatchSize || 100; // max messages per batch
     this.enabled = options.enabled !== false;
 
     // Per-client batching state
-    this.clientBatches = new Map();                        // clientId -> {messages, timer, stats}
+    this.clientBatches = new Map(); // clientId -> {messages, timer, stats}
 
     // Global statistics
     this.stats = {

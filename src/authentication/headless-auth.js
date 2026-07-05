@@ -24,8 +24,12 @@ class HeadlessAuthenticationManager {
    * Register an authentication flow for reuse
    */
   registerAuthFlow(name, config) {
-    if (!config.type) throw new Error('Auth flow must have a type (oauth, login-form, captcha-aware, etc)');
-    if (!config.steps || !Array.isArray(config.steps)) throw new Error('Auth flow must have steps array');
+    if (!config.type) {
+      throw new Error('Auth flow must have a type (oauth, login-form, captcha-aware, etc)');
+    }
+    if (!config.steps || !Array.isArray(config.steps)) {
+      throw new Error('Auth flow must have steps array');
+    }
 
     this.authFlows.set(name, {
       ...config,
@@ -41,7 +45,9 @@ class HeadlessAuthenticationManager {
    */
   async executeAuthFlow(flowName, context = {}) {
     const flow = this.authFlows.get(flowName);
-    if (!flow) throw new Error(`Auth flow not found: ${flowName}`);
+    if (!flow) {
+      throw new Error(`Auth flow not found: ${flowName}`);
+    }
 
     const executionId = this.generateExecutionId();
     const startTime = Date.now();
@@ -119,35 +125,35 @@ class HeadlessAuthenticationManager {
     const stepStartTime = Date.now();
 
     switch (step.type) {
-      case 'navigate':
-        return await this.stepNavigate(step, context);
+    case 'navigate':
+      return await this.stepNavigate(step, context);
 
-      case 'fill_login_form':
-        return await this.stepFillLoginForm(step, context);
+    case 'fill_login_form':
+      return await this.stepFillLoginForm(step, context);
 
-      case 'handle_mfa':
-        return await this.stepHandleMFA(step, context);
+    case 'handle_mfa':
+      return await this.stepHandleMFA(step, context);
 
-      case 'handle_captcha':
-        return await this.stepHandleCaptcha(step, context);
+    case 'handle_captcha':
+      return await this.stepHandleCaptcha(step, context);
 
-      case 'detect_success':
-        return await this.stepDetectSuccess(step, context);
+    case 'detect_success':
+      return await this.stepDetectSuccess(step, context);
 
-      case 'wait_for_redirect':
-        return await this.stepWaitForRedirect(step, context);
+    case 'wait_for_redirect':
+      return await this.stepWaitForRedirect(step, context);
 
-      case 'verify_session':
-        return await this.stepVerifySession(step, context);
+    case 'verify_session':
+      return await this.stepVerifySession(step, context);
 
-      case 'handle_error':
-        return await this.stepHandleError(step, context);
+    case 'handle_error':
+      return await this.stepHandleError(step, context);
 
-      case 'custom_script':
-        return await this.stepCustomScript(step, context);
+    case 'custom_script':
+      return await this.stepCustomScript(step, context);
 
-      default:
-        throw new Error(`Unknown auth step type: ${step.type}`);
+    default:
+      throw new Error(`Unknown auth step type: ${step.type}`);
     }
   }
 
@@ -297,30 +303,30 @@ class HeadlessAuthenticationManager {
 
     // Strategy depends on CAPTCHA type
     switch (step.captchaType) {
-      case 'recaptcha_v2':
-        return await this.handleRecaptchaV2(step, context);
+    case 'recaptcha_v2':
+      return await this.handleRecaptchaV2(step, context);
 
-      case 'recaptcha_v3':
-        return await this.handleRecaptchaV3(step, context);
+    case 'recaptcha_v3':
+      return await this.handleRecaptchaV3(step, context);
 
-      case 'hcaptcha':
-        return await this.handleHCaptcha(step, context);
+    case 'hcaptcha':
+      return await this.handleHCaptcha(step, context);
 
-      case 'image_puzzle':
-        return await this.handleImagePuzzle(step, context);
+    case 'image_puzzle':
+      return await this.handleImagePuzzle(step, context);
 
-      case 'email_verification':
-        return await this.handleEmailVerification(step, context);
+    case 'email_verification':
+      return await this.handleEmailVerification(step, context);
 
-      default:
-        // Pause and wait for manual intervention
-        return {
-          success: false,
-          captchaPresent: true,
-          captchaType: step.captchaType || 'unknown',
-          action: 'manual_intervention_required',
-          duration: Date.now() - startTime
-        };
+    default:
+      // Pause and wait for manual intervention
+      return {
+        success: false,
+        captchaPresent: true,
+        captchaType: step.captchaType || 'unknown',
+        action: 'manual_intervention_required',
+        duration: Date.now() - startTime
+      };
     }
   }
 
@@ -673,7 +679,9 @@ class HeadlessAuthenticationManager {
 
     while (Date.now() - startTime < timeout) {
       const exists = await this.browser.elementExists(selector);
-      if (exists) return true;
+      if (exists) {
+        return true;
+      }
 
       await new Promise(resolve => setTimeout(resolve, checkInterval));
     }
@@ -691,7 +699,9 @@ class HeadlessAuthenticationManager {
     while (Date.now() - startTime < timeout) {
       try {
         const result = await this.browser.evaluate(script);
-        if (result) return true;
+        if (result) {
+          return true;
+        }
       } catch (error) {
         // Script error, continue waiting
       }
@@ -706,7 +716,9 @@ class HeadlessAuthenticationManager {
    * Substitute variables in strings
    */
   substituteVariables(str, context) {
-    if (typeof str !== 'string') return str;
+    if (typeof str !== 'string') {
+      return str;
+    }
 
     return str.replace(/\$\{(\w+)\}/g, (match, key) => {
       return context[key] !== undefined ? context[key] : match;

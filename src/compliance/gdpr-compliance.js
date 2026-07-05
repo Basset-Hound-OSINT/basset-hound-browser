@@ -496,7 +496,9 @@ class GDPRComplianceEngine {
    */
   hasConsent(userId, activityId) {
     const consents = this.consentRegistry.get(userId);
-    if (!consents) return false;
+    if (!consents) {
+      return false;
+    }
 
     return consents.some(c =>
       c.activityId === activityId &&
@@ -607,7 +609,9 @@ class GDPRComplianceEngine {
    * @private
    */
   _escapeXml(str) {
-    if (!str) return '';
+    if (!str) {
+      return '';
+    }
     return str
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')

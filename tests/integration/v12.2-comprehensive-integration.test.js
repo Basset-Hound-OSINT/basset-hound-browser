@@ -256,7 +256,9 @@ class MockSessionManager {
 
   updateSession(id, updates) {
     const session = this.sessions.get(id);
-    if (!session) throw new Error(`Session ${id} not found`);
+    if (!session) {
+      throw new Error(`Session ${id} not found`);
+    }
     Object.assign(session, updates);
     return session;
   }
@@ -313,7 +315,9 @@ class PerformanceMonitor {
 
   getAverageLatency(operation) {
     const ops = this.metrics.latencies.filter(l => l.operation === operation);
-    if (ops.length === 0) return 0;
+    if (ops.length === 0) {
+      return 0;
+    }
     return ops.reduce((sum, l) => sum + l.latency, 0) / ops.length;
   }
 

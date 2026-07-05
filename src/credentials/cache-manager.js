@@ -145,7 +145,7 @@ class LRUCache {
       misses: this.misses,
       hitRate: `${hitRate}%`,
       evictions: this.evictions,
-      totalOperations: total,
+      totalOperations: total
     };
   }
 

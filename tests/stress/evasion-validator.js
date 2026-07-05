@@ -98,7 +98,7 @@ class EvasionValidator {
   async createSession() {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(CONFIG.WS_URL);
-      let messageId = 0;
+      const messageId = 0;
       const pendingRequests = new Map();
 
       ws.on('open', () => {
@@ -132,7 +132,9 @@ class EvasionValidator {
 
         ws.on('message', (data) => {
           const msg = JSON.parse(data.toString());
-          if (msg.type === 'status') return;
+          if (msg.type === 'status') {
+            return;
+          }
 
           const pending = session.pendingRequests.get(msg.id);
           if (pending) {
@@ -634,7 +636,7 @@ class EvasionValidator {
     const { evasion_techniques, overall_evasion_effectiveness, issues_found } = this.results;
     const duration = Date.now() - this.startTime;
 
-    let report = `BASSET HOUND BROWSER - EVASION VALIDATOR STRESS TEST REPORT
+    const report = `BASSET HOUND BROWSER - EVASION VALIDATOR STRESS TEST REPORT
 ====================================================================
 
 Test Timestamp: ${this.results.timestamp}
@@ -678,8 +680,8 @@ OVERALL EVASION EFFECTIVENESS: ${(overall_evasion_effectiveness * 100).toFixed(2
 
 ASSESSMENT: ${
   overall_evasion_effectiveness > 0.88 ? 'PRODUCTION READY - All evasion techniques performing above target thresholds' :
-  overall_evasion_effectiveness > 0.80 ? 'OPERATIONAL - Core techniques effective, minor optimizations recommended' :
-  'NEEDS IMPROVEMENT - Address flagged issues before production deployment'
+    overall_evasion_effectiveness > 0.80 ? 'OPERATIONAL - Core techniques effective, minor optimizations recommended' :
+      'NEEDS IMPROVEMENT - Address flagged issues before production deployment'
 }
 
 ISSUES FOUND: ${issues_found.length}

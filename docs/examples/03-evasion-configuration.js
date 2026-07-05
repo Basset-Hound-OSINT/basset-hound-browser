@@ -22,8 +22,8 @@ class EvasionConfiguration {
       // === 1. Load Fingerprint Profile ===
       console.log('1. Loading fingerprint profile...');
       const profileResponse = await this.sendCommand('loadFingerprintProfile', {
-        profileType: 'realistic',  // realistic, aggressive, stealth
-        category: 'desktop'         // desktop, mobile, tablet
+        profileType: 'realistic', // realistic, aggressive, stealth
+        category: 'desktop' // desktop, mobile, tablet
       });
       console.log(`   Status: ${profileResponse.status}`);
 
@@ -31,7 +31,7 @@ class EvasionConfiguration {
       console.log('2. Configuring canvas evasion...');
       const canvasResponse = await this.sendCommand('configureCanvasEvasion', {
         enabled: true,
-        noiseLevel: 'medium',  // low, medium, high
+        noiseLevel: 'medium', // low, medium, high
         spooferType: 'realistic'
       });
       console.log(`   Status: ${canvasResponse.status}`);
@@ -49,8 +49,8 @@ class EvasionConfiguration {
       console.log('4. Setting up behavioral simulation...');
       const behaviorResponse = await this.sendCommand('configureBehavior', {
         enabled: true,
-        clickDelay: { min: 100, max: 500 },  // milliseconds
-        scrollPattern: 'natural',             // natural, random, smooth
+        clickDelay: { min: 100, max: 500 }, // milliseconds
+        scrollPattern: 'natural', // natural, random, smooth
         mouseMoveDelay: { min: 50, max: 200 }
       });
       console.log(`   Status: ${behaviorResponse.status}`);
@@ -60,7 +60,7 @@ class EvasionConfiguration {
       const webrtcResponse = await this.sendCommand('configureWebRTCLeakPrevention', {
         enabled: true,
         hideIPs: true,
-        proxyType: 'http'  // http, socks5, none
+        proxyType: 'http' // http, socks5, none
       });
       console.log(`   Status: ${webrtcResponse.status}`);
 

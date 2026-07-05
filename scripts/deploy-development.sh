@@ -10,7 +10,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Configuration
 CONTAINER_NAME="basset-hound-browser-dev"
-COMPOSE_FILE="docker-compose.development.yml"
+COMPOSE_FILE="config/docker/docker-compose.development.yml"
 PORT=8766
 BUILD_PORT=8765
 

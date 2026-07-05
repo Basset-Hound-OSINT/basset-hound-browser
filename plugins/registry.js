@@ -451,7 +451,9 @@ class PluginRegistry extends EventEmitter {
     const visiting = new Set();
 
     const visit = (name) => {
-      if (visited.has(name)) return;
+      if (visited.has(name)) {
+        return;
+      }
       if (visiting.has(name)) {
         throw new Error(`Circular dependency detected: ${name}`);
       }
@@ -537,7 +539,9 @@ class PluginRegistry extends EventEmitter {
    * Load configurations from disk
    */
   loadConfigurations() {
-    if (!this.configPath) return;
+    if (!this.configPath) {
+      return;
+    }
 
     const configFile = path.join(this.configPath, 'plugin-configs.json');
 
@@ -561,7 +565,9 @@ class PluginRegistry extends EventEmitter {
    * Save all configurations to disk
    */
   saveConfigurations() {
-    if (!this.configPath || !this.persistConfig) return;
+    if (!this.configPath || !this.persistConfig) {
+      return;
+    }
 
     const configFile = path.join(this.configPath, 'plugin-configs.json');
 

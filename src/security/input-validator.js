@@ -286,7 +286,9 @@ class InputValidator {
    * Detect path traversal attempts
    */
   detectPathTraversal(path) {
-    if (!this.enablePathTraversal) return { detected: false };
+    if (!this.enablePathTraversal) {
+      return { detected: false };
+    }
 
     for (const pattern of this.pathPatterns) {
       if (pattern.test(path)) {
@@ -300,7 +302,9 @@ class InputValidator {
    * Detect command injection attempts
    */
   detectCommandInjection(value) {
-    if (!this.enableCommandInjection) return { detected: false };
+    if (!this.enableCommandInjection) {
+      return { detected: false };
+    }
 
     for (const pattern of this.commandPatterns) {
       if (pattern.test(value)) {

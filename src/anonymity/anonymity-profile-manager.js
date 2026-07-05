@@ -146,7 +146,9 @@ class AnonymityProfileManager {
    */
   getGPUForDevice(deviceProfile) {
     // Extract GPU from device profile or detect from brand/model
-    if (deviceProfile.gpu) return deviceProfile.gpu;
+    if (deviceProfile.gpu) {
+      return deviceProfile.gpu;
+    }
 
     // Infer from device brand/model and type
     const brand = deviceProfile.vendor || 'Unknown';
@@ -154,15 +156,29 @@ class AnonymityProfileManager {
     const name = deviceProfile.name || '';
 
     if (brand.includes('Apple')) {
-      if (name.includes('15 Pro') || name.includes('iPhone 15 Pro')) return 'Apple A17 Pro';
-      if (name.includes('14') || name.includes('13') || name.includes('12')) return 'Apple A16 Bionic';
-      if (name.includes('MacBook') && name.includes('M3 Max')) return 'Apple M3 Max GPU';
-      if (name.includes('MacBook') && name.includes('M2')) return 'Apple M2 GPU';
+      if (name.includes('15 Pro') || name.includes('iPhone 15 Pro')) {
+        return 'Apple A17 Pro';
+      }
+      if (name.includes('14') || name.includes('13') || name.includes('12')) {
+        return 'Apple A16 Bionic';
+      }
+      if (name.includes('MacBook') && name.includes('M3 Max')) {
+        return 'Apple M3 Max GPU';
+      }
+      if (name.includes('MacBook') && name.includes('M2')) {
+        return 'Apple M2 GPU';
+      }
       return 'Apple A16 Bionic';
     }
-    if (brand.includes('Samsung') || brand.includes('Google')) return 'Qualcomm Adreno 8';
-    if (brand.includes('Intel')) return 'Intel UHD Graphics';
-    if (brand.includes('AMD')) return 'AMD Radeon RX 7700';
+    if (brand.includes('Samsung') || brand.includes('Google')) {
+      return 'Qualcomm Adreno 8';
+    }
+    if (brand.includes('Intel')) {
+      return 'Intel UHD Graphics';
+    }
+    if (brand.includes('AMD')) {
+      return 'AMD Radeon RX 7700';
+    }
 
     return 'Unknown GPU';
   }
@@ -301,7 +317,7 @@ class AnonymityProfileManager {
     }
 
     const { wpm = 85, mouseEnabled = true, keyboardEnabled = true,
-            timingEnabled = true, interactionEnabled = true } = options;
+      timingEnabled = true, interactionEnabled = true } = options;
 
     // Enable requested modules
     if (mouseEnabled && this.mouseMovement) {
@@ -338,10 +354,18 @@ class AnonymityProfileManager {
    * @returns {Object} Status of disabled modules
    */
   disableBehavioralModules() {
-    if (this.mouseMovement) this.mouseMovement.disable();
-    if (this.keyboardTyping) this.keyboardTyping.disable();
-    if (this.timingRandomization) this.timingRandomization.disable();
-    if (this.interactionPatterns) this.interactionPatterns.disable();
+    if (this.mouseMovement) {
+      this.mouseMovement.disable();
+    }
+    if (this.keyboardTyping) {
+      this.keyboardTyping.disable();
+    }
+    if (this.timingRandomization) {
+      this.timingRandomization.disable();
+    }
+    if (this.interactionPatterns) {
+      this.interactionPatterns.disable();
+    }
 
     this.behavioralModulesEnabled = {
       mouse: false,
@@ -411,7 +435,7 @@ class AnonymityProfileManager {
         behaviors: phase3.behaviors
       },
       message: issues.length === 0 ? 'All anonymity systems consistent' :
-               `${issues.length} consistency issue(s) detected`
+        `${issues.length} consistency issue(s) detected`
     };
   }
 
@@ -532,8 +556,8 @@ class AnonymityProfileManager {
       behavioralModulesActive: behavioralsActive,
       modules: this.getBehavioralStatus(),
       protectionLevel: active && hardwareSpoofing && behavioralsActive ? 'full' :
-                       active && hardwareSpoofing ? 'hardware+data' :
-                       active ? 'partial' : 'none'
+        active && hardwareSpoofing ? 'hardware+data' :
+          active ? 'partial' : 'none'
     };
   }
 }

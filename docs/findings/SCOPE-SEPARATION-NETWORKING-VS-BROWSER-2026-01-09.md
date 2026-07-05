@@ -288,7 +288,7 @@ await torManager.autoSetup();
 **File:**
 ```
 /home/devel/basset-hound-browser/network-forensics/forensics.js (~1,200 lines)
-/home/devel/basset-hound-browser/websocket/commands/network-forensics-commands.js (~800 lines)
+/home/devel/basset-hound-browser/websocket/commands/forensic/network/network-forensics-commands.js (~800 lines)
 ```
 
 **What It Does (All IN SCOPE):**
@@ -486,7 +486,7 @@ await torManager.autoSetup();
 | File | Lines | Reason |
 |------|-------|--------|
 | `network-forensics/forensics.js` | ~1,200 | Passive network monitoring ✅ |
-| `websocket/commands/network-forensics-commands.js` | ~800 | Forensics command handlers ✅ |
+| `websocket/commands/forensic/network/network-forensics-commands.js` | ~800 | Forensics command handlers ✅ |
 | `network-analysis/manager.js` | ~400 | Traffic analysis ✅ |
 | `evidence/evidence-collector.js` | ~900 | HAR capture included ✅ |
 
@@ -1106,7 +1106,7 @@ await setLocationProfile('uk-london');
 
 **KEEP (4 files, ~3,300 lines):**
 1. `network-forensics/forensics.js` ✅
-2. `websocket/commands/network-forensics-commands.js` ✅
+2. `websocket/commands/forensic/network/network-forensics-commands.js` ✅
 3. `network-analysis/manager.js` ✅
 4. `evidence/evidence-collector.js` (includes HAR) ✅
 

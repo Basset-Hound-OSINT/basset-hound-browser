@@ -79,9 +79,15 @@ class MockDashboard extends EventEmitter {
 
   getAlerts(filter = {}) {
     return this.alerts.filter(a => {
-      if (filter.status && a.status !== filter.status) return false;
-      if (filter.competitorId && a.competitorId !== filter.competitorId) return false;
-      if (filter.changeType && a.changeType !== filter.changeType) return false;
+      if (filter.status && a.status !== filter.status) {
+        return false;
+      }
+      if (filter.competitorId && a.competitorId !== filter.competitorId) {
+        return false;
+      }
+      if (filter.changeType && a.changeType !== filter.changeType) {
+        return false;
+      }
       return true;
     });
   }
@@ -92,7 +98,9 @@ class MockDashboard extends EventEmitter {
       a.timestamp > now - window && a.status === 'pending'
     );
 
-    if (recentAlerts.length === 0) return null;
+    if (recentAlerts.length === 0) {
+      return null;
+    }
 
     return {
       id: `batch-${Date.now()}`,
@@ -717,7 +725,7 @@ describe('Wave 15 - Dashboard + Slack Integration Tests', () => {
         batchWindow: 1000
       });
 
-      let batchSizes = [];
+      const batchSizes = [];
       bridge.on('batchSent', (result) => {
         batchSizes.push(result.count);
       });

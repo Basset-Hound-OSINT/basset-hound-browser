@@ -21,7 +21,7 @@ const fs = require('fs');
 
 // Test configuration
 const TEST_CONFIG = {
-  results_dir: path.join(__dirname, '..', 'results'),
+  results_dir: path.join(__dirname, '..', 'results')
 };
 
 // Ensure results directory exists
@@ -33,7 +33,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -44,8 +44,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -75,34 +78,34 @@ class CorruptionSimulator {
     const corrupted = JSON.parse(JSON.stringify(data));
 
     switch (corruptionType) {
-      case 'random':
-        // Corrupt a random field
-        const keys = Object.keys(corrupted);
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        if (randomKey) {
-          corrupted[randomKey] = 'CORRUPTED_' + corrupted[randomKey];
-        }
-        break;
+    case 'random':
+      // Corrupt a random field
+      const keys = Object.keys(corrupted);
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      if (randomKey) {
+        corrupted[randomKey] = 'CORRUPTED_' + corrupted[randomKey];
+      }
+      break;
 
-      case 'missing_field':
-        // Remove a required field
-        const requiredFields = ['id', 'timestamp'];
-        const fieldToRemove = requiredFields[Math.floor(Math.random() * requiredFields.length)];
-        delete corrupted[fieldToRemove];
-        break;
+    case 'missing_field':
+      // Remove a required field
+      const requiredFields = ['id', 'timestamp'];
+      const fieldToRemove = requiredFields[Math.floor(Math.random() * requiredFields.length)];
+      delete corrupted[fieldToRemove];
+      break;
 
-      case 'type_change':
-        // Change data type of a field
-        const typeFields = Object.keys(corrupted).filter(k => typeof corrupted[k] === 'number');
-        if (typeFields.length > 0) {
-          const field = typeFields[0];
-          corrupted[field] = String(corrupted[field]);
-        }
-        break;
+    case 'type_change':
+      // Change data type of a field
+      const typeFields = Object.keys(corrupted).filter(k => typeof corrupted[k] === 'number');
+      if (typeFields.length > 0) {
+        const field = typeFields[0];
+        corrupted[field] = String(corrupted[field]);
+      }
+      break;
 
-      case 'truncation':
-        // Truncate data
-        return JSON.stringify(corrupted).substring(0, 50);
+    case 'truncation':
+      // Truncate data
+      return JSON.stringify(corrupted).substring(0, 50);
     }
 
     return corrupted;
@@ -130,7 +133,7 @@ class RecoveryManager {
       id: crypto.randomBytes(16).toString('hex'),
       timestamp: new Date().toISOString(),
       data: JSON.parse(JSON.stringify(data)),
-      hash: crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex'),
+      hash: crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex')
     };
 
     this.backups.push(backup);
@@ -162,7 +165,7 @@ class RecoveryManager {
       timestamp: new Date().toISOString(),
       from: 'backup',
       backupId: detection.lastGoodBackup.id,
-      data: detection.lastGoodBackup.data,
+      data: detection.lastGoodBackup.data
     };
 
     this.recoveryLog.push(recovery);
@@ -192,7 +195,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-001',
         timestamp: new Date().toISOString(),
-        payload: { key: 'value' },
+        payload: { key: 'value' }
       };
 
       const hash = validator.computeHash(originalData);
@@ -209,7 +212,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-001',
         timestamp: new Date().toISOString(),
-        payload: { key: 'value' },
+        payload: { key: 'value' }
       };
 
       const hash = validator.computeHash(originalData);
@@ -226,7 +229,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-001',
         count: 42,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
 
       const hash = validator.computeHash(originalData);
@@ -243,7 +246,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-001',
         timestamp: new Date().toISOString(),
-        payload: { key: 'value' },
+        payload: { key: 'value' }
       };
 
       const hash = validator.computeHash(originalData);
@@ -260,7 +263,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-001',
         timestamp: new Date().toISOString(),
-        payload: { key: 'value' },
+        payload: { key: 'value' }
       };
 
       const hash = validator.computeHash(originalData);
@@ -298,7 +301,7 @@ describe('Data Corruption & Recovery', () => {
         if (validator.detectCorruption(corrupted, hash)) {
           corruptionLog.push({
             timestamp: new Date().toISOString(),
-            detected: true,
+            detected: true
           });
         }
       }
@@ -318,7 +321,7 @@ describe('Data Corruption & Recovery', () => {
       const data = {
         id: 'session-001',
         timestamp: new Date().toISOString(),
-        operations: [{ op: 1 }, { op: 2 }],
+        operations: [{ op: 1 }, { op: 2 }]
       };
 
       const backup = recoveryManager.createBackup(data);
@@ -345,7 +348,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-recovery',
         timestamp: new Date().toISOString(),
-        payload: 'important data',
+        payload: 'important data'
       };
 
       // Create backup
@@ -367,7 +370,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-verify',
         value: 42,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
 
       recoveryManager.createBackup(originalData);
@@ -408,7 +411,7 @@ describe('Data Corruption & Recovery', () => {
       const originalData = {
         id: 'test-integrity',
         data: 'important',
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
 
       recoveryManager.createBackup(originalData);
@@ -433,7 +436,7 @@ describe('Data Corruption & Recovery', () => {
         type: 'incremental',
         baseBackupId: recoveryManager.backups[recoveryManager.backups.length - 1].id,
         delta,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
 
       assert(incrementalBackup.baseBackupId);
@@ -451,7 +454,7 @@ describe('Data Corruption & Recovery', () => {
       const sessionData = {
         id: 'session-001',
         timestamp: new Date().toISOString(),
-        operations: Array(100).fill({ op: 'test' }),
+        operations: Array(100).fill({ op: 'test' })
       };
 
       const hash = validator.computeHash(sessionData);
@@ -467,7 +470,7 @@ describe('Data Corruption & Recovery', () => {
         id: 'checkpoint-001',
         sequenceNumber: 1,
         timestamp: new Date().toISOString(),
-        state: { operations: 100 },
+        state: { operations: 100 }
       };
 
       const hash = validator.computeHash(checkpointData);
@@ -481,7 +484,7 @@ describe('Data Corruption & Recovery', () => {
     it('should perform integrity checks on history database', () => {
       const historyData = {
         version: 1,
-        entries: Array(50).fill({ timestamp: new Date().toISOString(), event: 'test' }),
+        entries: Array(50).fill({ timestamp: new Date().toISOString(), event: 'test' })
       };
 
       const hash = validator.computeHash(historyData);
@@ -499,7 +502,7 @@ describe('Data Corruption & Recovery', () => {
         checksSuccessful: 3,
         corruptionsDetected: simulator.simulateFileCorruption('test').corrupted ? 1 : 0,
         recoveriesAttempted: recoveryManager.recoveryLog.length,
-        recoveriesSuccessful: recoveryManager.recoveryLog.length,
+        recoveriesSuccessful: recoveryManager.recoveryLog.length
       };
 
       const reportPath = path.join(TEST_CONFIG.results_dir, `corruption-recovery-${Date.now()}.json`);

@@ -47,7 +47,9 @@ function cleanOldSessions() {
     const files = fs.readdirSync(TEST_SESSIONS_DIR);
 
     files.forEach(file => {
-      if (file === '.gitkeep') return;
+      if (file === '.gitkeep') {
+        return;
+      }
 
       const filePath = path.join(TEST_SESSIONS_DIR, file);
       const stats = fs.statSync(filePath);

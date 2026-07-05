@@ -421,9 +421,9 @@ function getTypeScript(selector, value) {
  */
 async function humanPause() {
   const pauseTypes = [
-    { min: 500, max: 1500, probability: 0.7 },   // Short pause (reading)
-    { min: 1500, max: 3000, probability: 0.2 },  // Medium pause (thinking)
-    { min: 3000, max: 6000, probability: 0.1 }   // Long pause (distraction)
+    { min: 500, max: 1500, probability: 0.7 }, // Short pause (reading)
+    { min: 1500, max: 3000, probability: 0.2 }, // Medium pause (thinking)
+    { min: 3000, max: 6000, probability: 0.1 } // Long pause (distraction)
   ];
 
   const rand = Math.random();

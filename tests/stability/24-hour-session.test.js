@@ -291,7 +291,9 @@ class StabilityMonitor {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // For testing, allow early exit with Ctrl+C
-        if (!this.monitoringActive) break;
+        if (!this.monitoringActive) {
+          break;
+        }
       }
 
       // Cleanup

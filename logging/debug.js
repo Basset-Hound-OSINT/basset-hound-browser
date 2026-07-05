@@ -79,11 +79,21 @@ class DebugManager extends EventEmitter {
    * @param {Object} refs - Component references
    */
   setReferences(refs = {}) {
-    if (refs.wsServer) this.wsServer = refs.wsServer;
-    if (refs.mainWindow) this.mainWindow = refs.mainWindow;
-    if (refs.tabManager) this.tabManager = refs.tabManager;
-    if (refs.sessionManager) this.sessionManager = refs.sessionManager;
-    if (refs.ipcMain) this.ipcMain = refs.ipcMain;
+    if (refs.wsServer) {
+      this.wsServer = refs.wsServer;
+    }
+    if (refs.mainWindow) {
+      this.mainWindow = refs.mainWindow;
+    }
+    if (refs.tabManager) {
+      this.tabManager = refs.tabManager;
+    }
+    if (refs.sessionManager) {
+      this.sessionManager = refs.sessionManager;
+    }
+    if (refs.ipcMain) {
+      this.ipcMain = refs.ipcMain;
+    }
   }
 
   /**
@@ -193,7 +203,9 @@ class DebugManager extends EventEmitter {
    * @param {*} data - Message data
    */
   logIPC(channel, direction, data) {
-    if (!this.ipcTracing) return;
+    if (!this.ipcTracing) {
+      return;
+    }
 
     const entry = {
       timestamp: Date.now(),
@@ -289,7 +301,9 @@ class DebugManager extends EventEmitter {
    * @param {string} clientId - Client identifier
    */
   logWebSocket(type, data, clientId = null) {
-    if (!this.wsTracing) return;
+    if (!this.wsTracing) {
+      return;
+    }
 
     const entry = {
       timestamp: Date.now(),
@@ -399,7 +413,9 @@ class DebugManager extends EventEmitter {
    * @param {*} data - Event data
    */
   logEvent(source, event, data) {
-    if (!this.eventTracing) return;
+    if (!this.eventTracing) {
+      return;
+    }
 
     const entry = {
       timestamp: Date.now(),
@@ -560,17 +576,27 @@ class DebugManager extends EventEmitter {
    * @private
    */
   _safeSerialize(data) {
-    if (data === null || data === undefined) return data;
-    if (typeof data !== 'object') return data;
+    if (data === null || data === undefined) {
+      return data;
+    }
+    if (typeof data !== 'object') {
+      return data;
+    }
 
     try {
       // Try JSON stringify to detect circular refs
       const str = JSON.stringify(data, (key, value) => {
         // Skip functions
-        if (typeof value === 'function') return '[Function]';
+        if (typeof value === 'function') {
+          return '[Function]';
+        }
         // Skip Buffer/ArrayBuffer
-        if (value instanceof Buffer) return '[Buffer]';
-        if (value instanceof ArrayBuffer) return '[ArrayBuffer]';
+        if (value instanceof Buffer) {
+          return '[Buffer]';
+        }
+        if (value instanceof ArrayBuffer) {
+          return '[ArrayBuffer]';
+        }
         // Truncate long strings
         if (typeof value === 'string' && value.length > 1000) {
           return value.substring(0, 1000) + '...[truncated]';

@@ -36,7 +36,9 @@ class CacheEntry {
    * Check if this entry has expired
    */
   isExpired() {
-    if (!this.ttl) return false;
+    if (!this.ttl) {
+      return false;
+    }
     return Date.now() - this.timestamp > this.ttl;
   }
 }
@@ -144,7 +146,9 @@ class LRUCache {
    */
   delete(key) {
     const entry = this.cache.get(key);
-    if (!entry) return false;
+    if (!entry) {
+      return false;
+    }
 
     this.cache.delete(key);
     this._removeFromList(entry);
@@ -165,7 +169,9 @@ class LRUCache {
    * @private
    */
   _evict() {
-    if (!this.tail) return;
+    if (!this.tail) {
+      return;
+    }
 
     const entry = this.tail;
 
@@ -215,7 +221,9 @@ class LRUCache {
    * @private
    */
   _moveToFront(entry) {
-    if (entry === this.head) return;
+    if (entry === this.head) {
+      return;
+    }
 
     this._removeFromList(entry);
     this._addToFront(entry);

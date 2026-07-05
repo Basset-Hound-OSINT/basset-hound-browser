@@ -55,7 +55,9 @@ class ContextBuilder extends EventEmitter {
 
     // Process each source
     for (const [sourceName, sourceData] of Object.entries(sources)) {
-      if (!sourceData) continue;
+      if (!sourceData) {
+        continue;
+      }
 
       context.sources.push({
         name: sourceName,

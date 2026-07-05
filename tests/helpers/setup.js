@@ -1,10 +1,13 @@
 /**
  * Basset Hound Browser - Test Setup
  * Global setup and configuration for tests
+ * Includes memory monitoring and resource management
  */
 
 const path = require('path');
 const fs = require('fs');
+const systemCheck = require('./system-check');
+const memoryUtils = require('./memory-utils');
 
 // Test configuration
 const TEST_CONFIG = {
@@ -69,9 +72,92 @@ async function globalTeardown() {
 }
 
 /**
+ * Setup test cleanup hooks for memory management
+ * ULTRA-AGGRESSIVE: Prevent heap exhaustion via immediate cleanup
+ */
+beforeEach(async () => {
+  // Pre-test cleanup
+  memoryUtils.clearCaches();
+  memoryUtils.clearRequireCache();
+
+  // Force immediate GC before test starts
+  if (global.gc) {
+    global.gc();
+  }
+});
+
+afterEach(async () => {
+  // ULTRA-AGGRESSIVE cleanup after each test to prevent heap exhaustion
+  // This runs after EVERY test, not just suites
+
+  // 1. Clear caches IMMEDIATELY (before GC)
+  memoryUtils.clearCaches();
+
+  // 2. Clear require cache for module isolation
+  memoryUtils.clearRequireCache();
+
+  // 3. Force TRIPLE GC passes for stubborn objects
+  if (global.gc) {
+    global.gc();
+    await new Promise(resolve => setTimeout(resolve, 10));
+    global.gc();
+    await new Promise(resolve => setTimeout(resolve, 10));
+    global.gc();
+  }
+
+  // 4. Small delay for GC settling (reduced from 50ms)
+  await new Promise(resolve => setTimeout(resolve, 25));
+
+  // 5. Check memory status and warn if high
+  const status = memoryUtils.getMemoryStatus();
+  if (status.warning || status.critical) {
+    console.warn(`⚠️  [Memory] High heap: ${status.current}MB (peak: ${status.peak}MB)`);
+
+    // Force emergency cleanup if critical
+    if (status.critical) {
+      console.error(`🚨 Critical memory state detected, forcing emergency cleanup...`);
+      memoryUtils.clearCaches();
+      if (global.gc) {
+        global.gc();
+      }
+    }
+  } else if (process.env.VERBOSE === 'true') {
+    console.log(`   [Memory] ${status.current}MB (peak: ${status.peak}MB)`);
+  }
+
+  // 6. Final clearance of test-local data
+  if (global.__testData__) {
+    global.__testData__ = null;
+  }
+});
+
+/**
  * Clean up test artifacts after all tests complete
  */
 afterAll(() => {
+  // Final GC before teardown
+  if (global.gc) {
+    global.gc();
+  }
+
+  // Report memory monitoring results
+  memoryMonitor.stop();
+  memoryMonitor.report();
+
+  // Print memory utils report
+  memoryUtils.printMemoryReport();
+
+  // Stop memory monitoring
+  memoryUtils.stopMemoryMonitoring();
+
+  // Clear all caches one last time
+  memoryUtils.clearCaches();
+
+  // Final GC pass
+  if (global.gc) {
+    global.gc();
+  }
+
   // Clean up test artifacts
   try {
     const glob = require('glob');
@@ -365,6 +451,84 @@ module.exports = {
   wait,
   retry
 };
+
+/**
+ * Memory monitoring and reporting
+ */
+
+// Track initial memory state
+const initialMemory = {
+  timestamp: Date.now(),
+  heapUsed: process.memoryUsage().heapUsed
+};
+
+// Monitor memory during tests
+const memoryMonitor = {
+  peakHeapUsed: initialMemory.heapUsed,
+  samples: [],
+  interval: null,
+
+  start() {
+    if (this.interval) return; // Already running
+
+    this.interval = setInterval(() => {
+      const memUsage = process.memoryUsage();
+      this.samples.push({
+        timestamp: Date.now(),
+        heapUsed: memUsage.heapUsed,
+        heapTotal: memUsage.heapTotal,
+        external: memUsage.external,
+        rss: memUsage.rss
+      });
+
+      if (memUsage.heapUsed > this.peakHeapUsed) {
+        this.peakHeapUsed = memUsage.heapUsed;
+      }
+
+      // Warn if heap usage exceeds 400MB per worker
+      if (memUsage.heapUsed > 400 * 1024 * 1024) {
+        console.warn(`⚠️  High heap usage detected: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
+      }
+    }, 5000); // Sample every 5 seconds
+  },
+
+  stop() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+  },
+
+  report() {
+    const endMemory = process.memoryUsage();
+    const duration = Date.now() - initialMemory.timestamp;
+
+    console.log('\n' + '='.repeat(60));
+    console.log('MEMORY MONITORING REPORT');
+    console.log('='.repeat(60));
+    console.log(`Test duration: ${Math.round(duration / 1000)}s`);
+    console.log(`Initial heap: ${Math.round(initialMemory.heapUsed / 1024 / 1024)}MB`);
+    console.log(`Final heap:   ${Math.round(endMemory.heapUsed / 1024 / 1024)}MB`);
+    console.log(`Peak heap:    ${Math.round(this.peakHeapUsed / 1024 / 1024)}MB`);
+    console.log(`Total RSS:    ${Math.round(endMemory.rss / 1024 / 1024)}MB`);
+    console.log(`External:     ${Math.round(endMemory.external / 1024 / 1024)}MB`);
+
+    // Calculate memory leak indicator
+    const heapGrowth = endMemory.heapUsed - initialMemory.heapUsed;
+    if (heapGrowth > 50 * 1024 * 1024) {
+      console.log(`\n⚠️  Potential memory leak: ${Math.round(heapGrowth / 1024 / 1024)}MB growth`);
+    } else if (heapGrowth < 0) {
+      console.log(`\n✅ Memory freed: ${Math.round(-heapGrowth / 1024 / 1024)}MB`);
+    } else {
+      console.log(`\n✅ Heap stable: ${Math.round(heapGrowth / 1024 / 1024)}MB change`);
+    }
+
+    console.log('='.repeat(60) + '\n');
+  }
+};
+
+// Start memory monitoring on test file load
+memoryMonitor.start();
 
 // Auto-initialize when imported
 initTestEnvironment();

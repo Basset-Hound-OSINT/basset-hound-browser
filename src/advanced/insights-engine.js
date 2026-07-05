@@ -117,13 +117,17 @@ class InsightsEngine extends EventEmitter {
   analyzeAnomalies(anomalies) {
     const insights = [];
 
-    if (!anomalies || anomalies.length === 0) return insights;
+    if (!anomalies || anomalies.length === 0) {
+      return insights;
+    }
 
     // Group anomalies by type
     const byType = {};
     anomalies.forEach(anomaly => {
       const type = anomaly.severity || 'medium';
-      if (!byType[type]) byType[type] = [];
+      if (!byType[type]) {
+        byType[type] = [];
+      }
       byType[type].push(anomaly);
     });
 
@@ -163,7 +167,9 @@ class InsightsEngine extends EventEmitter {
   analyzePrices(priceData) {
     const insights = [];
 
-    if (!priceData || Object.keys(priceData).length === 0) return insights;
+    if (!priceData || Object.keys(priceData).length === 0) {
+      return insights;
+    }
 
     // Analyze price movements
     const priceMovements = {};
@@ -251,7 +257,9 @@ class InsightsEngine extends EventEmitter {
   analyzePatterns(patterns) {
     const insights = [];
 
-    if (!patterns || patterns.length === 0) return insights;
+    if (!patterns || patterns.length === 0) {
+      return insights;
+    }
 
     // Identify consistent patterns
     const consistentPatterns = patterns.filter(p => p.confidence >= CONFIDENCE_LEVELS.MEDIUM);
@@ -306,7 +314,9 @@ class InsightsEngine extends EventEmitter {
   analyzeCompetitiveActivity(activities) {
     const insights = [];
 
-    if (!activities || activities.length === 0) return insights;
+    if (!activities || activities.length === 0) {
+      return insights;
+    }
 
     // Analyze activity intensity
     const activityByCompetitor = {};
@@ -354,7 +364,9 @@ class InsightsEngine extends EventEmitter {
       const timeWindows = {};
       activities.forEach(activity => {
         const window = Math.floor(activity.timestamp / (7 * 24 * 60 * 60 * 1000));
-        if (!timeWindows[window]) timeWindows[window] = [];
+        if (!timeWindows[window]) {
+          timeWindows[window] = [];
+        }
         timeWindows[window].push(activity);
       });
 
@@ -388,7 +400,9 @@ class InsightsEngine extends EventEmitter {
   analyzeTechnologyShifts(technologies) {
     const insights = [];
 
-    if (!technologies || technologies.length === 0) return insights;
+    if (!technologies || technologies.length === 0) {
+      return insights;
+    }
 
     // Identify technology trends
     const techCounts = {};
@@ -467,7 +481,9 @@ class InsightsEngine extends EventEmitter {
     const byType = {};
     baseInsights.forEach(insight => {
       const type = insight.type;
-      if (!byType[type]) byType[type] = [];
+      if (!byType[type]) {
+        byType[type] = [];
+      }
       byType[type].push(insight);
     });
 

@@ -212,7 +212,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_mouse_path should generate path', () => {
       const response = commands.generate_mouse_path({
         startPos: { x: 0, y: 0 },
-        endPos: { x: 100, y: 100 },
+        endPos: { x: 100, y: 100 }
       });
 
       expect(response.success).toBe(true);
@@ -232,7 +232,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
       const response = commands.generate_mouse_path({
         startPos: { x: 0, y: 0 },
         endPos: { x: 100, y: 100 },
-        duration: 2000,
+        duration: 2000
       });
 
       expect(response.duration).toBe(2000);
@@ -241,7 +241,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_mouse_path should return path metadata', () => {
       const response = commands.generate_mouse_path({
         startPos: { x: 0, y: 0 },
-        endPos: { x: 100, y: 100 },
+        endPos: { x: 100, y: 100 }
       });
 
       expect(response.startPos).toEqual({ x: 0, y: 0 });
@@ -253,7 +253,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
   describe('Typing Sequence Generation', () => {
     test('generate_typing_sequence should generate sequence', () => {
       const response = commands.generate_typing_sequence({
-        text: 'hello',
+        text: 'hello'
       });
 
       expect(response.success).toBe(true);
@@ -271,7 +271,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('generate_typing_sequence should return duration', () => {
       const response = commands.generate_typing_sequence({
-        text: 'password',
+        text: 'password'
       });
 
       expect(response.totalDuration).toBeGreaterThan(0);
@@ -279,7 +279,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('generate_typing_sequence should return event count', () => {
       const response = commands.generate_typing_sequence({
-        text: 'test',
+        text: 'test'
       });
 
       expect(response.events).toBeGreaterThan(0);
@@ -289,7 +289,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
   describe('Interaction Delays Generation', () => {
     test('generate_interaction_delays should generate all delays', () => {
       const response = commands.generate_interaction_delays({
-        type: 'all',
+        type: 'all'
       });
 
       expect(response.success).toBe(true);
@@ -303,7 +303,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('generate_interaction_delays should generate click delay only', () => {
       const response = commands.generate_interaction_delays({
-        type: 'click',
+        type: 'click'
       });
 
       expect(response.success).toBe(true);
@@ -313,7 +313,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('generate_interaction_delays should generate form delays', () => {
       const response = commands.generate_interaction_delays({
-        type: 'form',
+        type: 'form'
       });
 
       expect(response.delays.formFieldDelay).toBeGreaterThan(0);
@@ -323,7 +323,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_interaction_delays should support content length', () => {
       const response = commands.generate_interaction_delays({
         type: 'scroll',
-        contentLength: 2000,
+        contentLength: 2000
       });
 
       expect(response.delays.scrollPause).toBeGreaterThan(0);
@@ -345,9 +345,9 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
             selector: '#email',
             value: 'john@example.com',
             type: 'email',
-            label: 'Email',
-          },
-        ],
+            label: 'Email'
+          }
+        ]
       });
 
       expect(response.success).toBe(true);
@@ -366,8 +366,8 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_form_pattern should return duration', () => {
       const response = commands.generate_form_pattern({
         fields: [
-          { selector: '#name', value: 'John', type: 'text' },
-        ],
+          { selector: '#name', value: 'John', type: 'text' }
+        ]
       });
 
       expect(response.totalDuration).toBeGreaterThanOrEqual(0);
@@ -376,8 +376,8 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_form_pattern should return step count', () => {
       const response = commands.generate_form_pattern({
         fields: [
-          { selector: '#name', value: 'John', type: 'text' },
-        ],
+          { selector: '#name', value: 'John', type: 'text' }
+        ]
       });
 
       expect(response.steps).toBeGreaterThan(0);
@@ -387,7 +387,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
   describe('Hover Pattern Generation', () => {
     test('generate_hover_pattern should generate hover movement', () => {
       const response = commands.generate_hover_pattern({
-        element: { x: 100, y: 100, width: 200, height: 50 },
+        element: { x: 100, y: 100, width: 200, height: 50 }
       });
 
       expect(response.success).toBe(true);
@@ -404,7 +404,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('generate_hover_pattern should return duration', () => {
       const response = commands.generate_hover_pattern({
-        element: { x: 100, y: 100, width: 200, height: 50 },
+        element: { x: 100, y: 100, width: 200, height: 50 }
       });
 
       expect(response.duration).toBeGreaterThanOrEqual(0);
@@ -415,7 +415,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_scroll_pattern should generate scroll actions', () => {
       const response = commands.generate_scroll_pattern({
         pageHeight: 5000,
-        viewportHeight: 800,
+        viewportHeight: 800
       });
 
       expect(response.success).toBe(true);
@@ -425,7 +425,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('generate_scroll_pattern should reject missing dimensions', () => {
       const response = commands.generate_scroll_pattern({
-        pageHeight: 5000,
+        pageHeight: 5000
       });
 
       expect(response.success).toBe(false);
@@ -435,7 +435,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_scroll_pattern should return duration', () => {
       const response = commands.generate_scroll_pattern({
         pageHeight: 5000,
-        viewportHeight: 800,
+        viewportHeight: 800
       });
 
       expect(response.totalDuration).toBeGreaterThanOrEqual(0);
@@ -444,7 +444,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
     test('generate_scroll_pattern should return action count', () => {
       const response = commands.generate_scroll_pattern({
         pageHeight: 5000,
-        viewportHeight: 800,
+        viewportHeight: 800
       });
 
       expect(response.actions).toBeGreaterThan(0);
@@ -479,7 +479,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
       const pathResponse = commands.generate_mouse_path({
         startPos: { x: 0, y: 0 },
-        endPos: { x: 100, y: 100 },
+        endPos: { x: 100, y: 100 }
       });
 
       expect(pathResponse.success).toBe(true);
@@ -488,11 +488,11 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('Should generate consistent output for same input', () => {
       const response1 = commands.generate_typing_sequence({
-        text: 'test',
+        text: 'test'
       });
 
       const response2 = commands.generate_typing_sequence({
-        text: 'test',
+        text: 'test'
       });
 
       // Both should succeed
@@ -518,7 +518,7 @@ describe('Behavioral Anonymization WebSocket Commands', () => {
 
     test('Generation commands should gracefully fail on bad input', () => {
       const response = commands.generate_mouse_path({
-        startPos: null,
+        startPos: null
       });
 
       expect(response.success).toBe(false);

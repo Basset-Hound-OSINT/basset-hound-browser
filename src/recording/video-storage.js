@@ -51,6 +51,7 @@ class VideoStorage extends EventEmitter {
 
     this.storageDir = options.storageDir || path.join(
       require('os').homedir(),
+      'tmp',
       '.basset-hound',
       'videos'
     );
@@ -374,7 +375,9 @@ class VideoStorage extends EventEmitter {
       .sort((a, b) => a.lastAccess - b.lastAccess);
 
     for (const entry of sorted) {
-      if (freed >= targetFreeSpace) break;
+      if (freed >= targetFreeSpace) {
+        break;
+      }
       toDelete.push(entry.filename);
       freed += entry.size;
     }
@@ -398,7 +401,9 @@ class VideoStorage extends EventEmitter {
       );
 
     for (const entry of sorted) {
-      if (freed >= targetFreeSpace) break;
+      if (freed >= targetFreeSpace) {
+        break;
+      }
       toDelete.push(entry.filename);
       freed += entry.size;
     }
@@ -419,7 +424,9 @@ class VideoStorage extends EventEmitter {
       .sort((a, b) => a.created - b.created);
 
     for (const entry of sorted) {
-      if (freed >= targetFreeSpace) break;
+      if (freed >= targetFreeSpace) {
+        break;
+      }
       toDelete.push(entry.filename);
       freed += entry.size;
     }

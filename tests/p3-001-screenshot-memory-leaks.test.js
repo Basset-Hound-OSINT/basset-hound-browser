@@ -22,8 +22,21 @@ describe('P3-001: Screenshot Memory Leaks', () => {
   });
 
   afterEach(() => {
+    // Cleanup buffers
     if (bufferPool) {
       bufferPool.destroy();
+      bufferPool = null;
+    }
+
+    // Cleanup coordinator
+    if (coordinator) {
+      coordinator.cleanup && coordinator.cleanup();
+      coordinator = null;
+    }
+
+    // Force GC after buffer pool tests
+    if (global.gc) {
+      global.gc();
     }
   });
 

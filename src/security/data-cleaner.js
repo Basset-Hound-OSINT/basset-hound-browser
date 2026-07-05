@@ -84,7 +84,9 @@ class DataCleaner {
    * @returns {string} Masked value
    */
   static maskValue(value, type = 'generic') {
-    if (!value) return '***';
+    if (!value) {
+      return '***';
+    }
 
     const str = String(value);
 
@@ -95,7 +97,9 @@ class DataCleaner {
 
     // Tokens/Keys: show first 4 and last 4
     if (['token', 'api_key', 'oauth', 'secret', 'key'].some(t => type.includes(t))) {
-      if (str.length <= 8) return '***';
+      if (str.length <= 8) {
+        return '***';
+      }
       return str.substring(0, 4) + '...' + str.slice(-4);
     }
 
@@ -106,7 +110,9 @@ class DataCleaner {
 
     // Credit card: show only last 4
     if (type === 'credit_card' || type.includes('card')) {
-      if (str.length <= 4) return '****';
+      if (str.length <= 4) {
+        return '****';
+      }
       return '*'.repeat(str.length - 4) + str.slice(-4);
     }
 

@@ -19,9 +19,9 @@ const crypto = require('crypto');
 
 class RequestDeduplicator {
   constructor(options = {}) {
-    this.timeWindow = options.timeWindow || 100;           // ms - dedup window
+    this.timeWindow = options.timeWindow || 100; // ms - dedup window
     this.enabled = options.enabled !== false;
-    this.maxCacheSize = options.maxCacheSize || 1000;      // max entries
+    this.maxCacheSize = options.maxCacheSize || 1000; // max entries
 
     // Request cache: fingerprint -> {response, timestamp, count}
     this.requestCache = new Map();

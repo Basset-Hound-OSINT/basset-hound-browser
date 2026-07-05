@@ -179,7 +179,9 @@ function analyzeResults(filePath) {
 }
 
 function calculateVariance(arr) {
-  if (arr.length === 0) return 0;
+  if (arr.length === 0) {
+    return 0;
+  }
   const avg = arr.reduce((a, b) => a + b) / arr.length;
   const squaredDiffs = arr.map(val => Math.pow(val - avg, 2));
   return squaredDiffs.reduce((a, b) => a + b) / arr.length;

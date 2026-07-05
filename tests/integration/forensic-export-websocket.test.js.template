@@ -1,0 +1,639 @@
+/**
+ * Integration Tests: Forensic Export WebSocket Commands
+ * TEMPLATE - To be filled with actual WebSocket server connection
+ *
+ * These tests validate the forensic export commands against a real WebSocket server.
+ * Requires: Running Basset Hound Browser WebSocket server on port 8765
+ *
+ * @example
+ * Start server: npm run start
+ * Run tests: npm test -- tests/integration/forensic-export-websocket.test.js
+ */
+
+const WebSocket = require('ws');
+
+// Configuration
+const WS_URL = process.env.WS_URL || 'ws://localhost:8765';
+const TIMEOUT = 30000; // 30 seconds
+const PAGE_LOAD_TIMEOUT = 5000; // 5 seconds
+
+/**
+ * Helper: Send command and wait for response
+ */
+async function sendCommand(ws, command, timeout = TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      ws.removeEventListener('message', handler);
+      reject(new Error(`Command timeout after ${timeout}ms: ${command.command}`));
+    }, timeout);
+
+    const handler = (event) => {
+      try {
+        const response = JSON.parse(event.data);
+        if (response.id === command.id) {
+          clearTimeout(timer);
+          ws.removeEventListener('message', handler);
+          resolve(response);
+        }
+      } catch (error) {
+        // Ignore parse errors from unrelated messages
+      }
+    };
+
+    ws.addEventListener('message', handler);
+    ws.send(JSON.stringify(command));
+  });
+}
+
+/**
+ * Helper: Wait for WebSocket connection
+ */
+async function connectWebSocket() {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(WS_URL);
+
+    const timeout = setTimeout(() => {
+      reject(new Error(`Failed to connect to ${WS_URL} within 5 seconds`));
+    }, 5000);
+
+    ws.addEventListener('open', () => {
+      clearTimeout(timeout);
+      resolve(ws);
+    });
+
+    ws.addEventListener('error', (event) => {
+      clearTimeout(timeout);
+      reject(new Error(`WebSocket connection error: ${event.message}`));
+    });
+  });
+}
+
+// ========================================================================
+// INTEGRATION TEST SUITES
+// ========================================================================
+
+describe('Forensic Export Commands - WebSocket Integration Tests', () => {
+  let ws;
+
+  // Setup: Connect to WebSocket server before tests
+  beforeAll(async () => {
+    try {
+      ws = await connectWebSocket();
+      console.log('Connected to WebSocket server');
+    } catch (error) {
+      console.error('Failed to connect to WebSocket server:', error.message);
+      throw error;
+    }
+  });
+
+  // Teardown: Close connection after tests
+  afterAll(() => {
+    if (ws) {
+      ws.close();
+    }
+  });
+
+  // ========================================================================
+  // 1. export_raw_html INTEGRATION TESTS
+  // ========================================================================
+
+  describe('export_raw_html - Integration', () => {
+
+    test('should export HTML from loaded page', async () => {
+      // Step 1: Navigate to test page
+      await sendCommand(ws, {
+        command: 'navigate',
+        url: 'https://example.com',
+        id: 'nav_export_html_1'
+      }, PAGE_LOAD_TIMEOUT + 10000);
+
+      // Wait for page to fully load
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Step 2: Export raw HTML
+      const response = await sendCommand(ws, {
+        command: 'export_raw_html',
+        id: 'export_html_1'
+      });
+
+      // Validations
+      expect(response.success).toBe(true);
+      expect(response.url).toBeDefined();
+      expect(response.statusCode).toBeGreaterThanOrEqual(100);
+      expect(response.statusCode).toBeLessThan(600);
+      expect(response.html).toBeDefined();
+      expect(typeof response.html).toBe('string');
+      expect(response.html.length).toBeGreaterThan(0);
+      expect(response.htmlLength).toBe(response.html.length);
+      expect(response.contentType).toBeDefined();
+      expect(response.responseHeaders).toBeDefined();
+      expect(typeof response.timestamp).toBe('number');
+    }, TIMEOUT + 20000);
+
+    test('should include HTTP headers in export', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_raw_html',
+        includeMetadata: true,
+        id: 'export_html_headers'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.responseHeaders).toBeDefined();
+      expect(Object.keys(response.responseHeaders).length).toBeGreaterThan(0);
+
+      // Check for common headers
+      const hasContentType = Object.keys(response.responseHeaders).some(
+        key => key.toLowerCase() === 'content-type'
+      );
+      expect(hasContentType).toBe(true);
+    });
+
+    test('should handle navigation to unavailable page', async () => {
+      // Try to navigate to invalid page
+      const navResponse = await sendCommand(ws, {
+        command: 'navigate',
+        url: 'https://invalid-domain-that-does-not-exist-12345.com',
+        id: 'nav_invalid'
+      }, PAGE_LOAD_TIMEOUT + 10000);
+
+      // Export attempt should fail gracefully
+      const response = await sendCommand(ws, {
+        command: 'export_raw_html',
+        id: 'export_html_error'
+      });
+
+      // Should either return error or empty content
+      expect(response.success === false || response.html === '').toBe(true);
+    }, TIMEOUT + 20000);
+
+    test('should preserve special characters in HTML', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_raw_html',
+        id: 'export_html_special_chars'
+      });
+
+      if (response.success) {
+        // Check for common special characters
+        expect(response.html).toBeDefined();
+        // Should contain HTML entities or UTF-8 encoded characters
+        const hasSpecialChars = /[-￿]|&[a-z]+;/i.test(response.html);
+        expect(typeof response.html).toBe('string');
+      }
+    });
+  });
+
+  // ========================================================================
+  // 2. export_network_log INTEGRATION TESTS
+  // ========================================================================
+
+  describe('export_network_log - Integration', () => {
+
+    test('should capture network requests', async () => {
+      // Navigate to page that makes network requests
+      await sendCommand(ws, {
+        command: 'navigate',
+        url: 'https://example.com',
+        id: 'nav_network_1'
+      }, PAGE_LOAD_TIMEOUT + 10000);
+
+      // Wait for requests to complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Export network log
+      const response = await sendCommand(ws, {
+        command: 'export_network_log',
+        id: 'export_network_1'
+      });
+
+      expect(response.success).toBe(true);
+      expect(typeof response.totalRequests).toBe('number');
+      expect(response.totalRequests).toBeGreaterThanOrEqual(0);
+      expect(Array.isArray(response.requests)).toBe(true);
+      expect(response.statistics).toBeDefined();
+      expect(typeof response.timestamp).toBe('number');
+    }, TIMEOUT + 20000);
+
+    test('should aggregate statistics correctly', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_network_log',
+        id: 'export_network_stats'
+      });
+
+      if (response.success && response.totalRequests > 0) {
+        expect(response.statistics.totalSize).toBeGreaterThanOrEqual(0);
+        expect(response.statistics.totalDuration).toBeGreaterThanOrEqual(0);
+
+        // Verify request count matches array length
+        expect(response.requests.length).toBe(response.totalRequests);
+
+        // Verify slowest/largest are in requests list
+        if (response.statistics.slowestRequest) {
+          const slowest = response.requests.find(
+            r => r.url === response.statistics.slowestRequest.url
+          );
+          expect(slowest).toBeDefined();
+        }
+      }
+    });
+
+    test('should filter by resource type', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_network_log',
+        resourceType: 'xhr',
+        id: 'export_network_xhr'
+      });
+
+      expect(response.success).toBe(true);
+
+      // All returned requests should be XHR type
+      response.requests.forEach(request => {
+        expect(request.resourceType).toBe('xhr');
+      });
+    });
+
+    test('should filter by duration', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_network_log',
+        minDuration: 100,
+        id: 'export_network_slow'
+      });
+
+      expect(response.success).toBe(true);
+
+      // All returned requests should meet duration criteria
+      response.requests.forEach(request => {
+        expect(request.duration).toBeGreaterThanOrEqual(100);
+      });
+    });
+
+    test('should handle empty network log', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_network_log',
+        id: 'export_network_empty'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.totalRequests).toBeGreaterThanOrEqual(0);
+      expect(response.requests.length).toBe(response.totalRequests);
+    });
+  });
+
+  // ========================================================================
+  // 3. export_device_ids INTEGRATION TESTS
+  // ========================================================================
+
+  describe('export_device_ids - Integration', () => {
+
+    test('should export device identifiers', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_device_ids',
+        id: 'export_device_1'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.deviceIdentifiers).toBeDefined();
+      expect(response.deviceIdentifiers.userAgent).toBeDefined();
+      expect(response.deviceIdentifiers.platform).toBeDefined();
+      expect(response.deviceIdentifiers.hardwareConcurrency).toBeDefined();
+      expect(response.deviceIdentifiers.deviceMemory).toBeDefined();
+      expect(response.deviceIdentifiers.language).toBeDefined();
+      expect(response.deviceIdentifiers.timezone).toBeDefined();
+    });
+
+    test('should export screen information', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_device_ids',
+        id: 'export_device_screen'
+      });
+
+      if (response.success) {
+        expect(response.deviceIdentifiers.screen).toBeDefined();
+        expect(response.deviceIdentifiers.screen.width).toBeGreaterThan(0);
+        expect(response.deviceIdentifiers.screen.height).toBeGreaterThan(0);
+        expect(response.deviceIdentifiers.screen.colorDepth).toBeGreaterThan(0);
+      }
+    });
+
+    test('should export fingerprint data', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_device_ids',
+        includeFingerprints: true,
+        id: 'export_device_fingerprint'
+      });
+
+      if (response.success) {
+        expect(response.fingerprint).toBeDefined();
+        expect(response.fingerprint.storage).toBeDefined();
+        expect(typeof response.fingerprint.storage.localStorage).toBe('number');
+      }
+    });
+
+    test('should export proxy configuration', async () => {
+      const response = await sendCommand(ws, {
+        command: 'export_device_ids',
+        includeProxy: true,
+        id: 'export_device_proxy'
+      });
+
+      if (response.success && response.proxyInfo) {
+        expect(typeof response.proxyInfo.enabled).toBe('boolean');
+        if (response.proxyInfo.enabled) {
+          expect(response.proxyInfo.currentProxy).toBeDefined();
+          expect(response.proxyInfo.currentProxy.host).toBeDefined();
+          expect(response.proxyInfo.currentProxy.port).toBeDefined();
+        }
+      }
+    });
+
+    test('should provide consistent device identifiers', async () => {
+      const response1 = await sendCommand(ws, {
+        command: 'export_device_ids',
+        id: 'export_device_consistent_1'
+      });
+
+      const response2 = await sendCommand(ws, {
+        command: 'export_device_ids',
+        id: 'export_device_consistent_2'
+      });
+
+      // Core identifiers should remain same (no fingerprint rotation between calls)
+      expect(response1.deviceIdentifiers.userAgent).toBe(response2.deviceIdentifiers.userAgent);
+      expect(response1.deviceIdentifiers.platform).toBe(response2.deviceIdentifiers.platform);
+      expect(response1.deviceIdentifiers.hardwareConcurrency).toBe(response2.deviceIdentifiers.hardwareConcurrency);
+    });
+  });
+
+  // ========================================================================
+  // 4. modify_element INTEGRATION TESTS
+  // ========================================================================
+
+  describe('modify_element - Integration', () => {
+
+    beforeEach(async () => {
+      // Navigate to test page before each modify test
+      await sendCommand(ws, {
+        command: 'navigate',
+        url: 'https://example.com',
+        id: 'nav_modify_' + Date.now()
+      }, PAGE_LOAD_TIMEOUT + 10000);
+
+      // Wait for page load
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }, TIMEOUT + 20000);
+
+    test('should modify text content', async () => {
+      const newText = 'Modified by test ' + Date.now();
+
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: 'h1',
+        type: 'text',
+        value: newText,
+        id: 'modify_text_1'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.matched).toBeGreaterThanOrEqual(0);
+      expect(response.modified).toBeLessThanOrEqual(response.matched);
+      expect(typeof response.timestamp).toBe('number');
+    });
+
+    test('should modify element attributes', async () => {
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: 'a',
+        type: 'attribute',
+        attributeName: 'target',
+        value: '_blank',
+        id: 'modify_attr_1'
+      });
+
+      expect(response.success).toBe(true);
+      expect(typeof response.matched).toBe('number');
+      expect(typeof response.modified).toBe('number');
+    });
+
+    test('should add CSS classes', async () => {
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: 'body',
+        type: 'class',
+        classOperation: 'add',
+        className: 'test-marked-' + Date.now(),
+        id: 'modify_class_add'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.matched).toBeGreaterThan(0);
+      expect(response.modified).toBeLessThanOrEqual(response.matched);
+    });
+
+    test('should apply CSS styles', async () => {
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: 'body',
+        type: 'css',
+        cssProperties: {
+          'opacity': '0.5',
+          'filter': 'grayscale(50%)'
+        },
+        id: 'modify_css_1'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.matched).toBeGreaterThanOrEqual(0);
+    });
+
+    test('should modify HTML content', async () => {
+      const newHtml = '<span>Test content ' + Date.now() + '</span>';
+
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: 'body',
+        type: 'html',
+        value: newHtml,
+        allMatches: false,
+        id: 'modify_html_1'
+      });
+
+      expect(response.success).toBe(true);
+      expect(typeof response.matched).toBe('number');
+    });
+
+    test('should handle invalid selector gracefully', async () => {
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: '!!!invalid-selector!!!',
+        type: 'text',
+        value: 'test',
+        id: 'modify_invalid_selector'
+      });
+
+      // Should either return error or zero matches
+      expect(response.success === false || response.matched === 0).toBe(true);
+    });
+
+    test('should handle non-existent elements', async () => {
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: '#element-that-does-not-exist-on-page',
+        type: 'text',
+        value: 'test',
+        id: 'modify_not_found'
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.matched).toBe(0);
+      expect(response.modified).toBe(0);
+    });
+  });
+
+  // ========================================================================
+  // CROSS-COMMAND INTEGRATION TESTS
+  // ========================================================================
+
+  describe('Cross-Command Workflows', () => {
+
+    test('should execute complete forensic capture workflow', async () => {
+      // Step 1: Navigate
+      console.log('Step 1: Navigating...');
+      await sendCommand(ws, {
+        command: 'navigate',
+        url: 'https://example.com',
+        id: 'workflow_nav'
+      }, PAGE_LOAD_TIMEOUT + 10000);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Step 2: Export device IDs
+      console.log('Step 2: Exporting device IDs...');
+      const deviceResponse = await sendCommand(ws, {
+        command: 'export_device_ids',
+        id: 'workflow_device'
+      });
+      expect(deviceResponse.success).toBe(true);
+
+      // Step 3: Export network log
+      console.log('Step 3: Exporting network log...');
+      const networkResponse = await sendCommand(ws, {
+        command: 'export_network_log',
+        id: 'workflow_network'
+      });
+      expect(networkResponse.success).toBe(true);
+
+      // Step 4: Export HTML
+      console.log('Step 4: Exporting HTML...');
+      const htmlResponse = await sendCommand(ws, {
+        command: 'export_raw_html',
+        id: 'workflow_html'
+      });
+      expect(htmlResponse.success).toBe(true);
+
+      // Step 5: Modify element
+      console.log('Step 5: Modifying element...');
+      const modifyResponse = await sendCommand(ws, {
+        command: 'modify_element',
+        selector: 'body',
+        type: 'class',
+        classOperation: 'add',
+        className: 'forensic-captured',
+        id: 'workflow_modify'
+      });
+      expect(modifyResponse.success).toBe(true);
+
+      console.log('✅ Complete workflow executed successfully');
+    }, TIMEOUT * 2);
+
+    test('should maintain state across multiple commands', async () => {
+      // Execute multiple modification commands
+      const commands = [
+        { selector: 'h1', type: 'text', value: 'Test 1' },
+        { selector: 'p', type: 'text', value: 'Test 2' },
+        { selector: 'body', type: 'class', classOperation: 'add', className: 'modified' }
+      ];
+
+      for (let i = 0; i < commands.length; i++) {
+        const cmd = commands[i];
+        let fullCmd = {
+          command: 'modify_element',
+          id: 'state_test_' + i
+        };
+
+        if (cmd.attributeName) {
+          fullCmd = { ...fullCmd, ...cmd, attributeName: cmd.attributeName };
+        } else if (cmd.classOperation) {
+          fullCmd = { ...fullCmd, ...cmd, classOperation: cmd.classOperation, className: cmd.className };
+        } else {
+          fullCmd = { ...fullCmd, ...cmd };
+        }
+
+        const response = await sendCommand(ws, fullCmd);
+        expect(response.success).toBe(true);
+      }
+    }, TIMEOUT);
+  });
+
+  // ========================================================================
+  // ERROR HANDLING & EDGE CASES
+  // ========================================================================
+
+  describe('Error Handling & Edge Cases', () => {
+
+    test('should handle commands with missing parameters', async () => {
+      const response = await sendCommand(ws, {
+        command: 'modify_element',
+        // Missing required selector and type
+        id: 'error_missing_params'
+      });
+
+      // Should return error
+      expect(response.success).toBe(false);
+      expect(response.error).toBeDefined();
+    });
+
+    test('should handle concurrent commands', async () => {
+      const commands = [
+        { command: 'export_raw_html', id: 'concurrent_1' },
+        { command: 'export_network_log', id: 'concurrent_2' },
+        { command: 'export_device_ids', id: 'concurrent_3' }
+      ];
+
+      // Send all at once (as fast as possible)
+      const promises = commands.map(cmd => sendCommand(ws, cmd));
+
+      // All should eventually respond
+      const responses = await Promise.all(promises);
+      expect(responses.length).toBe(3);
+      responses.forEach(response => {
+        expect(response.success).toBeDefined();
+      });
+    });
+
+    test('should timeout on unresponsive server', async () => {
+      try {
+        // Try command with very short timeout
+        const response = await sendCommand(ws, {
+          command: 'export_raw_html',
+          id: 'timeout_test_' + Date.now()
+        }, 10); // 10ms timeout - will likely timeout
+
+        // If we get here, request was fast
+        expect(response).toBeDefined();
+      } catch (error) {
+        // Timeout is expected
+        expect(error.message).toMatch(/timeout|Timeout/i);
+      }
+    });
+  });
+});
+
+// ========================================================================
+// EXPORT TEST HELPERS FOR MANUAL TESTING
+// ========================================================================
+
+module.exports = {
+  sendCommand,
+  connectWebSocket,
+  WS_URL,
+  TIMEOUT
+};

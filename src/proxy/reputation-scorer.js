@@ -97,9 +97,15 @@ class ReputationScorer {
         metrics.successfulRequests++;
       } else {
         metrics.failedRequests++;
-        if (update.blocked) metrics.blockedRequests++;
-        if (update.captcha) metrics.captchaRequests++;
-        if (update.ratelimited) metrics.ratelimitedRequests++;
+        if (update.blocked) {
+          metrics.blockedRequests++;
+        }
+        if (update.captcha) {
+          metrics.captchaRequests++;
+        }
+        if (update.ratelimited) {
+          metrics.ratelimitedRequests++;
+        }
       }
     }
 

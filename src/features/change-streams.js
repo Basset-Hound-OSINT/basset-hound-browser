@@ -611,8 +611,12 @@ class DataStreamManager {
       ...jsonData.data.map(row =>
         headers.map(h => {
           const value = row[h];
-          if (value === null || value === undefined) return '';
-          if (typeof value === 'object') return JSON.stringify(value);
+          if (value === null || value === undefined) {
+            return '';
+          }
+          if (typeof value === 'object') {
+            return JSON.stringify(value);
+          }
           return String(value).includes(',') ? `"${value}"` : value;
         }).join(',')
       )
@@ -641,8 +645,11 @@ class DataStreamManager {
         const chunk = output.slice(i, i + chunkSize);
         const compressed = await new Promise((resolve, reject) => {
           zlib.gzip(chunk, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
           });
         });
         yield compressed;

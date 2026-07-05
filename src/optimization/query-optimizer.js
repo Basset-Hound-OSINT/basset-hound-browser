@@ -74,7 +74,7 @@ class QueryOptimizer {
     }
 
     // Execute query
-    let result = await executor(query);
+    const result = await executor(query);
 
     // Track execution time
     const executionTime = Date.now() - startTime;
@@ -210,13 +210,25 @@ class QueryOptimizer {
    * @private
    */
   _estimateSelectivity(filterValue) {
-    if (filterValue === null || filterValue === undefined) return 0.9;
-    if (typeof filterValue === 'boolean') return 0.5;
-    if (Array.isArray(filterValue)) return 0.8 / filterValue.length;
+    if (filterValue === null || filterValue === undefined) {
+      return 0.9;
+    }
+    if (typeof filterValue === 'boolean') {
+      return 0.5;
+    }
+    if (Array.isArray(filterValue)) {
+      return 0.8 / filterValue.length;
+    }
     if (typeof filterValue === 'object') {
-      if (filterValue.$in) return 0.8 / filterValue.$in.length;
-      if (filterValue.$gt || filterValue.$lt) return 0.3;
-      if (filterValue.$regex) return 0.2;
+      if (filterValue.$in) {
+        return 0.8 / filterValue.$in.length;
+      }
+      if (filterValue.$gt || filterValue.$lt) {
+        return 0.3;
+      }
+      if (filterValue.$regex) {
+        return 0.2;
+      }
     }
     return 0.5;
   }

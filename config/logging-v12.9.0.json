@@ -1,0 +1,209 @@
+{
+  "version": "12.9.0",
+  "description": "Basset Hound Browser v12.9.0 Logging Configuration",
+  "updated": "2026-07-03",
+  "logLevel": "info",
+  "comment": "Set to 'debug' for detailed logs, 'trace' for verbose, 'info' for production",
+  "transports": {
+    "console": {
+      "enabled": true,
+      "format": "json",
+      "colorize": false,
+      "timestamp": "iso",
+      "level": "info",
+      "comment": "Console output (stdout) - always enabled in containers"
+    },
+    "file": {
+      "enabled": true,
+      "path": "/app/logs/basset-hound.log",
+      "format": "json",
+      "level": "info",
+      "maxSize": "10m",
+      "maxFiles": 10,
+      "compress": true,
+      "comment": "Main application log file with rotation"
+    },
+    "errorFile": {
+      "enabled": true,
+      "path": "/app/logs/basset-hound-error.log",
+      "format": "json",
+      "level": "error",
+      "maxSize": "10m",
+      "maxFiles": 5,
+      "compress": true,
+      "comment": "Separate error log for critical issues"
+    },
+    "performanceFile": {
+      "enabled": true,
+      "path": "/app/logs/basset-hound-performance.log",
+      "format": "json",
+      "level": "info",
+      "maxSize": "50m",
+      "maxFiles": 3,
+      "compress": true,
+      "comment": "Performance-related metrics and latency logs"
+    }
+  },
+  "components": {
+    "websocket": "info",
+    "commands": "debug",
+    "evasion": "debug",
+    "proxy": "info",
+    "tor": "info",
+    "security": "debug",
+    "memory": "info",
+    "performance": "info",
+    "errors": "error",
+    "health": "info",
+    "rate-limiter": "info",
+    "connection": "debug",
+    "authentication": "debug"
+  },
+  "logStructure": {
+    "timestamp": "ISO 8601 format",
+    "level": "error, warn, info, debug, trace",
+    "component": "Subsystem identifier",
+    "message": "Human-readable description",
+    "metadata": {
+      "connectionId": "WebSocket connection identifier",
+      "commandName": "Command being executed",
+      "duration": "Execution duration in milliseconds",
+      "userId": "Optional user identifier",
+      "sessionId": "Optional session identifier",
+      "errorCode": "Error code if applicable",
+      "stackTrace": "Stack trace for errors"
+    }
+  },
+  "logExamples": {
+    "info": {
+      "timestamp": "2026-07-03T12:34:56.789Z",
+      "level": "info",
+      "component": "websocket",
+      "message": "Connection established",
+      "connectionId": "conn-12345",
+      "remoteAddress": "192.168.1.100",
+      "duration": 42
+    },
+    "error": {
+      "timestamp": "2026-07-03T12:34:57.890Z",
+      "level": "error",
+      "component": "commands",
+      "message": "Command execution failed",
+      "command": "navigate",
+      "error": "TimeoutError",
+      "errorCode": "E_NAVIGATE_TIMEOUT",
+      "duration": 5000,
+      "stackTrace": "..."
+    },
+    "debug": {
+      "timestamp": "2026-07-03T12:34:58.901Z",
+      "level": "debug",
+      "component": "security",
+      "message": "Rate limit check",
+      "clientId": "client-456",
+      "requestsPerSecond": 85,
+      "limitThreshold": 100,
+      "allowed": true
+    }
+  },
+  "componentDescriptions": {
+    "websocket": "WebSocket connection lifecycle and frame events",
+    "commands": "Command execution tracking and results",
+    "evasion": "Bot detection evasion techniques and fingerprint spoofing",
+    "proxy": "Proxy rotation, circuit events, connection status",
+    "tor": "Tor circuit management, exit node selection",
+    "security": "Rate limiting, authentication, validation rules",
+    "memory": "Heap usage, garbage collection, memory leaks",
+    "performance": "Latency spikes, throughput degradation, bottlenecks",
+    "errors": "All exceptions and failure scenarios",
+    "health": "Health checks, heartbeats, system status",
+    "rate-limiter": "Rate limiting decisions and enforcement",
+    "connection": "Low-level connection details and handshakes",
+    "authentication": "Token validation and authentication flows"
+  },
+  "logRotation": {
+    "strategy": "size-based",
+    "maxFileSize": "10m",
+    "maxFiles": 10,
+    "compress": true,
+    "archiveFormat": "gzip",
+    "retention": {
+      "days": 30,
+      "comment": "Logs older than 30 days are automatically deleted"
+    }
+  },
+  "logAggregation": {
+    "elk": {
+      "enabled": true,
+      "elasticsearch": "elasticsearch:9200",
+      "indexPattern": "basset-hound-%{+YYYY.MM.dd}",
+      "pipeline": "logstash"
+    },
+    "cloudLogging": {
+      "enabled": false,
+      "comment": "Enable for cloud deployments (GCP, AWS, etc.)"
+    }
+  },
+  "performance": {
+    "asyncWrite": true,
+    "bufferSize": 1024,
+    "batchInterval": 1000,
+    "comment": "Async write and batching reduce I/O impact"
+  },
+  "security": {
+    "redactSensitiveData": true,
+    "excludePatterns": [
+      "password",
+      "token",
+      "secret",
+      "apiKey",
+      "authorization"
+    ],
+    "maskPatterns": {
+      "emailAddresses": "user@example.com",
+      "ipAddresses": "xxx.xxx.xxx.xxx",
+      "phoneNumbers": "xxx-xxx-xxxx"
+    }
+  },
+  "environment": {
+    "development": {
+      "logLevel": "trace",
+      "console": true,
+      "file": true,
+      "format": "pretty",
+      "comment": "Verbose logging for development"
+    },
+    "staging": {
+      "logLevel": "debug",
+      "console": true,
+      "file": true,
+      "format": "json",
+      "comment": "Balanced logging for staging"
+    },
+    "production": {
+      "logLevel": "info",
+      "console": true,
+      "file": true,
+      "format": "json",
+      "compress": true,
+      "comment": "Optimized for production - errors only"
+    }
+  },
+  "monitoring": {
+    "logMetrics": true,
+    "trackLogVolume": true,
+    "alertOnErrors": true,
+    "errorThreshold": 10,
+    "errorTimeWindow": "5m",
+    "comment": "Alert when error rate exceeds threshold"
+  },
+  "docker": {
+    "driver": "json-file",
+    "options": {
+      "max-size": "10m",
+      "max-file": "10",
+      "labels": "service=basset-hound-browser,version=12.9.0"
+    },
+    "comment": "Docker daemon logging configuration"
+  }
+}

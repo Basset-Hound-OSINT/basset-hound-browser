@@ -19,12 +19,12 @@ const TEST_RESULTS = {
     existingUserLogin: { passed: 0, failed: 0, time: 0 },
     competitiveMonitoring: { passed: 0, failed: 0, time: 0 },
     forensicEvidence: { passed: 0, failed: 0, time: 0 },
-    multiMonitorCampaign: { passed: 0, failed: 0, time: 0 },
+    multiMonitorCampaign: { passed: 0, failed: 0, time: 0 }
   },
   totalTests: 0,
   totalPassed: 0,
   totalFailed: 0,
-  errors: [],
+  errors: []
 };
 
 /**
@@ -66,7 +66,9 @@ class TestWebSocketClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         this.ws.on('close', () => {
@@ -74,7 +76,9 @@ class TestWebSocketClient {
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('WebSocket connection timeout'));
+          if (!this.connected) {
+            reject(new Error('WebSocket connection timeout'));
+          }
         }, timeout);
       } catch (err) {
         reject(err);
@@ -104,7 +108,7 @@ class TestWebSocketClient {
           } else {
             resolve(msg);
           }
-        },
+        }
       });
 
       try {
@@ -181,7 +185,7 @@ async function testNewUserSignupJourney(client) {
     TEST_RESULTS.errors.push({
       journey: 'newUserSignup',
       error: error.message,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
     console.error(`  Journey failed: ${error.message}`);
     return { success: false, error: error.message, time: Date.now() - startTime };
@@ -238,7 +242,7 @@ async function testExistingUserLoginJourney(client) {
     TEST_RESULTS.errors.push({
       journey: 'existingUserLogin',
       error: error.message,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
     console.error(`  Journey failed: ${error.message}`);
     return { success: false, error: error.message, time: Date.now() - startTime };
@@ -272,7 +276,7 @@ async function testCompetitiveMonitoringJourney(client) {
     console.log('  [Step 3/5] Enter competitor URL');
     const urlFill = await client.sendCommand('fill', {
       selector: 'input[id="competitor-url"]',
-      text: 'https://competitor.example.com',
+      text: 'https://competitor.example.com'
     });
     assert(urlFill.status === 'success' || urlFill.filled === true, 'URL entry failed');
     tests.push({ step: 'Enter competitor URL', passed: true });
@@ -300,7 +304,7 @@ async function testCompetitiveMonitoringJourney(client) {
     TEST_RESULTS.errors.push({
       journey: 'competitiveMonitoring',
       error: error.message,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
     console.error(`  Journey failed: ${error.message}`);
     return { success: false, error: error.message, time: Date.now() - startTime };
@@ -347,7 +351,7 @@ async function testForensicEvidenceJourney(client) {
     const export_data = await client.sendCommand('exportReport', {
       format: 'pdf',
       includeScreenshot: true,
-      includeMetadata: true,
+      includeMetadata: true
     });
     assert(export_data.status === 'success' || export_data.exported === true, 'Report export failed');
     tests.push({ step: 'Export report', passed: true });
@@ -363,7 +367,7 @@ async function testForensicEvidenceJourney(client) {
     TEST_RESULTS.errors.push({
       journey: 'forensicEvidence',
       error: error.message,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
     console.error(`  Journey failed: ${error.message}`);
     return { success: false, error: error.message, time: Date.now() - startTime };
@@ -400,7 +404,7 @@ async function testMultiMonitorCampaignJourney(client) {
       'https://comp2.example.com',
       'https://comp3.example.com',
       'https://comp4.example.com',
-      'https://comp5.example.com',
+      'https://comp5.example.com'
     ];
 
     for (const url of competitors) {
@@ -438,7 +442,7 @@ async function testMultiMonitorCampaignJourney(client) {
     TEST_RESULTS.errors.push({
       journey: 'multiMonitorCampaign',
       error: error.message,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
     console.error(`  Journey failed: ${error.message}`);
     return { success: false, error: error.message, time: Date.now() - startTime };

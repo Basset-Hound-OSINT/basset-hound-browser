@@ -133,7 +133,7 @@ describe('Feature Integration Tests - Screenshots and Video Recording', () => {
 
   // Skip all tests if WebSocket is not available
   const skipIfNoServer = (testFn) => {
-    return async function(...args) {
+    return async function (...args) {
       if (!client || !client.ws || client.ws.readyState !== WebSocket.OPEN) {
         console.log('Skipping test - WebSocket server not available');
         return;
@@ -342,7 +342,7 @@ describe('Feature Integration Tests - Screenshots and Video Recording', () => {
       const sessionId = TEST_CONFIG.TEST_SESSION_ID + '-combined-1';
 
       // Start recording
-      let recordResponse = await client.send('start_video_recording', {
+      const recordResponse = await client.send('start_video_recording', {
         sessionId,
         codec: 'vp9',
         fps: 24
@@ -369,7 +369,7 @@ describe('Feature Integration Tests - Screenshots and Video Recording', () => {
       const sessionId = TEST_CONFIG.TEST_SESSION_ID + '-combined-2';
 
       // Start recording
-      let recordResponse = await client.send('start_video_recording', {
+      const recordResponse = await client.send('start_video_recording', {
         sessionId,
         codec: 'vp9',
         fps: 24

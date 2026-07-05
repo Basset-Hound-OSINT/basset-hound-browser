@@ -200,9 +200,15 @@ commandHandlers.get_timeline = async (params) => {
     }
 
     const options = {};
-    if (timeWindow) options.timeWindow = timeWindow;
-    if (changeTypes) options.changeTypes = changeTypes;
-    if (minConfidence !== undefined) options.minConfidence = minConfidence;
+    if (timeWindow) {
+      options.timeWindow = timeWindow;
+    }
+    if (changeTypes) {
+      options.changeTypes = changeTypes;
+    }
+    if (minConfidence !== undefined) {
+      options.minConfidence = minConfidence;
+    }
 
     const changesData = timelineGenerator.getChanges(monitoringId, options);
     const timelineData = timelineGenerator.getTimeline(monitoringId);
@@ -496,11 +502,15 @@ commandHandlers.analyze_change_trend = async (params) => {
  */
 function _startMonitoring(monitoringId, intervalMs) {
   const session = monitoringSessions.get(monitoringId);
-  if (!session) return;
+  if (!session) {
+    return;
+  }
 
   const checkChanges = async () => {
     try {
-      if (session.paused || !session.webContents) return;
+      if (session.paused || !session.webContents) {
+        return;
+      }
 
       const newSnapshot = await changeDetector.createSnapshot(session.webContents, session.url);
       const diff = changeDetector.compareSnapshots(session.url, session.url);

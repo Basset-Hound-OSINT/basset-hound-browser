@@ -68,10 +68,10 @@ class HIPAAComplianceEngine {
     // Initialize role-based access levels
     this.accessLevels = {
       NO_ACCESS: 0,
-      MINIMAL: 1,        // Minimum necessary only
-      STANDARD: 2,       // Standard care team access
+      MINIMAL: 1, // Minimum necessary only
+      STANDARD: 2, // Standard care team access
       ADMINISTRATIVE: 3, // Administrative functions
-      FULL_ACCESS: 4     // Full clinical access
+      FULL_ACCESS: 4 // Full clinical access
     };
   }
 
@@ -447,10 +447,14 @@ class HIPAAComplianceEngine {
    */
   isMinimumNecessary(userId, phiId, purpose) {
     const user = this.accessControlList.get(userId);
-    if (!user) return false;
+    if (!user) {
+      return false;
+    }
 
     const phi = this.phiRegistry.get(phiId);
-    if (!phi) return false;
+    if (!phi) {
+      return false;
+    }
 
     // Check if user has legitimate need to access this PHI
     // This is a simplified check - in production would be more sophisticated
@@ -549,11 +553,21 @@ class HIPAAComplianceEngine {
    * @private
    */
   _validatePassword(password) {
-    if (password.length < this.config.minSecurePasswordLength) return false;
-    if (!/[A-Z]/.test(password)) return false; // Uppercase
-    if (!/[a-z]/.test(password)) return false; // Lowercase
-    if (!/[0-9]/.test(password)) return false; // Number
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) return false; // Symbol
+    if (password.length < this.config.minSecurePasswordLength) {
+      return false;
+    }
+    if (!/[A-Z]/.test(password)) {
+      return false;
+    } // Uppercase
+    if (!/[a-z]/.test(password)) {
+      return false;
+    } // Lowercase
+    if (!/[0-9]/.test(password)) {
+      return false;
+    } // Number
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      return false;
+    } // Symbol
     return true;
   }
 

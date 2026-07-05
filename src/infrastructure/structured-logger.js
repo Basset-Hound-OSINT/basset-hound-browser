@@ -100,7 +100,9 @@ class StructuredLogger extends EventEmitter {
    * @private
    */
   _writeToFile(entry) {
-    if (!this.options.enableFile) return;
+    if (!this.options.enableFile) {
+      return;
+    }
 
     try {
       fs.appendFileSync(this.logFilePath, entry + '\n');
@@ -235,7 +237,9 @@ class StructuredLogger extends EventEmitter {
    * Clean old log files
    */
   cleanupOldLogs(daysOld = 7) {
-    if (!this.options.enableFile) return;
+    if (!this.options.enableFile) {
+      return;
+    }
 
     try {
       const dir = path.dirname(this.logFilePath);

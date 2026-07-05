@@ -36,9 +36,9 @@ class PriceAnalyzer extends EventEmitter {
     this.options = {
       minTrendLength: options.minTrendLength || 3,
       volatilityWindow: options.volatilityWindow || 10,
-      trendSensitivity: options.trendSensitivity || 0.05,  // 5% threshold
-      priceChangeThreshold: options.priceChangeThreshold || 0.05,  // 5% for alerts
-      volatilityThreshold: options.volatilityThreshold || 0.15,  // 15% volatility
+      trendSensitivity: options.trendSensitivity || 0.05, // 5% threshold
+      priceChangeThreshold: options.priceChangeThreshold || 0.05, // 5% for alerts
+      volatilityThreshold: options.volatilityThreshold || 0.15, // 15% volatility
       movingAveragePeriods: options.movingAveragePeriods || [5, 10, 20],
       enableAlerts: options.enableAlerts !== false,
       maxHistoryPerProduct: options.maxHistoryPerProduct || 500,
@@ -167,7 +167,9 @@ class PriceAnalyzer extends EventEmitter {
    * @private
    */
   detectTrend(prices) {
-    if (prices.length < 2) return TREND_DIRECTION.STABLE;
+    if (prices.length < 2) {
+      return TREND_DIRECTION.STABLE;
+    }
 
     // Simple linear regression
     let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -316,7 +318,9 @@ class PriceAnalyzer extends EventEmitter {
    */
   getPriceStats(productId) {
     const history = this.priceHistory.get(productId) || [];
-    if (history.length === 0) return null;
+    if (history.length === 0) {
+      return null;
+    }
 
     const prices = history.map(h => h.price).sort((a, b) => a - b);
     const mean = prices.reduce((a, b) => a + b, 0) / prices.length;

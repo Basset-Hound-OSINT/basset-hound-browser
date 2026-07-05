@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. "✅ COMPLETE" here means "file written," not wired or verified: several of these features are never registered in the running server, and session persistence captures the shell webContents rather than the page. Test counts are not reproducible in-repo.
+
 # Basset Hound Browser - Feature Implementation Report
 **Date:** May 31, 2026  
 **Version:** 12.1.0 Pre-Release  

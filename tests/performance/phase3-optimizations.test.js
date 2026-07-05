@@ -50,19 +50,19 @@ function generateCommand(size = 'small') {
     params = {
       command: 'navigate',
       url: 'https://example.com/very/long/url/with/many/parameters?q=test&foo=bar',
-      headers: { 'X-Custom': 'value' },
+      headers: { 'X-Custom': 'value' }
     };
   } else {
     params = {
       html: 'x'.repeat(5000),
-      metadata: { large: 'payload'.repeat(100) },
+      metadata: { large: 'payload'.repeat(100) }
     };
   }
 
   return JSON.stringify({
     id: 1,
     command,
-    params,
+    params
   });
 }
 
@@ -112,7 +112,7 @@ describe('Phase 3: Command Processing Pipeline', () => {
     const message = JSON.stringify({
       id: 1,
       command: 'ping',
-      params: {},
+      params: {}
     });
 
     const result = await pipeline.parse(message);
@@ -123,7 +123,7 @@ describe('Phase 3: Command Processing Pipeline', () => {
     const message = JSON.stringify({
       // Missing 'command'
       id: 1,
-      params: {},
+      params: {}
     });
 
     try {
@@ -251,7 +251,7 @@ describe('Phase 3: Memory Pool V2', () => {
   it('should batch acquire and release', () => {
     const specs = {
       responseTemplate: 5,
-      commandState: 3,
+      commandState: 3
     };
 
     const batch = memPool.acquireBatch(specs);
@@ -331,7 +331,7 @@ describe('Phase 3: Hot-Path Cache', () => {
   it('should fill template', () => {
     const filled = cache.fillTemplate('success', {
       success: true,
-      data: { test: 'value' },
+      data: { test: 'value' }
     });
 
     assert.strictEqual(filled.success, true);
@@ -529,7 +529,7 @@ describe('Phase 3: Registry Integration', () => {
       () => ({
         optimize() {
           return 'optimized';
-        },
+        }
       }),
       { enabled: true }
     );

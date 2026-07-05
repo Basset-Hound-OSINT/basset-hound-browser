@@ -17,18 +17,18 @@ const TEST_RESULTS = {
     databaseDown: { passed: 0, failed: 0 },
     slackDown: { passed: 0, failed: 0 },
     proxyDown: { passed: 0, failed: 0 },
-    networkInterruption: { passed: 0, failed: 0 },
+    networkInterruption: { passed: 0, failed: 0 }
   },
   scenarios: [
     'gracefulDegradation',
     'automaticRecovery',
     'noDataLoss',
-    'consistentState',
+    'consistentState'
   ],
   totalTests: 0,
   totalPassed: 0,
   totalFailed: 0,
-  errors: [],
+  errors: []
 };
 
 /**
@@ -65,11 +65,15 @@ class ChaosTestClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('Connection timeout'));
+          if (!this.connected) {
+            reject(new Error('Connection timeout'));
+          }
         }, timeout);
       } catch (err) {
         reject(err);
@@ -78,7 +82,9 @@ class ChaosTestClient {
   }
 
   async sendCommand(command, params = {}, timeout = TEST_TIMEOUT) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     const requestId = ++this.requestId;
     return new Promise((resolve, reject) => {
@@ -91,7 +97,7 @@ class ChaosTestClient {
         resolve: (msg) => {
           clearTimeout(timer);
           resolve(msg);
-        },
+        }
       });
 
       try {
@@ -105,7 +111,9 @@ class ChaosTestClient {
   }
 
   disconnect() {
-    if (this.ws) this.ws.close();
+    if (this.ws) {
+      this.ws.close();
+    }
   }
 }
 
@@ -125,7 +133,7 @@ async function testRedisComponentFailure(client) {
       console.log('  [1/4] Normal operation (Redis healthy)');
       const op1 = await client.sendCommand('setCookie', {
         name: 'test',
-        value: 'value',
+        value: 'value'
       });
       testCases.push({ case: 'Pre-failure operation', passed: true });
       results.passed++;
@@ -139,7 +147,7 @@ async function testRedisComponentFailure(client) {
       console.log('  [2/4] Injecting Redis failure');
       await client.sendCommand('injectFailure', {
         component: 'redis',
-        enabled: true,
+        enabled: true
       });
       testCases.push({ case: 'Inject failure', passed: true });
       results.passed++;
@@ -152,7 +160,7 @@ async function testRedisComponentFailure(client) {
     try {
       console.log('  [3/4] Operations continue with graceful degradation');
       const op3 = await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       if (op3.status === 'degraded' || op3.status === 'success') {
         testCases.push({ case: 'Graceful degradation', passed: true });
@@ -171,11 +179,11 @@ async function testRedisComponentFailure(client) {
       console.log('  [4/4] Component recovery');
       await client.sendCommand('injectFailure', {
         component: 'redis',
-        enabled: false,
+        enabled: false
       });
       const op4 = await client.sendCommand('setCookie', {
         name: 'test2',
-        value: 'value2',
+        value: 'value2'
       });
       testCases.push({ case: 'Component recovery', passed: true });
       results.passed++;
@@ -192,7 +200,7 @@ async function testRedisComponentFailure(client) {
     TEST_RESULTS.failures.redisDown = { passed: 0, failed: 4 };
     TEST_RESULTS.errors.push({
       test: 'redisDown',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 4 };
   }
@@ -222,7 +230,7 @@ async function testDatabaseComponentFailure(client) {
       console.log('  [2/4] Injecting database failure');
       await client.sendCommand('injectFailure', {
         component: 'database',
-        enabled: true,
+        enabled: true
       });
       results.passed++;
     } catch (e) {
@@ -248,7 +256,7 @@ async function testDatabaseComponentFailure(client) {
       console.log('  [4/4] Database recovery');
       await client.sendCommand('injectFailure', {
         component: 'database',
-        enabled: false,
+        enabled: false
       });
       results.passed++;
     } catch (e) {
@@ -263,7 +271,7 @@ async function testDatabaseComponentFailure(client) {
     TEST_RESULTS.failures.databaseDown = { passed: 0, failed: 4 };
     TEST_RESULTS.errors.push({
       test: 'databaseDown',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 4 };
   }
@@ -283,7 +291,7 @@ async function testExternalServiceFailure(client) {
       console.log('  [1/4] Send alert with Slack enabled');
       await client.sendCommand('sendAlert', {
         message: 'Test alert',
-        service: 'slack',
+        service: 'slack'
       });
       results.passed++;
     } catch (e) {
@@ -296,7 +304,7 @@ async function testExternalServiceFailure(client) {
       console.log('  [2/4] Injecting Slack service failure');
       await client.sendCommand('injectFailure', {
         component: 'slack',
-        enabled: true,
+        enabled: true
       });
       results.passed++;
     } catch (e) {
@@ -308,7 +316,7 @@ async function testExternalServiceFailure(client) {
       console.log('  [3/4] Alerts queue for retry');
       const op = await client.sendCommand('sendAlert', {
         message: 'Test alert 2',
-        service: 'slack',
+        service: 'slack'
       });
       if (op.status === 'queued' || op.retryScheduled === true) {
         results.passed++;
@@ -324,7 +332,7 @@ async function testExternalServiceFailure(client) {
       console.log('  [4/4] Slack service recovery');
       await client.sendCommand('injectFailure', {
         component: 'slack',
-        enabled: false,
+        enabled: false
       });
       results.passed++;
     } catch (e) {
@@ -339,7 +347,7 @@ async function testExternalServiceFailure(client) {
     TEST_RESULTS.failures.slackDown = { passed: 0, failed: 4 };
     TEST_RESULTS.errors.push({
       test: 'slackDown',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 4 };
   }
@@ -359,7 +367,7 @@ async function testProxyComponentFailure(client) {
       console.log('  [1/4] Normal navigation through proxy');
       await client.sendCommand('navigate', {
         url: 'https://example.com',
-        useProxy: true,
+        useProxy: true
       });
       results.passed++;
     } catch (e) {
@@ -372,7 +380,7 @@ async function testProxyComponentFailure(client) {
       console.log('  [2/4] Injecting proxy failure');
       await client.sendCommand('injectFailure', {
         component: 'proxy',
-        enabled: true,
+        enabled: true
       });
       results.passed++;
     } catch (e) {
@@ -384,7 +392,7 @@ async function testProxyComponentFailure(client) {
       console.log('  [3/4] Fall back to direct connection');
       const op = await client.sendCommand('navigate', {
         url: 'https://example.com',
-        fallbackToDirect: true,
+        fallbackToDirect: true
       });
       if (op.status === 'success' || op.fallbackUsed === true) {
         results.passed++;
@@ -401,7 +409,7 @@ async function testProxyComponentFailure(client) {
       console.log('  [4/4] Proxy recovery');
       await client.sendCommand('injectFailure', {
         component: 'proxy',
-        enabled: false,
+        enabled: false
       });
       results.passed++;
     } catch (e) {
@@ -416,7 +424,7 @@ async function testProxyComponentFailure(client) {
     TEST_RESULTS.failures.proxyDown = { passed: 0, failed: 4 };
     TEST_RESULTS.errors.push({
       test: 'proxyDown',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 4 };
   }
@@ -435,7 +443,7 @@ async function testNetworkInterruption(client) {
     try {
       console.log('  [1/4] Initial navigation');
       await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       results.passed++;
     } catch (e) {
@@ -448,7 +456,7 @@ async function testNetworkInterruption(client) {
       await client.sendCommand('injectFailure', {
         component: 'network',
         enabled: true,
-        duration: 5000,
+        duration: 5000
       });
       results.passed++;
     } catch (e) {
@@ -460,7 +468,7 @@ async function testNetworkInterruption(client) {
       console.log('  [3/4] Automatic retry on network restore');
       await new Promise((r) => setTimeout(r, 6000)); // Wait for interruption to end
       const op = await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       if (op.status === 'success' || op.retriedAfterFailure === true) {
         results.passed++;
@@ -475,7 +483,7 @@ async function testNetworkInterruption(client) {
     try {
       console.log('  [4/4] Network fully recovered');
       const op = await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       if (op.status === 'success') {
         results.passed++;
@@ -494,7 +502,7 @@ async function testNetworkInterruption(client) {
     TEST_RESULTS.failures.networkInterruption = { passed: 0, failed: 4 };
     TEST_RESULTS.errors.push({
       test: 'networkInterruption',
-      error: error.message,
+      error: error.message
     });
     return { passed: 0, failed: 4 };
   }
@@ -564,7 +572,9 @@ async function runChaosTests() {
     console.error('Test suite error:', error.message);
     return 1;
   } finally {
-    if (client) client.disconnect();
+    if (client) {
+      client.disconnect();
+    }
   }
 }
 

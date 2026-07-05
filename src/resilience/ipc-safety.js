@@ -18,22 +18,22 @@ class IPCSafety {
    */
   constructor(options = {}) {
     this.logger = options.logger || console;
-    this.deduplicationWindow = options.deduplicationWindow || 100;  // 100ms
+    this.deduplicationWindow = options.deduplicationWindow || 100; // 100ms
     this.maxPendingOperations = options.maxPendingOperations || 1000;
 
     // Track pending operations to prevent double-execution
-    this.pendingOperations = new Map();      // commandId -> { promise, timestamp }
+    this.pendingOperations = new Map(); // commandId -> { promise, timestamp }
 
     // Track recently completed operations for deduplication
-    this.completedOperations = new Map();    // commandId -> { result, timestamp }
+    this.completedOperations = new Map(); // commandId -> { result, timestamp }
 
     // Track IPC handlers to ensure cleanup
-    this.registeredHandlers = new Map();     // responseChannel -> { handler, webContents }
+    this.registeredHandlers = new Map(); // responseChannel -> { handler, webContents }
 
     // Cleanup interval for stale entries
     this.cleanupInterval = setInterval(() => this.performCleanup(), 60000);
     if (this.cleanupInterval.unref) {
-      this.cleanupInterval.unref();  // Don't prevent process exit
+      this.cleanupInterval.unref(); // Don't prevent process exit
     }
   }
 
@@ -209,10 +209,14 @@ class IPCSafety {
 
         // Create safe response handler
         const responseHandler = (event, result) => {
-          if (resolved) return;  // Already handled
+          if (resolved) {
+            return;
+          } // Already handled
           resolved = true;
 
-          if (timeoutId) clearTimeout(timeoutId);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
           this.unregisterIPCHandler(ipcMain, responseChannel, responseHandler);
 
           resolve(result);
@@ -224,7 +228,9 @@ class IPCSafety {
 
         // Set timeout for response
         timeoutId = setTimeout(() => {
-          if (resolved) return;  // Already handled
+          if (resolved) {
+            return;
+          } // Already handled
           resolved = true;
 
           this.unregisterIPCHandler(ipcMain, responseChannel, responseHandler);
@@ -241,10 +247,14 @@ class IPCSafety {
             webContents.send(sendChannel);
           }
         } catch (error) {
-          if (resolved) return;
+          if (resolved) {
+            return;
+          }
           resolved = true;
 
-          if (timeoutId) clearTimeout(timeoutId);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
           this.unregisterIPCHandler(ipcMain, responseChannel, responseHandler);
           reject(new Error(`Failed to send IPC: ${error.message}`));
         }
@@ -325,7 +335,7 @@ class IPCSafety {
 
     // Clean up stale pending operations (older than 5 minutes)
     for (const [commandId, pending] of this.pendingOperations.entries()) {
-      if (now - pending.timestamp > 300000) {  // 5 minutes
+      if (now - pending.timestamp > 300000) { // 5 minutes
         this.logger.warn(`[IPCSafety] Removing stale pending operation: ${commandId}`);
         this.pendingOperations.delete(commandId);
         removedPending++;
@@ -334,7 +344,7 @@ class IPCSafety {
 
     // Clean up old cached results (older than deduplication window)
     for (const [commandId, cached] of this.completedOperations.entries()) {
-      if (now - cached.timestamp > this.deduplicationWindow * 10) {  // Keep for a bit longer
+      if (now - cached.timestamp > this.deduplicationWindow * 10) { // Keep for a bit longer
         this.completedOperations.delete(commandId);
         removedCached++;
       }

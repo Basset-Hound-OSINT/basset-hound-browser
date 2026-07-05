@@ -64,8 +64,8 @@ describe('P1-002: Adaptive Timeout Configuration', () => {
     const serverContent = fs.readFileSync(serverFile, 'utf8');
     expect(serverContent).toContain('largeResponseThreshold');
     expect(serverContent).toContain('hugeResponseThreshold');
-    expect(serverContent).toContain('5000000');  // 5MB
-    expect(serverContent).toContain('20000000');  // 20MB
+    expect(serverContent).toContain('5000000'); // 5MB
+    expect(serverContent).toContain('20000000'); // 20MB
   });
 
   /**
@@ -154,9 +154,9 @@ describe('P1-002: Timeout Calculation Logic', () => {
     const contextCode = `
       const process = { env: { ADAPTIVE_TIMEOUT_DISABLED: undefined } };
       ${serverContent.substring(
-        serverContent.indexOf('const ADAPTIVE_TIMEOUT_CONFIG'),
-        serverContent.indexOf('function calculateAdaptiveTimeout') + 3000
-      )}
+    serverContent.indexOf('const ADAPTIVE_TIMEOUT_CONFIG'),
+    serverContent.indexOf('function calculateAdaptiveTimeout') + 3000
+  )}
       module.exports = { calculateAdaptiveTimeout, ADAPTIVE_TIMEOUT_CONFIG };
     `;
 
@@ -215,7 +215,7 @@ describe('P1-002: Timeout Calculation Logic', () => {
    */
   test('should use base timeout for normal operations', () => {
     // Small document, non-large-response command
-    const timeout = 30000;  // Base timeout
+    const timeout = 30000; // Base timeout
     expect(timeout).toBe(30000);
   });
 
@@ -234,7 +234,7 @@ describe('P1-002: Timeout Calculation Logic', () => {
    * Test 5MB document gets 60 seconds
    */
   test('should use 60 seconds for 5-20MB documents', () => {
-    const size = 10000000;  // 10MB
+    const size = 10000000; // 10MB
     const timeout = 60000;
     expect(timeout).toBe(60000);
   });
@@ -243,7 +243,7 @@ describe('P1-002: Timeout Calculation Logic', () => {
    * Test 20MB+ document gets maximum timeout
    */
   test('should use max timeout for 20MB+ documents', () => {
-    const size = 25000000;  // 25MB
+    const size = 25000000; // 25MB
     const timeout = 120000;
     expect(timeout).toBe(120000);
   });
@@ -328,9 +328,9 @@ describe('P1-002: Real-World Scenarios', () => {
   test('scenario: Wikipedia article extraction should not timeout', () => {
     // Wikipedia articles are typically 1-5MB of HTML
     // With adaptive timeout for get_content, 60 seconds should be plenty
-    const estimatedSize = 2000000;  // 2MB
+    const estimatedSize = 2000000; // 2MB
     const command = 'get_content';
-    const expectedTimeout = 60000;  // Should get 60 seconds for large response
+    const expectedTimeout = 60000; // Should get 60 seconds for large response
     expect(expectedTimeout).toBe(60000);
   });
 
@@ -339,9 +339,9 @@ describe('P1-002: Real-World Scenarios', () => {
    */
   test('scenario: Small blog post should use base timeout', () => {
     // Small HTML (typically <100KB)
-    const estimatedSize = 50000;  // 50KB
+    const estimatedSize = 50000; // 50KB
     const command = 'get_content';
-    const expectedTimeout = 30000;  // Base timeout
+    const expectedTimeout = 30000; // Base timeout
     expect(expectedTimeout).toBe(30000);
   });
 
@@ -350,9 +350,9 @@ describe('P1-002: Real-World Scenarios', () => {
    */
   test('scenario: Large documentation site should get max timeout', () => {
     // Huge documentation pages (20-50MB compressed HTML)
-    const estimatedSize = 30000000;  // 30MB
+    const estimatedSize = 30000000; // 30MB
     const command = 'get_content';
-    const expectedTimeout = 120000;  // Max timeout
+    const expectedTimeout = 120000; // Max timeout
     expect(expectedTimeout).toBe(120000);
   });
 
@@ -361,7 +361,7 @@ describe('P1-002: Real-World Scenarios', () => {
    */
   test('scenario: Complex script execution should get extended timeout', () => {
     const command = 'execute_script';
-    const estimatedSize = 0;  // Not calculated for scripts usually
+    const estimatedSize = 0; // Not calculated for scripts usually
     // Large-response commands get 1.5x base
     const expectedTimeout = 45000;
     expect(expectedTimeout).toBe(45000);

@@ -106,53 +106,53 @@ class LoadTestingExecutor {
 
   async executePhase(phase) {
     switch (phase) {
-      case 'production-profile':
-        const prodTest = new ProductionLoadProfile({
-          concurrent: 300,
-          duration: 120 * 60 * 1000 // 2 hours
-        });
-        return await prodTest.runTest();
+    case 'production-profile':
+      const prodTest = new ProductionLoadProfile({
+        concurrent: 300,
+        duration: 120 * 60 * 1000 // 2 hours
+      });
+      return await prodTest.runTest();
 
-      case 'dashboard-load':
-        const dashTest = new DashboardLoad({
-          competitors: 50,
-          users: 300,
-          duration: 30 * 60 * 1000 // 30 minutes
-        });
-        return await dashTest.runTest();
+    case 'dashboard-load':
+      const dashTest = new DashboardLoad({
+        competitors: 50,
+        users: 300,
+        duration: 30 * 60 * 1000 // 30 minutes
+      });
+      return await dashTest.runTest();
 
-      case 'spike-test':
-        const spikeTest = new SpikeTest({
-          serverUrl: 'ws://localhost:8765'
-        });
-        return await spikeTest.runTest();
+    case 'spike-test':
+      const spikeTest = new SpikeTest({
+        serverUrl: 'ws://localhost:8765'
+      });
+      return await spikeTest.runTest();
 
-      case 'sustained-load':
-        const sustainedTest = new SustainedLoad({
-          concurrent: 300,
-          duration: 8 * 60 * 60 * 1000, // 8 hours
-          checkpointInterval: 30 * 60 * 1000
-        });
-        return await sustainedTest.runTest();
+    case 'sustained-load':
+      const sustainedTest = new SustainedLoad({
+        concurrent: 300,
+        duration: 8 * 60 * 60 * 1000, // 8 hours
+        checkpointInterval: 30 * 60 * 1000
+      });
+      return await sustainedTest.runTest();
 
-      case 'breaking-point':
-        const breakTest = new BreakingPoint({
-          startConnections: 100,
-          incrementStep: 100,
-          iterationDuration: 2 * 60 * 1000,
-          maxConnections: 2000
-        });
-        return await breakTest.runTest();
+    case 'breaking-point':
+      const breakTest = new BreakingPoint({
+        startConnections: 100,
+        incrementStep: 100,
+        iterationDuration: 2 * 60 * 1000,
+        maxConnections: 2000
+      });
+      return await breakTest.runTest();
 
-      case 'network-degradation':
-        const netTest = new NetworkDegradation({
-          concurrent: 100,
-          duration: 20 * 60 * 1000 // 20 minutes
-        });
-        return await netTest.runTest();
+    case 'network-degradation':
+      const netTest = new NetworkDegradation({
+        concurrent: 100,
+        duration: 20 * 60 * 1000 // 20 minutes
+      });
+      return await netTest.runTest();
 
-      default:
-        throw new Error(`Unknown phase: ${phase}`);
+    default:
+      throw new Error(`Unknown phase: ${phase}`);
     }
   }
 
@@ -282,22 +282,22 @@ This report contains comprehensive load testing results for the Basset Hound Bro
 ## Warnings & Issues
 
 ${this.results.summary.warnings.length > 0
-  ? this.results.summary.warnings.map(w => `- ${w}`).join('\n')
-  : '- No critical warnings'
+    ? this.results.summary.warnings.map(w => `- ${w}`).join('\n')
+    : '- No critical warnings'
 }
 
 ## Capacity Assessment
 
 ${this.results.summary.capacity
-  ? `Maximum Sustainable Connections: ${this.results.summary.capacity.maxTested}\nRecommended Limit: ${this.results.summary.capacity.recommended}\n\nRecommendations:\n${this.results.summary.capacity.observations.map(o => `- ${o}`).join('\n')}`
-  : 'Capacity assessment not completed'
+    ? `Maximum Sustainable Connections: ${this.results.summary.capacity.maxTested}\nRecommended Limit: ${this.results.summary.capacity.recommended}\n\nRecommendations:\n${this.results.summary.capacity.observations.map(o => `- ${o}`).join('\n')}`
+    : 'Capacity assessment not completed'
 }
 
 ## Scaling Recommendations
 
 ${this.results.summary.scalingRecommendations.length > 0
-  ? this.results.summary.scalingRecommendations.join('\n')
-  : '- Monitor at recommended capacity before attempting higher loads\n- Implement connection pooling for optimal resource utilization\n- Consider horizontal scaling beyond recommended capacity'
+    ? this.results.summary.scalingRecommendations.join('\n')
+    : '- Monitor at recommended capacity before attempting higher loads\n- Implement connection pooling for optimal resource utilization\n- Consider horizontal scaling beyond recommended capacity'
 }
 
 ## Detailed Results Files
@@ -383,8 +383,8 @@ if (require.main === module) {
   const phases = process.argv.includes('--all')
     ? ['production-profile', 'dashboard-load', 'spike-test', 'sustained-load', 'breaking-point', 'network-degradation']
     : process.argv.includes('--quick')
-    ? ['spike-test', 'breaking-point', 'network-degradation']
-    : ['production-profile', 'spike-test', 'breaking-point'];
+      ? ['spike-test', 'breaking-point', 'network-degradation']
+      : ['production-profile', 'spike-test', 'breaking-point'];
 
   const executor = new LoadTestingExecutor({ phases });
 

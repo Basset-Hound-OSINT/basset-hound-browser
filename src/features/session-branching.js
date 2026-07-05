@@ -66,7 +66,7 @@ class SessionCheckpoint {
    */
   validate() {
     return {
-      valid: !!(this.id && this.sessionId && this.state),
+      valid: Boolean(this.id && this.sessionId && this.state),
       checksum: crypto
         .createHash('sha256')
         .update(JSON.stringify(this.state))

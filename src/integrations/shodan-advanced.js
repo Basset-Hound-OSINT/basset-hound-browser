@@ -371,15 +371,33 @@ class ShodanAdvanced extends EventEmitter {
   buildAdvancedQuery(filters) {
     let query = '';
 
-    if (filters.hostname) query += `hostname:${filters.hostname} `;
-    if (filters.port) query += `port:${filters.port} `;
-    if (filters.country) query += `country:${filters.country} `;
-    if (filters.city) query += `city:${filters.city} `;
-    if (filters.org) query += `org:${filters.org} `;
-    if (filters.asn) query += `asn:${filters.asn} `;
-    if (filters.service) query += `service:${filters.service} `;
-    if (filters.product) query += `product:${filters.product} `;
-    if (filters.version) query += `version:${filters.version} `;
+    if (filters.hostname) {
+      query += `hostname:${filters.hostname} `;
+    }
+    if (filters.port) {
+      query += `port:${filters.port} `;
+    }
+    if (filters.country) {
+      query += `country:${filters.country} `;
+    }
+    if (filters.city) {
+      query += `city:${filters.city} `;
+    }
+    if (filters.org) {
+      query += `org:${filters.org} `;
+    }
+    if (filters.asn) {
+      query += `asn:${filters.asn} `;
+    }
+    if (filters.service) {
+      query += `service:${filters.service} `;
+    }
+    if (filters.product) {
+      query += `product:${filters.product} `;
+    }
+    if (filters.version) {
+      query += `version:${filters.version} `;
+    }
     if (filters.has) {
       const hasConditions = Array.isArray(filters.has) ? filters.has : [filters.has];
       for (const condition of hasConditions) {
@@ -517,7 +535,9 @@ class ShodanAdvanced extends EventEmitter {
     };
 
     for (const [prefix, severity] of Object.entries(severityMap)) {
-      if (cveId.startsWith(prefix)) return severity;
+      if (cveId.startsWith(prefix)) {
+        return severity;
+      }
     }
 
     return 'MEDIUM';
@@ -568,8 +588,8 @@ class ShodanAdvanced extends EventEmitter {
 
     for (const host of hosts) {
       const risk = host.riskScore > 80 ? 'CRITICAL' :
-                   host.riskScore > 60 ? 'HIGH' :
-                   host.riskScore > 40 ? 'MEDIUM' : 'LOW';
+        host.riskScore > 60 ? 'HIGH' :
+          host.riskScore > 40 ? 'MEDIUM' : 'LOW';
       riskLevels[risk]++;
     }
 
@@ -769,10 +789,18 @@ class ShodanAdvanced extends EventEmitter {
    * @private
    */
   extractServiceType(banner) {
-    if (banner.includes('SSH')) return 'SSH';
-    if (banner.includes('HTTP')) return 'HTTP';
-    if (banner.includes('FTP')) return 'FTP';
-    if (banner.includes('SMTP')) return 'SMTP';
+    if (banner.includes('SSH')) {
+      return 'SSH';
+    }
+    if (banner.includes('HTTP')) {
+      return 'HTTP';
+    }
+    if (banner.includes('FTP')) {
+      return 'FTP';
+    }
+    if (banner.includes('SMTP')) {
+      return 'SMTP';
+    }
     return 'UNKNOWN';
   }
 
@@ -781,7 +809,9 @@ class ShodanAdvanced extends EventEmitter {
    * @private
    */
   findCommonPorts(hosts) {
-    if (hosts.length === 0) return [];
+    if (hosts.length === 0) {
+      return [];
+    }
 
     const portSets = hosts.map(h => new Set(h.ports || []));
     const common = new Set(portSets[0]);
@@ -821,7 +851,9 @@ class ShodanAdvanced extends EventEmitter {
    * @private
    */
   findCommonVulnerabilities(hosts) {
-    if (hosts.length === 0) return [];
+    if (hosts.length === 0) {
+      return [];
+    }
 
     const vulnSets = hosts.map(h => new Set(h.vuln ? Object.keys(h.vuln) : []));
     const common = new Set(vulnSets[0]);
@@ -862,10 +894,14 @@ class ShodanAdvanced extends EventEmitter {
    * @private
    */
   detectIpRange(hosts) {
-    if (hosts.length === 0) return null;
+    if (hosts.length === 0) {
+      return null;
+    }
 
     const ips = hosts.map(h => h.ip_str).filter(Boolean);
-    if (ips.length === 0) return null;
+    if (ips.length === 0) {
+      return null;
+    }
 
     return {
       min: ips[0],
@@ -933,10 +969,15 @@ class ShodanAdvanced extends EventEmitter {
 
     for (const host of hosts) {
       const risk = this.calculateRiskScore(host);
-      if (risk > 80) matrix.critical++;
-      else if (risk > 60) matrix.high++;
-      else if (risk > 40) matrix.medium++;
-      else matrix.low++;
+      if (risk > 80) {
+        matrix.critical++;
+      } else if (risk > 60) {
+        matrix.high++;
+      } else if (risk > 40) {
+        matrix.medium++;
+      } else {
+        matrix.low++;
+      }
     }
 
     return matrix;
@@ -980,9 +1021,15 @@ class ShodanAdvanced extends EventEmitter {
    */
   determineThreatLevel(data) {
     const risk = this.calculateRiskScore(data);
-    if (risk > 80) return 'CRITICAL';
-    if (risk > 60) return 'HIGH';
-    if (risk > 40) return 'MEDIUM';
+    if (risk > 80) {
+      return 'CRITICAL';
+    }
+    if (risk > 60) {
+      return 'HIGH';
+    }
+    if (risk > 40) {
+      return 'MEDIUM';
+    }
     return 'LOW';
   }
 
@@ -991,8 +1038,12 @@ class ShodanAdvanced extends EventEmitter {
    * @private
    */
   determineExposureLevel(data) {
-    if (this.isExposedData(data)) return 'EXPOSED';
-    if ((data.ports || []).length > 5) return 'PARTIALLY_EXPOSED';
+    if (this.isExposedData(data)) {
+      return 'EXPOSED';
+    }
+    if ((data.ports || []).length > 5) {
+      return 'PARTIALLY_EXPOSED';
+    }
     return 'PROTECTED';
   }
 

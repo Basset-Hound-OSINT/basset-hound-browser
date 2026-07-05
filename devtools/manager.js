@@ -371,7 +371,9 @@ class DevToolsManager {
    * @returns {Array} Formatted headers
    */
   formatHeaders(headers) {
-    if (!headers) return [];
+    if (!headers) {
+      return [];
+    }
 
     const formatted = [];
     for (const [name, values] of Object.entries(headers)) {
@@ -392,7 +394,9 @@ class DevToolsManager {
    * @returns {string} MIME type
    */
   getMimeType(headers) {
-    if (!headers) return 'text/plain';
+    if (!headers) {
+      return 'text/plain';
+    }
 
     const contentType = headers['content-type'] || headers['Content-Type'];
     if (contentType) {

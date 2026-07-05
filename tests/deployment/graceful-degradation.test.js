@@ -125,7 +125,7 @@ class GracefulDegradationTester {
       const option = fallbackChain[i];
 
       // Simulate trying the service
-      const available = Math.random() > (i * 0.1);  // Higher levels have higher failure rates
+      const available = Math.random() > (i * 0.1); // Higher levels have higher failure rates
 
       if (available) {
         return {

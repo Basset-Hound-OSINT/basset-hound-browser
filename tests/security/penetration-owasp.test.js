@@ -31,14 +31,14 @@ describe('OWASP Top 10 Penetration Testing', () => {
     });
 
     it('should prevent command injection', () => {
-      const payload = "; rm -rf /";
+      const payload = '; rm -rf /';
       // Proper prevention via process.spawn with args array, not shell
       const args = [payload]; // Should use array args, not string interpolation
       expect(args[0]).toBe(payload);
     });
 
     it('should prevent template injection', () => {
-      const template = "<%= process.exit(1) %>";
+      const template = '<%= process.exit(1) %>';
 
       // Should be escaped in template engines
       const escaped = template.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -54,7 +54,7 @@ describe('OWASP Top 10 Penetration Testing', () => {
     });
 
     it('should prevent LDAP injection', () => {
-      const payload = "*)(uid=*";
+      const payload = '*)(uid=*';
 
       // Should be escaped for LDAP
       const ldapEscaped = payload
@@ -76,7 +76,7 @@ describe('OWASP Top 10 Penetration Testing', () => {
     });
 
     it('should prevent OS command injection via user input', () => {
-      const url = "https://example.com`whoami`";
+      const url = 'https://example.com`whoami`';
       const safe = url.replace(/`/g, '%60');
 
       expect(safe).toContain('%60');
@@ -441,7 +441,7 @@ describe('OWASP Top 10 Penetration Testing', () => {
     });
 
     it('should clear sensitive data from memory', () => {
-      let password = Buffer.from('secret_password');
+      const password = Buffer.from('secret_password');
       password.fill(0); // Overwrite with zeros
 
       for (let i = 0; i < password.length; i++) {
@@ -541,7 +541,9 @@ describe('OWASP Top 10 Penetration Testing', () => {
       const mutex = { locked: false };
 
       const increment = async () => {
-        if (mutex.locked) return;
+        if (mutex.locked) {
+          return;
+        }
         mutex.locked = true;
         const temp = counter;
         await new Promise(r => setImmediate(r));

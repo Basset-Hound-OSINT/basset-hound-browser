@@ -57,7 +57,7 @@ describe('ConfigManager', () => {
     test('should load configuration from JSON files', async () => {
       const testConfig = {
         host: 'localhost',
-        port: 5432,
+        port: 5432
       };
 
       fs.writeFileSync(
@@ -110,7 +110,7 @@ describe('ConfigManager', () => {
     test('should register a schema', () => {
       manager.registerSchema('database', {
         host: { type: 'string', required: true },
-        port: { type: 'number', required: true },
+        port: { type: 'number', required: true }
       });
 
       expect(manager.schemas.database).toBeDefined();
@@ -119,12 +119,12 @@ describe('ConfigManager', () => {
     test('should validate configuration against schema', async () => {
       manager.registerSchema('database', {
         host: { type: 'string', required: true },
-        port: { type: 'number', required: true },
+        port: { type: 'number', required: true }
       });
 
       const validConfig = {
         host: 'localhost',
-        port: 5432,
+        port: 5432
       };
 
       const result = manager.validateConfig('database', validConfig);
@@ -135,7 +135,7 @@ describe('ConfigManager', () => {
 
     test('should detect required field missing', () => {
       manager.registerSchema('database', {
-        host: { type: 'string', required: true },
+        host: { type: 'string', required: true }
       });
 
       const invalidConfig = {};
@@ -148,11 +148,11 @@ describe('ConfigManager', () => {
 
     test('should detect type mismatch', () => {
       manager.registerSchema('database', {
-        port: { type: 'number' },
+        port: { type: 'number' }
       });
 
       const invalidConfig = {
-        port: 'not a number',
+        port: 'not a number'
       };
 
       const result = manager.validateConfig('database', invalidConfig);
@@ -162,7 +162,7 @@ describe('ConfigManager', () => {
 
     test('should validate enum values', () => {
       manager.registerSchema('app', {
-        environment: { type: 'string', enum: ['dev', 'prod'] },
+        environment: { type: 'string', enum: ['dev', 'prod'] }
       });
 
       const validConfig = { environment: 'dev' };
@@ -174,7 +174,7 @@ describe('ConfigManager', () => {
 
     test('should validate min/max values', () => {
       manager.registerSchema('server', {
-        port: { type: 'number', min: 1000, max: 65535 },
+        port: { type: 'number', min: 1000, max: 65535 }
       });
 
       expect(manager.validateConfig('server', { port: 8000 }).valid).toBe(true);

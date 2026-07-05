@@ -31,8 +31,12 @@ class TimingRandomization {
    */
   _gaussianRandom() {
     let u = 0, v = 0;
-    while (u === 0) u = Math.random(); // Convert [0,1) to (0,1)
-    while (v === 0) v = Math.random();
+    while (u === 0) {
+      u = Math.random();
+    } // Convert [0,1) to (0,1)
+    while (v === 0) {
+      v = Math.random();
+    }
     const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
     return z;
   }
@@ -89,16 +93,16 @@ class TimingRandomization {
    */
   generateNavigationDelay(type = 'normal') {
     switch (type) {
-      case 'quick':
-        // Quickly scanning and clicking: 200-400ms
-        return this.gaussianDelay(300, 50);
-      case 'careful':
-        // Careful reading and consideration: 500-1500ms
-        return this.gaussianDelay(1000, 200);
-      case 'normal':
-      default:
-        // Average user: 300-800ms
-        return this.gaussianDelay(500, 100);
+    case 'quick':
+      // Quickly scanning and clicking: 200-400ms
+      return this.gaussianDelay(300, 50);
+    case 'careful':
+      // Careful reading and consideration: 500-1500ms
+      return this.gaussianDelay(1000, 200);
+    case 'normal':
+    default:
+      // Average user: 300-800ms
+      return this.gaussianDelay(500, 100);
     }
   }
 
@@ -205,19 +209,19 @@ class TimingRandomization {
    */
   generateActionSequenceDelay(actionType = 'click') {
     switch (actionType) {
-      case 'type':
-        // After typing, user might pause: 100-300ms
-        return this.gaussianDelay(200, 50);
-      case 'scroll':
-        // After scrolling, pause to read: 500-2000ms
-        return this.gaussianDelay(1200, 400);
-      case 'navigate':
-        // After navigation, wait for page: varies
-        return this.gaussianDelay(1000, 300);
-      case 'click':
-      default:
-        // After click, wait for action: 150-500ms
-        return this.gaussianDelay(300, 80);
+    case 'type':
+      // After typing, user might pause: 100-300ms
+      return this.gaussianDelay(200, 50);
+    case 'scroll':
+      // After scrolling, pause to read: 500-2000ms
+      return this.gaussianDelay(1200, 400);
+    case 'navigate':
+      // After navigation, wait for page: varies
+      return this.gaussianDelay(1000, 300);
+    case 'click':
+    default:
+      // After click, wait for action: 150-500ms
+      return this.gaussianDelay(300, 80);
     }
   }
 
@@ -246,8 +250,8 @@ class TimingRandomization {
         'navigation-delays',
         'form-delays',
         'gaussian-distribution',
-        'context-aware',
-      ],
+        'context-aware'
+      ]
     };
   }
 }

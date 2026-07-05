@@ -350,7 +350,9 @@ function getTimezoneOffset(timezone) {
  * @returns {Object|null} - Preset location or null if not found
  */
 function findPresetByName(name) {
-  if (!name) return null;
+  if (!name) {
+    return null;
+  }
   const searchName = name.toLowerCase().trim();
   return PRESET_LOCATIONS.find(
     loc => loc.name.toLowerCase() === searchName ||
@@ -375,7 +377,9 @@ function getAllPresets() {
  * @returns {Array} - Filtered preset locations
  */
 function getPresetsByCountry(country) {
-  if (!country) return [];
+  if (!country) {
+    return [];
+  }
   const searchCountry = country.toLowerCase().trim();
   return PRESET_LOCATIONS.filter(
     loc => loc.country.toLowerCase() === searchCountry ||

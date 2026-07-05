@@ -230,7 +230,7 @@ async function testCommandTimeoutHandling() {
   // Send command with short timeout
   const shortTimeoutExt = testUtils.createExtension({
     autoReconnect: false,
-    commandTimeout: 200  // Very short timeout
+    commandTimeout: 200 // Very short timeout
   });
   await shortTimeoutExt.connect();
 
@@ -300,7 +300,7 @@ async function testReconnectionAfterDisconnect() {
   const clientWs = server.getClient();
   clientWs.close(1001, 'Simulated disconnect');
 
-  await testUtils.delay(50);  // Wait for disconnect to register
+  await testUtils.delay(50); // Wait for disconnect to register
   assert(!reconnectExt.isConnected, 'Should be disconnected');
   console.log('  Disconnect detected');
 
@@ -350,7 +350,7 @@ async function testReconnectionLimit() {
   }
 
   // Wait for reconnection attempts to exhaust
-  await testUtils.delay(600);  // 50 + 100 + 200 = 350ms minimum + buffer
+  await testUtils.delay(600); // 50 + 100 + 200 = 350ms minimum + buffer
 
   assert(reconnectFailedEmitted, 'Should emit reconnectFailed after max attempts');
   console.log('  Reconnection limit enforced');
@@ -423,7 +423,7 @@ async function testCommandRetryLogic() {
         return response;
       }
       lastError = response.error;
-      await testUtils.delay(50);  // Brief delay between retries
+      await testUtils.delay(50); // Brief delay between retries
     }
     return { success: false, error: lastError };
   }
@@ -443,7 +443,7 @@ async function testCommandRetryLogic() {
 
   const failResponse = await retryCommand('retry_command', {
     key: 'test2',
-    failUntil: 10  // Will never succeed in 3 retries
+    failUntil: 10 // Will never succeed in 3 retries
   }, 3);
 
   assert(!failResponse.success, 'Should fail if all retries exhausted');

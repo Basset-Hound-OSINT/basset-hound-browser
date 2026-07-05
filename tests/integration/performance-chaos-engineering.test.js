@@ -107,16 +107,16 @@ class ResourceStarvationSimulator {
   }
 }
 
-describe('Performance & Chaos Engineering (40+ scenarios)', function() {
+describe('Performance & Chaos Engineering (40+ scenarios)', function () {
   this.timeout(60000);
 
   // ========================================================================
   // NETWORK CHAOS SCENARIOS
   // ========================================================================
 
-  describe('Network Chaos Scenarios', function() {
+  describe('Network Chaos Scenarios', () => {
 
-    it('Should handle high latency (500ms)', async function() {
+    it('Should handle high latency (500ms)', async () => {
       const sim = new NetworkSimulator();
       sim.setLatency(500);
 
@@ -131,7 +131,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(duration >= 500 - 50); // Allow 50ms variance
     });
 
-    it('Should handle packet loss (10%)', async function() {
+    it('Should handle packet loss (10%)', async () => {
       const sim = new NetworkSimulator();
       sim.setPacketLoss(10);
 
@@ -150,7 +150,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(dropped > 0 && dropped < 30);
     });
 
-    it('Should handle jitter (±20%)', async function() {
+    it('Should handle jitter (±20%)', async () => {
       const sim = new NetworkSimulator();
       sim.setLatency(100);
       sim.setJitter(20);
@@ -168,7 +168,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(max > min);
     });
 
-    it('Should handle combined network chaos', async function() {
+    it('Should handle combined network chaos', async () => {
       const sim = new NetworkSimulator();
       sim.setLatency(200);
       sim.setPacketLoss(5);
@@ -196,9 +196,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // RESOURCE STARVATION SCENARIOS
   // ========================================================================
 
-  describe('Resource Starvation Scenarios', function() {
+  describe('Resource Starvation Scenarios', () => {
 
-    it('Should handle CPU starvation', async function() {
+    it('Should handle CPU starvation', async () => {
       const sim = new ResourceStarvationSimulator();
       sim.setResourceLimits(10, 100, 100); // Only 10% CPU
 
@@ -212,7 +212,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(iterations > 0);
     });
 
-    it('Should handle memory pressure', async function() {
+    it('Should handle memory pressure', async () => {
       const sim = new ResourceStarvationSimulator();
       sim.setResourceLimits(100, 50, 100); // Only 50% memory
 
@@ -229,7 +229,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(allocations > 0);
     });
 
-    it('Should handle disk space pressure', async function() {
+    it('Should handle disk space pressure', async () => {
       const sim = new ResourceStarvationSimulator();
       sim.setResourceLimits(100, 100, 5); // Only 5% disk
 
@@ -252,9 +252,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // CASCADING FAILURE SCENARIOS
   // ========================================================================
 
-  describe('Cascading Failure Scenarios', function() {
+  describe('Cascading Failure Scenarios', () => {
 
-    it('Should handle single service failure', async function() {
+    it('Should handle single service failure', async () => {
       const services = {
         auth: { healthy: true },
         database: { healthy: true },
@@ -270,7 +270,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(services.cache.healthy);
     });
 
-    it('Should handle cascade from single failure', async function() {
+    it('Should handle cascade from single failure', async () => {
       const services = {
         auth: { healthy: true, dependents: ['api', 'web'] },
         api: { healthy: true, dependents: ['cache'] },
@@ -286,8 +286,8 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(services.api.healthy); // Still running, but degraded
     });
 
-    it('Should detect and isolate cascading failures', async function() {
-      let failureChain = [];
+    it('Should detect and isolate cascading failures', async () => {
+      const failureChain = [];
 
       try {
         throw new Error('Service A failure');
@@ -316,9 +316,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // LOAD SPIKE SCENARIOS
   // ========================================================================
 
-  describe('Load Spike Scenarios', function() {
+  describe('Load Spike Scenarios', () => {
 
-    it('Should handle 10x normal load spike', async function() {
+    it('Should handle 10x normal load spike', async () => {
       const normalLoad = 100;
       const spike = normalLoad * 10;
 
@@ -333,8 +333,8 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(processed > 0);
     });
 
-    it('Should handle sustained spike recovery', async function() {
-      let load = 100;
+    it('Should handle sustained spike recovery', async () => {
+      const load = 100;
       const loads = [100, 500, 1000, 500, 100];
       let totalProcessed = 0;
 
@@ -345,7 +345,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert.strictEqual(totalProcessed, 2200);
     });
 
-    it('Should handle multiple concurrent spikes', async function() {
+    it('Should handle multiple concurrent spikes', async () => {
       const spikes = [
         { id: 1, magnitude: 100 },
         { id: 2, magnitude: 200 },
@@ -370,9 +370,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // DEGRADED SERVICE MODE SCENARIOS
   // ========================================================================
 
-  describe('Degraded Service Mode Scenarios', function() {
+  describe('Degraded Service Mode Scenarios', () => {
 
-    it('Should function with reduced feature set', async function() {
+    it('Should function with reduced feature set', async () => {
       const features = {
         normalSpeed: true,
         optimization: true,
@@ -389,7 +389,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(features.streaming);
     });
 
-    it('Should fall back to secondary implementations', async function() {
+    it('Should fall back to secondary implementations', async () => {
       const implementations = {
         primary: { available: false, name: 'fast' },
         fallback: { available: true, name: 'compatible' },
@@ -408,7 +408,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert.strictEqual(selected.name, 'compatible');
     });
 
-    it('Should queue requests when overwhelmed', async function() {
+    it('Should queue requests when overwhelmed', async () => {
       const queue = [];
       const maxConcurrent = 5;
       let processing = 0;
@@ -431,9 +431,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // RECOVERY PATTERN SCENARIOS
   // ========================================================================
 
-  describe('Recovery Pattern Scenarios', function() {
+  describe('Recovery Pattern Scenarios', () => {
 
-    it('Should recover from transient failures with exponential backoff', async function() {
+    it('Should recover from transient failures with exponential backoff', async () => {
       let attempts = 0;
       let succeeded = false;
       let backoffMs = 10;
@@ -456,7 +456,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(attempts >= 3);
     });
 
-    it('Should use circuit breaker pattern', async function() {
+    it('Should use circuit breaker pattern', async () => {
       const circuitBreaker = {
         state: 'closed', // closed, open, half-open
         failures: 0,
@@ -485,7 +485,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert.strictEqual(circuitBreaker.state, 'closed');
     });
 
-    it('Should implement bulkhead isolation', async function() {
+    it('Should implement bulkhead isolation', async () => {
       const bulkheads = {
         critical: { active: 0, max: 10, queue: 0 },
         normal: { active: 0, max: 5, queue: 0 },
@@ -513,9 +513,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // FAILURE INJECTION SCENARIOS
   // ========================================================================
 
-  describe('Failure Injection Scenarios', function() {
+  describe('Failure Injection Scenarios', () => {
 
-    it('Should handle injected network failures', async function() {
+    it('Should handle injected network failures', async () => {
       const sim = new NetworkSimulator();
       sim.setPacketLoss(50); // 50% packet loss
 
@@ -532,7 +532,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(failures > 0 && failures < 20);
     });
 
-    it('Should handle injected processing errors', async function() {
+    it('Should handle injected processing errors', async () => {
       let processed = 0;
       let errors = 0;
 
@@ -551,7 +551,7 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(errors > 0);
     });
 
-    it('Should handle injected timeout errors', async function() {
+    it('Should handle injected timeout errors', async () => {
       let completed = 0;
       let timedOut = 0;
 
@@ -582,9 +582,9 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
   // PERFORMANCE DEGRADATION SCENARIOS
   // ========================================================================
 
-  describe('Performance Degradation Scenarios', function() {
+  describe('Performance Degradation Scenarios', () => {
 
-    it('Should handle gradual performance degradation', async function() {
+    it('Should handle gradual performance degradation', async () => {
       const performanceMetrics = [];
 
       for (let i = 0; i < 5; i++) {
@@ -602,11 +602,11 @@ describe('Performance & Chaos Engineering (40+ scenarios)', function() {
       assert(performanceMetrics[4] >= performanceMetrics[0]);
     });
 
-    it('Should detect and alert on performance anomalies', async function() {
+    it('Should detect and alert on performance anomalies', async () => {
       const baseline = 100; // ms
       const measurements = [100, 105, 110, 500, 105, 110]; // Spike at index 3
 
-      let anomalies = [];
+      const anomalies = [];
       for (let i = 0; i < measurements.length; i++) {
         const measurement = measurements[i];
         if (measurement > baseline * 2) {

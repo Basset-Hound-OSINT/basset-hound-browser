@@ -1,0 +1,113 @@
+# Basset Hound Browser - Development Dockerfile
+# Includes debugging tools, verbose logging, hot reload support
+# Version: 12.8.0
+
+FROM node:20-bullseye
+
+LABEL maintainer="Basset Hound Team"
+LABEL version="12.8.0"
+LABEL description="Basset Hound Browser - Development image with debugging"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    DISPLAY=:99 \
+    NODE_ENV=development \
+    NODE_OPTIONS="--max-old-space-size=2048" \
+    ELECTRON_DISABLE_SANDBOX=1 \
+    CHROME_DISABLE_SANDBOX=1 \
+    USE_SYSTEM_TOR=true \
+    DEBUG=basset-hound:* \
+    LOG_LEVEL=debug \
+    ELECTRON_ENABLE_LOGGING=true \
+    HOT_RELOAD=true
+
+WORKDIR /app
+
+# Install all dependencies (including dev, for debugging)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Display server (Xvfb)
+    xvfb x11-utils x11-xserver-utils \
+    # Core Electron/Chromium dependencies
+    libgtk-3-0 libnotify-dev libgconf-2-4 libnss3 libxss1 \
+    libasound2 libxtst6 libatk1.0-0 libatk-bridge2.0-0 \
+    libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 \
+    libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libcups2 libdbus-1-3 \
+    libexpat1 libfontconfig1 libgcc1 libglib2.0-0 libnspr4 libpangocairo-1.0-0 \
+    libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcursor1 libxi6 libxrender1 \
+    # Fonts
+    fonts-liberation fonts-noto-color-emoji \
+    # Development tools
+    curl wget ca-certificates dbus procps netcat-openbsd vim nano \
+    git build-essential python3 \
+    # Tor
+    tor \
+    # Debugging tools
+    strace ltrace gdb \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Configure Tor for container networking
+RUN mkdir -p /var/lib/tor /var/run/tor && \
+    chown -R debian-tor:debian-tor /var/lib/tor /var/run/tor && \
+    chmod 700 /var/lib/tor /var/run/tor
+
+RUN printf 'SocksPort 127.0.0.1:9050\n\
+ControlPort 127.0.0.1:9051\n\
+CookieAuthentication 1\n\
+DataDirectory /var/lib/tor\n\
+SafeLogging 1\n\
+CircuitBuildTimeout 30\n\
+LearnCircuitBuildTimeout 0\n\
+MaxCircuitDirtiness 600\n\
+Log notice stdout\n' > /etc/tor/torrc && \
+    chown debian-tor:debian-tor /etc/tor/torrc && chmod 644 /etc/tor/torrc
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev for debugging)
+RUN npm install
+
+# Copy application source
+COPY . /app
+
+# Create development startup script with verbose logging
+RUN cat > /app/entrypoint-dev.sh << 'EOF'
+#!/bin/bash
+set -e
+
+# Logging prefix
+prefix="[basset-hound-dev]"
+
+echo "$prefix Starting Basset Hound Browser v12.8.0 (DEVELOPMENT)"
+echo "$prefix Node $(node --version)"
+echo "$prefix npm $(npm --version)"
+echo "$prefix Environment: $NODE_ENV"
+echo "$prefix Logging level: $LOG_LEVEL"
+
+# Start Tor daemon
+echo "$prefix Starting Tor service..."
+su -s /bin/bash debian-tor -c "tor -f /etc/tor/torrc" &
+TOR_PID=$!
+sleep 2
+echo "$prefix Tor PID: $TOR_PID"
+
+# Start Xvfb virtual display
+echo "$prefix Starting Xvfb display :99"
+Xvfb :99 -screen 0 1920x1080x24 -ac -noreset >/dev/null 2>&1 &
+XVFB_PID=$!
+sleep 2
+echo "$prefix Xvfb PID: $XVFB_PID"
+
+# Start WebSocket server with verbose output
+echo "$prefix Starting WebSocket server on port 8765"
+echo "$prefix Debug mode enabled: $DEBUG"
+cd /app
+node websocket/server.js
+EOF
+
+RUN chmod +x /app/entrypoint-dev.sh
+
+# Expose WebSocket port and debugging ports
+EXPOSE 8765 9229 5858
+
+# Development entrypoint (keep container running)
+ENTRYPOINT ["/app/entrypoint-dev.sh"]

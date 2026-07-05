@@ -154,19 +154,27 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromHeaders(headers, detections) {
-    if (!headers || typeof headers !== 'object') return;
+    if (!headers || typeof headers !== 'object') {
+      return;
+    }
 
     const normalizedHeaders = normalizeHeaders(headers);
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'header') return;
+        if (rule.type !== 'header') {
+          return;
+        }
 
         const headerValue = normalizedHeaders[rule.pattern.toLowerCase()];
-        if (!headerValue) return;
+        if (!headerValue) {
+          return;
+        }
 
         const regex = this.regexCache.get(rule.value, 'i');
-        if (!regex.test(headerValue)) return;
+        if (!regex.test(headerValue)) {
+          return;
+        }
 
         this._addDetection(detections, techName, signature, {
           method: 'header',
@@ -192,11 +200,15 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromMetaTags(html, detections) {
-    if (!html || typeof html !== 'string') return;
+    if (!html || typeof html !== 'string') {
+      return;
+    }
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'meta') return;
+        if (rule.type !== 'meta') {
+          return;
+        }
 
         const metaRegex = new RegExp(
           `<meta\\s+(?:name|property)=['"]${rule.pattern}['"]\\s+content=['"]([^'"]*)['"]+|` +
@@ -235,17 +247,23 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromHtmlContent(html, detections) {
-    if (!html || typeof html !== 'string') return;
+    if (!html || typeof html !== 'string') {
+      return;
+    }
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'html') return;
+        if (rule.type !== 'html') {
+          return;
+        }
 
         const pattern = typeof rule.pattern === 'string'
           ? this.regexCache.get(rule.pattern, 'i')
           : rule.pattern;
 
-        if (!pattern.test(html)) return;
+        if (!pattern.test(html)) {
+          return;
+        }
 
         this._addDetection(detections, techName, signature, {
           method: 'html',
@@ -263,7 +281,9 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromScripts(html, detections) {
-    if (!html || typeof html !== 'string') return;
+    if (!html || typeof html !== 'string') {
+      return;
+    }
 
     const scriptRegex = /<script[^>]*src=['"]([^'"]+)['"][^>]*>/gi;
     let match;
@@ -273,13 +293,17 @@ class UnifiedTechnologyDetector {
 
       Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
         signature.detection.forEach(rule => {
-          if (rule.type !== 'script') return;
+          if (rule.type !== 'script') {
+            return;
+          }
 
           const pattern = typeof rule.pattern === 'string'
             ? this.regexCache.get(rule.pattern, 'i')
             : rule.pattern;
 
-          if (!pattern.test(src)) return;
+          if (!pattern.test(src)) {
+            return;
+          }
 
           this._addDetection(detections, techName, signature, {
             method: 'script',
@@ -305,13 +329,19 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromEndpoints(html, detections) {
-    if (!html || typeof html !== 'string') return;
+    if (!html || typeof html !== 'string') {
+      return;
+    }
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'endpoint') return;
+        if (rule.type !== 'endpoint') {
+          return;
+        }
 
-        if (!html.includes(rule.pattern)) return;
+        if (!html.includes(rule.pattern)) {
+          return;
+        }
 
         this._addDetection(detections, techName, signature, {
           method: 'endpoint',
@@ -329,13 +359,17 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromFavicon(faviconBuffer, detections) {
-    if (!faviconBuffer) return;
+    if (!faviconBuffer) {
+      return;
+    }
 
     try {
       const sha256Hash = crypto.createHash('sha256').update(faviconBuffer).digest('hex');
 
       Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
-        if (!signature.favicon || !signature.favicon.sha256) return;
+        if (!signature.favicon || !signature.favicon.sha256) {
+          return;
+        }
 
         if (signature.favicon.sha256 === sha256Hash) {
           this._addDetection(detections, techName, signature, {
@@ -357,7 +391,9 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _detectFromSSL(certificate, detections) {
-    if (!certificate) return;
+    if (!certificate) {
+      return;
+    }
 
     const issuer = certificate.issuer?.O || '';
     const organization = certificate.subject?.O || '';
@@ -392,7 +428,9 @@ class UnifiedTechnologyDetector {
    * @private
    */
   async _detectFromJavaScript(page, detections) {
-    if (!page) return;
+    if (!page) {
+      return;
+    }
 
     try {
       const jsGlobals = await page.evaluate(() => {
@@ -422,7 +460,9 @@ class UnifiedTechnologyDetector {
 
       Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
         signature.detection.forEach(rule => {
-          if (rule.type !== 'js-global') return;
+          if (rule.type !== 'js-global') {
+            return;
+          }
 
           if (jsGlobals[rule.pattern]) {
             this._addDetection(detections, techName, signature, {
@@ -503,7 +543,9 @@ class UnifiedTechnologyDetector {
    * @private
    */
   _extractVersion(text, versionPattern) {
-    if (!versionPattern) return null;
+    if (!versionPattern) {
+      return null;
+    }
 
     try {
       const match = text.match(versionPattern);

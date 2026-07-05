@@ -104,7 +104,7 @@ class TorAutoSetup extends EventEmitter {
       embeddedMode: info.embeddedMode,
       paths: info.paths,
       exists: info.exists,
-      platformSupported: !!DOWNLOAD_URLS[platformKey],
+      platformSupported: Boolean(DOWNLOAD_URLS[platformKey]),
       platform: platformKey,
       torVersion: TOR_VERSION,
       torDaemonVersion: TOR_DAEMON_VERSION
@@ -152,7 +152,9 @@ class TorAutoSetup extends EventEmitter {
         // Handle redirects
         if (response.statusCode === 301 || response.statusCode === 302) {
           file.close();
-          try { fs.unlinkSync(destPath); } catch (e) {}
+          try {
+            fs.unlinkSync(destPath);
+          } catch (e) {}
           return this._downloadFile(response.headers.location, destPath)
             .then(resolve)
             .catch(reject);
@@ -160,7 +162,9 @@ class TorAutoSetup extends EventEmitter {
 
         if (response.statusCode !== 200) {
           file.close();
-          try { fs.unlinkSync(destPath); } catch (e) {}
+          try {
+            fs.unlinkSync(destPath);
+          } catch (e) {}
           reject(new Error(`Download failed: HTTP ${response.statusCode}`));
           return;
         }
@@ -196,21 +200,27 @@ class TorAutoSetup extends EventEmitter {
 
         file.on('error', (err) => {
           file.close();
-          try { fs.unlinkSync(destPath); } catch (e) {}
+          try {
+            fs.unlinkSync(destPath);
+          } catch (e) {}
           reject(err);
         });
       });
 
       request.on('error', (err) => {
         file.close();
-        try { fs.unlinkSync(destPath); } catch (e) {}
+        try {
+          fs.unlinkSync(destPath);
+        } catch (e) {}
         reject(err);
       });
 
       request.on('timeout', () => {
         request.destroy();
         file.close();
-        try { fs.unlinkSync(destPath); } catch (e) {}
+        try {
+          fs.unlinkSync(destPath);
+        } catch (e) {}
         reject(new Error('Download timeout'));
       });
 
@@ -440,7 +450,9 @@ ClientTransportPlugin conjure exec ${path.join(ptDir, conjure)} -registerURL htt
    * @private
    */
   _formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) {
+      return '0 B';
+    }
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));

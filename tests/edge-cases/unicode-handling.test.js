@@ -103,7 +103,9 @@ class UnicodeHandlingTester {
     };
 
     const pattern = charsetPatterns[expectedCharset];
-    if (!pattern) return false;
+    if (!pattern) {
+      return false;
+    }
 
     return pattern.test(text);
   }
@@ -111,13 +113,27 @@ class UnicodeHandlingTester {
   detectCharacterSet(text) {
     const charsets = {};
 
-    if (/[一-鿿]/.test(text)) charsets.Chinese = true;
-    if (/[぀-ゟ゠-ヿ]/.test(text)) charsets.Japanese = true;
-    if (/[가-힯]/.test(text)) charsets.Korean = true;
-    if (/[؀-ۿ]/.test(text)) charsets.Arabic = true;
-    if (/[Ѐ-ӿ]/.test(text)) charsets.Cyrillic = true;
-    if (/[\uD800-\uDBFF][\uDC00-\uDFFF]|\uD83D[\uDC00-\uDE4F]/.test(text)) charsets.Emoji = true;
-    if (/[Ā-ſƀ-ɏ]/.test(text)) charsets.Latin_Extended = true;
+    if (/[一-鿿]/.test(text)) {
+      charsets.Chinese = true;
+    }
+    if (/[぀-ゟ゠-ヿ]/.test(text)) {
+      charsets.Japanese = true;
+    }
+    if (/[가-힯]/.test(text)) {
+      charsets.Korean = true;
+    }
+    if (/[؀-ۿ]/.test(text)) {
+      charsets.Arabic = true;
+    }
+    if (/[Ѐ-ӿ]/.test(text)) {
+      charsets.Cyrillic = true;
+    }
+    if (/[\uD800-\uDBFF][\uDC00-\uDFFF]|\uD83D[\uDC00-\uDE4F]/.test(text)) {
+      charsets.Emoji = true;
+    }
+    if (/[Ā-ſƀ-ɏ]/.test(text)) {
+      charsets.Latin_Extended = true;
+    }
 
     return charsets;
   }
@@ -195,7 +211,7 @@ class UnicodeHandlingTester {
 
     await this.runTest('Handle RTL text direction', async () => {
       // RTL text should be detected by direction markers
-      const rtlContent = '‮مرحبا بالعالم';  // RLE marker
+      const rtlContent = '‮مرحبا بالعالم'; // RLE marker
       assert(rtlContent.includes('‮') || /[؀-ۿ]/.test(rtlContent), 'Should handle RTL markers');
     });
 

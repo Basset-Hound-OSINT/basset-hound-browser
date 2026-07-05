@@ -8,8 +8,11 @@ import json
 import threading
 import time
 import uuid
+import ssl
+import os
 from typing import Any, Dict, List, Optional, Union
 from concurrent.futures import Future, ThreadPoolExecutor
+from pathlib import Path
 
 try:
     import websocket
@@ -47,10 +50,15 @@ class BassetHoundClient:
         port: int = 8765,
         connection_timeout: float = 10.0,
         command_timeout: float = 30.0,
-        auto_reconnect: bool = False
+        auto_reconnect: bool = False,
+        use_tls: bool = True,
+        cert_file: Optional[str] = None,
+        ca_certs: Optional[str] = None,
+        verify_ssl: bool = True,
+        cert_reqs: str = "CERT_REQUIRED"
     ):
         """
-        Initialize the Basset Hound client.
+        Initialize the Basset Hound client with optional SSL/TLS support.
 
         Args:
             host: WebSocket server host (default: localhost)
@@ -58,12 +66,34 @@ class BassetHoundClient:
             connection_timeout: Timeout for establishing connection in seconds
             command_timeout: Default timeout for commands in seconds
             auto_reconnect: Whether to automatically reconnect on disconnection
+            use_tls: Whether to use TLS/SSL for WebSocket connection (default: True)
+            cert_file: Path to client certificate file (.pem or .crt)
+            ca_certs: Path to CA certificate bundle for server verification
+            verify_ssl: Whether to verify server SSL certificate (default: True)
+            cert_reqs: Certificate requirement level ('CERT_NONE', 'CERT_OPTIONAL', 'CERT_REQUIRED')
+                      (default: 'CERT_REQUIRED')
+
+        Raises:
+            ValueError: If cert_file or ca_certs don't exist
+            SSLError: If SSL/TLS configuration is invalid
         """
         self.host = host
         self.port = port
         self.connection_timeout = connection_timeout
         self.command_timeout = command_timeout
         self.auto_reconnect = auto_reconnect
+        self.use_tls = use_tls
+        self.verify_ssl = verify_ssl and use_tls
+        self.cert_reqs = cert_reqs
+
+        # Validate certificate files exist
+        if cert_file and not os.path.isfile(cert_file):
+            raise ValueError(f"Certificate file not found: {cert_file}")
+        if ca_certs and not os.path.isfile(ca_certs):
+            raise ValueError(f"CA certificate bundle not found: {ca_certs}")
+
+        self.cert_file = cert_file
+        self.ca_certs = ca_certs
 
         self._ws: Optional[websocket.WebSocketApp] = None
         self._connected = False
@@ -75,47 +105,113 @@ class BassetHoundClient:
     @property
     def url(self) -> str:
         """Get the WebSocket URL."""
-        return f"ws://{self.host}:{self.port}"
+        scheme = "wss" if self.use_tls else "ws"
+        return f"{scheme}://{self.host}:{self.port}"
 
     @property
     def is_connected(self) -> bool:
         """Check if client is connected."""
         return self._connected
 
+    def _get_ssl_context(self) -> Optional[ssl.SSLContext]:
+        """
+        Create and configure SSL context for WebSocket connection.
+
+        Returns:
+            SSLContext configured with certificates, or None if TLS not enabled
+
+        Raises:
+            ssl.SSLError: If SSL configuration is invalid
+        """
+        if not self.use_tls:
+            return None
+
+        try:
+            # Determine certificate requirement level
+            cert_reqs_map = {
+                'CERT_NONE': ssl.CERT_NONE,
+                'CERT_OPTIONAL': ssl.CERT_OPTIONAL,
+                'CERT_REQUIRED': ssl.CERT_REQUIRED
+            }
+            cert_reqs_value = cert_reqs_map.get(self.cert_reqs, ssl.CERT_REQUIRED)
+
+            # Create SSL context with TLS 1.2 or higher
+            ssl_context = ssl.create_default_context()
+
+            # Disable certificate verification if explicitly requested
+            # (for testing/development only - NOT recommended for production)
+            if not self.verify_ssl:
+                ssl_context.check_hostname = False
+                ssl_context.verify_mode = ssl.CERT_NONE
+            else:
+                ssl_context.check_hostname = self.verify_ssl
+                ssl_context.verify_mode = cert_reqs_value
+
+            # Load CA certificate bundle if specified
+            if self.ca_certs:
+                ssl_context.load_verify_locations(cafile=self.ca_certs)
+
+            # Load client certificate if specified
+            if self.cert_file:
+                ssl_context.load_cert_chain(certfile=self.cert_file)
+
+            return ssl_context
+
+        except ssl.SSLError as e:
+            raise ConnectionError(f"SSL/TLS configuration error: {str(e)}")
+
     def connect(self) -> None:
         """
         Connect to the Basset Hound Browser WebSocket server.
 
         Raises:
-            ConnectionError: If connection fails
+            ConnectionError: If connection fails or SSL/TLS validation fails
         """
         if self._connected:
             return
 
-        self._ws = websocket.WebSocketApp(
-            self.url,
-            on_open=self._on_open,
-            on_message=self._on_message,
-            on_error=self._on_error,
-            on_close=self._on_close
-        )
+        try:
+            ssl_context = self._get_ssl_context()
 
-        # Run WebSocket in background thread
-        self._ws_thread = threading.Thread(
-            target=self._ws.run_forever,
-            daemon=True
-        )
-        self._ws_thread.start()
+            self._ws = websocket.WebSocketApp(
+                self.url,
+                on_open=self._on_open,
+                on_message=self._on_message,
+                on_error=self._on_error,
+                on_close=self._on_close,
+                sslopt={"cert_reqs": ssl.CERT_NONE} if ssl_context is None else {}
+            )
 
-        # Wait for connection
-        start_time = time.time()
-        while not self._connected:
-            if time.time() - start_time > self.connection_timeout:
-                self._ws.close()
-                raise ConnectionError(
-                    f"Connection timeout after {self.connection_timeout}s"
-                )
-            time.sleep(0.1)
+            # Configure SSL context if enabled
+            if ssl_context and self._ws:
+                self._ws.sslopt = {
+                    "cert_reqs": ssl_context.verify_mode,
+                    "ca_certs": self.ca_certs,
+                    "certfile": self.cert_file
+                }
+
+            # Run WebSocket in background thread
+            self._ws_thread = threading.Thread(
+                target=self._ws.run_forever,
+                kwargs={"sslopt": {"cert_reqs": ssl_context.verify_mode if ssl_context else ssl.CERT_NONE}} if ssl_context else {},
+                daemon=True
+            )
+            self._ws_thread.start()
+
+            # Wait for connection
+            start_time = time.time()
+            while not self._connected:
+                if time.time() - start_time > self.connection_timeout:
+                    self._ws.close()
+                    raise ConnectionError(
+                        f"Connection timeout after {self.connection_timeout}s"
+                    )
+                time.sleep(0.1)
+
+        except ssl.SSLError as e:
+            raise ConnectionError(f"SSL/TLS validation failed: {str(e)}")
+        except Exception as e:
+            raise ConnectionError(f"Connection failed: {str(e)}")
 
     def disconnect(self) -> None:
         """Disconnect from the WebSocket server."""

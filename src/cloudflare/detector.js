@@ -13,10 +13,10 @@
  * Cloudflare Detection Results
  */
 const CF_DETECTION_RESULTS = {
-  NOT_CLOUDFLARE: 0,        // No Cloudflare challenge detected
-  CHALLENGE_DETECTED: 1,    // Cloudflare challenge page detected
+  NOT_CLOUDFLARE: 0, // No Cloudflare challenge detected
+  CHALLENGE_DETECTED: 1, // Cloudflare challenge page detected
   CHALLENGE_IN_PROGRESS: 2, // Challenge JavaScript still executing
-  CHALLENGE_COMPLETE: 3     // Challenge appears to be completed
+  CHALLENGE_COMPLETE: 3 // Challenge appears to be completed
 };
 
 /**
@@ -37,15 +37,15 @@ const CLOUDFLARE_MARKERS = {
 
   // HTML/Script markers
   HTML_MARKERS: [
-    '__cf_chl',          // Cloudflare challenge variable
-    'challenge.bin',     // Challenge binary
-    'jsfiddle_loader',   // Cloudflare's JS loader
-    'window.onload',     // Common in CF pages
-    'CFRAYS',           // Cloudflare ray ID
-    'cf_clearance',     // Cloudflare clearance cookie
-    'cf_bm',            // Cloudflare bot management
-    '__cfruid',         // Cloudflare UID
-    'challenge',        // Generic challenge indicator
+    '__cf_chl', // Cloudflare challenge variable
+    'challenge.bin', // Challenge binary
+    'jsfiddle_loader', // Cloudflare's JS loader
+    'window.onload', // Common in CF pages
+    'CFRAYS', // Cloudflare ray ID
+    'cf_clearance', // Cloudflare clearance cookie
+    'cf_bm', // Cloudflare bot management
+    '__cfruid', // Cloudflare UID
+    'challenge' // Generic challenge indicator
   ],
 
   // HTTP Status/Header markers
@@ -232,7 +232,7 @@ class CloudflareDetector {
       await page.addInitScript(() => {
         // Override navigator properties to look more legitimate
         Object.defineProperty(navigator, 'webdriver', {
-          get: () => false,
+          get: () => false
         });
 
         Object.defineProperty(navigator, 'plugins', {
@@ -240,12 +240,12 @@ class CloudflareDetector {
             { name: 'Chrome PDF Plugin' },
             { name: 'Chrome PDF Viewer' },
             { name: 'Native Client Executable' }
-          ],
+          ]
         });
 
         // Override headless detection
         Object.defineProperty(navigator, 'languages', {
-          get: () => ['en-US', 'en'],
+          get: () => ['en-US', 'en']
         });
 
         // Simulate real window properties

@@ -26,14 +26,14 @@ describe('Deployment Test Suite', () => {
       const result = execSync(command, {
         timeout,
         encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
+        stdio: ['pipe', 'pipe', 'pipe']
       });
       return { success: true, output: result };
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        output: error.stdout || '',
+        output: error.stdout || ''
       };
     }
   };

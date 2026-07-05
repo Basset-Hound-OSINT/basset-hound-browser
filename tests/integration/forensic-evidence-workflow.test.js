@@ -22,7 +22,7 @@ const os = require('os');
 // Test configuration
 const TEST_CONFIG = {
   results_dir: path.join(__dirname, '..', 'results'),
-  evidenceTypes: ['screenshot', 'html_snapshot', 'javascript_execution', 'network_log', 'metadata'],
+  evidenceTypes: ['screenshot', 'html_snapshot', 'javascript_execution', 'network_log', 'metadata']
 };
 
 // Ensure results directory exists
@@ -34,7 +34,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -45,8 +45,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -67,7 +70,7 @@ class ChainOfCustodyManager {
       evidenceType,
       collector,
       action: 'collected',
-      signature: this.generateSignature(),
+      signature: this.generateSignature()
     };
 
     this.entries.push(entry);
@@ -82,7 +85,7 @@ class ChainOfCustodyManager {
       action: 'transferred',
       from: fromCollector,
       to: toCollector,
-      signature: this.generateSignature(),
+      signature: this.generateSignature()
     };
 
     this.entries.push(entry);
@@ -97,7 +100,7 @@ class ChainOfCustodyManager {
       action: 'verified',
       verifier,
       verified,
-      signature: this.generateSignature(),
+      signature: this.generateSignature()
     };
 
     this.entries.push(entry);
@@ -138,7 +141,7 @@ class EvidenceItem {
       type: type,
       createdAt: this.created,
       hash: this.hash,
-      size: this.size,
+      size: this.size
     };
   }
 
@@ -158,7 +161,7 @@ class EvidenceItem {
       created: this.created,
       hash: this.hash,
       size: this.size,
-      dataPreview: this.data.substring(0, 100),
+      dataPreview: this.data.substring(0, 100)
     };
   }
 }
@@ -173,7 +176,7 @@ class ForensicBundleManager {
     this.metadata = {
       createdAt: new Date().toISOString(),
       version: '1.0',
-      format: 'forensic-bundle',
+      format: 'forensic-bundle'
     };
   }
 
@@ -194,7 +197,7 @@ class ForensicBundleManager {
     const results = {
       total: this.evidence.size,
       verified: 0,
-      corrupted: [],
+      corrupted: []
     };
 
     for (const item of this.evidence.values()) {
@@ -220,8 +223,8 @@ class ForensicBundleManager {
       legalCompliance: {
         chainOfCustodyValid: this.chainOfCustody.verifyIntegrity(),
         allEvidenceVerified: items.length === this.evidence.size,
-        integrityHashesPresent: items.every(i => i.hash),
-      },
+        integrityHashesPresent: items.every(i => i.hash)
+      }
     };
   }
 }
@@ -283,7 +286,7 @@ describe('Forensic Evidence Collection Workflow', () => {
         requireChainOfCustody: true,
         requireTimestamps: true,
         requireHashes: true,
-        requireMetadata: true,
+        requireMetadata: true
       };
 
       assert(compliance.requireChainOfCustody);
@@ -350,7 +353,7 @@ describe('Forensic Evidence Collection Workflow', () => {
         'network_log',
         JSON.stringify([
           { method: 'GET', url: 'https://example.com', status: 200 },
-          { method: 'POST', url: 'https://api.example.com/data', status: 201 },
+          { method: 'POST', url: 'https://api.example.com/data', status: 201 }
         ])
       );
 
@@ -367,7 +370,7 @@ describe('Forensic Evidence Collection Workflow', () => {
           url: 'https://example.com',
           title: 'Example Site',
           timestamp: new Date().toISOString(),
-          loadTime: 2500,
+          loadTime: 2500
         })
       );
 
@@ -545,7 +548,7 @@ describe('Forensic Evidence Collection Workflow', () => {
         sequence: entry.sequenceNumber,
         timestamp: entry.timestamp,
         action: entry.action,
-        evidenceId: entry.evidenceId || 'N/A',
+        evidenceId: entry.evidenceId || 'N/A'
       }));
 
       assert(auditTrail.length > 0);
@@ -703,7 +706,7 @@ describe('Forensic Evidence Collection Workflow', () => {
         allEvidenceHashVerified: true,
         timestampsRecorded: true,
         collectorIdentified: true,
-        legalRequirementsMet: true,
+        legalRequirementsMet: true
       };
 
       const allChecked = Object.values(checklist).every(v => v === true);
@@ -720,7 +723,7 @@ describe('Forensic Evidence Collection Workflow', () => {
         evidenceCount: export_data.evidence.length,
         chainOfCustodyEntries: export_data.chainOfCustody.length,
         complianceStatus: 'COMPLIANT',
-        issues: [],
+        issues: []
       };
 
       assert.strictEqual(report.complianceStatus, 'COMPLIANT');

@@ -51,7 +51,7 @@ function compareResults() {
         console.log(`  ${catName}: ${catData.passed}/${catData.tests} ✓`);
       }
 
-      console.log(`  \n  Overall: ${totalPassed}/${totalTests} (${(totalPassed/totalTests*100).toFixed(1)}%)`);
+      console.log(`  \n  Overall: ${totalPassed}/${totalTests} (${(totalPassed / totalTests * 100).toFixed(1)}%)`);
 
       if (data.issues_found && data.issues_found.length > 0) {
         console.log(`  Issues: ${data.issues_found.length}`);

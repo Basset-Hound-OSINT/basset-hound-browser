@@ -566,18 +566,26 @@ class DomainIntelligence extends EventEmitter {
    */
   calculateRegistrantRisk(registrantKey) {
     const registrant = this.registrants.get(registrantKey);
-    if (!registrant) return 0;
+    if (!registrant) {
+      return 0;
+    }
 
     let risk = 0;
 
     // More domains = slightly higher risk for abuse
-    if (registrant.domains.length > 50) risk += 30;
-    else if (registrant.domains.length > 20) risk += 15;
-    else if (registrant.domains.length > 5) risk += 5;
+    if (registrant.domains.length > 50) {
+      risk += 30;
+    } else if (registrant.domains.length > 20) {
+      risk += 15;
+    } else if (registrant.domains.length > 5) {
+      risk += 5;
+    }
 
     // Check domain ages
     const avgAge = registrant.domains.length > 0 ? 1 : 0;
-    if (avgAge < 1) risk += 20; // Very new domains
+    if (avgAge < 1) {
+      risk += 20;
+    } // Very new domains
 
     return Math.min(risk, 100);
   }

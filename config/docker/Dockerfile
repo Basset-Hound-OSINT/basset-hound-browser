@@ -28,8 +28,8 @@ COPY package*.json ./
 # Install dependencies (with caching optimization)
 RUN npm ci --no-optional --prefer-offline
 
-# Build any native modules
-RUN npm run build --if-present || true
+# Skip electron-builder (not needed in Docker, no display for Electron)
+# Build step requires valid build config and is not needed for headless deployment
 
 # ============================================================================
 # STAGE 2: RUNTIME BASE - System libraries and Tor

@@ -228,8 +228,12 @@ class LogAggregator extends EventEmitter {
       results.sort((a, b) => {
         const aVal = a[field];
         const bVal = b[field];
-        if (aVal < bVal) return -1 * multiplier;
-        if (aVal > bVal) return 1 * multiplier;
+        if (aVal < bVal) {
+          return -1 * multiplier;
+        }
+        if (aVal > bVal) {
+          return Number(multiplier);
+        }
         return 0;
       });
     }

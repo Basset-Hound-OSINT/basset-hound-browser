@@ -104,15 +104,15 @@ class TextFormatter extends BaseFormatter {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
 
     switch (this.timestampFormat) {
-      case 'time':
-        return date.toLocaleTimeString();
-      case 'short':
-        return `${date.getMonth() + 1}/${date.getDate()} ${date.toLocaleTimeString()}`;
-      case 'unix':
-        return String(date.getTime());
-      case 'iso':
-      default:
-        return date.toISOString();
+    case 'time':
+      return date.toLocaleTimeString();
+    case 'short':
+      return `${date.getMonth() + 1}/${date.getDate()} ${date.toLocaleTimeString()}`;
+    case 'unix':
+      return String(date.getTime());
+    case 'iso':
+    default:
+      return date.toISOString();
     }
   }
 
@@ -228,7 +228,9 @@ class ColorFormatter extends TextFormatter {
    * @returns {string} Colorized text
    */
   colorize(text, color) {
-    if (!this.enabled) return text;
+    if (!this.enabled) {
+      return text;
+    }
     return `${color}${text}${COLORS.reset}`;
   }
 
@@ -313,15 +315,15 @@ class ColorFormatter extends TextFormatter {
  */
 function createFormatter(type, options = {}) {
   switch (type.toLowerCase()) {
-    case 'json':
-      return new JSONFormatter(options);
-    case 'text':
-      return new TextFormatter(options);
-    case 'color':
-    case 'colored':
-      return new ColorFormatter(options);
-    default:
-      throw new Error(`Unknown formatter type: ${type}`);
+  case 'json':
+    return new JSONFormatter(options);
+  case 'text':
+    return new TextFormatter(options);
+  case 'color':
+  case 'colored':
+    return new ColorFormatter(options);
+  default:
+    throw new Error(`Unknown formatter type: ${type}`);
   }
 }
 

@@ -23,7 +23,7 @@ class IndexingPipeline extends EventEmitter {
       documentsDeleted: 0,
       failedIndexes: 0,
       totalBatches: 0,
-      avgBatchTime: 0,
+      avgBatchTime: 0
     };
     this.batchTimer = null;
   }
@@ -34,7 +34,7 @@ class IndexingPipeline extends EventEmitter {
   registerMapping(indexName, mapping) {
     this.mappings.set(indexName, {
       indexName,
-      ...mapping,
+      ...mapping
     });
 
     this.emit('mapping_registered', { index: indexName });
@@ -53,7 +53,7 @@ class IndexingPipeline extends EventEmitter {
       document,
       priority,
       retry,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     // Insert based on priority
@@ -154,7 +154,7 @@ class IndexingPipeline extends EventEmitter {
         type: 'reindex_error',
         source: sourceIndex,
         target: targetIndex,
-        error: err.message,
+        error: err.message
       });
       throw err;
     }
@@ -175,7 +175,7 @@ class IndexingPipeline extends EventEmitter {
     return {
       queueSize: this.queue.length,
       processing: this.processing,
-      byIndex,
+      byIndex
     };
   }
 
@@ -186,7 +186,7 @@ class IndexingPipeline extends EventEmitter {
     return {
       ...this.stats,
       queueSize: this.queue.length,
-      registeredMappings: this.mappings.size,
+      registeredMappings: this.mappings.size
     };
   }
 
@@ -293,7 +293,7 @@ class IndexingPipeline extends EventEmitter {
               type: 'document_index_failed',
               indexName,
               docId: item.docId,
-              error: err.message,
+              error: err.message
             });
           }
         }
@@ -317,7 +317,7 @@ class IndexingPipeline extends EventEmitter {
               this.emit('error', {
                 type: 'batch_index_failed',
                 indexName,
-                error: err.message,
+                error: err.message
               });
             }
           }

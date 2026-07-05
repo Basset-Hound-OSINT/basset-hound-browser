@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. "v12.0.0 Production Live" and "API Reference (164 commands)" are stale — the server registers ~888 handler keys, of which only a small core subset is proven-working.
+
 # Basset Hound Browser - Documentation Index
 
 **Last Updated:** May 31, 2026  
@@ -24,6 +26,19 @@
 - **[Architecture & Scope](SCOPE.md)** - Boundaries and design principles
 
 ---
+
+## Wiki Documentation Structure
+The `/wiki/` folder contains organized documentation for different audiences:
+- **`/wiki/api/`** - WebSocket API reference (6 files)
+- **`/wiki/deployment/`** - Deployment procedures and operations (7 files)
+- **`/wiki/development/`** - Developer setup and architecture (6 files)
+- **`/wiki/troubleshooting/`** - Problem-solving and diagnostics (6 files)
+- **`/wiki/improvements/`** - Feature improvements and enhancements (5 files)
+- **`/wiki/getting-started/`** - Quick start guides for new users
+- **`/wiki/guides/`** - Detailed procedure guides
+- **`/wiki/reports/`** - Session reports and findings
+
+Each wiki subdirectory includes an INDEX.md file (20-30 lines) with file listings and descriptions.
 
 ## Documentation Organization
 

@@ -232,10 +232,18 @@ class SmartAlertGenerator extends EventEmitter {
    * @private
    */
   getSeverityLevel(score) {
-    if (score >= 4.5) return 'CRITICAL';
-    if (score >= 3.5) return 'HIGH';
-    if (score >= 2.5) return 'MEDIUM';
-    if (score >= 1.5) return 'LOW';
+    if (score >= 4.5) {
+      return 'CRITICAL';
+    }
+    if (score >= 3.5) {
+      return 'HIGH';
+    }
+    if (score >= 2.5) {
+      return 'MEDIUM';
+    }
+    if (score >= 1.5) {
+      return 'LOW';
+    }
     return 'INFO';
   }
 
@@ -281,10 +289,18 @@ class SmartAlertGenerator extends EventEmitter {
    * @private
    */
   matchesRule(alert, rule) {
-    if (rule.type && alert.type !== rule.type) return false;
-    if (rule.monitorId && alert.monitorId !== rule.monitorId) return false;
-    if (rule.severityMax && alert.severity > rule.severityMax) return false;
-    if (rule.severityMin && alert.severity < rule.severityMin) return false;
+    if (rule.type && alert.type !== rule.type) {
+      return false;
+    }
+    if (rule.monitorId && alert.monitorId !== rule.monitorId) {
+      return false;
+    }
+    if (rule.severityMax && alert.severity > rule.severityMax) {
+      return false;
+    }
+    if (rule.severityMin && alert.severity < rule.severityMin) {
+      return false;
+    }
 
     if (rule.customMatcher && typeof rule.customMatcher === 'function') {
       return rule.customMatcher(alert);
@@ -485,7 +501,9 @@ class SmartAlertGenerator extends EventEmitter {
   getAlertGroup(groupId) {
     const alerts = this.alertGroups.get(groupId) || [];
 
-    if (alerts.length === 0) return null;
+    if (alerts.length === 0) {
+      return null;
+    }
 
     const group = {
       id: groupId,

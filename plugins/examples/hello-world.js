@@ -28,10 +28,10 @@ const dependencies = [];
 
 // Optional: Required permissions for this plugin
 const permissions = {
-  navigation: 1,  // Read permission for navigation
-  content: 1,     // Read permission for content
-  storage: 2,     // Write permission for storage
-  events: 2       // Write permission for events
+  navigation: 1, // Read permission for navigation
+  content: 1, // Read permission for content
+  storage: 2, // Write permission for storage
+  events: 2 // Write permission for events
 };
 
 // Optional: Default configuration

@@ -36,7 +36,7 @@ const CONFIG = {
 
   // Connection recycling
   CONNECTION_RECYCLE_INTERVAL: 300000, // Recycle connections every 5 minutes
-  RECYCLE_BATCH_SIZE: 5, // Recycle 5 connections at a time
+  RECYCLE_BATCH_SIZE: 5 // Recycle 5 connections at a time
 };
 
 /**
@@ -209,7 +209,9 @@ class SoakTestRunner {
 
   async recycleConnections() {
     const toRecycle = Math.min(CONFIG.RECYCLE_BATCH_SIZE, this.connections.length);
-    if (toRecycle === 0) return;
+    if (toRecycle === 0) {
+      return;
+    }
 
     console.log(`[SOAK] Recycling ${toRecycle} connections...`);
 

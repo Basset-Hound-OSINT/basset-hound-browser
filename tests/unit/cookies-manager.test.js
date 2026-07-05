@@ -277,7 +277,7 @@ describe('CookieManager', () => {
     ];
 
     beforeEach(() => {
-      testCookies.forEach(c => mockCookies.push({...c}));
+      testCookies.forEach(c => mockCookies.push({ ...c }));
     });
 
     describe('exportCookies', () => {

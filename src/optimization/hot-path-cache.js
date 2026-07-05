@@ -37,7 +37,7 @@ class FastPathCache extends EventEmitter {
       misses: 0,
       evictions: 0,
       promoted: 0, // Moved to hot cache
-      demoted: 0, // Removed from hot cache
+      demoted: 0 // Removed from hot cache
     };
 
     this.debug = options.debug || false;
@@ -180,7 +180,7 @@ class FastPathCache extends EventEmitter {
       ...this.stats,
       hitRate: total > 0 ? ((this.stats.hits / total) * 100).toFixed(2) + '%' : '0%',
       size: this.cache.size,
-      maxSize: this.maxSize,
+      maxSize: this.maxSize
     };
   }
 
@@ -215,7 +215,7 @@ class TemplateCache {
 
     this.stats = {
       compilations: 0,
-      uses: 0,
+      uses: 0
     };
 
     this._registerStandardTemplates();
@@ -230,26 +230,26 @@ class TemplateCache {
     this.register('success', {
       success: true,
       data: null,
-      duration: null,
+      duration: null
     });
 
     // Error template
     this.register('error', {
       success: false,
       error: null,
-      code: null,
+      code: null
     });
 
     // Status template
     this.register('status', {
       status: 'ok',
       timestamp: null,
-      uptime: null,
+      uptime: null
     });
 
     // Ping template
     this.register('ping', {
-      pong: true,
+      pong: true
     });
   }
 
@@ -297,7 +297,7 @@ class TemplateCache {
   getStats() {
     return {
       templateCount: this.templates.size,
-      ...this.stats,
+      ...this.stats
     };
   }
 }
@@ -312,11 +312,11 @@ class HotPathCache extends EventEmitter {
     this.fastPath = new FastPathCache({
       maxSize: options.maxSize || 512,
       ttl: options.ttl || 300000,
-      debug: options.debug,
+      debug: options.debug
     });
 
     this.templates = new TemplateCache({
-      debug: options.debug,
+      debug: options.debug
     });
 
     this.debug = options.debug || false;
@@ -384,7 +384,7 @@ class HotPathCache extends EventEmitter {
   getStats() {
     return {
       fastPath: this.fastPath.getStats(),
-      templates: this.templates.getStats(),
+      templates: this.templates.getStats()
     };
   }
 
@@ -407,5 +407,5 @@ class HotPathCache extends EventEmitter {
 module.exports = {
   HotPathCache,
   FastPathCache,
-  TemplateCache,
+  TemplateCache
 };

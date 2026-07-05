@@ -122,7 +122,7 @@ class VideoEncoder extends EventEmitter {
     super();
 
     this.options = {
-      outputDir: options.outputDir || path.join(require('os').homedir(), '.basset-hound', 'videos'),
+      outputDir: options.outputDir || path.join(require('os').homedir(), 'tmp', '.basset-hound', 'videos'),
       codec: options.codec || 'vp9',
       fps: options.fps || 24,
       quality: options.quality || null,
@@ -444,7 +444,7 @@ class VideoEncoderSession extends EventEmitter {
       '-video_size', `${this.options.maxWidth}x${this.options.maxHeight}`,
       '-framerate', this.options.fps,
       '-i', '-',
-      '-c:v', this.codec.ffmpegCodec,
+      '-c:v', this.codec.ffmpegCodec
     ];
 
     // Add quality settings

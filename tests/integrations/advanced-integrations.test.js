@@ -666,9 +666,15 @@ describe('Integration Tests', () => {
     const eventCount = 3;
     let emitted = 0;
 
-    shodan.on('caches-cleared', () => { emitted++; });
-    maltego.on('caches-cleared', () => { emitted++; });
-    censys.on('caches-cleared', () => { emitted++; });
+    shodan.on('caches-cleared', () => {
+      emitted++;
+    });
+    maltego.on('caches-cleared', () => {
+      emitted++;
+    });
+    censys.on('caches-cleared', () => {
+      emitted++;
+    });
 
     shodan.clearCaches();
     maltego.clearCaches();

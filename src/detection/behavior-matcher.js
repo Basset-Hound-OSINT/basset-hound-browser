@@ -229,7 +229,7 @@ class BehaviorMatcher {
 
     // Check for perfect typing (no corrections)
     let deletions = 0;
-    let insertions = 0;
+    const insertions = 0;
 
     for (const event of typeEvents) {
       if (event.key === 'Backspace' || event.key === 'Delete') {
@@ -305,7 +305,9 @@ class BehaviorMatcher {
     // Check each field for instant fill
     let instantFills = 0;
     for (const fieldEvents of targetGroups.values()) {
-      if (fieldEvents.length < 2) continue;
+      if (fieldEvents.length < 2) {
+        continue;
+      }
 
       const firstEvent = fieldEvents[0];
       const lastEvent = fieldEvents[fieldEvents.length - 1];
@@ -347,7 +349,7 @@ class BehaviorMatcher {
     }
 
     // Check for direct jumps (no intermediate mouse movements)
-    let directClicks = 0;
+    const directClicks = 0;
     const moveEvents = events.filter(e => e.type === 'mouseMove');
 
     if (moveEvents.length === 0 && clickEvents.length > 2) {
@@ -487,10 +489,18 @@ class BehaviorMatcher {
    * @returns {string}
    */
   _scoreToBotRisk(score) {
-    if (score < 0.2) return 'low';
-    if (score < 0.4) return 'medium-low';
-    if (score < 0.6) return 'medium';
-    if (score < 0.8) return 'high';
+    if (score < 0.2) {
+      return 'low';
+    }
+    if (score < 0.4) {
+      return 'medium-low';
+    }
+    if (score < 0.6) {
+      return 'medium';
+    }
+    if (score < 0.8) {
+      return 'high';
+    }
     return 'critical';
   }
 

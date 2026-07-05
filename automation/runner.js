@@ -518,7 +518,9 @@ class ScriptRunner {
    * @returns {boolean} Whether URL matches pattern
    */
   matchesUrl(pattern, url) {
-    if (!pattern || !url) return false;
+    if (!pattern || !url) {
+      return false;
+    }
 
     try {
       // Check if pattern is a regex (starts and ends with /)

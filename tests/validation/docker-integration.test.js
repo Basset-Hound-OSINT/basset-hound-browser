@@ -169,7 +169,7 @@ describe('Docker Integration Tests', () => {
   });
 
   const skipIfNoDocker = (testFn) => {
-    return async function(...args) {
+    return async function (...args) {
       if (!client || !client.isConnected()) {
         console.log('Skipping test - Docker container not available');
         return;

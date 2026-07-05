@@ -298,10 +298,14 @@ class DependencyContainer {
    * @private
    */
   _hasCircularDependency(name, visited) {
-    if (visited.has(name)) return true;
+    if (visited.has(name)) {
+      return true;
+    }
 
     const definition = this.services.get(name);
-    if (!definition) return false;
+    if (!definition) {
+      return false;
+    }
 
     visited.add(name);
 

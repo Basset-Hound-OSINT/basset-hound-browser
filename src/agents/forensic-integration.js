@@ -260,7 +260,7 @@ class ForensicIntegration {
    */
   verifyIntegrity() {
     let intactCount = 0;
-    let totalCount = this.evidenceLog.length;
+    const totalCount = this.evidenceLog.length;
 
     for (const evidence of this.evidenceLog) {
       if (evidence.hash) {
@@ -396,7 +396,9 @@ class ForensicIntegration {
    * Sanitize headers for logging
    */
   sanitizeHeaders(headers) {
-    if (!headers) return {};
+    if (!headers) {
+      return {};
+    }
 
     const sanitized = { ...headers };
     const sensitiveHeaders = ['authorization', 'cookie', 'x-api-key', 'x-auth-token'];

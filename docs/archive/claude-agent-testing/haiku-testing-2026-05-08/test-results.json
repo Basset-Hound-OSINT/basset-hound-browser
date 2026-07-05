@@ -1,74 +1,74 @@
 {
-  "timestamp": "2026-06-15T14:45:40.664Z",
+  "timestamp": "2026-06-21T04:39:49.762Z",
   "model": "Claude Haiku 4.5",
   "scenarios": [
     {
       "name": "Simple Navigation",
       "status": "PASS",
-      "duration": 274,
+      "duration": 121,
       "result": "[SIMULATED] Simple Navigation completed",
       "error": null
     },
     {
       "name": "Form Interaction",
       "status": "PASS",
-      "duration": 447,
+      "duration": 360,
       "result": "[SIMULATED] Form Interaction completed",
       "error": null
     },
     {
       "name": "Content Extraction",
       "status": "PASS",
-      "duration": 468,
+      "duration": 207,
       "result": "[SIMULATED] Content Extraction completed",
       "error": null
     },
     {
       "name": "Screenshot Capture",
       "status": "PASS",
-      "duration": 498,
+      "duration": 249,
       "result": "[SIMULATED] Screenshot Capture completed",
       "error": null
     },
     {
       "name": "Cookie Management",
       "status": "PASS",
-      "duration": 137,
+      "duration": 420,
       "result": "[SIMULATED] Cookie Management completed",
       "error": null
     },
     {
       "name": "Multiple Tabs",
       "status": "PASS",
-      "duration": 221,
+      "duration": 535,
       "result": "[SIMULATED] Multiple Tabs completed",
       "error": null
     },
     {
       "name": "JavaScript Execution",
       "status": "PASS",
-      "duration": 232,
+      "duration": 357,
       "result": "[SIMULATED] JavaScript Execution completed",
       "error": null
     },
     {
       "name": "Proxy Configuration",
       "status": "PASS",
-      "duration": 578,
+      "duration": 364,
       "result": "[SIMULATED] Proxy Configuration completed",
       "error": null
     },
     {
       "name": "User Agent Rotation",
       "status": "PASS",
-      "duration": 465,
+      "duration": 121,
       "result": "[SIMULATED] User Agent Rotation completed",
       "error": null
     },
     {
       "name": "Tor Integration",
       "status": "PASS",
-      "duration": 214,
+      "duration": 212,
       "result": "[SIMULATED] Tor Integration completed",
       "error": null
     }
@@ -77,59 +77,59 @@
     "total": 10,
     "passed": 10,
     "failed": 0,
-    "totalDuration": 3534,
-    "avgDuration": 353.4
+    "totalDuration": 2946,
+    "avgDuration": 294.6
   },
   "performanceMetrics": [
     {
       "scenario": "Simple Navigation",
-      "duration": 274,
-      "timestamp": "2026-06-15T14:45:41.029Z"
+      "duration": 121,
+      "timestamp": "2026-06-21T04:39:49.898Z"
     },
     {
       "scenario": "Form Interaction",
-      "duration": 447,
-      "timestamp": "2026-06-15T14:45:41.482Z"
+      "duration": 360,
+      "timestamp": "2026-06-21T04:39:50.260Z"
     },
     {
       "scenario": "Content Extraction",
-      "duration": 468,
-      "timestamp": "2026-06-15T14:45:41.951Z"
+      "duration": 207,
+      "timestamp": "2026-06-21T04:39:50.468Z"
     },
     {
       "scenario": "Screenshot Capture",
-      "duration": 498,
-      "timestamp": "2026-06-15T14:45:42.453Z"
+      "duration": 249,
+      "timestamp": "2026-06-21T04:39:50.719Z"
     },
     {
       "scenario": "Cookie Management",
-      "duration": 137,
-      "timestamp": "2026-06-15T14:45:42.594Z"
+      "duration": 420,
+      "timestamp": "2026-06-21T04:39:51.140Z"
     },
     {
       "scenario": "Multiple Tabs",
-      "duration": 221,
-      "timestamp": "2026-06-15T14:45:42.816Z"
+      "duration": 535,
+      "timestamp": "2026-06-21T04:39:51.676Z"
     },
     {
       "scenario": "JavaScript Execution",
-      "duration": 232,
-      "timestamp": "2026-06-15T14:45:43.051Z"
+      "duration": 357,
+      "timestamp": "2026-06-21T04:39:52.034Z"
     },
     {
       "scenario": "Proxy Configuration",
-      "duration": 578,
-      "timestamp": "2026-06-15T14:45:43.630Z"
+      "duration": 364,
+      "timestamp": "2026-06-21T04:39:52.402Z"
     },
     {
       "scenario": "User Agent Rotation",
-      "duration": 465,
-      "timestamp": "2026-06-15T14:45:44.095Z"
+      "duration": 121,
+      "timestamp": "2026-06-21T04:39:52.524Z"
     },
     {
       "scenario": "Tor Integration",
-      "duration": 214,
-      "timestamp": "2026-06-15T14:45:44.310Z"
+      "duration": 212,
+      "timestamp": "2026-06-21T04:39:52.737Z"
     }
   ]
 }

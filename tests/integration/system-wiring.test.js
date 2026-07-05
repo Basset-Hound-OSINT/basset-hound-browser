@@ -81,10 +81,10 @@ describe('System Wiring Integration Tests', () => {
           shutdown: async () => {}
         }
       },
-      getComponent: function(name) {
+      getComponent: function (name) {
         return this.components[name] || null;
       },
-      getComponents: function() {
+      getComponents: function () {
         return { ...this.components };
       }
     };
@@ -499,9 +499,9 @@ describe('System Wiring Integration Tests', () => {
       const db = infra.getComponent('dbPool');
       const redis = infra.getComponent('redisManager');
 
-      expect(!!sessionStore).toBe(true);
-      expect(!!db).toBe(true);
-      expect(!!redis).toBe(true);
+      expect(Boolean(sessionStore)).toBe(true);
+      expect(Boolean(db)).toBe(true);
+      expect(Boolean(redis)).toBe(true);
     });
   });
 

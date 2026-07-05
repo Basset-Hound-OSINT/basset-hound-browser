@@ -16,7 +16,9 @@ describe('Tor Deployment - Docker Environment', () => {
   }, 30000);
 
   afterAll(() => {
-    if (ws) ws.close();
+    if (ws) {
+      ws.close();
+    }
   });
 
   describe('Docker Network Isolation', () => {

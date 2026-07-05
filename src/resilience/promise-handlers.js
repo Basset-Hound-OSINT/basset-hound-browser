@@ -20,7 +20,7 @@ class PromiseHandlers {
   static initialize(options = {}) {
     const {
       logger = console,
-      exitOnUncaught = false,  // Don't exit by default, let orchestrator manage
+      exitOnUncaught = false, // Don't exit by default, let orchestrator manage
       onRejection = null,
       onException = null
     } = options;

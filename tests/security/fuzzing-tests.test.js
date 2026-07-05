@@ -185,7 +185,7 @@ class FuzzingTester {
   }
 }
 
-describe('Fuzzing Tests', function() {
+describe('Fuzzing Tests', function () {
   this.timeout(TIMEOUT);
   let tester;
 
@@ -239,7 +239,7 @@ describe('Fuzzing Tests', function() {
     it('FUZZ002: Should handle very long string fuzzing', async () => {
       try {
         const fuzzInputs = [];
-        let crashes = 0;
+        const crashes = 0;
         let handled = 0;
 
         for (let i = 0; i < 10; i++) {
@@ -266,7 +266,7 @@ describe('Fuzzing Tests', function() {
     it('FUZZ003: Should handle special character fuzzing', async () => {
       try {
         const fuzzInputs = [];
-        let crashes = 0;
+        const crashes = 0;
         let handled = 0;
 
         const specialChars = [
@@ -399,7 +399,7 @@ describe('Fuzzing Tests', function() {
           { command: 'ping' }, // Missing id
           { id: '1' }, // Missing command
           {}, // Missing both
-          { id: '1', command: 'ping', url: 'https://example.com' }, // Extra field
+          { id: '1', command: 'ping', url: 'https://example.com' } // Extra field
         ];
 
         for (const mutation of mutations) {
@@ -486,7 +486,7 @@ describe('Fuzzing Tests', function() {
         let handled = 0;
 
         // Generate deeply nested object
-        let nested = {};
+        const nested = {};
         let current = nested;
         for (let i = 0; i < 100; i++) {
           current.level = i;

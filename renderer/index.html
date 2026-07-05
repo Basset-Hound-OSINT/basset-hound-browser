@@ -25,6 +25,7 @@
 
     /* Top toolbar */
     .toolbar {
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       padding: 8px 12px;
@@ -105,16 +106,21 @@
       background: #ff6b6b;
     }
 
-    /* Browser content area */
+    /* Browser content area — fills the space between toolbar and status bar */
     .browser-content {
-      flex: 1;
+      flex: 1 1 auto;
+      min-height: 0;
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     webview {
       width: 100%;
       height: 100%;
+      display: flex;
+      flex: 1 1 auto;
       background: white;
     }
 
@@ -152,6 +158,7 @@
 
     /* Status bar */
     .status-bar {
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -306,7 +313,9 @@
 
     /* Tab Bar */
     .tab-bar {
+      flex: 0 0 auto;
       display: flex;
+      flex-direction: row;
       align-items: center;
       background: #0d1b2a;
       border-bottom: 1px solid #0f3460;
@@ -330,7 +339,20 @@
       border-radius: 2px;
     }
 
+    /* Tabs lay out horizontally in a single scrollable row */
+    #tabs-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 2px;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
     .tab {
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -425,24 +447,27 @@
       color: #eaeaea;
     }
 
-    /* Webview container for tabs */
+    /* Webview container for tabs — flex child that fills .browser-content */
     .webview-container {
       position: relative;
       width: 100%;
-      height: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
     }
 
     .webview-container webview {
       position: absolute;
       top: 0;
       left: 0;
+      right: 0;
+      bottom: 0;
       width: 100%;
       height: 100%;
       display: none;
     }
 
     .webview-container webview.active {
-      display: block;
+      display: flex;
     }
 
     /* Session indicator */
@@ -565,6 +590,10 @@
   <!-- Scripts -->
   <script src="update-notification.js"></script>
   <script src="update-manager.js"></script>
+  <!-- Renderer modules: register globalThis.Renderer* BEFORE renderer.js (ctx-passing). -->
+  <script src="renderer-ipc.js"></script>
+  <script src="renderer-screenshots.js"></script>
+  <script src="renderer-downloads.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

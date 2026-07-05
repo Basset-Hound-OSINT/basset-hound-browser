@@ -49,7 +49,7 @@ const KNOWN_COMMANDS = new Set([
   // Window commands
   'create_window', 'close_window', 'set_window_size',
   // Other common
-  'console_logs', 'devtools_open', 'devtools_close',
+  'console_logs', 'devtools_open', 'devtools_close'
 ]);
 
 // Command metadata cache (command -> { expectedParams, isIdempotent, category })
@@ -59,7 +59,7 @@ const COMMAND_METADATA_CACHE = new Map();
 const BASIC_SCHEMA = {
   id: 'number',
   command: 'string',
-  params: 'object|undefined',
+  params: 'object|undefined'
 };
 
 class CommandProcessingPipeline extends EventEmitter {
@@ -78,7 +78,7 @@ class CommandProcessingPipeline extends EventEmitter {
       streamingParsed: 0,
       batchesDetected: 0,
       cacheHits: 0,
-      errors: 0,
+      errors: 0
     };
 
     this.debug = options.debug || false;
@@ -123,12 +123,20 @@ class CommandProcessingPipeline extends EventEmitter {
    */
   _isFastPathCandidate(buffer, length) {
     // Quick checks for malformed messages
-    if (length < 10) return false; // Too short
-    if (length > 1000000) return false; // Too large (>1MB)
+    if (length < 10) {
+      return false;
+    } // Too short
+    if (length > 1000000) {
+      return false;
+    } // Too large (>1MB)
 
     // Check for JSON start/end
-    if (buffer[0] !== 123) return false; // '{' = 123
-    if (buffer[length - 1] !== 125 && buffer[length - 1] !== 10) return false; // '}' or newline
+    if (buffer[0] !== 123) {
+      return false;
+    } // '{' = 123
+    if (buffer[length - 1] !== 125 && buffer[length - 1] !== 10) {
+      return false;
+    } // '}' or newline
 
     return true;
   }
@@ -140,11 +148,17 @@ class CommandProcessingPipeline extends EventEmitter {
    */
   _validateSchema(obj) {
     // Check required fields
-    if (!obj.id || typeof obj.id !== 'number') return false;
-    if (!obj.command || typeof obj.command !== 'string') return false;
+    if (!obj.id || typeof obj.id !== 'number') {
+      return false;
+    }
+    if (!obj.command || typeof obj.command !== 'string') {
+      return false;
+    }
 
     // If params exists, must be object
-    if (obj.params !== undefined && typeof obj.params !== 'object') return false;
+    if (obj.params !== undefined && typeof obj.params !== 'object') {
+      return false;
+    }
 
     return true;
   }
@@ -161,7 +175,7 @@ class CommandProcessingPipeline extends EventEmitter {
       metadata = {
         known: KNOWN_COMMANDS.has(command),
         category: this._categorizeCommand(command),
-        isIdempotent: this._isIdempotentCommand(command),
+        isIdempotent: this._isIdempotentCommand(command)
       };
 
       // Cache it (limit cache size to 256 entries)
@@ -184,12 +198,24 @@ class CommandProcessingPipeline extends EventEmitter {
    * @private
    */
   _categorizeCommand(command) {
-    if (command.includes('screenshot')) return 'screenshot';
-    if (command.includes('navigate')) return 'navigation';
-    if (command.includes('click') || command.includes('hover')) return 'interaction';
-    if (command.includes('scroll')) return 'scroll';
-    if (command.includes('content') || command.includes('html') || command.includes('text')) return 'extraction';
-    if (command.includes('execute_script')) return 'execution';
+    if (command.includes('screenshot')) {
+      return 'screenshot';
+    }
+    if (command.includes('navigate')) {
+      return 'navigation';
+    }
+    if (command.includes('click') || command.includes('hover')) {
+      return 'interaction';
+    }
+    if (command.includes('scroll')) {
+      return 'scroll';
+    }
+    if (command.includes('content') || command.includes('html') || command.includes('text')) {
+      return 'extraction';
+    }
+    if (command.includes('execute_script')) {
+      return 'execution';
+    }
     return 'other';
   }
 
@@ -200,7 +226,7 @@ class CommandProcessingPipeline extends EventEmitter {
   _isIdempotentCommand(command) {
     const nonIdempotent = new Set([
       'click', 'double_click', 'right_click', 'fill', 'type', 'scroll',
-      'execute_script', 'set_proxy', 'set_user_agent', 'set_headers',
+      'execute_script', 'set_proxy', 'set_user_agent', 'set_headers'
     ]);
 
     return !nonIdempotent.has(command);
@@ -216,7 +242,7 @@ class CommandProcessingPipeline extends EventEmitter {
       return {
         isBatch: true,
         count: obj.length,
-        commands: obj,
+        commands: obj
       };
     }
 
@@ -225,7 +251,7 @@ class CommandProcessingPipeline extends EventEmitter {
       return {
         isBatch: true,
         count: obj.batch.length,
-        commands: obj.batch,
+        commands: obj.batch
       };
     }
 
@@ -329,7 +355,7 @@ class CommandProcessingPipeline extends EventEmitter {
       category: command._metadata.category,
       isIdempotent: command._metadata.isIdempotent,
       priority: this._calculatePriority(command),
-      fastPath: KNOWN_COMMANDS.has(command.command),
+      fastPath: KNOWN_COMMANDS.has(command.command)
     };
 
     return command;
@@ -341,13 +367,19 @@ class CommandProcessingPipeline extends EventEmitter {
    */
   _calculatePriority(command) {
     // Status/ping commands: highest priority (quick response)
-    if (command.command === 'ping' || command.command === 'status') return 10;
+    if (command.command === 'ping' || command.command === 'status') {
+      return 10;
+    }
 
     // Navigation: high priority
-    if (command.command.includes('navigate')) return 8;
+    if (command.command.includes('navigate')) {
+      return 8;
+    }
 
     // Screenshots: medium priority (expected to be slower)
-    if (command.command.includes('screenshot')) return 5;
+    if (command.command.includes('screenshot')) {
+      return 5;
+    }
 
     // Default: normal priority
     return 5;
@@ -362,7 +394,7 @@ class CommandProcessingPipeline extends EventEmitter {
       ...this.metrics,
       fastPathRate: ((this.metrics.fastPathHits / total) * 100).toFixed(2) + '%',
       errorRate: ((this.metrics.errors / total) * 100).toFixed(2) + '%',
-      bufferPoolSize: this.bufferPool.length,
+      bufferPoolSize: this.bufferPool.length
     };
   }
 
@@ -376,7 +408,7 @@ class CommandProcessingPipeline extends EventEmitter {
       streamingParsed: 0,
       batchesDetected: 0,
       cacheHits: 0,
-      errors: 0,
+      errors: 0
     };
   }
 
@@ -391,5 +423,5 @@ class CommandProcessingPipeline extends EventEmitter {
 }
 
 module.exports = {
-  CommandProcessingPipeline,
+  CommandProcessingPipeline
 };

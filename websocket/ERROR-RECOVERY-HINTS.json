@@ -1,0 +1,212 @@
+{
+  "VALIDATION_MISSING_REQUIRED_PARAM": {
+    "hint": "Check the command documentation and ensure all required parameters are provided.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "VALIDATION_INVALID_PARAM_TYPE": {
+    "hint": "Verify that parameter types match the expected types (e.g., number vs string). Check API documentation for correct types.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "VALIDATION_INVALID_PARAM_VALUE": {
+    "hint": "Review the error details for the specific parameter that failed validation. Correct the value according to the specified constraints.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "VALIDATION_CONFLICTING_PARAMS": {
+    "hint": "Check that conflicting parameters are not both provided. Refer to the command documentation for valid parameter combinations.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "VALIDATION_MALFORMED_JSON": {
+    "hint": "Ensure the request is valid JSON. Check for missing commas, unclosed quotes, or other JSON syntax errors.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "PAYLOAD_TOO_LARGE": {
+    "hint": "Reduce the payload size or split the request into smaller chunks. Check error details for the size limit.",
+    "httpStatus": 413,
+    "retryable": true,
+    "category": "resource_error"
+  },
+  "COMMAND_PAYLOAD_TOO_LARGE": {
+    "hint": "This command has a stricter size limit than others. Reduce the request size. Check error details for the specific limit.",
+    "httpStatus": 413,
+    "retryable": true,
+    "category": "resource_error"
+  },
+  "AUTH_REQUIRED": {
+    "hint": "Send an 'authenticate' command with a valid authentication token before retrying this command.",
+    "httpStatus": 401,
+    "retryable": true,
+    "category": "auth_error"
+  },
+  "AUTH_INVALID_TOKEN": {
+    "hint": "The authentication token is invalid, expired, or malformed. Obtain a new token and retry.",
+    "httpStatus": 401,
+    "retryable": true,
+    "category": "auth_error"
+  },
+  "AUTH_INSUFFICIENT_PERMISSIONS": {
+    "hint": "Your authentication token does not have permission to execute this command. Contact your system administrator if you need access.",
+    "httpStatus": 403,
+    "retryable": false,
+    "category": "auth_error"
+  },
+  "AUTH_SESSION_EXPIRED": {
+    "hint": "Your authentication session has expired. Send a new 'authenticate' command with your token to establish a new session.",
+    "httpStatus": 401,
+    "retryable": true,
+    "category": "auth_error"
+  },
+  "RATE_LIMIT_EXCEEDED": {
+    "hint": "You have exceeded the rate limit for this command. Wait the specified time (see 'resetIn' in response details) before retrying. Consider spacing out requests or authenticating for higher limits.",
+    "httpStatus": 429,
+    "retryable": true,
+    "category": "rate_limit"
+  },
+  "RATE_LIMIT_BURST_EXCEEDED": {
+    "hint": "You have exceeded the burst allowance for this command. Wait before retrying. Consider implementing exponential backoff.",
+    "httpStatus": 429,
+    "retryable": true,
+    "category": "rate_limit"
+  },
+  "CONCURRENT_LIMIT_EXCEEDED": {
+    "hint": "You have too many concurrent operations. Wait for current operations to complete or consider using a connection pool.",
+    "httpStatus": 429,
+    "retryable": true,
+    "category": "rate_limit"
+  },
+  "COMMAND_NOT_FOUND": {
+    "hint": "The command name is not recognized. Check the spelling and verify the command exists in the API documentation.",
+    "httpStatus": 404,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "COMMAND_DISABLED": {
+    "hint": "This command is disabled or not available in the current configuration. Contact your system administrator for more information.",
+    "httpStatus": 403,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "COMMAND_TIMED_OUT": {
+    "hint": "The command execution took too long and exceeded the timeout. Try again with a longer timeout value or with a simpler request (e.g., smaller page).",
+    "httpStatus": 504,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "COMMAND_EXECUTION_ERROR": {
+    "hint": "An error occurred while executing the command. Check the error message for details. Verify the state of the browser and try again.",
+    "httpStatus": 500,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "RESOURCE_NOT_FOUND": {
+    "hint": "The referenced resource (profile, session, element, etc.) does not exist. Verify the resource identifier and try again with a valid resource.",
+    "httpStatus": 404,
+    "retryable": false,
+    "category": "resource_error"
+  },
+  "RESOURCE_UNAVAILABLE": {
+    "hint": "The resource is temporarily unavailable. Wait a moment and retry. If the problem persists, contact support.",
+    "httpStatus": 503,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "RESOURCE_LOCKED": {
+    "hint": "The resource is currently locked by another operation. Wait for the lock to be released and retry.",
+    "httpStatus": 423,
+    "retryable": true,
+    "category": "resource_error"
+  },
+  "RESOURCE_ALREADY_EXISTS": {
+    "hint": "Cannot create the resource because it already exists. Either use a different identifier or update the existing resource.",
+    "httpStatus": 409,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "SYSTEM_INTERNAL_ERROR": {
+    "hint": "An unexpected internal error occurred. This is not your fault. Try again, and if the problem persists, contact support with the request ID.",
+    "httpStatus": 500,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "SYSTEM_OUT_OF_MEMORY": {
+    "hint": "The system has run out of memory. Wait for other operations to complete, then retry with a smaller request.",
+    "httpStatus": 503,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "SYSTEM_BROWSER_CRASH": {
+    "hint": "The browser process crashed or is unresponsive. The browser is being restarted automatically. Try again in a few seconds.",
+    "httpStatus": 503,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "SYSTEM_CONFIGURATION_ERROR": {
+    "hint": "The system configuration is invalid. Contact your system administrator to fix the configuration and try again.",
+    "httpStatus": 500,
+    "retryable": false,
+    "category": "server_error"
+  },
+  "BROWSER_NAVIGATION_FAILED": {
+    "hint": "The browser failed to navigate to the URL. Verify that the URL is valid, the target site is accessible, and network connectivity is available.",
+    "httpStatus": 400,
+    "retryable": true,
+    "category": "browser_error"
+  },
+  "BROWSER_TIMEOUT": {
+    "hint": "The browser operation timed out. The page may be slow to load or unresponsive. Try with a longer timeout or a different URL.",
+    "httpStatus": 504,
+    "retryable": true,
+    "category": "browser_error"
+  },
+  "BROWSER_NOT_READY": {
+    "hint": "The browser is not ready for this operation (e.g., still loading, no page loaded). Wait for the browser to be ready and retry.",
+    "httpStatus": 503,
+    "retryable": true,
+    "category": "browser_error"
+  },
+  "BROWSER_NETWORK_ERROR": {
+    "hint": "A network error occurred while the browser was loading the page. Check network connectivity and verify the target site is accessible.",
+    "httpStatus": 503,
+    "retryable": true,
+    "category": "browser_error"
+  },
+  "SCRIPT_EXECUTION_ERROR": {
+    "hint": "The JavaScript script failed to execute. Check the script for errors, ensure it's valid JavaScript, and verify the page state supports the script.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "SCRIPT_SYNTAX_ERROR": {
+    "hint": "The JavaScript script has a syntax error. Review the script for correct JavaScript syntax and try again.",
+    "httpStatus": 400,
+    "retryable": false,
+    "category": "client_error"
+  },
+  "SCRIPT_TIMEOUT": {
+    "hint": "The script took too long to execute. Try with a longer timeout, simplify the script, or retry when the page is less busy.",
+    "httpStatus": 504,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "STORAGE_OPERATION_FAILED": {
+    "hint": "A storage operation (cookies, localStorage, sessionStorage) failed. Try again, and if the problem persists, clear storage and retry.",
+    "httpStatus": 500,
+    "retryable": true,
+    "category": "server_error"
+  },
+  "STORAGE_QUOTA_EXCEEDED": {
+    "hint": "Storage quota (cookies, localStorage, etc.) has been exceeded. Clear some data and retry.",
+    "httpStatus": 413,
+    "retryable": true,
+    "category": "resource_error"
+  }
+}

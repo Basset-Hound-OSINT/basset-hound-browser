@@ -299,7 +299,7 @@ class SessionCompression {
    * @param {boolean} enabled - Enable flag
    */
   setEnabled(enabled) {
-    this.enabled = !!enabled;
+    this.enabled = Boolean(enabled);
   }
 
   /**

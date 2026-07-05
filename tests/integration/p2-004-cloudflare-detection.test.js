@@ -14,10 +14,18 @@ describe('P2-004: Cloudflare Challenge Detection', () => {
 
   beforeEach(() => {
     class MockLogger {
-      debug(msg) { console.log(`[DEBUG] ${msg}`); }
-      info(msg) { console.log(`[INFO] ${msg}`); }
-      warn(msg) { console.log(`[WARN] ${msg}`); }
-      error(msg) { console.log(`[ERROR] ${msg}`); }
+      debug(msg) {
+        console.log(`[DEBUG] ${msg}`);
+      }
+      info(msg) {
+        console.log(`[INFO] ${msg}`);
+      }
+      warn(msg) {
+        console.log(`[WARN] ${msg}`);
+      }
+      error(msg) {
+        console.log(`[ERROR] ${msg}`);
+      }
     }
 
     detector = new CloudflareDetector(new MockLogger());

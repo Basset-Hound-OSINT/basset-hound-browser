@@ -52,7 +52,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -66,7 +66,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Google',
         screenWidth: 412,
-        screenHeight: 915,
+        screenHeight: 915
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -80,7 +80,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -96,7 +96,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
       generator.initializeFromProfile(profile);
     });
@@ -132,7 +132,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -144,7 +144,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Apple',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -157,7 +157,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'tablet',
         vendor: 'Apple',
         screenWidth: 1024,
-        screenHeight: 1366,
+        screenHeight: 1366
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -172,7 +172,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -184,7 +184,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Google',
         screenWidth: 412,
-        screenHeight: 915,
+        screenHeight: 915
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -196,7 +196,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -217,7 +217,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       generator.initializeFromProfile(profile);
@@ -234,7 +234,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       generator.initializeFromProfile(profile1);
@@ -255,7 +255,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       generator.initializeFromProfile(profile);
@@ -282,7 +282,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'UnknownBrand',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const ua = generator.initializeFromProfile(profile);
@@ -299,7 +299,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const { platform, browser } = generator.determinePlatform(profile);
@@ -312,7 +312,7 @@ describe('UserAgentGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Google',
         screenWidth: 412,
-        screenHeight: 915,
+        screenHeight: 915
       };
 
       const { platform, browser } = generator.determinePlatform(profile);
@@ -327,7 +327,7 @@ describe('UserAgentGenerator', () => {
       const profiles = [
         { deviceType: 'mobile', vendor: 'Apple', screenWidth: 390, screenHeight: 844 },
         { deviceType: 'tablet', vendor: 'Apple', screenWidth: 1024, screenHeight: 1366 },
-        { deviceType: 'desktop', vendor: 'Apple', screenWidth: 2560, screenHeight: 1600 },
+        { deviceType: 'desktop', vendor: 'Apple', screenWidth: 2560, screenHeight: 1600 }
       ];
 
       profiles.forEach(profile => {
@@ -341,7 +341,7 @@ describe('UserAgentGenerator', () => {
       const profiles = [
         { deviceType: 'mobile', vendor: 'Apple', screenWidth: 390, screenHeight: 844 },
         { deviceType: 'mobile', vendor: 'Google', screenWidth: 412, screenHeight: 915 },
-        { deviceType: 'desktop', vendor: 'Apple', screenWidth: 2560, screenHeight: 1600 },
+        { deviceType: 'desktop', vendor: 'Apple', screenWidth: 2560, screenHeight: 1600 }
       ];
 
       profiles.forEach(profile => {

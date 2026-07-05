@@ -33,7 +33,7 @@ class NetworkAnalysisManager {
 
     // Electron session reference (lazy-loaded to avoid accessing before app is ready)
     this._session = options.session || null;
-    this._sessionInitialized = !!options.session;
+    this._sessionInitialized = Boolean(options.session);
 
     // WebRequest handlers
     this.onBeforeRequestHandler = null;
@@ -335,7 +335,9 @@ class NetworkAnalysisManager {
    * @returns {string|null} - Header value or null
    */
   getHeaderValue(headers, name) {
-    if (!headers) return null;
+    if (!headers) {
+      return null;
+    }
 
     const lowerName = name.toLowerCase();
     for (const [key, value] of Object.entries(headers)) {
@@ -371,6 +373,69 @@ class NetworkAnalysisManager {
         startTime: r.timing.startTime
       }))
     };
+  }
+
+  /**
+   * Get captured network traffic as a flat array of log entries.
+   *
+   * This is the export-friendly view of the captured traffic consumed by the
+   * export format commands (HAR, WARC, CSV, SQLite, Markdown, XML) and the
+   * plugin network API. Unlike getRequests(), which returns a
+   * { success, count, filter, requests: [...] } wrapper object, this returns a
+   * plain Array so callers can iterate with .map()/for..of directly.
+   *
+   * Field names are flattened / aliased to match what the exporters read
+   * (startTime, timestamp, duration, contentLength, headers, responseHeaders,
+   * mimeType, cached), while remaining a straightforward alias over the same
+   * underlying request tracker used by getRequests().
+   *
+   * @param {Object} filter - Filter options (same shape as getRequests)
+   * @returns {Array<Object>} - Array of network log entries
+   */
+  getLogs(filter = {}) {
+    const requests = this.requestTracker.getRequests(filter);
+
+    return requests.map(r => {
+      const timing = r.timing || {};
+      const startTimeMs = typeof timing.startTime === 'number' ? timing.startTime : null;
+      const startedDateTime = startTimeMs
+        ? new Date(startTimeMs).toISOString()
+        : new Date().toISOString();
+      const contentType = this.getHeaderValue(r.responseHeaders, 'content-type');
+      const mimeType = contentType ? contentType.split(';')[0].trim() : 'application/octet-stream';
+
+      return {
+        id: r.id,
+        url: r.url,
+        method: r.method,
+        resourceType: r.resourceType,
+        domain: r.domain,
+        status: r.status,
+        statusCode: r.statusCode,
+        statusLine: r.statusLine,
+
+        // Flattened timing fields expected by the exporters
+        startTime: startedDateTime,
+        timestamp: startedDateTime,
+        duration: timing.duration || 0,
+
+        // Sizes: exporters read `contentLength`; tracker stores `responseSize`
+        responseSize: r.responseSize || 0,
+        contentLength: r.responseSize || 0,
+
+        // MIME type derived from the response Content-Type header
+        mimeType,
+
+        // HAR-friendly header lists ({ name, value } objects)
+        headers: this.requestTracker.headersToList(r.requestHeaders),
+        responseHeaders: this.requestTracker.headersToList(r.responseHeaders),
+
+        // Best-effort cache flag
+        cached: Boolean(r.fromCache),
+
+        error: r.error || null
+      };
+    });
   }
 
   /**

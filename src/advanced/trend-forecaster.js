@@ -98,20 +98,20 @@ class TrendForecaster extends EventEmitter {
 
     let forecast;
     switch (this.options.method) {
-      case FORECAST_METHODS.LINEAR:
-        forecast = this.linearRegression(data);
-        break;
-      case FORECAST_METHODS.EXPONENTIAL:
-        forecast = this.exponentialSmoothing(data);
-        break;
-      case FORECAST_METHODS.POLYNOMIAL:
-        forecast = this.polynomialRegression(data);
-        break;
-      case FORECAST_METHODS.MOVING_AVERAGE:
-        forecast = this.movingAverageForecast(data);
-        break;
-      default:
-        forecast = this.linearRegression(data);
+    case FORECAST_METHODS.LINEAR:
+      forecast = this.linearRegression(data);
+      break;
+    case FORECAST_METHODS.EXPONENTIAL:
+      forecast = this.exponentialSmoothing(data);
+      break;
+    case FORECAST_METHODS.POLYNOMIAL:
+      forecast = this.polynomialRegression(data);
+      break;
+    case FORECAST_METHODS.MOVING_AVERAGE:
+      forecast = this.movingAverageForecast(data);
+      break;
+    default:
+      forecast = this.linearRegression(data);
     }
 
     // Adjust for seasonality
@@ -454,7 +454,9 @@ class TrendForecaster extends EventEmitter {
    * @private
    */
   calculateVolatility(values) {
-    if (values.length < 2) return 0;
+    if (values.length < 2) {
+      return 0;
+    }
 
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
@@ -480,7 +482,9 @@ class TrendForecaster extends EventEmitter {
    */
   getForecastValues(series, periods = null) {
     const forecast = this.getForecast(series);
-    if (!forecast || !forecast.forecast) return [];
+    if (!forecast || !forecast.forecast) {
+      return [];
+    }
 
     if (!periods) {
       return forecast.forecast;
@@ -505,7 +509,9 @@ class TrendForecaster extends EventEmitter {
    */
   getForecastWithConfidence(series) {
     const forecast = this.getForecast(series);
-    if (!forecast) return null;
+    if (!forecast) {
+      return null;
+    }
 
     const data = this.dataPoints.get(series) || [];
     const values = data.map(d => d.value);

@@ -27,7 +27,7 @@ const TEST_CONFIG = {
   numAgents: 5,
   campaignDuration: 30000, // 30 seconds for testing
   coordinationTimeout: 10000,
-  results_dir: path.join(__dirname, '..', 'results'),
+  results_dir: path.join(__dirname, '..', 'results')
 };
 
 // Ensure results directory exists
@@ -39,7 +39,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -50,8 +50,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -92,7 +95,7 @@ class Agent extends EventEmitter {
     this.findings.push({
       ...finding,
       agentId: this.id,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
   }
 
@@ -125,7 +128,7 @@ class TechDetectionAgent extends Agent {
       this.addFinding({
         type: 'technology',
         name: tech,
-        confidence: Math.random() * 0.3 + 0.7,
+        confidence: Math.random() * 0.3 + 0.7
       });
     }
 
@@ -134,7 +137,7 @@ class TechDetectionAgent extends Agent {
       this.addFinding({
         type: 'vulnerability',
         name: 'Outdated dependency',
-        severity: 'medium',
+        severity: 'medium'
       });
     }
 
@@ -159,14 +162,14 @@ class CompetitorMonitoringAgent extends Agent {
       this.competitors.push({
         name: comp,
         lastCheck: new Date().toISOString(),
-        changed: Math.random() > 0.6,
+        changed: Math.random() > 0.6
       });
 
       if (Math.random() > 0.6) {
         this.changes.push({
           competitor: comp,
           type: ['pricing', 'features', 'technology'][Math.floor(Math.random() * 3)],
-          description: `Change detected in ${comp}`,
+          description: `Change detected in ${comp}`
         });
       }
     }
@@ -174,7 +177,7 @@ class CompetitorMonitoringAgent extends Agent {
     for (const change of this.changes) {
       this.addFinding({
         type: 'competitor_change',
-        ...change,
+        ...change
       });
     }
 
@@ -202,13 +205,13 @@ class ProxyRotationAgent extends Agent {
       this.proxyRotations.push({
         proxy: `proxy-${i}.example.com`,
         location: currentLocation,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
 
       this.addFinding({
         type: 'proxy_rotation',
         proxy: `proxy-${i}.example.com`,
-        location: currentLocation,
+        location: currentLocation
       });
     }
 
@@ -234,7 +237,7 @@ class SessionPersistenceAgent extends Agent {
       const checkpoint = {
         id: crypto.randomBytes(8).toString('hex'),
         timestamp: new Date().toISOString(),
-        operationCount: (i + 1) * 10,
+        operationCount: (i + 1) * 10
       };
 
       this.checkpoints.push(checkpoint);
@@ -242,14 +245,14 @@ class SessionPersistenceAgent extends Agent {
       this.addFinding({
         type: 'checkpoint',
         checkpointId: checkpoint.id,
-        operationCount: checkpoint.operationCount,
+        operationCount: checkpoint.operationCount
       });
     }
 
     this.sessionState = {
       active: true,
       checkpointCount: this.checkpoints.length,
-      lastCheckpoint: this.checkpoints[this.checkpoints.length - 1],
+      lastCheckpoint: this.checkpoints[this.checkpoints.length - 1]
     };
 
     return Promise.resolve();
@@ -275,7 +278,7 @@ class EvidenceCollectionAgent extends Agent {
           type,
           size: Math.floor(Math.random() * 1000000),
           hash: crypto.randomBytes(32).toString('hex'),
-          timestamp: new Date().toISOString(),
+          timestamp: new Date().toISOString()
         };
 
         this.evidence.push(evidence);
@@ -284,7 +287,7 @@ class EvidenceCollectionAgent extends Agent {
           type: 'evidence',
           evidenceType: type,
           hash: evidence.hash,
-          timestamp: evidence.timestamp,
+          timestamp: evidence.timestamp
         });
       }
     }
@@ -292,7 +295,7 @@ class EvidenceCollectionAgent extends Agent {
     this.forensicData = {
       chainOfCustody: true,
       evidenceCount: this.evidence.length,
-      exportFormat: 'forensic-bundle-v1',
+      exportFormat: 'forensic-bundle-v1'
     };
 
     return Promise.resolve();
@@ -322,7 +325,7 @@ class AgentCoordinator extends EventEmitter {
         timestamp: new Date().toISOString(),
         event: 'agent_completed',
         agentId,
-        findingCount,
+        findingCount
       });
     });
   }
@@ -341,7 +344,7 @@ class AgentCoordinator extends EventEmitter {
 
     this.sharedFindings.get(key).push({
       agentId,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
   }
 
@@ -350,7 +353,7 @@ class AgentCoordinator extends EventEmitter {
       total_agents: this.agents.length,
       total_findings: 0,
       findings_by_type: {},
-      agent_findings: {},
+      agent_findings: {}
     };
 
     for (const agent of this.agents) {
@@ -358,7 +361,7 @@ class AgentCoordinator extends EventEmitter {
       consolidated.agent_findings[agent.id] = {
         type: agent.type,
         findingCount: agent.findings.length,
-        duration: agent.getDuration(),
+        duration: agent.getDuration()
       };
 
       for (const finding of agent.findings) {
@@ -379,17 +382,17 @@ class AgentCoordinator extends EventEmitter {
         type: a.type,
         status: a.status,
         findingCount: a.findings.length,
-        duration: a.getDuration(),
+        duration: a.getDuration()
       })),
       coordinationLog: this.coordinationLog,
-      sharedFindingsCount: this.sharedFindings.size,
+      sharedFindingsCount: this.sharedFindings.size
     };
   }
 }
 
 describe('Multi-Agent OSINT Campaign', () => {
   let coordinator;
-  let agents = [];
+  const agents = [];
   const targetUrl = 'https://example.com';
 
   beforeAll(() => {
@@ -683,7 +686,7 @@ describe('Multi-Agent OSINT Campaign', () => {
         correlations.push({
           type1: 'technology',
           type2: 'vulnerability',
-          count: Math.min(techFindings.length, vulnFindings.length),
+          count: Math.min(techFindings.length, vulnFindings.length)
         });
       }
 
@@ -737,7 +740,7 @@ describe('Multi-Agent OSINT Campaign', () => {
         competitors: agents.find(a => a.type === 'competitor_monitoring')?.competitors || [],
         proxies: agents.find(a => a.type === 'proxy_rotation')?.proxyRotations || [],
         checkpoints: agents.find(a => a.type === 'session_persistence')?.checkpoints || [],
-        evidence: agents.find(a => a.type === 'evidence_collection')?.evidence || [],
+        evidence: agents.find(a => a.type === 'evidence_collection')?.evidence || []
       };
 
       assert(Object.keys(insights).length === 5);
@@ -843,7 +846,7 @@ describe('Multi-Agent OSINT Campaign', () => {
         agents: consolidated.total_agents,
         findings: consolidated.total_findings,
         byType: Object.keys(consolidated.findings_by_type),
-        agentStats: consolidated.agent_findings,
+        agentStats: consolidated.agent_findings
       };
 
       assert(exportData.findings > 0);
@@ -857,7 +860,7 @@ describe('Multi-Agent OSINT Campaign', () => {
       try {
         fs.writeFileSync(reportPath, JSON.stringify({
           consolidated,
-          report: coordinator.getCoordinationReport(),
+          report: coordinator.getCoordinationReport()
         }, null, 2));
 
         assert(fs.existsSync(reportPath));
@@ -887,7 +890,7 @@ describe('Multi-Agent OSINT Campaign', () => {
         totalFindings: agents.reduce((sum, a) => sum + a.findings.length, 0),
         findingTypes: new Set(agents.flatMap(a => a.findings.map(f => f.type))).size,
         executionTime: Math.max(...agents.map(a => a.endTime)) - Math.min(...agents.map(a => a.startTime)),
-        status: 'completed',
+        status: 'completed'
       };
 
       assert(summary.totalFindings > 0);
@@ -901,7 +904,7 @@ describe('Multi-Agent OSINT Campaign', () => {
         id: archiveId,
         timestamp: new Date().toISOString(),
         agentCount: TEST_CONFIG.numAgents,
-        findingCount: agents.reduce((sum, a) => sum + a.findings.length, 0),
+        findingCount: agents.reduce((sum, a) => sum + a.findings.length, 0)
       };
 
       assert(archive.id);

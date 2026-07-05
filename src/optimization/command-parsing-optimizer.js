@@ -101,7 +101,7 @@ class CommandParsingOptimizer {
     }
 
     // Get or fetch command metadata
-    let metadata = this._getCommandMetadata(parsed.command);
+    const metadata = this._getCommandMetadata(parsed.command);
 
     // Skip validation on trusted paths
     if (!this.trustedSourceBypassValidation || options.skipValidation !== true) {

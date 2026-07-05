@@ -27,7 +27,7 @@ const TEST_WEBSITES = [
   { url: 'https://www.reddit.com', name: 'Reddit', category: 'Social' },
   { url: 'https://www.linkedin.com', name: 'LinkedIn', category: 'Social' },
   { url: 'https://www.youtube.com', name: 'YouTube', category: 'Media' },
-  { url: 'https://www.amazon.com', name: 'Amazon', category: 'E-commerce' },
+  { url: 'https://www.amazon.com', name: 'Amazon', category: 'E-commerce' }
 ];
 
 class WebsiteTester {
@@ -197,8 +197,11 @@ class WebsiteTester {
       for (const website of TEST_WEBSITES) {
         const result = await this.testWebsite(website);
         this.results.sites.push(result);
-        if (result.success) this.results.passed++;
-        else this.results.failed++;
+        if (result.success) {
+          this.results.passed++;
+        } else {
+          this.results.failed++;
+        }
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
@@ -228,7 +231,9 @@ class WebsiteTester {
         byCategory[site.category] = { passed: 0, total: 0 };
       }
       byCategory[site.category].total++;
-      if (site.success) byCategory[site.category].passed++;
+      if (site.success) {
+        byCategory[site.category].passed++;
+      }
     });
 
     report += `## Results by Category\n\n`;
@@ -279,7 +284,9 @@ class WebsiteTester {
     if (allErrors.length > 0) {
       report += `\n## Issues Found\n\n`;
       const errorCounts = {};
-      allErrors.forEach(e => { errorCounts[e] = (errorCounts[e] || 0) + 1; });
+      allErrors.forEach(e => {
+        errorCounts[e] = (errorCounts[e] || 0) + 1;
+      });
       Object.entries(errorCounts).sort((a, b) => b[1] - a[1]).forEach(([e, count]) => {
         report += `- ${e} (${count})\n`;
       });
@@ -301,7 +308,7 @@ async function main() {
     fs.writeFileSync(reportPath, report);
 
     console.log(`\n✓ Report: ${reportPath}`);
-    console.log(`\nSummary: ${results.passed}/${results.totalTests} passed (${((results.passed/results.totalTests)*100).toFixed(1)}%)\n`);
+    console.log(`\nSummary: ${results.passed}/${results.totalTests} passed (${((results.passed / results.totalTests) * 100).toFixed(1)}%)\n`);
 
   } catch (error) {
     console.error('✗ Fatal error:', error.message);

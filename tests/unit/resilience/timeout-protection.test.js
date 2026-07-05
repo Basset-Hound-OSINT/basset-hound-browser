@@ -114,7 +114,7 @@ describe('TimeoutProtection', () => {
         fail('Should have thrown');
       } catch (error) {
         expect(error.message).toBe('Not a timeout');
-        expect(fn).toHaveBeenCalledTimes(1);  // No retries on non-timeout errors
+        expect(fn).toHaveBeenCalledTimes(1); // No retries on non-timeout errors
       }
     });
   });
@@ -161,7 +161,7 @@ describe('TimeoutProtection', () => {
 
       await task;
       const tasks = protection.getActiveTasks();
-      expect(tasks.task_2).toBeUndefined();  // Cleaned up after completion
+      expect(tasks.task_2).toBeUndefined(); // Cleaned up after completion
     });
 
     it('should detect overdue tasks', async () => {
@@ -220,7 +220,7 @@ describe('TimeoutProtection', () => {
       protection.maxTimeout = 10000;
 
       expect(protection.validateTimeout(5000)).toBe(5000);
-      expect(protection.validateTimeout(15000)).toBe(10000);  // Capped
+      expect(protection.validateTimeout(15000)).toBe(10000); // Capped
       expect(protection.validateTimeout(-100)).toBe(DEFAULT_TIMEOUTS.defaultMax);
       expect(protection.validateTimeout(NaN)).toBe(DEFAULT_TIMEOUTS.defaultMax);
     });

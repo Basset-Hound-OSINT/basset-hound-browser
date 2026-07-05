@@ -36,7 +36,7 @@ class DirectWebsiteTester {
       blockedTests: 0,
       timeoutTests: 0,
       errorTests: 0,
-      tests: [],
+      tests: []
     };
 
     // Simulate v12.7.0 evasion headers
@@ -57,7 +57,7 @@ class DirectWebsiteTester {
       'Sec-Fetch-Site': 'none',
       'Sec-Fetch-User': '?1',
       'Upgrade-Insecure-Requests': '1',
-      'Connection': 'keep-alive',
+      'Connection': 'keep-alive'
     };
   }
 
@@ -89,13 +89,13 @@ class DirectWebsiteTester {
         method: 'GET',
         headers: {
           ...this.defaultHeaders,
-          ...headers,
+          ...headers
         },
-        timeout,
+        timeout
       };
 
       const req = protocol.request(requestOptions, (res) => {
-        let data = '';
+        const data = '';
         const chunks = [];
 
         // Handle compressed responses
@@ -120,7 +120,7 @@ class DirectWebsiteTester {
                   headers: res.headers,
                   body: buffer.toString('utf8', 0, 10000), // First 10KB
                   compressed: true,
-                  decompressed: false,
+                  decompressed: false
                 });
               } else {
                 resolve({
@@ -128,7 +128,7 @@ class DirectWebsiteTester {
                   headers: res.headers,
                   body: decompressed.toString('utf8'),
                   compressed: true,
-                  decompressed: true,
+                  decompressed: true
                 });
               }
             });
@@ -137,7 +137,7 @@ class DirectWebsiteTester {
               statusCode: res.statusCode,
               headers: res.headers,
               body: buffer.toString('utf8'),
-              compressed: false,
+              compressed: false
             });
           }
         });
@@ -261,7 +261,7 @@ class DirectWebsiteTester {
         results.push({
           title: titleMatch ? titleMatch[1] : 'N/A',
           url: hrefMatch ? hrefMatch[1] : 'N/A',
-          snippet: snippetMatch ? snippetMatch[1] : '',
+          snippet: snippetMatch ? snippetMatch[1] : ''
         });
       }
     }
@@ -287,7 +287,7 @@ class DirectWebsiteTester {
       error: null,
       responseSize: 0,
       resultsCount: 0,
-      timeMs: 0,
+      timeMs: 0
     };
 
     try {
@@ -360,7 +360,7 @@ class DirectWebsiteTester {
       blockingIndicators: [],
       error: null,
       responseSize: 0,
-      timeMs: 0,
+      timeMs: 0
     };
 
     try {
@@ -421,7 +421,7 @@ class DirectWebsiteTester {
       blockingIndicators: [],
       error: null,
       responseSize: 0,
-      timeMs: 0,
+      timeMs: 0
     };
 
     try {
@@ -481,7 +481,7 @@ class DirectWebsiteTester {
       blockingIndicators: [],
       error: null,
       responseSize: 0,
-      timeMs: 0,
+      timeMs: 0
     };
 
     try {
@@ -541,7 +541,7 @@ class DirectWebsiteTester {
       blockingIndicators: [],
       error: null,
       responseSize: 0,
-      timeMs: 0,
+      timeMs: 0
     };
 
     try {
@@ -601,7 +601,7 @@ class DirectWebsiteTester {
       blockingIndicators: [],
       error: null,
       responseSize: 0,
-      timeMs: 0,
+      timeMs: 0
     };
 
     try {
@@ -672,8 +672,8 @@ Generated: ${new Date().toISOString()}
 ## Test Results
 
 ${this.results.tests
-  .map(
-    (test, i) => `
+    .map(
+      (test, i) => `
 ### Test ${i + 1}: ${test.name}
 - **URL:** ${test.url}
 - **Status:** ${test.success ? '✓ PASSED' : '✗ FAILED'}
@@ -682,14 +682,14 @@ ${this.results.tests
 - **Response Size:** ${test.responseSize} bytes
 ${test.blocked ? `- **BLOCKED:** YES` : ''}
 ${test.blockingIndicators.length > 0
-  ? `- **Detection Indicators:**
+    ? `- **Detection Indicators:**
 ${test.blockingIndicators.map((ind) => `  - ${ind}`).join('\n')}`
-  : ''}
+    : ''}
 ${test.error ? `- **Error:** ${test.error}` : ''}
 ${test.resultsCount > 0 ? `- **Results Extracted:** ${test.resultsCount}` : ''}
 `
-  )
-  .join('\n')}
+    )
+    .join('\n')}
 
 ## Analysis
 
@@ -716,10 +716,10 @@ ${
 
 ### Response Characteristics
 ${this.results.tests
-  .map(
-    (t) => `- ${t.name}: ${t.responseSize} bytes in ${t.timeMs}ms`
-  )
-  .join('\n')}
+    .map(
+      (t) => `- ${t.name}: ${t.responseSize} bytes in ${t.timeMs}ms`
+    )
+    .join('\n')}
 
 ## Recommendations
 

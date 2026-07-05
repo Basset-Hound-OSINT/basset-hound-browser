@@ -207,7 +207,7 @@ function createLazyProxy(lazyManager) {
 
       // Return a async wrapper that initializes on first call
       if (typeof prop === 'string') {
-        return async function(...args) {
+        return async function (...args) {
           const mgr = await lazyManager.getInstance();
           if (typeof mgr[prop] === 'function') {
             return mgr[prop](...args);

@@ -58,7 +58,7 @@ class VideoPlayer extends EventEmitter {
     super();
 
     this.options = {
-      outputDir: options.outputDir || path.join(require('os').homedir(), '.basset-hound', 'videos'),
+      outputDir: options.outputDir || path.join(require('os').homedir(), 'tmp', '.basset-hound', 'videos'),
       ...options
     };
 

@@ -23,7 +23,7 @@ const { createLogger } = require('../logging');
 class UnifiedForensicGenerator {
   constructor(options = {}) {
     this.logger = createLogger('ForensicGenerator');
-    this.reportDir = options.reportDir || path.join(os.homedir(), '.basset-hound', 'reports');
+    this.reportDir = options.reportDir || path.join(os.homedir(), 'tmp', '.basset-hound', 'reports');
     this.companyName = options.companyName || 'Basset Hound Browser';
     this.toolVersion = options.toolVersion || '12.1.0';
     this.formatters = new Map();
@@ -286,7 +286,9 @@ class JSONFormatter {
 
   _hashReport(report) {
     const content = JSON.stringify(report, (key, value) => {
-      if (key === 'signatures') return undefined;
+      if (key === 'signatures') {
+        return undefined;
+      }
       return value;
     });
     return crypto.createHash('sha256').update(content).digest('hex');
@@ -389,7 +391,9 @@ class HTMLFormatter {
   }
 
   _formatTimeline(timeline) {
-    if (!timeline.length) return '<p>No events recorded</p>';
+    if (!timeline.length) {
+      return '<p>No events recorded</p>';
+    }
 
     return `<table>
       <thead>
@@ -438,7 +442,9 @@ class HTMLFormatter {
 
   _hashReport(report) {
     const content = JSON.stringify(report, (key, value) => {
-      if (key === 'signatures') return undefined;
+      if (key === 'signatures') {
+        return undefined;
+      }
       return value;
     });
     return crypto.createHash('sha256').update(content).digest('hex');

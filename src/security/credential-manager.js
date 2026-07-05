@@ -615,7 +615,9 @@ class CredentialManager {
    */
   _getUnlockTime(credentialId) {
     const attempts = this.failedAttempts.get(credentialId) || [];
-    if (attempts.length === 0) return null;
+    if (attempts.length === 0) {
+      return null;
+    }
 
     const lastAttempt = attempts[attempts.length - 1];
     const unlockTime = new Date(lastAttempt.getTime() + this.config.lockoutDuration);

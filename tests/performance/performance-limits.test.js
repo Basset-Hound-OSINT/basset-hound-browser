@@ -137,7 +137,7 @@ class PerformanceLimitsTester {
   }
 }
 
-describe('Performance Limits Tests', function() {
+describe('Performance Limits Tests', function () {
   this.timeout(TIMEOUT);
   let tester;
 
@@ -175,8 +175,11 @@ describe('Performance Limits Tests', function() {
         while (Date.now() - startTime < duration) {
           try {
             const response = await tester.sendCommand('ping', {});
-            if (response.error === undefined) successCount++;
-            else errorCount++;
+            if (response.error === undefined) {
+              successCount++;
+            } else {
+              errorCount++;
+            }
           } catch (err) {
             errorCount++;
           }

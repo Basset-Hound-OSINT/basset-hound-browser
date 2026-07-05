@@ -269,8 +269,11 @@ describe('ScreenshotStreamer', () => {
       const compressed = await new Promise((resolve, reject) => {
         const zlib = require('zlib');
         zlib.gzip(original, (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
         });
       });
 

@@ -77,13 +77,19 @@ class EcommerceMonitor {
 
   getTrend(sku) {
     const history = this.priceHistory.get(sku);
-    if (history.length < 2) return 'stable';
+    if (history.length < 2) {
+      return 'stable';
+    }
 
     const first = history[0].price;
     const last = history[history.length - 1].price;
 
-    if (last > first) return 'increasing';
-    if (last < first) return 'decreasing';
+    if (last > first) {
+      return 'increasing';
+    }
+    if (last < first) {
+      return 'decreasing';
+    }
     return 'stable';
   }
 
@@ -182,7 +188,7 @@ class EcommerceDashboard extends EventEmitter {
   }
 }
 
-describe('Dashboard Scenario - E-Commerce Monitoring', function() {
+describe('Dashboard Scenario - E-Commerce Monitoring', function () {
   this.timeout(30000);
 
   let dashboard;
@@ -212,12 +218,12 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     }
   });
 
-  describe('Scenario 1: Initial Monitor Setup', function() {
-    it('should have 10 retailers monitored', function() {
+  describe('Scenario 1: Initial Monitor Setup', () => {
+    it('should have 10 retailers monitored', () => {
       assert.strictEqual(dashboard.monitors.size, 10);
     });
 
-    it('should have product price baselines', function() {
+    it('should have product price baselines', () => {
       const amazon = monitors['Amazon'];
       const priceHistory = amazon.priceHistory.get('SKU-001');
 
@@ -226,8 +232,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 2: Price Drop Detection', function() {
-    it('should detect price drops', function() {
+  describe('Scenario 2: Price Drop Detection', () => {
+    it('should detect price drops', () => {
       const amazon = monitors['Amazon'];
 
       const changes = amazon.checkPrices({ 'SKU-001': 899 });
@@ -237,7 +243,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       assert.strictEqual(changes[0].severity, 'high');
     });
 
-    it('should display price drop alerts', function(done) {
+    it('should display price drop alerts', (done) => {
       dashboard.once('price-alert', (alert) => {
         assert.strictEqual(alert.type, 'price-change');
         assert(alert.percentChange < 0);
@@ -249,7 +255,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       dashboard.processPriceChanges('Walmart', changes);
     });
 
-    it('should track multiple price changes', function() {
+    it('should track multiple price changes', () => {
       const targets = ['Amazon', 'eBay', 'Best Buy', 'Costco', 'Newegg'];
 
       for (const retailer of targets) {
@@ -265,8 +271,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 3: Price Trend Analysis', function() {
-    it('should track price trends', function() {
+  describe('Scenario 3: Price Trend Analysis', () => {
+    it('should track price trends', () => {
       const amazon = monitors['Amazon'];
 
       const trend = amazon.getTrend('SKU-001');
@@ -274,7 +280,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       assert(['increasing', 'decreasing', 'stable'].includes(trend));
     });
 
-    it('should calculate average prices', function() {
+    it('should calculate average prices', () => {
       const amazon = monitors['Amazon'];
 
       const avg = amazon.getAveragePrice('SKU-001');
@@ -284,8 +290,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 4: Availability Tracking', function() {
-    it('should detect out-of-stock events', function() {
+  describe('Scenario 4: Availability Tracking', () => {
+    it('should detect out-of-stock events', () => {
       const amazon = monitors['Amazon'];
 
       const changes = amazon.checkAvailability({ 'SKU-001': false });
@@ -295,7 +301,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       assert.strictEqual(changes[0].severity, 'high');
     });
 
-    it('should detect back-in-stock events', function(done) {
+    it('should detect back-in-stock events', (done) => {
       dashboard.once('availability-alert', (alert) => {
         assert.strictEqual(alert.type, 'back-in-stock');
         done();
@@ -308,7 +314,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       dashboard.processAvailabilityChanges('Walmart', changes);
     });
 
-    it('should track availability for multiple products', function() {
+    it('should track availability for multiple products', () => {
       const hmm = monitors['H&M'];
 
       const changes = hmm.checkAvailability({ 'SKU-002': false });
@@ -318,8 +324,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 5: Competitor Price Comparison', function() {
-    it('should compare prices across retailers for same product', function() {
+  describe('Scenario 5: Competitor Price Comparison', () => {
+    it('should compare prices across retailers for same product', () => {
       const comparison = dashboard.getComparisonByProduct('SKU-001');
 
       assert(Object.keys(comparison).length > 0);
@@ -331,7 +337,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       }
     });
 
-    it('should identify lowest price competitor', function() {
+    it('should identify lowest price competitor', () => {
       const comparison = dashboard.getComparisonByProduct('SKU-001');
 
       let lowestRetailer = null;
@@ -349,8 +355,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 6: Alert Timeline', function() {
-    it('should maintain chronological timeline', function() {
+  describe('Scenario 6: Alert Timeline', () => {
+    it('should maintain chronological timeline', () => {
       const timeline = dashboard.timeline;
 
       for (let i = 0; i < timeline.length - 1; i++) {
@@ -358,7 +364,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       }
     });
 
-    it('should include both price and availability alerts', function() {
+    it('should include both price and availability alerts', () => {
       const hasPriceAlerts = dashboard.timeline.some(e => e.type === 'price-change');
       const hasAvailabilityAlerts = dashboard.timeline.some(e =>
         e.type === 'out-of-stock' || e.type === 'back-in-stock'
@@ -368,8 +374,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 7: Alert Severity Filtering', function() {
-    it('should filter high severity alerts', function() {
+  describe('Scenario 7: Alert Severity Filtering', () => {
+    it('should filter high severity alerts', () => {
       const highAlerts = dashboard.getPriceAlerts({ severity: 'high' });
 
       for (const alert of highAlerts) {
@@ -377,7 +383,7 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
       }
     });
 
-    it('should filter by retailer', function() {
+    it('should filter by retailer', () => {
       const amazonAlerts = dashboard.getPriceAlerts({ retailer: 'Amazon' });
 
       for (const alert of amazonAlerts) {
@@ -386,8 +392,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 8: Product Category Monitoring', function() {
-    it('should monitor multiple product categories', function() {
+  describe('Scenario 8: Product Category Monitoring', () => {
+    it('should monitor multiple product categories', () => {
       // Add product to existing monitors
       const newegg = monitors['Newegg'];
       newegg.products.push({ sku: 'SKU-003', name: 'Graphics Card', currentPrice: 500 });
@@ -399,8 +405,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 9: Bulk Price Update Scenario', function() {
-    it('should handle simultaneous price updates from multiple retailers', async function() {
+  describe('Scenario 9: Bulk Price Update Scenario', () => {
+    it('should handle simultaneous price updates from multiple retailers', async () => {
       const priceUpdates = {
         'Amazon': { 'SKU-001': 950 },
         'eBay': { 'SKU-001': 945 },
@@ -418,8 +424,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 10: Dashboard Metrics', function() {
-    it('should provide aggregate statistics', function() {
+  describe('Scenario 10: Dashboard Metrics', () => {
+    it('should provide aggregate statistics', () => {
       const stats = dashboard.getStats();
 
       assert(stats.totalPriceChanges >= 0);
@@ -433,8 +439,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 11: Real-Time Update Performance', function() {
-    it('should process 100 price updates efficiently', function() {
+  describe('Scenario 11: Real-Time Update Performance', () => {
+    it('should process 100 price updates efficiently', () => {
       const startTime = Date.now();
 
       for (let i = 0; i < 100; i++) {
@@ -451,8 +457,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 12: Historical Price Data', function() {
-    it('should retain price history for trend analysis', function() {
+  describe('Scenario 12: Historical Price Data', () => {
+    it('should retain price history for trend analysis', () => {
       const amazon = monitors['Amazon'];
       const history = amazon.priceHistory.get('SKU-001');
 
@@ -465,8 +471,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 13: Alert Notifications', function() {
-    it('should emit price alert events', function(done) {
+  describe('Scenario 13: Alert Notifications', () => {
+    it('should emit price alert events', (done) => {
       let eventFired = false;
 
       const handler = () => {
@@ -488,8 +494,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 14: Multi-Product Tracking', function() {
-    it('should track multiple products across retailers', function() {
+  describe('Scenario 14: Multi-Product Tracking', () => {
+    it('should track multiple products across retailers', () => {
       // SKU-001: iPhone, SKU-002: T-Shirt already exist
       // Check we can track both
 
@@ -501,8 +507,8 @@ describe('Dashboard Scenario - E-Commerce Monitoring', function() {
     });
   });
 
-  describe('Scenario 15: E-Commerce Scenario Summary', function() {
-    it('should provide comprehensive scenario summary', function() {
+  describe('Scenario 15: E-Commerce Scenario Summary', () => {
+    it('should provide comprehensive scenario summary', () => {
       const stats = dashboard.getStats();
       const comparison = dashboard.getComparisonByProduct('SKU-001');
 

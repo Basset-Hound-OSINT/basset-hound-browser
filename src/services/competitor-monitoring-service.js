@@ -203,10 +203,14 @@ class CompetitorMonitoringService {
    * @returns {Object} Alert object
    */
   generateAlert(monitorId, changeData) {
-    if (changeData.changeCount === 0) return null;
+    if (changeData.changeCount === 0) {
+      return null;
+    }
 
     const monitor = this.monitors.get(monitorId);
-    if (!monitor) return null;
+    if (!monitor) {
+      return null;
+    }
 
     const alert = {
       id: this._generateAlertId(),
@@ -302,8 +306,12 @@ class CompetitorMonitoringService {
    * @private
    */
   _determineChangeType(oldValue, newValue) {
-    if (!oldValue) return 'added';
-    if (!newValue) return 'removed';
+    if (!oldValue) {
+      return 'added';
+    }
+    if (!newValue) {
+      return 'removed';
+    }
     return 'modified';
   }
 
@@ -312,9 +320,15 @@ class CompetitorMonitoringService {
    * @private
    */
   _calculateSeverity(changes) {
-    if (changes.length > 10) return 'critical';
-    if (changes.length > 5) return 'high';
-    if (changes.length > 1) return 'medium';
+    if (changes.length > 10) {
+      return 'critical';
+    }
+    if (changes.length > 5) {
+      return 'high';
+    }
+    if (changes.length > 1) {
+      return 'medium';
+    }
     return 'low';
   }
 

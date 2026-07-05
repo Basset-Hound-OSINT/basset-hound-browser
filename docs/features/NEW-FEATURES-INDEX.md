@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. "All Features Production Ready / 100% tests" is not reliable: several indexed features (evidence packaging, 5-layer session coherence, storage) are unregistered/unwired in the running server or route to the shell instead of the page.
+
 # New Features Documentation Index
 
 **Version:** 12.0.0 - June 13, 2026  

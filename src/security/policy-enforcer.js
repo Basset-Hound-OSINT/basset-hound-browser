@@ -28,16 +28,16 @@ class PolicyEnforcer {
       requireSpecial: true,
       specialChars: '!@#$%^&*()-_=+[]{}|;:,.<>?',
       expirationDays: 90,
-      historyCount: 5,      // Remember last 5 passwords
+      historyCount: 5, // Remember last 5 passwords
       maxAttempts: 5,
-      lockoutDurationSeconds: 900  // 15 minutes
+      lockoutDurationSeconds: 900 // 15 minutes
     },
 
     // Session policies
     session: {
       enabled: true,
-      maxAgeSeconds: 3600,           // 1 hour
-      idleTimeoutSeconds: 1800,      // 30 minutes
+      maxAgeSeconds: 3600, // 1 hour
+      idleTimeoutSeconds: 1800, // 30 minutes
       maxConcurrentSessions: 5,
       regenerateAfterLogin: true,
       secureCookies: true,
@@ -48,10 +48,10 @@ class PolicyEnforcer {
     // API policies
     api: {
       enabled: true,
-      requestTimeoutMs: 30000,       // 30 seconds
+      requestTimeoutMs: 30000, // 30 seconds
       maxRequestSize: 10 * 1024 * 1024, // 10MB
       maxResponseSize: 50 * 1024 * 1024, // 50MB
-      rateLimit: 100,                // per minute
+      rateLimit: 100, // per minute
       requireHttps: true,
       minTlsVersion: '1.2'
     },
@@ -63,7 +63,7 @@ class PolicyEnforcer {
       encryptionAlgorithm: 'aes-256-gcm',
       retentionDays: 365,
       secureDeleteEnabled: true,
-      secureDeletePasses: 3,         // DOD 5220.22-M standard
+      secureDeletePasses: 3, // DOD 5220.22-M standard
       backupEncryption: true,
       piiMaskingRequired: true
     },
@@ -71,11 +71,11 @@ class PolicyEnforcer {
     // Access control
     access: {
       enabled: true,
-      defaultDeny: true,             // Deny by default, allow specific
+      defaultDeny: true, // Deny by default, allow specific
       requireAuthentication: true,
       requireAuthorization: true,
       auditAllAccess: true,
-      tlsClientCerts: false          // Optional client certificates
+      tlsClientCerts: false // Optional client certificates
     },
 
     // Resource limits
@@ -85,7 +85,7 @@ class PolicyEnforcer {
       maxCpuPercent: 80,
       maxOpenConnections: 1000,
       maxQueueSize: 10000,
-      maxExecutionTimeMs: 60000      // 1 minute
+      maxExecutionTimeMs: 60000 // 1 minute
     }
   };
 
@@ -105,7 +105,9 @@ class PolicyEnforcer {
   mergePolicies(target, source) {
     for (const key in source) {
       if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!(key in target)) target[key] = {};
+        if (!(key in target)) {
+          target[key] = {};
+        }
         this.mergePolicies(target[key], source[key]);
       } else {
         target[key] = source[key];

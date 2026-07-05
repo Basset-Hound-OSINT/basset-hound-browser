@@ -349,7 +349,7 @@ describe('Tor Circuit Manager', () => {
     test('should emit events for circuit state changes', (done) => {
       const eventManager = new TorCircuitManager();
 
-      let eventsReceived = [];
+      const eventsReceived = [];
 
       eventManager.on('initialized', (data) => {
         eventsReceived.push('initialized');

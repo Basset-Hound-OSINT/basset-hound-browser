@@ -34,10 +34,10 @@ const TEST_CONFIG = {
 
   // Load profiles
   loadProfiles: [
-    { name: '50 concurrent', connections: 50, duration: 180 },     // 3 minutes
-    { name: '100 concurrent', connections: 100, duration: 240 },   // 4 minutes
-    { name: '200 concurrent', connections: 200, duration: 300 },   // 5 minutes
-    { name: '300 concurrent', connections: 300, duration: 360 }    // 6 minutes
+    { name: '50 concurrent', connections: 50, duration: 180 }, // 3 minutes
+    { name: '100 concurrent', connections: 100, duration: 240 }, // 4 minutes
+    { name: '200 concurrent', connections: 200, duration: 300 }, // 5 minutes
+    { name: '300 concurrent', connections: 300, duration: 360 } // 6 minutes
   ],
 
   // Command mix
@@ -297,7 +297,9 @@ class BaselinePerformanceTest {
    * Calculate percentile from sorted array
    */
   percentile(sortedArray, p) {
-    if (sortedArray.length === 0) return 0;
+    if (sortedArray.length === 0) {
+      return 0;
+    }
     const index = Math.ceil(sortedArray.length * p) - 1;
     return sortedArray[Math.max(0, index)];
   }
@@ -401,7 +403,9 @@ function analyzeImpact(preResults, postResults) {
 
   for (const [profileName, preStats] of Object.entries(preResults.loadProfiles)) {
     const postStats = postResults.loadProfiles[profileName];
-    if (!postStats) continue;
+    if (!postStats) {
+      continue;
+    }
 
     const throughputDelta = postStats.throughput.messagesPerSecond -
                            preStats.throughput.messagesPerSecond;
@@ -456,8 +460,8 @@ function saveImpactAnalysis(analysis, filename) {
 
   output += `\nOverall Assessment:\n`;
   output += `- Target: <10% overhead at 200 concurrent\n`;
-  let throughputAt200 = analysis.profiles['200 concurrent']?.deltas.throughput.percent || 0;
-  let assessment = throughputAt200 < 10 ? 'PASS' : 'FAIL';
+  const throughputAt200 = analysis.profiles['200 concurrent']?.deltas.throughput.percent || 0;
+  const assessment = throughputAt200 < 10 ? 'PASS' : 'FAIL';
   output += `- 200 concurrent throughput delta: ${throughputAt200.toFixed(2)}% [${assessment}]\n`;
 
   fs.writeFileSync(filename, output);

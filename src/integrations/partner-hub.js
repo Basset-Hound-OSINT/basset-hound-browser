@@ -185,17 +185,17 @@ class PartnerHub extends EventEmitter {
       let result;
 
       switch (providerName) {
-        case 'shodan':
-          result = await this.executeShodanSearch(provider, searchType, query, options);
-          break;
-        case 'maltego':
-          result = await this.executeMaltegoSearch(provider, searchType, query, options);
-          break;
-        case 'censys':
-          result = await this.executeCensysSearch(provider, searchType, query, options);
-          break;
-        default:
-          throw new Error(`Unknown provider: ${providerName}`);
+      case 'shodan':
+        result = await this.executeShodanSearch(provider, searchType, query, options);
+        break;
+      case 'maltego':
+        result = await this.executeMaltegoSearch(provider, searchType, query, options);
+        break;
+      case 'censys':
+        result = await this.executeCensysSearch(provider, searchType, query, options);
+        break;
+      default:
+        throw new Error(`Unknown provider: ${providerName}`);
       }
 
       const latency = Date.now() - startTime;
@@ -229,16 +229,16 @@ class PartnerHub extends EventEmitter {
    */
   async executeShodanSearch(provider, searchType, query, options) {
     switch (searchType) {
-      case 'host':
-        return await provider.getHost(query);
-      case 'search':
-        return await provider.search(query, options);
-      case 'vulnerabilities':
-        return await provider.getVulnerabilities(query);
-      case 'dns':
-        return await provider.getDnsRecords(query);
-      default:
-        throw new Error(`Shodan does not support ${searchType} search`);
+    case 'host':
+      return await provider.getHost(query);
+    case 'search':
+      return await provider.search(query, options);
+    case 'vulnerabilities':
+      return await provider.getVulnerabilities(query);
+    case 'dns':
+      return await provider.getDnsRecords(query);
+    default:
+      throw new Error(`Shodan does not support ${searchType} search`);
     }
   }
 
@@ -284,22 +284,22 @@ class PartnerHub extends EventEmitter {
    */
   async executeCensysSearch(provider, searchType, query, options) {
     switch (searchType) {
-      case 'ipv4':
-        return await provider.searchIPv4(query, options);
-      case 'ipv6':
-        return await provider.searchIPv6(query, options);
-      case 'certificate':
-        return await provider.searchCertificates(query, options);
-      case 'asn':
-        return await provider.searchASN(query, options);
-      case 'ipv4-details':
-        return await provider.getIPv4Details(query);
-      case 'certificate-details':
-        return await provider.getCertificateDetails(query);
-      case 'asn-details':
-        return await provider.getASNDetails(query);
-      default:
-        throw new Error(`Censys does not support ${searchType} search`);
+    case 'ipv4':
+      return await provider.searchIPv4(query, options);
+    case 'ipv6':
+      return await provider.searchIPv6(query, options);
+    case 'certificate':
+      return await provider.searchCertificates(query, options);
+    case 'asn':
+      return await provider.searchASN(query, options);
+    case 'ipv4-details':
+      return await provider.getIPv4Details(query);
+    case 'certificate-details':
+      return await provider.getCertificateDetails(query);
+    case 'asn-details':
+      return await provider.getASNDetails(query);
+    default:
+      throw new Error(`Censys does not support ${searchType} search`);
     }
   }
 
@@ -376,11 +376,21 @@ class PartnerHub extends EventEmitter {
   getEntityTypeForQuery(query) {
     const { ENTITY_TYPES } = require('./maltego-client');
 
-    if (query.includes('@')) return ENTITY_TYPES.EMAIL;
-    if (query.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) return ENTITY_TYPES.IP;
-    if (query.match(/^[a-f0-9]{64}$/)) return ENTITY_TYPES.HASH;
-    if (query.match(/^\+?[\d\s\-()]+$/)) return ENTITY_TYPES.PHONE;
-    if (query.includes('.')) return ENTITY_TYPES.DOMAIN;
+    if (query.includes('@')) {
+      return ENTITY_TYPES.EMAIL;
+    }
+    if (query.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) {
+      return ENTITY_TYPES.IP;
+    }
+    if (query.match(/^[a-f0-9]{64}$/)) {
+      return ENTITY_TYPES.HASH;
+    }
+    if (query.match(/^\+?[\d\s\-()]+$/)) {
+      return ENTITY_TYPES.PHONE;
+    }
+    if (query.includes('.')) {
+      return ENTITY_TYPES.DOMAIN;
+    }
 
     return ENTITY_TYPES.HOSTNAME;
   }

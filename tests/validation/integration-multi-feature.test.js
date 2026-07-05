@@ -17,12 +17,12 @@ const TEST_RESULTS = {
     dashboardProxy: { passed: 0, failed: 0 },
     dashboardDetection: { passed: 0, failed: 0 },
     proxyDetection: { passed: 0, failed: 0 },
-    allFeatures: { passed: 0, failed: 0 },
+    allFeatures: { passed: 0, failed: 0 }
   },
   totalTests: 0,
   totalPassed: 0,
   totalFailed: 0,
-  errors: [],
+  errors: []
 };
 
 /**
@@ -59,11 +59,15 @@ class IntegrationTestClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('Connection timeout'));
+          if (!this.connected) {
+            reject(new Error('Connection timeout'));
+          }
         }, timeout);
       } catch (err) {
         reject(err);
@@ -72,7 +76,9 @@ class IntegrationTestClient {
   }
 
   async sendCommand(command, params = {}, timeout = TEST_TIMEOUT) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     const requestId = ++this.requestId;
     return new Promise((resolve, reject) => {
@@ -85,7 +91,7 @@ class IntegrationTestClient {
         resolve: (msg) => {
           clearTimeout(timer);
           resolve(msg);
-        },
+        }
       });
 
       try {
@@ -99,7 +105,9 @@ class IntegrationTestClient {
   }
 
   disconnect() {
-    if (this.ws) this.ws.close();
+    if (this.ws) {
+      this.ws.close();
+    }
   }
 }
 
@@ -116,7 +124,7 @@ async function testDashboardSlackIntegration(client) {
     await client.sendCommand('configureSlack', {
       webhookUrl: 'https://hooks.slack.com/services/TEST',
       channel: '#monitoring',
-      enabled: true,
+      enabled: true
     });
 
     // Create monitor that triggers Slack
@@ -125,7 +133,7 @@ async function testDashboardSlackIntegration(client) {
       url: 'https://competitor.example.com',
       name: 'Test Competitor',
       enableSlackAlerts: true,
-      slackChannel: '#monitoring',
+      slackChannel: '#monitoring'
     });
 
     if (!monitor.success && !monitor.monitorId) {
@@ -153,7 +161,7 @@ async function testDashboardSlackIntegration(client) {
     TEST_RESULTS.integrations.dashboardSlack = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       integration: 'dashboardSlack',
-      error: error.message,
+      error: error.message
     });
     return false;
   }
@@ -173,7 +181,7 @@ async function testDashboardProxyIntegration(client) {
       protocol: 'http',
       host: 'proxy.example.com',
       port: 8080,
-      enabled: true,
+      enabled: true
     });
 
     // Create monitor using proxy
@@ -181,7 +189,7 @@ async function testDashboardProxyIntegration(client) {
     const monitor = await client.sendCommand('createMonitor', {
       url: 'https://competitor.example.com',
       useProxy: true,
-      proxyRotation: 'random',
+      proxyRotation: 'random'
     });
 
     if (!monitor.success && !monitor.monitorId) {
@@ -191,7 +199,7 @@ async function testDashboardProxyIntegration(client) {
     // Check dashboard displays proxy metrics
     console.log('  [3/3] Verify dashboard shows proxy metrics');
     const dashboard = await client.sendCommand('getDashboard', {
-      includeProxyMetrics: true,
+      includeProxyMetrics: true
     });
 
     if (dashboard.proxyMetrics) {
@@ -208,7 +216,7 @@ async function testDashboardProxyIntegration(client) {
     TEST_RESULTS.integrations.dashboardProxy = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       integration: 'dashboardProxy',
-      error: error.message,
+      error: error.message
     });
     return false;
   }
@@ -228,7 +236,7 @@ async function testDashboardDetectionIntegration(client) {
       fingerprinting: true,
       fingerprints: ['canvas', 'webgl', 'audio'],
       behavioral: true,
-      headless: true,
+      headless: true
     });
 
     // Create monitor with evasion
@@ -236,7 +244,7 @@ async function testDashboardDetectionIntegration(client) {
     const monitor = await client.sendCommand('createMonitor', {
       url: 'https://competitor.example.com',
       enableEvasion: true,
-      evasionProfile: 'aggressive',
+      evasionProfile: 'aggressive'
     });
 
     if (!monitor.success && !monitor.monitorId) {
@@ -246,7 +254,7 @@ async function testDashboardDetectionIntegration(client) {
     // Check dashboard shows evasion status
     console.log('  [3/3] Verify dashboard shows evasion status');
     const dashboard = await client.sendCommand('getDashboard', {
-      includeEvasionStatus: true,
+      includeEvasionStatus: true
     });
 
     if (dashboard.evasionStatus || (dashboard.monitors && dashboard.monitors.length > 0)) {
@@ -263,7 +271,7 @@ async function testDashboardDetectionIntegration(client) {
     TEST_RESULTS.integrations.dashboardDetection = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       integration: 'dashboardDetection',
-      error: error.message,
+      error: error.message
     });
     return false;
   }
@@ -282,13 +290,13 @@ async function testProxyDetectionIntegration(client) {
     await client.sendCommand('setProxy', {
       enabled: true,
       rotationEnabled: true,
-      maxProxiesPerSession: 5,
+      maxProxiesPerSession: 5
     });
 
     await client.sendCommand('configureEvasion', {
       fingerprinting: true,
       behavioral: true,
-      rotateWithProxy: true, // Fingerprints rotate with proxy
+      rotateWithProxy: true // Fingerprints rotate with proxy
     });
 
     // Navigate with both systems active
@@ -296,7 +304,7 @@ async function testProxyDetectionIntegration(client) {
     const nav = await client.sendCommand('navigate', {
       url: 'https://example.com',
       useProxy: true,
-      enableEvasion: true,
+      enableEvasion: true
     });
 
     if (!nav.success && nav.status !== 'success') {
@@ -321,7 +329,7 @@ async function testProxyDetectionIntegration(client) {
     TEST_RESULTS.integrations.proxyDetection = { passed: 0, failed: 3 };
     TEST_RESULTS.errors.push({
       integration: 'proxyDetection',
-      error: error.message,
+      error: error.message
     });
     return false;
   }
@@ -339,18 +347,18 @@ async function testAllFeaturesIntegration(client) {
     console.log('  [1/4] Configure all systems');
     await client.sendCommand('configureSlack', {
       enabled: true,
-      webhookUrl: 'https://hooks.slack.com/services/TEST',
+      webhookUrl: 'https://hooks.slack.com/services/TEST'
     });
 
     await client.sendCommand('setProxy', {
       enabled: true,
-      rotationEnabled: true,
+      rotationEnabled: true
     });
 
     await client.sendCommand('configureEvasion', {
       fingerprinting: true,
       behavioral: true,
-      headless: true,
+      headless: true
     });
 
     // Create comprehensive monitor
@@ -363,7 +371,7 @@ async function testAllFeaturesIntegration(client) {
       enableEvasion: true,
       evasionProfile: 'aggressive',
       detectionServices: ['all'],
-      frequency: '5m',
+      frequency: '5m'
     });
 
     if (!monitor.success && !monitor.monitorId) {
@@ -373,7 +381,7 @@ async function testAllFeaturesIntegration(client) {
     // Run the monitor with all features
     console.log('  [3/4] Run monitor with all features');
     const result = await client.sendCommand('runMonitor', {
-      monitorId: monitor.monitorId,
+      monitorId: monitor.monitorId
     });
 
     if (!result.success && result.status !== 'success') {
@@ -404,7 +412,7 @@ async function testAllFeaturesIntegration(client) {
     TEST_RESULTS.integrations.allFeatures = { passed: 0, failed: 4 };
     TEST_RESULTS.errors.push({
       integration: 'allFeatures',
-      error: error.message,
+      error: error.message
     });
     return false;
   }
@@ -475,7 +483,9 @@ async function runIntegrationTests() {
     console.error('Test suite error:', error.message);
     return 1;
   } finally {
-    if (client) client.disconnect();
+    if (client) {
+      client.disconnect();
+    }
   }
 }
 

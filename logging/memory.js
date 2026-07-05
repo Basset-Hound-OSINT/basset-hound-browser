@@ -19,12 +19,12 @@ const MEMORY_STATUS = {
  * Default thresholds (in MB)
  */
 const DEFAULT_THRESHOLDS = {
-  warning: 512,    // 512 MB
-  critical: 1024,  // 1 GB
+  warning: 512, // 512 MB
+  critical: 1024, // 1 GB
   leakDetection: {
     minSamples: 10,
     growthThreshold: 0.1, // 10% growth rate
-    timeWindow: 60000     // 1 minute
+    timeWindow: 60000 // 1 minute
   }
 };
 

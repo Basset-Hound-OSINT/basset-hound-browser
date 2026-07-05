@@ -11,7 +11,7 @@ describe('Search Engine Tests', () => {
 
   beforeEach(async () => {
     searchEngine = new SearchEngine({
-      elasticsearchClient: null, // Mock without real Elasticsearch
+      elasticsearchClient: null // Mock without real Elasticsearch
     });
 
     // Create test index
@@ -19,7 +19,7 @@ describe('Search Engine Tests', () => {
       id: { type: 'keyword' },
       name: { type: 'text' },
       email: { type: 'keyword' },
-      description: { type: 'text' },
+      description: { type: 'text' }
     });
   });
 
@@ -56,7 +56,7 @@ describe('Search Engine Tests', () => {
       await searchEngine.indexDocument('users', 'user1', {
         name: 'John Doe',
         email: 'john@example.com',
-        description: 'Software developer',
+        description: 'Software developer'
       });
 
       const info = searchEngine.getIndexInfo('users');
@@ -66,7 +66,7 @@ describe('Search Engine Tests', () => {
     it('should delete a document', async () => {
       await searchEngine.indexDocument('users', 'user1', {
         name: 'John Doe',
-        email: 'john@example.com',
+        email: 'john@example.com'
       });
 
       const before = searchEngine.getIndexInfo('users').documents;
@@ -81,7 +81,7 @@ describe('Search Engine Tests', () => {
       const documents = {
         user1: { name: 'John Doe', email: 'john@example.com' },
         user2: { name: 'Jane Doe', email: 'jane@example.com' },
-        user3: { name: 'Bob Smith', email: 'bob@example.com' },
+        user3: { name: 'Bob Smith', email: 'bob@example.com' }
       };
 
       await searchEngine.bulkIndex('users', documents);
@@ -94,7 +94,7 @@ describe('Search Engine Tests', () => {
       const before = new Date();
       await searchEngine.indexDocument('users', 'user1', {
         name: 'Test User',
-        email: 'test@example.com',
+        email: 'test@example.com'
       });
       const after = new Date();
 
@@ -136,7 +136,7 @@ describe('Search Engine Tests', () => {
     it('should register a scoring profile', () => {
       const profile = {
         name: 'custom_score',
-        weights: { name: 2, description: 1 },
+        weights: { name: 2, description: 1 }
       };
 
       searchEngine.registerScoringProfile('custom', profile);
@@ -151,7 +151,7 @@ describe('Search Engine Tests', () => {
       const facet = {
         field: 'email',
         type: 'terms',
-        size: 10,
+        size: 10
       };
 
       searchEngine.registerFacet('email_domain', facet);
@@ -167,7 +167,7 @@ describe('Search Engine Tests', () => {
         user1: { name: 'John Smith', email: 'john@example.com', description: 'Developer' },
         user2: { name: 'Jane Smith', email: 'jane@example.com', description: 'Designer' },
         user3: { name: 'Bob Johnson', email: 'bob@example.com', description: 'Manager' },
-        user4: { name: 'Alice Brown', email: 'alice@example.com', description: 'Developer' },
+        user4: { name: 'Alice Brown', email: 'alice@example.com', description: 'Developer' }
       };
 
       await searchEngine.bulkIndex('users', documents);
@@ -175,7 +175,7 @@ describe('Search Engine Tests', () => {
 
     it('should search with string query', async () => {
       const result = await searchEngine.search('users', 'john', {
-        limit: 10,
+        limit: 10
       });
 
       assert(result.query);
@@ -186,7 +186,7 @@ describe('Search Engine Tests', () => {
 
     it('should respect limit', async () => {
       const result = await searchEngine.search('users', 'smith', {
-        limit: 1,
+        limit: 1
       });
 
       assert(result.limit === 1);
@@ -195,7 +195,7 @@ describe('Search Engine Tests', () => {
     it('should handle offset', async () => {
       const result = await searchEngine.search('users', 'smith', {
         limit: 5,
-        offset: 1,
+        offset: 1
       });
 
       assert.strictEqual(result.offset, 1);
@@ -203,7 +203,7 @@ describe('Search Engine Tests', () => {
 
     it('should support sorting', async () => {
       const result = await searchEngine.search('users', 'smith', {
-        sort: [{ field: 'name', direction: 'ASC' }],
+        sort: [{ field: 'name', direction: 'ASC' }]
       });
 
       assert(Array.isArray(result.results));
@@ -211,7 +211,7 @@ describe('Search Engine Tests', () => {
 
     it('should support faceting', async () => {
       const result = await searchEngine.search('users', 'developer', {
-        facets: ['email_domain'],
+        facets: ['email_domain']
       });
 
       assert(result.facets);
@@ -223,7 +223,7 @@ describe('Search Engine Tests', () => {
       await searchEngine.indexDocument('users', 'user1', {
         name: 'John Doe',
         email: 'john@example.com',
-        description: 'Experienced john developer with john expertise',
+        description: 'Experienced john developer with john expertise'
       });
     });
 
@@ -231,7 +231,7 @@ describe('Search Engine Tests', () => {
       // Note: Without real Elasticsearch, highlights won't be returned
       // In a real scenario, this would return <em>john</em> tags
       const result = await searchEngine.searchWithHighlight('users', 'john', {
-        highlightField: 'description',
+        highlightField: 'description'
       });
 
       assert(result.results);
@@ -243,7 +243,7 @@ describe('Search Engine Tests', () => {
       const documents = {
         user1: { name: 'JavaScript Developer' },
         user2: { name: 'Java Developer' },
-        user3: { name: 'Python Developer' },
+        user3: { name: 'Python Developer' }
       };
 
       await searchEngine.bulkIndex('users', documents);
@@ -253,7 +253,7 @@ describe('Search Engine Tests', () => {
       // Note: Without real Elasticsearch, suggestions won't be returned
       const suggestions = await searchEngine.suggest('users', 'java', {
         field: 'name',
-        limit: 5,
+        limit: 5
       });
 
       assert(Array.isArray(suggestions));
@@ -266,13 +266,13 @@ describe('Search Engine Tests', () => {
       await searchEngine.createIndex('users_backup', {
         id: { type: 'keyword' },
         name: { type: 'text' },
-        email: { type: 'keyword' },
+        email: { type: 'keyword' }
       });
 
       // Index some documents
       await searchEngine.indexDocument('users', 'user1', {
         name: 'John Doe',
-        email: 'john@example.com',
+        email: 'john@example.com'
       });
 
       // Reindex from users to users_backup
@@ -287,7 +287,7 @@ describe('Search Engine Tests', () => {
   describe('Metrics', () => {
     it('should track search metrics', async () => {
       await searchEngine.bulkIndex('users', {
-        user1: { name: 'John Doe', email: 'john@example.com' },
+        user1: { name: 'John Doe', email: 'john@example.com' }
       });
 
       await searchEngine.search('users', 'john');
@@ -299,7 +299,7 @@ describe('Search Engine Tests', () => {
 
     it('should calculate average search time', async () => {
       await searchEngine.bulkIndex('users', {
-        user1: { name: 'Test', email: 'test@example.com' },
+        user1: { name: 'Test', email: 'test@example.com' }
       });
 
       await searchEngine.search('users', 'test');
@@ -330,7 +330,7 @@ describe('Search Engine Tests', () => {
       });
 
       await searchEngine.indexDocument('users', 'user_test', {
-        name: 'Test',
+        name: 'Test'
       });
 
       assert(emitted);

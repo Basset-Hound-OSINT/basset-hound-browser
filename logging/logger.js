@@ -73,7 +73,9 @@ class Logger extends EventEmitter {
    * @returns {boolean}
    */
   isLevelEnabled(level) {
-    if (!this.enabled) return false;
+    if (!this.enabled) {
+      return false;
+    }
     return LOG_LEVELS[level] <= LOG_LEVELS[this.level];
   }
 
@@ -229,7 +231,9 @@ class Logger extends EventEmitter {
    * @param {Object} data - Additional data
    */
   log(level, message, data = {}) {
-    if (!this.isLevelEnabled(level)) return;
+    if (!this.isLevelEnabled(level)) {
+      return;
+    }
 
     const entry = this._createEntry(level, message, data);
     this._write(entry);

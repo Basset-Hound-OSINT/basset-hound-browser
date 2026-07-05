@@ -234,82 +234,82 @@ class FingerprintAnalyzer {
     let score = baseScore;
 
     switch (vector) {
-      case FINGERPRINT_VECTORS.CANVAS:
-        if (vectorData.isModified) {
-          anomalies.push('Canvas modification detected');
-          score += 0.2;
-        }
-        break;
+    case FINGERPRINT_VECTORS.CANVAS:
+      if (vectorData.isModified) {
+        anomalies.push('Canvas modification detected');
+        score += 0.2;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.WEBGL:
-        if (vectorData.isSpoofe || vectorData.extensionsMissing) {
-          anomalies.push('WebGL anomaly detected');
-          score += 0.2;
-        }
-        break;
+    case FINGERPRINT_VECTORS.WEBGL:
+      if (vectorData.isSpoofe || vectorData.extensionsMissing) {
+        anomalies.push('WebGL anomaly detected');
+        score += 0.2;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.WEBRTC:
-        if (vectorData.ipMismatch) {
-          anomalies.push('WebRTC IP mismatch with session IP');
-          score += 0.25;
-        }
-        break;
+    case FINGERPRINT_VECTORS.WEBRTC:
+      if (vectorData.ipMismatch) {
+        anomalies.push('WebRTC IP mismatch with session IP');
+        score += 0.25;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.NAVIGATOR:
-        if (vectorData.headless) {
-          anomalies.push('Headless browser detected');
-          score += 0.3;
-        }
-        if (vectorData.webdriver) {
-          anomalies.push('WebDriver API detected');
-          score += 0.3;
-        }
-        break;
+    case FINGERPRINT_VECTORS.NAVIGATOR:
+      if (vectorData.headless) {
+        anomalies.push('Headless browser detected');
+        score += 0.3;
+      }
+      if (vectorData.webdriver) {
+        anomalies.push('WebDriver API detected');
+        score += 0.3;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.SCREEN:
-        if (!vectorData.hasPhysicalDisplay) {
-          anomalies.push('No physical display detected');
-          score += 0.2;
-        }
-        break;
+    case FINGERPRINT_VECTORS.SCREEN:
+      if (!vectorData.hasPhysicalDisplay) {
+        anomalies.push('No physical display detected');
+        score += 0.2;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.TIMEZONE:
-        if (vectorData.mismatchWithRegion) {
-          anomalies.push('Timezone mismatch with geolocation');
-          score += 0.15;
-        }
-        break;
+    case FINGERPRINT_VECTORS.TIMEZONE:
+      if (vectorData.mismatchWithRegion) {
+        anomalies.push('Timezone mismatch with geolocation');
+        score += 0.15;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.LANGUAGE:
-        if (vectorData.mismatchWithRegion) {
-          anomalies.push('Language mismatch with region');
-          score += 0.1;
-        }
-        break;
+    case FINGERPRINT_VECTORS.LANGUAGE:
+      if (vectorData.mismatchWithRegion) {
+        anomalies.push('Language mismatch with region');
+        score += 0.1;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.PLUGINS:
-        if (vectorData.fake) {
-          anomalies.push('Fake plugins detected');
-          score += 0.2;
-        }
-        break;
+    case FINGERPRINT_VECTORS.PLUGINS:
+      if (vectorData.fake) {
+        anomalies.push('Fake plugins detected');
+        score += 0.2;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.STORAGE:
-        if (vectorData.disabled) {
-          anomalies.push('Storage disabled');
-          score += 0.15;
-        }
-        break;
+    case FINGERPRINT_VECTORS.STORAGE:
+      if (vectorData.disabled) {
+        anomalies.push('Storage disabled');
+        score += 0.15;
+      }
+      break;
 
-      case FINGERPRINT_VECTORS.HEADERS:
-        if (vectorData.suspiciousUserAgent) {
-          anomalies.push('Suspicious user agent detected');
-          score += 0.15;
-        }
-        break;
+    case FINGERPRINT_VECTORS.HEADERS:
+      if (vectorData.suspiciousUserAgent) {
+        anomalies.push('Suspicious user agent detected');
+        score += 0.15;
+      }
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
 
     return Math.min(1.0, score);
@@ -322,10 +322,18 @@ class FingerprintAnalyzer {
    * @returns {string} Risk level
    */
   _scoreToRiskLevel(score) {
-    if (score < 0.2) return RISK_LEVELS.SAFE;
-    if (score < 0.4) return RISK_LEVELS.LOW;
-    if (score < 0.6) return RISK_LEVELS.MEDIUM;
-    if (score < 0.8) return RISK_LEVELS.HIGH;
+    if (score < 0.2) {
+      return RISK_LEVELS.SAFE;
+    }
+    if (score < 0.4) {
+      return RISK_LEVELS.LOW;
+    }
+    if (score < 0.6) {
+      return RISK_LEVELS.MEDIUM;
+    }
+    if (score < 0.8) {
+      return RISK_LEVELS.HIGH;
+    }
     return RISK_LEVELS.CRITICAL;
   }
 
@@ -337,7 +345,9 @@ class FingerprintAnalyzer {
    */
   _calculateConfidence(vectorAnalyses) {
     const vectorCount = Object.keys(vectorAnalyses).length;
-    if (vectorCount === 0) return 0;
+    if (vectorCount === 0) {
+      return 0;
+    }
 
     // Confidence is higher when more vectors are analyzed and consistent
     let consistencyScore = 0;

@@ -185,7 +185,7 @@ function registerTechDetectionCommands(server, mainWindow) {
       const fp = ensureFingerprinter();
       const stats = fp.getStatistics();
 
-      let technologies = [];
+      const technologies = [];
       let count = 0;
 
       // Build technology list
@@ -334,7 +334,7 @@ function registerTechDetectionCommands(server, mainWindow) {
             versions: tech.versions?.length || 0
           },
           hasVersionDetection: (tech.versions?.length || 0) > 0,
-          hasFaviconSignature: !!tech.favicon,
+          hasFaviconSignature: Boolean(tech.favicon),
           cpe: tech.cpe
         }
       };

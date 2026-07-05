@@ -282,7 +282,7 @@ async function handleVerifySessionState(params, ws) {
       cookies: Array.isArray(savedState.cookies) ? savedState.cookies.length : 0,
       storage_items: (Object.keys(savedState.localStorage || {}).length +
                      Object.keys(savedState.sessionStorage || {}).length),
-      dom_state: !!savedState.domState && Object.keys(savedState.domState).length > 0
+      dom_state: Boolean(savedState.domState) && Object.keys(savedState.domState).length > 0
     };
 
     return {

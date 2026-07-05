@@ -33,7 +33,9 @@ class MockSessionManager extends EventEmitter {
 
   addMonitorToCampaign(sessionId, monitor) {
     const session = this.sessions.get(sessionId);
-    if (!session) throw new Error('Session not found');
+    if (!session) {
+      throw new Error('Session not found');
+    }
 
     session.monitors.push({
       ...monitor,
@@ -48,7 +50,9 @@ class MockSessionManager extends EventEmitter {
 
   updateMonitorProgress(sessionId, monitorId, progress) {
     const session = this.sessions.get(sessionId);
-    if (!session) throw new Error('Session not found');
+    if (!session) {
+      throw new Error('Session not found');
+    }
 
     const monitor = session.monitors.find(m => m.id === monitorId);
     if (monitor) {
@@ -121,7 +125,7 @@ class MockDashboardSessionRenderer extends EventEmitter {
   }
 }
 
-describe('Dashboard Integration - Session Persistence', function() {
+describe('Dashboard Integration - Session Persistence', function () {
   this.timeout(20000);
 
   let sessionManager;
@@ -142,8 +146,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 1: Campaign Creation and Initial Display', function() {
-    it('should create a campaign', function() {
+  describe('Scenario 1: Campaign Creation and Initial Display', () => {
+    it('should create a campaign', () => {
       const campaign = sessionManager.createCampaign({
         name: 'E-commerce Monitoring',
         description: 'Track competitor prices',
@@ -154,7 +158,7 @@ describe('Dashboard Integration - Session Persistence', function() {
       testSessionId = campaign.id;
     });
 
-    it('should display campaign in dashboard', function() {
+    it('should display campaign in dashboard', () => {
       const displayed = dashboardRenderer.getCampaign(testSessionId);
 
       assert(displayed, 'Campaign should be displayed');
@@ -162,8 +166,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 2: Monitor Addition to Campaign', function() {
-    it('should add monitors to campaign', function() {
+  describe('Scenario 2: Monitor Addition to Campaign', () => {
+    it('should add monitors to campaign', () => {
       const monitors = [
         { id: 'monitor-1', url: 'https://amazon.com', name: 'Amazon' },
         { id: 'monitor-2', url: 'https://ebay.com', name: 'eBay' },
@@ -178,15 +182,15 @@ describe('Dashboard Integration - Session Persistence', function() {
       assert.strictEqual(session.monitors.length, 3);
     });
 
-    it('should reflect monitor additions in dashboard', function() {
+    it('should reflect monitor additions in dashboard', () => {
       const campaign = dashboardRenderer.getCampaign(testSessionId);
 
       assert.strictEqual(campaign.monitors.length, 3);
     });
   });
 
-  describe('Scenario 3: Campaign Progress Tracking', function() {
-    it('should track progress for each monitor', function() {
+  describe('Scenario 3: Campaign Progress Tracking', () => {
+    it('should track progress for each monitor', () => {
       const session = sessionManager.getSession(testSessionId);
 
       sessionManager.updateMonitorProgress(testSessionId, 'monitor-1', 50);
@@ -198,7 +202,7 @@ describe('Dashboard Integration - Session Persistence', function() {
       assert.strictEqual(session.monitors[2].progress, 100);
     });
 
-    it('should calculate overall campaign progress', function() {
+    it('should calculate overall campaign progress', () => {
       const session = sessionManager.getSession(testSessionId);
       const totalProgress = session.monitors.reduce((sum, m) => sum + m.progress, 0);
       const avgProgress = totalProgress / session.monitors.length;
@@ -207,8 +211,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 4: Session Persistence', function() {
-    it('should persist session to storage', function() {
+  describe('Scenario 4: Session Persistence', () => {
+    it('should persist session to storage', () => {
       const persisted = sessionManager.saveSession(testSessionId);
 
       assert(persisted, 'Should persist session');
@@ -216,7 +220,7 @@ describe('Dashboard Integration - Session Persistence', function() {
       assert.strictEqual(persisted.monitors.length, 3);
     });
 
-    it('should restore session from storage', function() {
+    it('should restore session from storage', () => {
       const restored = sessionManager.restoreSession(testSessionId);
 
       assert(restored, 'Should restore session');
@@ -225,8 +229,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 5: Browser Close and Recovery', function() {
-    it('should handle session restore after browser close', function() {
+  describe('Scenario 5: Browser Close and Recovery', () => {
+    it('should handle session restore after browser close', () => {
       // Simulate browser close
       const savedSession = sessionManager.saveSession(testSessionId);
 
@@ -240,7 +244,7 @@ describe('Dashboard Integration - Session Persistence', function() {
       assert(displayed.restoredAt, 'Should have restoration timestamp');
     });
 
-    it('should maintain monitor state across browser restart', function() {
+    it('should maintain monitor state across browser restart', () => {
       const campaign = dashboardRenderer.getCampaign(testSessionId);
 
       assert.strictEqual(campaign.monitors.length, 3);
@@ -248,10 +252,10 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 6: Multiple Campaign Sessions', function() {
+  describe('Scenario 6: Multiple Campaign Sessions', () => {
     let sessionId2;
 
-    it('should create multiple campaigns', function() {
+    it('should create multiple campaigns', () => {
       const campaign2 = sessionManager.createCampaign({
         name: 'News Monitoring',
         description: 'Track tech news',
@@ -262,7 +266,7 @@ describe('Dashboard Integration - Session Persistence', function() {
       assert(sessionId2 !== testSessionId, 'Should have unique IDs');
     });
 
-    it('should manage monitors independently per campaign', function() {
+    it('should manage monitors independently per campaign', () => {
       sessionManager.addMonitorToCampaign(sessionId2, {
         id: 'monitor-news-1',
         url: 'https://techcrunch.com'
@@ -280,22 +284,22 @@ describe('Dashboard Integration - Session Persistence', function() {
       assert.strictEqual(session2.monitors.length, 1);
     });
 
-    it('should list all active campaigns', function() {
+    it('should list all active campaigns', () => {
       const campaigns = dashboardRenderer.getAllCampaigns();
 
       assert(campaigns.length >= 2, 'Should have multiple campaigns');
     });
   });
 
-  describe('Scenario 7: Campaign State Transitions', function() {
-    it('should handle campaign pause', function() {
+  describe('Scenario 7: Campaign State Transitions', () => {
+    it('should handle campaign pause', () => {
       const session = sessionManager.getSession(testSessionId);
       session.state = 'paused';
 
       assert.strictEqual(session.state, 'paused');
     });
 
-    it('should handle campaign resume', function() {
+    it('should handle campaign resume', () => {
       const session = sessionManager.getSession(testSessionId);
       session.state = 'active';
 
@@ -303,8 +307,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 8: Last Updated Tracking', function() {
-    it('should track last update timestamp', function() {
+  describe('Scenario 8: Last Updated Tracking', () => {
+    it('should track last update timestamp', () => {
       const session = sessionManager.getSession(testSessionId);
       const initialTime = session.lastUpdated;
 
@@ -318,8 +322,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 9: Monitor Details Retrieval', function() {
-    it('should retrieve monitor details from campaign', function() {
+  describe('Scenario 9: Monitor Details Retrieval', () => {
+    it('should retrieve monitor details from campaign', () => {
       const session = sessionManager.getSession(testSessionId);
       const monitor = session.monitors[0];
 
@@ -330,8 +334,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 10: Session Serialization', function() {
-    it('should serialize campaign for storage', function() {
+  describe('Scenario 10: Session Serialization', () => {
+    it('should serialize campaign for storage', () => {
       const session = sessionManager.getSession(testSessionId);
       const serialized = JSON.stringify(session);
 
@@ -343,8 +347,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 11: Storage Space Management', function() {
-    it('should track stored sessions size', function() {
+  describe('Scenario 11: Storage Space Management', () => {
+    it('should track stored sessions size', () => {
       let totalSize = 0;
 
       for (const [sessionId] of sessionManager.sessions) {
@@ -359,8 +363,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 12: Campaign Search and Filter', function() {
-    it('should filter campaigns by category', function() {
+  describe('Scenario 12: Campaign Search and Filter', () => {
+    it('should filter campaigns by category', () => {
       const campaigns = dashboardRenderer.getAllCampaigns();
       const ecommerceCampaigns = campaigns.filter(c => c.category === 'ecommerce');
 
@@ -368,8 +372,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 13: Session Cleanup', function() {
-    it('should remove completed campaigns', function() {
+  describe('Scenario 13: Session Cleanup', () => {
+    it('should remove completed campaigns', () => {
       const session = sessionManager.getSession(testSessionId);
       session.state = 'completed';
 
@@ -380,8 +384,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 14: Concurrent Session Operations', function() {
-    it('should handle concurrent campaign updates', async function() {
+  describe('Scenario 14: Concurrent Session Operations', () => {
+    it('should handle concurrent campaign updates', async () => {
       const sessionId = testSessionId;
       const promises = [];
 
@@ -398,8 +402,8 @@ describe('Dashboard Integration - Session Persistence', function() {
     });
   });
 
-  describe('Scenario 15: Session Integration Summary', function() {
-    it('should provide session summary', function() {
+  describe('Scenario 15: Session Integration Summary', () => {
+    it('should provide session summary', () => {
       const allSessions = Array.from(sessionManager.sessions.values());
 
       const summary = {

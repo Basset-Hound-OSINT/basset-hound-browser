@@ -451,7 +451,9 @@ class MaltegoAdvanced extends EventEmitter {
     const n = (graph.entities ? Object.keys(graph.entities).length : 0);
     const m = graph.relationships ? graph.relationships.length : 0;
 
-    if (n <= 1) return 0;
+    if (n <= 1) {
+      return 0;
+    }
 
     return (2 * m) / (n * (n - 1));
   }

@@ -28,7 +28,7 @@ class Phase3Registry extends EventEmitter {
       poolWatermark: options.poolWatermark || 0.8, // 80% capacity
       cacheHitRateTarget: options.cacheHitRateTarget || 0.95,
       compressionRatioThreshold: options.compressionRatioThreshold || 0.05, // 5%
-      gcPauseThreshold: options.gcPauseThreshold || 50, // 50ms
+      gcPauseThreshold: options.gcPauseThreshold || 50 // 50ms
     };
   }
 
@@ -54,7 +54,7 @@ class Phase3Registry extends EventEmitter {
         calls: 0,
         errors: 0,
         totalTime: 0,
-        avgTime: 0,
+        avgTime: 0
       }
     });
 
@@ -91,7 +91,7 @@ class Phase3Registry extends EventEmitter {
     config.instance = new config.factory({
       ...config.options,
       dependencies: depInstances,
-      registry: this,
+      registry: this
     });
 
     config.initialized = true;
@@ -168,7 +168,9 @@ class Phase3Registry extends EventEmitter {
    */
   recordMetric(name, timeMs, error = false) {
     const config = this.optimizers.get(name);
-    if (!config) return;
+    if (!config) {
+      return;
+    }
 
     const metrics = config.metrics;
     metrics.calls++;
@@ -210,14 +212,14 @@ class Phase3Registry extends EventEmitter {
     const status = {
       initialized: this.initialized,
       enabled: this.enabled,
-      optimizers: {},
+      optimizers: {}
     };
 
     for (const [name, config] of this.optimizers) {
       status.optimizers[name] = {
         enabled: config.enabled,
         initialized: config.initialized,
-        metrics: { ...config.metrics },
+        metrics: { ...config.metrics }
       };
     }
 
@@ -233,7 +235,7 @@ class Phase3Registry extends EventEmitter {
         calls: 0,
         errors: 0,
         totalTime: 0,
-        avgTime: 0,
+        avgTime: 0
       };
     }
   }
@@ -260,10 +262,10 @@ class Phase3Registry extends EventEmitter {
 
 // Create singleton instance
 const phase3Registry = new Phase3Registry({
-  debug: process.env.DEBUG_PHASE3 === 'true',
+  debug: process.env.DEBUG_PHASE3 === 'true'
 });
 
 module.exports = {
   Phase3Registry,
-  phase3Registry,
+  phase3Registry
 };

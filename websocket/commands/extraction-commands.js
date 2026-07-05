@@ -368,7 +368,7 @@ function registerExtractionCommands(server, mainWindow) {
 
   // Setup events on first command that creates manager
   const originalCreateTemplate = server.commandHandlers.create_extraction_template;
-  server.commandHandlers.create_extraction_template = async function(...args) {
+  server.commandHandlers.create_extraction_template = async function (...args) {
     const result = await originalCreateTemplate.apply(this, args);
     setupEventForwarding();
     return result;

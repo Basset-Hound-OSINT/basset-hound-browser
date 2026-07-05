@@ -670,7 +670,7 @@ describe('CoherenceWorkflow', () => {
 Existing implementation:
 - `evidence/evidence-collector.js` (Phase 18 - Simplified, ~25KB)
 - `src/features/forensic-chain.js` (Wave 16 Phase 6, ~20KB)
-- WebSocket commands: `websocket/commands/evidence-commands.js`
+- WebSocket commands: `websocket/commands/forensic/evidence/evidence-commands.js`
 
 **Current Capabilities:**
 - ✅ Individual evidence capture (screenshot, archive, HAR, DOM, console, etc.)

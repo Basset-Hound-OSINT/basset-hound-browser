@@ -21,7 +21,7 @@ const fs = require('fs');
 
 // Test configuration
 const TEST_CONFIG = {
-  results_dir: path.join(__dirname, '..', 'results'),
+  results_dir: path.join(__dirname, '..', 'results')
 };
 
 // Ensure results directory exists
@@ -33,7 +33,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -44,8 +44,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -69,12 +72,12 @@ class PartialOperationSimulator {
       isPartialSuccess: failedCount > 0 && successCount > 0,
       successedItems: Array.from({ length: successCount }, (_, i) => ({
         id: `item-${i}`,
-        data: `data-${i}`,
+        data: `data-${i}`
       })),
       failedItems: Array.from({ length: failedCount }, (_, i) => ({
         id: `item-${successCount + i}`,
-        reason: 'Operation interrupted',
-      })),
+        reason: 'Operation interrupted'
+      }))
     };
 
     this.operations.push(result);
@@ -101,7 +104,7 @@ class PartialFailureHandler {
       isPartial: operationResult.isPartialSuccess,
       successCount: operationResult.successCount,
       failedCount: operationResult.failedCount,
-      completionRate: (operationResult.successCount / operationResult.totalItems) * 100,
+      completionRate: (operationResult.successCount / operationResult.totalItems) * 100
     };
   }
 
@@ -112,7 +115,7 @@ class PartialFailureHandler {
       operationId: operationResult.timestamp,
       successedItems: operationResult.successedItems,
       failedItems: operationResult.failedItems,
-      remainingWork: operationResult.failedItems,
+      remainingWork: operationResult.failedItems
     };
 
     this.checkpointLog.push(checkpoint);
@@ -124,7 +127,7 @@ class PartialFailureHandler {
       timestamp: new Date().toISOString(),
       checkpointId: checkpoint.id,
       itemsToRetry: checkpoint.failedItems.length,
-      status: 'resuming',
+      status: 'resuming'
     };
 
     this.recoveryLog.push(recovery);
@@ -136,7 +139,7 @@ class PartialFailureHandler {
       itemsBecome: beforeState.successCount || 0,
       itemsAfter: afterState.successCount || 0,
       dataLost: Math.max(0, (beforeState.successCount || 0) - (afterState.successCount || 0)),
-      consistent: (beforeState.successCount || 0) <= (afterState.successCount || 0),
+      consistent: (beforeState.successCount || 0) <= (afterState.successCount || 0)
     };
   }
 }
@@ -385,7 +388,7 @@ describe('Partial Failure Recovery', () => {
         partialFailures: operations.filter(o => o.isPartialSuccess).length,
         totalItems: operations.reduce((sum, o) => sum + o.totalItems, 0),
         totalSuccessful: operations.reduce((sum, o) => sum + o.successCount, 0),
-        totalFailed: operations.reduce((sum, o) => sum + o.failedCount, 0),
+        totalFailed: operations.reduce((sum, o) => sum + o.failedCount, 0)
       };
 
       assert(report.partialFailures >= 0);
@@ -456,7 +459,7 @@ describe('Partial Failure Recovery', () => {
         operationsProcessed: simulator.operations.length,
         totalItems: simulator.operations.reduce((sum, o) => sum + o.totalItems, 0),
         totalSuccessful: simulator.operations.reduce((sum, o) => sum + o.successCount, 0),
-        totalFailed: simulator.operations.reduce((sum, o) => sum + o.failedCount, 0),
+        totalFailed: simulator.operations.reduce((sum, o) => sum + o.failedCount, 0)
       };
 
       const reportPath = path.join(TEST_CONFIG.results_dir, `partial-failure-${Date.now()}.json`);

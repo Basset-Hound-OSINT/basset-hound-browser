@@ -330,7 +330,9 @@ class ManagerRegistry {
     for (const managerName of managerNames) {
       const manager = this.managers.get(managerName);
 
-      if (!manager) continue;
+      if (!manager) {
+        continue;
+      }
 
       try {
         if (typeof manager.validate === 'function') {
@@ -429,7 +431,9 @@ class ManagerRegistry {
     for (const managerName of cleanupOrder) {
       const manager = this.managers.get(managerName);
 
-      if (!manager) continue;
+      if (!manager) {
+        continue;
+      }
 
       try {
         if (typeof manager.cleanup === 'function') {

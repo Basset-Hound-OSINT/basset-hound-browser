@@ -14,8 +14,8 @@ const { AlertDispatcher } = require('./alert-dispatcher');
 
 // CVE-W14-NEW-007: Size limits for security
 const SIZE_LIMITS = {
-  SNAPSHOT: 50 * 1024 * 1024,        // 50 MB max per snapshot
-  MONITOR_DATA: 100 * 1024 * 1024    // 100 MB max per monitor
+  SNAPSHOT: 50 * 1024 * 1024, // 50 MB max per snapshot
+  MONITOR_DATA: 100 * 1024 * 1024 // 100 MB max per monitor
 };
 
 /**
@@ -37,7 +37,7 @@ class MonitoringService extends EventEmitter {
     super();
 
     this.options = {
-      dataDir: options.dataDir || path.join(process.cwd(), '.basset-hound', 'monitoring'),
+      dataDir: options.dataDir || path.join(process.cwd(), 'tmp', '.basset-hound', 'monitoring'),
       checkInterval: options.checkInterval || 60000, // 1 minute
       enableAutoCheck: options.enableAutoCheck !== false,
       maxConcurrentChecks: options.maxConcurrentChecks || 10,

@@ -18,7 +18,7 @@ class SearchEngine extends EventEmitter {
       totalSearches: 0,
       totalResults: 0,
       avgSearchTime: 0,
-      totalSearchTime: 0,
+      totalSearchTime: 0
     };
 
     this._initializeDefaultParsers();
@@ -38,7 +38,7 @@ class SearchEngine extends EventEmitter {
       documents: 0,
       createdAt: new Date(),
       shards: 5,
-      replicas: 1,
+      replicas: 1
     };
 
     this.indices.set(indexName, indexConfig);
@@ -51,10 +51,10 @@ class SearchEngine extends EventEmitter {
           body: {
             settings: {
               number_of_shards: indexConfig.shards,
-              number_of_replicas: indexConfig.replicas,
+              number_of_replicas: indexConfig.replicas
             },
-            mappings: { properties: mapping },
-          },
+            mappings: { properties: mapping }
+          }
         });
       } catch (err) {
         this.emit('error', { type: 'index_creation', index: indexName, error: err.message });
@@ -94,12 +94,14 @@ class SearchEngine extends EventEmitter {
    */
   async indexDocument(indexName, docId, document, options = {}) {
     const index = this.indices.get(indexName);
-    if (!index) throw new Error(`Index not found: ${indexName}`);
+    if (!index) {
+      throw new Error(`Index not found: ${indexName}`);
+    }
 
     const doc = {
       _id: docId,
       ...document,
-      _indexed_at: new Date(),
+      _indexed_at: new Date()
     };
 
     // Index in Elasticsearch if configured
@@ -108,7 +110,7 @@ class SearchEngine extends EventEmitter {
         await this.elasticsearchClient.index({
           index: indexName,
           id: docId,
-          body: doc,
+          body: doc
         });
       } catch (err) {
         this.emit('error', { type: 'document_index', index: indexName, error: err.message });
@@ -126,13 +128,15 @@ class SearchEngine extends EventEmitter {
    */
   async deleteDocument(indexName, docId) {
     const index = this.indices.get(indexName);
-    if (!index) throw new Error(`Index not found: ${indexName}`);
+    if (!index) {
+      throw new Error(`Index not found: ${indexName}`);
+    }
 
     if (this.elasticsearchClient) {
       try {
         await this.elasticsearchClient.delete({
           index: indexName,
-          id: docId,
+          id: docId
         });
       } catch (err) {
         this.emit('error', { type: 'document_delete', index: indexName, error: err.message });
@@ -150,7 +154,9 @@ class SearchEngine extends EventEmitter {
    */
   async bulkIndex(indexName, documents) {
     const index = this.indices.get(indexName);
-    if (!index) throw new Error(`Index not found: ${indexName}`);
+    if (!index) {
+      throw new Error(`Index not found: ${indexName}`);
+    }
 
     const bulkOps = [];
     for (const [docId, doc] of Object.entries(documents)) {
@@ -180,7 +186,9 @@ class SearchEngine extends EventEmitter {
    */
   async search(indexName, query, options = {}) {
     const index = this.indices.get(indexName);
-    if (!index) throw new Error(`Index not found: ${indexName}`);
+    if (!index) {
+      throw new Error(`Index not found: ${indexName}`);
+    }
 
     const startTime = Date.now();
 
@@ -190,7 +198,7 @@ class SearchEngine extends EventEmitter {
       fields = null,
       facets = [],
       sort = [],
-      scoringProfile = null,
+      scoringProfile = null
     } = options;
 
     // Parse query
@@ -201,25 +209,25 @@ class SearchEngine extends EventEmitter {
       limit,
       offset,
       sort,
-      scoringProfile,
+      scoringProfile
     });
 
     let results = [];
     let total = 0;
-    let facetResults = {};
+    const facetResults = {};
 
     if (this.elasticsearchClient) {
       try {
         const response = await this.elasticsearchClient.search({
           index: indexName,
-          body: esQuery,
+          body: esQuery
         });
 
         total = response.hits.total.value;
         results = response.hits.hits.map((hit) => ({
           id: hit._id,
           score: hit._score,
-          ...hit._source,
+          ...hit._source
         }));
 
         // Extract facets
@@ -244,7 +252,7 @@ class SearchEngine extends EventEmitter {
       limit,
       offset,
       facets: facetResults,
-      took: searchTime,
+      took: searchTime
     };
   }
 
@@ -266,13 +274,13 @@ class SearchEngine extends EventEmitter {
             match_phrase_prefix: {
               [field]: {
                 query: prefix,
-                boost: 2,
-              },
-            },
+                boost: 2
+              }
+            }
           },
           size: limit,
-          _source: [field],
-        },
+          _source: [field]
+        }
       });
 
       return response.hits.hits.map((hit) => hit._source[field]);
@@ -287,7 +295,9 @@ class SearchEngine extends EventEmitter {
    */
   async searchWithHighlight(indexName, query, options = {}) {
     const index = this.indices.get(indexName);
-    if (!index) throw new Error(`Index not found: ${indexName}`);
+    if (!index) {
+      throw new Error(`Index not found: ${indexName}`);
+    }
 
     const { highlightField = 'content', fragmentSize = 150, numFragments = 3 } = options;
 
@@ -307,31 +317,31 @@ class SearchEngine extends EventEmitter {
             fields: {
               [highlightField]: {
                 fragment_size: fragmentSize,
-                number_of_fragments: numFragments,
-              },
-            },
-          },
-        },
+                number_of_fragments: numFragments
+              }
+            }
+          }
+        }
       });
 
       const results = response.hits.hits.map((hit) => ({
         id: hit._id,
         score: hit._score,
         ...hit._source,
-        highlights: hit.highlight || {},
+        highlights: hit.highlight || {}
       }));
 
       return {
         query,
         results,
         total: response.hits.total.value,
-        ...options,
+        ...options
       };
     } catch (err) {
       this.emit('error', {
         type: 'highlight_search_error',
         index: indexName,
-        error: err.message,
+        error: err.message
       });
       throw err;
     }
@@ -369,15 +379,15 @@ class SearchEngine extends EventEmitter {
         await this.elasticsearchClient.reindex({
           body: {
             source: { index: sourceIndex },
-            dest: { index: targetIndex },
-          },
+            dest: { index: targetIndex }
+          }
         });
       } catch (err) {
         this.emit('error', {
           type: 'reindex_error',
           source: sourceIndex,
           target: targetIndex,
-          error: err.message,
+          error: err.message
         });
         throw err;
       }
@@ -398,7 +408,7 @@ class SearchEngine extends EventEmitter {
     return {
       ...this.searchMetrics,
       avgSearchTime: avgSearchTime.toFixed(2) + 'ms',
-      indexCount: this.indices.size,
+      indexCount: this.indices.size
     };
   }
 
@@ -407,12 +417,14 @@ class SearchEngine extends EventEmitter {
    */
   getIndexInfo(indexName) {
     const index = this.indices.get(indexName);
-    if (!index) return null;
+    if (!index) {
+      return null;
+    }
 
     return {
       ...index,
       facetCount: this.facets.size,
-      scoringProfileCount: this.scoringProfiles.size,
+      scoringProfileCount: this.scoringProfiles.size
     };
   }
 
@@ -423,7 +435,7 @@ class SearchEngine extends EventEmitter {
     this.queryParsers.set('simple', (query) => {
       return {
         type: 'match_all',
-        terms: query.split(/\s+/),
+        terms: query.split(/\s+/)
       };
     });
 
@@ -431,7 +443,7 @@ class SearchEngine extends EventEmitter {
     this.queryParsers.set('phrase', (query) => {
       return {
         type: 'match_phrase',
-        phrase: query,
+        phrase: query
       };
     });
 
@@ -443,8 +455,8 @@ class SearchEngine extends EventEmitter {
         clauses: parts.map((part) => ({
           operator: part.startsWith('+') ? 'must' : part.startsWith('-') ? 'must_not' : 'should',
           field: part.match(/(\w+):/)?.[1] || '_all',
-          value: part.replace(/^[+-]/, '').replace(/\w+:/, '').replace(/"/g, ''),
-        })),
+          value: part.replace(/^[+-]/, '').replace(/\w+:/, '').replace(/"/g, '')
+        }))
       };
     });
   }
@@ -472,9 +484,13 @@ class SearchEngine extends EventEmitter {
 
       for (const clause of parsedQuery.clauses) {
         const clauseQuery = { match: { [clause.field]: clause.value } };
-        if (clause.operator === 'must') must.push(clauseQuery);
-        else if (clause.operator === 'must_not') must_not.push(clauseQuery);
-        else should.push(clauseQuery);
+        if (clause.operator === 'must') {
+          must.push(clauseQuery);
+        } else if (clause.operator === 'must_not') {
+          must_not.push(clauseQuery);
+        } else {
+          should.push(clauseQuery);
+        }
       }
 
       query.query = { bool: { must, must_not, should } };

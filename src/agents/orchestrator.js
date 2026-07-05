@@ -270,11 +270,11 @@ class Orchestrator extends EventEmitter {
       const op = condition.operator || 'equals';
 
       switch (op) {
-        case 'equals': return value === expected;
-        case 'contains': return String(value).includes(expected);
-        case 'greaterThan': return value > expected;
-        case 'lessThan': return value < expected;
-        default: return true;
+      case 'equals': return value === expected;
+      case 'contains': return String(value).includes(expected);
+      case 'greaterThan': return value > expected;
+      case 'lessThan': return value < expected;
+      default: return true;
       }
     }
 

@@ -1,155 +1,613 @@
 /**
- * Connection Pool Manager for WebSocket Server
- * Optimizes concurrent request handling with pre-allocated worker slots
+ * Production Connection Pool Manager for WebSocket Server
+ * Handles concurrent client connections with intelligent pooling and resource management
  *
- * OPTIMIZATION 1: 5-15% throughput improvement
- * - Pre-allocates context slots (16 workers default)
- * - Implements request queue with backpressure handling
- * - Avoids creation of new context per request
- * - Tracks pool metrics for monitoring
+ * Features:
+ * 1. Connection Pooling:
+ *    - Configurable max connections (default 500)
+ *    - Connection reuse for same client
+ *    - Automatic cleanup of idle connections (5 min timeout)
+ *    - Queue for overflow with wait timeout (30 sec)
  *
- * OPTIMIZATION 2 (OPT-09): Priority Queue Integration
- * - Replaces FIFO queue with priority-based ordering
- * - Critical requests (screenshots) processed first
- * - -41% P99 latency, +10-15% throughput improvement
+ * 2. Per-Connection Tracking:
+ *    - Client ID, active commands, last activity timestamp
+ *    - Idle duration tracking, retry count monitoring
+ *
+ * 3. Pool Metrics:
+ *    - Active connections, idle connections, peak metrics
+ *    - Connection reuse rate, queue statistics
+ *
+ * 4. Configuration:
+ *    - MAX_CONNECTIONS=500 (default)
+ *    - IDLE_TIMEOUT=300000 (5 min, default)
+ *    - QUEUE_TIMEOUT=30000 (30 sec, default)
+ *    - MAX_RETRIES=3 (default)
+ *
+ * 5. Health Integration:
+ *    - Reports pool stats in health endpoint
+ *    - Alerts on high utilization (>80%)
+ *    - Detects queue backlog
  */
 
-const PriorityQueue = require('./priority-queue');
+const { defaultLogger } = require('../logging');
 
-class ConnectionPool {
+class ClientConnection {
   /**
-   * Create a connection pool
-   * OPT-5: Enhanced pool tuning for +10% throughput
-   * @param {number} poolSize - Number of pre-allocated worker slots
-   * @param {Function} executeHandler - Function to execute queued requests
+   * Represents a single client connection in the pool
    */
-  constructor(poolSize = 20, executeHandler) {
-    this.poolSize = poolSize;
-    this.activeConnections = 0;
-    this.requestQueue = new PriorityQueue();
-    this.executeHandler = executeHandler;
+  constructor(clientId, ws, poolConfig = {}) {
+    this.clientId = clientId;
+    this.ws = ws;
+    this.createdAt = Date.now();
+    this.lastActivity = Date.now();
+    this.activeCommands = 0;
+    this.maxConcurrent = poolConfig.maxConcurrentPerConnection || 5;
+    this.retryCount = 0;
+    this.maxRetries = poolConfig.maxRetries || 3;
+    this.commandHistory = [];
+    this.totalRequests = 0;
+    this.totalErrors = 0;
+    this.isHealthy = true;
 
-    // Metrics for performance monitoring
-    this.metrics = {
-      totalProcessed: 0,
-      peakConcurrency: 0,
-      avgQueueWait: 0,
-      queueWaitSamples: [],
-      totalQueueWaitMs: 0,
-      rejectedRequests: 0,
-      peakQueueDepth: 0
-    };
-
-    // Configuration - OPT-5: Tuned for better throughput
-    this.maxQueueSize = poolSize * 10;      // 200 (was 160)
-    this.backpressureThreshold = poolSize * 7.5; // 150 (was 128)
-
-    // Adaptive tuning parameters
-    this.metricsWindow = 60000; // 1 minute window
-    this.targetLatency = 50; // Target P95 latency in ms
-    this.adaptiveScaling = false; // Set to true after testing
+    // Reuse tracking
+    this.connectionReuses = 0;
+    this.lastCommandTime = Date.now();
   }
 
   /**
-   * Try to acquire a connection slot
-   * Returns immediately if slot available, queues otherwise
-   * Uses priority queue for fairness (critical > normal > low)
-   * @param {Object} request - Request object to queue
-   * @returns {Promise<Object>} Result of request execution
+   * Check if this connection can accept more commands
    */
-  async acquire(request) {
+  canAcceptCommand() {
+    return this.activeCommands < this.maxConcurrent && this.isHealthy;
+  }
+
+  /**
+   * Record a command execution
+   */
+  recordCommand(command, latencyMs, error = false) {
+    this.totalRequests++;
+    if (error) {
+      this.totalErrors++;
+    }
+    this.lastActivity = Date.now();
+    this.lastCommandTime = Date.now();
+    this.activeCommands++;
+
+    // Keep last 50 commands for history
+    this.commandHistory.push({
+      command,
+      timestamp: Date.now(),
+      latencyMs,
+      error
+    });
+    if (this.commandHistory.length > 50) {
+      this.commandHistory.shift();
+    }
+  }
+
+  /**
+   * Mark command as completed
+   */
+  completeCommand() {
+    if (this.activeCommands > 0) {
+      this.activeCommands--;
+    }
+  }
+
+  /**
+   * Get idle duration in milliseconds
+   */
+  getIdleDuration() {
+    return Date.now() - this.lastActivity;
+  }
+
+  /**
+   * Check if connection is idle
+   */
+  isIdle(idleTimeoutMs) {
+    return this.getIdleDuration() >= idleTimeoutMs && this.activeCommands === 0;
+  }
+
+  /**
+   * Mark connection as unhealthy
+   */
+  markUnhealthy() {
+    this.isHealthy = false;
+    this.retryCount++;
+  }
+
+  /**
+   * Check if retry count exceeded
+   */
+  isRetryExhausted() {
+    return this.retryCount > this.maxRetries;
+  }
+
+  /**
+   * Reset retry count (on successful operation)
+   */
+  resetRetryCount() {
+    this.retryCount = 0;
+    this.isHealthy = true;
+  }
+
+  /**
+   * Get connection metrics
+   */
+  getMetrics() {
+    return {
+      clientId: this.clientId,
+      createdAt: new Date(this.createdAt).toISOString(),
+      lastActivity: new Date(this.lastActivity).toISOString(),
+      idleDurationMs: this.getIdleDuration(),
+      activeCommands: this.activeCommands,
+      totalRequests: this.totalRequests,
+      totalErrors: this.totalErrors,
+      errorRate: this.totalRequests > 0 ? ((this.totalErrors / this.totalRequests) * 100).toFixed(2) + '%' : '0%',
+      isHealthy: this.isHealthy,
+      retryCount: this.retryCount,
+      connectionReuses: this.connectionReuses,
+      averageLatency: this._calculateAverageLatency()
+    };
+  }
+
+  /**
+   * Calculate average latency from command history
+   */
+  _calculateAverageLatency() {
+    if (this.commandHistory.length === 0) {
+      return 0;
+    }
+    const totalLatency = this.commandHistory.reduce((sum, cmd) => sum + cmd.latencyMs, 0);
+    return (totalLatency / this.commandHistory.length).toFixed(2);
+  }
+}
+
+class ConnectionPool {
+  /**
+   * Create a production connection pool
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxConnections - Max concurrent connections (default 500)
+   * @param {number} options.idleTimeout - Idle timeout in ms (default 300000 = 5 min)
+   * @param {number} options.queueTimeout - Max time to wait in queue (default 30000 = 30 sec)
+   * @param {number} options.maxRetries - Max retries per connection (default 3)
+   * @param {boolean} options.autoStartCleanup - Auto-start cleanup interval (default true)
+   * @param {Function} options.logger - Logger instance
+   */
+  constructor(options = {}) {
+    this.maxConnections = options.maxConnections || parseInt(process.env.MAX_CONNECTIONS || '500', 10);
+    this.idleTimeout = options.idleTimeout || parseInt(process.env.IDLE_TIMEOUT || '300000', 10);
+    this.queueTimeout = options.queueTimeout || parseInt(process.env.QUEUE_TIMEOUT || '30000', 10);
+    this.maxRetries = options.maxRetries || 3;
+    this.logger = options.logger || defaultLogger;
+    this.autoStartCleanup = options.autoStartCleanup !== false;
+
+    // Connection storage
+    this.connections = new Map(); // clientId -> ClientConnection
+    this.blockingQueue = []; // Requests waiting for available slots (FIFO queue)
+
+    // Metrics
+    this.metrics = {
+      totalConnectionsCreated: 0,
+      totalConnectionsClosed: 0,
+      totalConnectionsReused: 0,
+      peakActiveConnections: 0,
+      peakQueueSize: 0,
+      totalQueuedRequests: 0,
+      totalRejectedRequests: 0,
+      totalIdleCleanups: 0,
+      averageQueueWait: 0,
+      queueWaitSamples: []
+    };
+
+    // Idle connection cleanup
+    this.cleanupInterval = null;
+    if (this.autoStartCleanup) {
+      this._startIdleCleanup();
+    }
+  }
+
+  /**
+   * Get current queue size
+   * @returns {number} Number of requests in the blocking queue
+   */
+  getQueueSize() {
+    return this.blockingQueue ? this.blockingQueue.length : 0;
+  }
+
+  /**
+   * Acquire or reuse a connection for a client
+   * Returns existing connection if available, creates new one if under limit
+   * Otherwise queues the request
+   * @param {string} clientId - Client identifier
+   * @param {Object} ws - WebSocket connection (required only for new connections)
+   * @param {Object} request - Request object containing command info
+   * @returns {Promise<ClientConnection>} The connection to use
+   */
+  async acquire(clientId, ws = null, request = {}) {
     const enqueueTime = Date.now();
 
-    // Check for backpressure
-    if (this.requestQueue.size() >= this.backpressureThreshold) {
-      this.metrics.rejectedRequests++;
+    // Ensure request has a command property
+    const normalizedRequest = {
+      command: 'unknown',
+      priority: 'normal',
+      ...request
+    };
+
+    // Try to get existing connection
+    let connection = this.connections.get(clientId);
+
+    if (connection) {
+      // Connection exists - check if can accept command
+      if (connection.canAcceptCommand()) {
+        connection.connectionReuses++;
+        this.metrics.totalConnectionsReused++;
+        this.logger.debug(`[ConnectionPool] Reusing connection for ${clientId}`, {
+          reuses: connection.connectionReuses,
+          active: connection.activeCommands
+        });
+        connection.recordCommand(normalizedRequest.command, 0, false);
+        return connection;
+      }
+
+      // Connection exists but at capacity - queue request
+      return this._queueRequest(clientId, normalizedRequest, enqueueTime);
+    }
+
+    // No existing connection - check if we can create one
+    if (this.connections.size < this.maxConnections) {
+      if (!ws) {
+        throw new Error(`WebSocket connection required to create new connection for ${clientId}`);
+      }
+
+      connection = new ClientConnection(clientId, ws, {
+        maxConcurrentPerConnection: 5,
+        maxRetries: this.maxRetries
+      });
+
+      this.connections.set(clientId, connection);
+      this.metrics.totalConnectionsCreated++;
+
+      // Update peak connections
+      if (this.connections.size > this.metrics.peakActiveConnections) {
+        this.metrics.peakActiveConnections = this.connections.size;
+      }
+
+      this.logger.info(`[ConnectionPool] Created new connection for ${clientId}`, {
+        totalConnections: this.connections.size,
+        maxConnections: this.maxConnections
+      });
+
+      connection.recordCommand(normalizedRequest.command, 0, false);
+      return connection;
+    }
+
+    // Pool is at capacity - queue request
+    return this._queueRequest(clientId, normalizedRequest, enqueueTime);
+  }
+
+  /**
+   * Queue a request when pool is at capacity
+   * @private
+   */
+  async _queueRequest(clientId, request, enqueueTime) {
+    // Initialize blocking queue if needed
+    if (!this.blockingQueue) {
+      this.blockingQueue = [];
+    }
+
+    // Check current queue size before adding
+    const currentQueueSize = this.blockingQueue.length;
+    const totalQueued = this.connections.size + currentQueueSize;
+
+    // Check if queue is getting too large (max 2x the pool size)
+    if (totalQueued >= this.maxConnections * 2) {
+      this.metrics.totalRejectedRequests++;
       throw new Error(
-        `Connection pool backpressure: ${this.requestQueue.size()} queued requests ` +
-        `(max capacity: ${this.maxQueueSize}). Try again in a moment.`
+        `Connection pool exhausted: ${this.connections.size} active, ` +
+        `${currentQueueSize} queued. Max capacity: ${this.maxConnections}`
       );
     }
 
-    // Queue the request with metadata
-    const queuedRequest = {
-      ...request,
-      enqueueTime,
-      dequeueTime: null,
-      executeTime: null
-    };
+    // Track metrics BEFORE adding to queue
+    this.metrics.totalQueuedRequests++;
+    const newQueueSize = currentQueueSize + 1;
 
-    // Try to execute immediately if slot available
-    if (this.activeConnections < this.poolSize) {
-      return this._executeRequest(queuedRequest);
+    // Update peak queue size
+    if (newQueueSize > this.metrics.peakQueueSize) {
+      this.metrics.peakQueueSize = newQueueSize;
     }
 
-    // Otherwise queue for later execution (with priority)
+    this.logger.debug(`[ConnectionPool] Queueing request for ${clientId}`, {
+      queue: newQueueSize,
+      active: this.connections.size,
+      totalQueuedRequests: this.metrics.totalQueuedRequests
+    });
+
     return new Promise((resolve, reject) => {
-      queuedRequest.resolve = resolve;
-      queuedRequest.reject = reject;
-      this.requestQueue.enqueue(queuedRequest);
+      const queuedRequest = {
+        clientId,
+        request,
+        enqueueTime,
+        resolve,
+        reject,
+        priority: request.priority || 'normal',
+        timedOut: false,
+        processed: false,        // NEW: Flag to prevent double-processing
+        timeoutHandle: null,     // NEW: Initialize to null for atomic operations
+        settled: false           // NEW: Track if promise is settled
+      };
+
+      this.blockingQueue.push(queuedRequest);
+
+      // NEW: Atomic timeout set with synchronized timeout callback
+      // Sets timeout with immediate reference, preventing race conditions
+      queuedRequest.timeoutHandle = setTimeout(() => {
+        // ATOMIC: Check flags before processing timeout
+        if (queuedRequest.timedOut || queuedRequest.processed || queuedRequest.settled) {
+          return; // Already handled
+        }
+
+        // ATOMIC: Mark as timed out to prevent concurrent processing
+        queuedRequest.timedOut = true;
+        queuedRequest.settled = true;
+
+        // SAFE: Remove from queue
+        const idx = this.blockingQueue.indexOf(queuedRequest);
+        if (idx >= 0) {
+          this.blockingQueue.splice(idx, 1);
+        }
+
+        this.metrics.totalRejectedRequests++;
+        reject(new Error(
+          `Request timeout: waited ${this.queueTimeout}ms for available connection`
+        ));
+      }, this.queueTimeout);
+
+      // Track original resolve/reject to mark settled
+      const originalResolve = resolve;
+      const originalReject = reject;
+
+      queuedRequest.resolve = (value) => {
+        if (!queuedRequest.settled) {
+          queuedRequest.settled = true;
+          originalResolve(value);
+        }
+      };
+
+      queuedRequest.reject = (error) => {
+        if (!queuedRequest.settled) {
+          queuedRequest.settled = true;
+          originalReject(error);
+        }
+      };
     });
   }
 
   /**
-   * Execute a request using an active connection slot
-   * @private
+   * Release a connection (command completed)
+   * SYNCHRONIZED: Safely processes queued requests without race conditions with timeouts
+   * @param {string} clientId - Client identifier
    */
-  async _executeRequest(request) {
-    this.activeConnections++;
-
-    // Update peak concurrency
-    if (this.activeConnections > this.metrics.peakConcurrency) {
-      this.metrics.peakConcurrency = this.activeConnections;
+  release(clientId) {
+    const connection = this.connections.get(clientId);
+    if (!connection) {
+      this.logger.warn(`[ConnectionPool] Release called for unknown connection: ${clientId}`, {
+        poolSize: this.connections.size,
+        reason: 'Connection may have been cleaned up during idle timeout'
+      });
+      return;
     }
 
-    try {
-      const startTime = Date.now();
-      request.executeTime = startTime;
+    connection.completeCommand();
 
-      // Log queue depth at peak concurrency (OPT-5 monitoring)
-      if (this.activeConnections === this.metrics.peakConcurrency) {
-        const queueSize = this.requestQueue.size();
-        this.metrics.peakQueueDepth = Math.max(this.metrics.peakQueueDepth, queueSize);
-        if (this.metrics.peakConcurrency % 10 === 0) {
-          console.log(`[PoolMetrics] Peak concurrency: ${this.activeConnections}, Queue: ${queueSize}`);
+    // SYNCHRONIZED: Process next queued request for this client
+    // The processed flag and atomic timeout ensure no race conditions
+    this._processQueuedRequests(clientId);
+  }
+
+  /**
+   * Process queued requests for a specific client
+   * @private
+   * SYNCHRONIZED: Ensures each queued request is processed exactly once
+   */
+  _processQueuedRequests(clientId) {
+    const connection = this.connections.get(clientId);
+    if (!connection || !connection.canAcceptCommand()) {
+      return;
+    }
+
+    // Process blocking queue - find next available request
+    if (!this.blockingQueue || this.blockingQueue.length === 0) {
+      return;
+    }
+
+    // Find and process next queued request (skip timed out ones)
+    // Also clean up timed out requests from the queue
+    let foundRequest = false;
+    for (let i = 0; i < this.blockingQueue.length; i++) {
+      const req = this.blockingQueue[i];
+      if (req.timedOut) {
+        // Remove timed out request
+        this.blockingQueue.splice(i, 1);
+        i--; // Adjust index after removal
+      } else if (!foundRequest && !req.processed) {
+        // NEW: Check processed flag to prevent double-processing
+        // Process first non-timed-out, non-processed request
+        this.blockingQueue.splice(i, 1);
+        this._handleQueuedRequest(req, connection);
+        foundRequest = true;
+        return; // Only process one request per release (SYNCHRONIZED)
+      }
+    }
+  }
+
+  /**
+   * Handle a queued request
+   * @private
+   * ATOMIC: Marks processed before clearing timeout to prevent race conditions
+   */
+  _handleQueuedRequest(queuedRequest, connection) {
+    // ATOMIC: Check and set processed flag first
+    // This prevents timeout callback and release() from processing simultaneously
+    if (queuedRequest.timedOut || queuedRequest.processed) {
+      return; // Already handled by timeout or another release
+    }
+
+    queuedRequest.processed = true; // NEW: Mark as processed BEFORE clearing timeout
+
+    // Clear timeout - now safe as processed flag is set
+    if (queuedRequest.timeoutHandle) {
+      clearTimeout(queuedRequest.timeoutHandle);
+      queuedRequest.timeoutHandle = null; // NEW: Clear reference
+    }
+
+    // Record queue wait time
+    const queueWait = Date.now() - queuedRequest.enqueueTime;
+    this.metrics.queueWaitSamples.push(queueWait);
+    if (this.metrics.queueWaitSamples.length > 100) {
+      this.metrics.queueWaitSamples.shift();
+    }
+
+    if (this.metrics.queueWaitSamples.length > 0) {
+      this.metrics.averageQueueWait = (
+        this.metrics.queueWaitSamples.reduce((a, b) => a + b, 0) / this.metrics.queueWaitSamples.length
+      ).toFixed(2);
+    }
+
+    connection.recordCommand(queuedRequest.request.command || 'unknown', 0, false);
+    queuedRequest.resolve(connection);
+  }
+
+  /**
+   * Mark a connection as unhealthy and handle retry/cleanup
+   * @param {string} clientId - Client identifier
+   */
+  markConnectionUnhealthy(clientId) {
+    const connection = this.connections.get(clientId);
+    if (!connection) {
+      return;
+    }
+
+    connection.markUnhealthy();
+
+    if (connection.isRetryExhausted()) {
+      this.logger.warn(`[ConnectionPool] Closing unhealthy connection after retries: ${clientId}`, {
+        retries: connection.retryCount,
+        totalRequests: connection.totalRequests
+      });
+      this.closeConnection(clientId);
+    }
+  }
+
+  /**
+   * Explicitly close a connection
+   * @param {clientId} clientId - Client identifier
+   */
+  closeConnection(clientId) {
+    const connection = this.connections.get(clientId);
+    if (!connection) {
+      return;
+    }
+
+    // Close WebSocket
+    if (connection.ws && connection.ws.readyState !== connection.ws.CLOSED) {
+      try {
+        connection.ws.close(1000, 'Normal closure');
+      } catch (err) {
+        this.logger.debug(`[ConnectionPool] Error closing WebSocket: ${err.message}`);
+      }
+    }
+
+    // Remove from pool
+    this.connections.delete(clientId);
+    this.metrics.totalConnectionsClosed++;
+
+    this.logger.info(`[ConnectionPool] Closed connection: ${clientId}`, {
+      duration: Date.now() - connection.createdAt,
+      totalRequests: connection.totalRequests,
+      totalErrors: connection.totalErrors
+    });
+  }
+
+  /**
+   * Start automatic idle connection cleanup
+   * @private
+   */
+  _startIdleCleanup() {
+    this.cleanupInterval = setInterval(() => {
+      try {
+        const checkStartTime = Date.now();
+        const connectionsToClose = [];
+        const idleConnections = [];
+
+        // Find idle connections (capture details before deletion)
+        this.connections.forEach((connection, clientId) => {
+          const idleDuration = connection.getIdleDuration();
+          if (connection.isIdle(this.idleTimeout)) {
+            connectionsToClose.push(clientId);
+            idleConnections.push({
+              clientId,
+              idleDurationMs: idleDuration,
+              activeCommands: connection.activeCommands,
+              totalRequests: connection.totalRequests
+            });
+          }
+        });
+
+        // Log cleanup scan results
+        if (connectionsToClose.length > 0) {
+          this.logger.info(`[ConnectionPool] Idle cleanup: removing ${connectionsToClose.length}/${this.connections.size} connections`, {
+            idleConnections,
+            idleTimeoutMs: this.idleTimeout,
+            poolSize: this.connections.size
+          });
+        } else if (this.connections.size > 0) {
+          this.logger.debug(`[ConnectionPool] Idle cleanup scan: no idle connections (timeout: ${this.idleTimeout}ms, pool: ${this.connections.size})`);
         }
-      }
 
-      // Execute the request using the provided handler
-      const result = await this.executeHandler(request);
+        // Close idle connections (metrics and logging after capture)
+        for (const clientId of connectionsToClose) {
+          const connection = this.connections.get(clientId);
+          if (connection) {
+            const idleDurationMs = connection.getIdleDuration();
+            this.metrics.totalIdleCleanups++;
 
-      this.metrics.totalProcessed++;
+            this.logger.debug(`[ConnectionPool] Closing idle connection: ${clientId}`, {
+              idleDurationMs,
+              activeCommands: connection.activeCommands,
+              totalRequests: connection.totalRequests,
+              totalErrors: connection.totalErrors,
+              idleTimeoutMs: this.idleTimeout
+            });
 
-      // Record queue wait time
-      const queueWait = (request.dequeueTime || request.executeTime) - request.enqueueTime;
-      this.metrics.queueWaitSamples.push(queueWait);
-      this.metrics.totalQueueWaitMs += queueWait;
-
-      // Keep only last 100 samples for average calculation
-      if (this.metrics.queueWaitSamples.length > 100) {
-        this.metrics.queueWaitSamples.shift();
-      }
-
-      // Update average
-      this.metrics.avgQueueWait =
-        this.metrics.totalQueueWaitMs / this.metrics.totalProcessed;
-
-      return result;
-    } finally {
-      this.activeConnections--;
-
-      // Process next queued request if available (priority-based)
-      if (!this.requestQueue.isEmpty()) {
-        const nextRequest = this.requestQueue.dequeue();
-        nextRequest.dequeueTime = Date.now();
-
-        try {
-          const result = await this._executeRequest(nextRequest);
-          nextRequest.resolve(result);
-        } catch (error) {
-          nextRequest.reject(error);
+            this.closeConnection(clientId);
+          }
         }
+
+        // Log if cleanup scan took too long
+        const checkDurationMs = Date.now() - checkStartTime;
+        if (checkDurationMs > 100) {
+          this.logger.warn(`[ConnectionPool] Idle cleanup scan took ${checkDurationMs}ms`, {
+            connectionsScanned: this.connections.size,
+            connectionsRemoved: connectionsToClose.length
+          });
+        }
+      } catch (error) {
+        this.logger.error(`[ConnectionPool] Error in idle cleanup: ${error.message}`, {
+          stack: error.stack
+        });
       }
+    }, 30000); // Check every 30 seconds (5min timeout / 30sec check = avg 15s detection)
+  }
+
+  /**
+   * Stop idle connection cleanup
+   */
+  stopCleanup() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
   }
 
@@ -157,23 +615,44 @@ class ConnectionPool {
    * Get current pool status
    */
   getStatus() {
-    const queueStatus = this.requestQueue.getStatus();
+    const activeCount = this.connections.size;
+    const idleCount = Array.from(this.connections.values()).filter(
+      conn => conn.activeCommands === 0
+    ).length;
+    const queueSize = this.blockingQueue ? this.blockingQueue.length : 0;
+
     return {
-      active: this.activeConnections,
-      queued: this.requestQueue.size(),
-      poolSize: this.poolSize,
-      utilization: (this.activeConnections / this.poolSize * 100).toFixed(2) + '%',
-      queueBreakdown: {
-        critical: queueStatus.critical,
-        normal: queueStatus.normal,
-        low: queueStatus.low
-      },
+      active: activeCount,
+      idle: idleCount,
+      utilization: activeCount + '/' + this.maxConnections + ' (' + ((activeCount / this.maxConnections) * 100).toFixed(1) + '%)',
+      queue: queueSize,
+      maxConnections: this.maxConnections,
       metrics: {
-        totalProcessed: this.metrics.totalProcessed,
-        peakConcurrency: this.metrics.peakConcurrency,
-        avgQueueWaitMs: this.metrics.avgQueueWait.toFixed(2),
-        rejectedRequests: this.metrics.rejectedRequests
+        peakConnections: this.metrics.peakActiveConnections,
+        peakQueue: this.metrics.peakQueueSize,
+        reusedConnections: this.metrics.totalConnectionsReused,
+        rejectedRequests: this.metrics.totalRejectedRequests,
+        avgQueueWaitMs: this.metrics.averageQueueWait
       }
+    };
+  }
+
+  /**
+   * Validate queue metrics are synchronized
+   * @private
+   */
+  _validateQueueMetrics() {
+    const actualQueueSize = this.getQueueSize();
+
+    // Count non-timed-out requests
+    const validQueuedRequests = this.blockingQueue.filter(req => !req.timedOut).length;
+
+    return {
+      actualQueueSize,
+      validQueuedRequests,
+      metricsSync: actualQueueSize === validQueuedRequests,
+      peakQueueSize: this.metrics.peakQueueSize,
+      totalQueuedRequests: this.metrics.totalQueuedRequests
     };
   }
 
@@ -181,21 +660,162 @@ class ConnectionPool {
    * Get detailed metrics
    */
   getMetrics() {
+    const connections = [];
+    this.connections.forEach((conn) => {
+      connections.push(conn.getMetrics());
+    });
+
+    const currentQueueSize = this.blockingQueue ? this.blockingQueue.length : 0;
+    const validQueueSize = this.blockingQueue
+      ? this.blockingQueue.filter(req => !req.timedOut).length
+      : 0;
+
     return {
-      ...this.metrics,
-      activeConnections: this.activeConnections,
-      queuedRequests: this.requestQueue.size()
+      summary: {
+        ...this.metrics,
+        currentActiveConnections: this.connections.size,
+        currentQueueSize: currentQueueSize,
+        validQueueSize: validQueueSize,
+        utilizationPercent: ((this.connections.size / this.maxConnections) * 100).toFixed(2),
+        queueMetricsSync: currentQueueSize === validQueueSize
+      },
+      connections
     };
   }
 
   /**
-   * Drain the queue - wait for all queued requests to complete
+   * Drain all connections - close gracefully
+   * FIX: Explicit timeout handling to prevent hanging on queue rejection
    */
   async drain() {
-    while (!this.requestQueue.isEmpty() || this.activeConnections > 0) {
-      await new Promise(resolve => setTimeout(resolve, 10));
+    this.logger.info('[ConnectionPool] Draining pool', {
+      activeConnections: this.connections.size,
+      queuedRequests: (this.blockingQueue ? this.blockingQueue.length : 0)
+    });
+
+    // FIX: Wrap entire drain operation in timeout to prevent indefinite hanging
+    try {
+      await Promise.race([
+        this._performDrain(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Drain operation timeout - forcing cleanup')), 2000)
+        )
+      ]);
+    } catch (err) {
+      // FIX: Force cleanup even if drain times out
+      this._forceDrainCleanup();
+      // Log but don't throw - allow test to continue with cleanup done
+      if (err.message.includes('timeout')) {
+        this.logger.warn('[ConnectionPool] Drain operation timed out', { error: err.message });
+      } else {
+        throw err;
+      }
     }
+  }
+
+  /**
+   * Perform actual drain operations
+   * @private
+   */
+  _performDrain() {
+    // FIX: Return promise immediately - do not use async/await which adds another microtask layer
+    // This ensures the timeout can interrupt synchronous operations
+    return new Promise((resolve) => {
+      try {
+        // Close all connections
+        const clientIds = Array.from(this.connections.keys());
+        for (const clientId of clientIds) {
+          this.closeConnection(clientId);
+        }
+
+        // FIX: Process queued requests with explicit error handling
+        // to ensure all promises settle immediately
+        if (this.blockingQueue) {
+          const queueSnapshot = this.blockingQueue.slice(); // Copy array
+          this.blockingQueue.length = 0; // Clear original
+
+          for (const req of queueSnapshot) {
+            // FIX: Skip already settled requests
+            if (req && !req.settled) {
+              // Clear timeout to prevent race conditions
+              if (req.timeoutHandle) {
+                clearTimeout(req.timeoutHandle);
+                req.timeoutHandle = null;
+              }
+              req.settled = true;
+              // FIX: Use try-catch in case reject callback throws
+              try {
+                req.reject(new Error('Pool drained'));
+              } catch (e) {
+                this.logger.debug('[ConnectionPool] Error rejecting queued request during drain', {
+                  error: e.message
+                });
+              }
+            }
+          }
+        }
+
+        this.stopCleanup();
+        this.logger.info('[ConnectionPool] Pool drained');
+        resolve();
+      } catch (err) {
+        this.logger.error('[ConnectionPool] Error during drain', { error: err.message });
+        resolve(); // Resolve even on error to unblock
+      }
+    });
+  }
+
+  /**
+   * Force cleanup when drain times out
+   * @private
+   */
+  _forceDrainCleanup() {
+    // FIX: Forcefully clear all connections
+    this.connections.clear();
+
+    // FIX: Forcefully settle all queued requests
+    if (this.blockingQueue) {
+      const queueSnapshot = this.blockingQueue.slice();
+      this.blockingQueue.length = 0;
+
+      for (const req of queueSnapshot) {
+        if (req && !req.settled) {
+          if (req.timeoutHandle) {
+            clearTimeout(req.timeoutHandle);
+          }
+          req.settled = true;
+          try {
+            req.reject(new Error('Pool drain forced cleanup'));
+          } catch (e) {
+            // Silent fail on already-rejected promises
+          }
+        }
+      }
+    }
+
+    this.stopCleanup();
+    this.logger.warn('[ConnectionPool] Forced drain cleanup completed');
+  }
+
+  /**
+   * Get health status for health endpoint
+   */
+  getHealthStatus() {
+    const activeCount = this.connections.size;
+    const utilizationPercent = (activeCount / this.maxConnections) * 100;
+    const isHealthy = utilizationPercent < 80 && this.metrics.totalRejectedRequests === 0;
+    const hasWarning = utilizationPercent > 50 || (this.blockingQueue ? this.blockingQueue.length : 0) > 10;
+
+    return {
+      poolUtilization: utilizationPercent.toFixed(1) + '%',
+      activeConnections: activeCount,
+      maxConnections: this.maxConnections,
+      queuedRequests: (this.blockingQueue ? this.blockingQueue.length : 0),
+      healthy: isHealthy,
+      warning: hasWarning ? 'High utilization or queue buildup' : null,
+      metrics: this.getStatus().metrics
+    };
   }
 }
 
-module.exports = { ConnectionPool };
+module.exports = { ConnectionPool, ClientConnection };

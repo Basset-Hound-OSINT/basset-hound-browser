@@ -1,9 +1,27 @@
 # Basset Hound Browser - TODO
 
-**Last Updated:** June 15, 2026
-**Current Version:** 12.5.0 (Production Live), 12.7.0 Phase 1 (Complete & Ready)
-**Next Milestones:** Phase 2 June 29, v12.8.0 July 13
-**Session Record:** [2026-06-15_COMPLETE-SESSION-FINAL-SUMMARY.md](archives/session_records/2026-06-15_COMPLETE-SESSION-FINAL-SUMMARY.md)
+**Last Updated:** July 4, 2026
+**Status:** ✅ **MVP COMPLETE (2026-07-04)** — see the [2026-07-04 session record](archives/session_records/2026-07-04_MVP-COMPLETION-ORCHESTRATED.md) and the authoritative [PROJECT-STATUS-MATRIX](planning/PROJECT-STATUS-MATRIX.md). The June "v12.5–12.8 production" entries below are **historical/superseded** — those "production" claims were inflated.
+**Open work (next tier):** [FEATURE-COMPLETION-ROADMAP.md](planning/FEATURE-COMPLETION-ROADMAP.md) — evasion/CAPTCHA (deferred research), Collaboration API (broken → fix + wire), live proxy routing (verify), `server.js` modularization.
+
+### ✅ Done 2026-07-03 → 07-04 (detail in the session records)
+- [x] Browser boots + drives headless; `npm run smoke:mvp` = 14/14 (was: did not boot at all)
+- [x] 17-tool MCP server (`mcp/server.py`) built + verified
+- [x] Fixed: response serializer, shell-vs-webview bug class, extract_*, get_cookies, HAR/WARC, session restore, ~7 require paths
+- [x] Forensic + compression commands registered (SHA-256 / chain-of-custody live)
+- [x] Security hardening: loopback bind, SSRF guard, PathValidator (CRITICAL + 4 HIGH closed)
+- [x] Pruned 78 dead files (evasion simulators, orphans, mock tests); docs made honest (13 bannered)
+- [x] Docs RAG deployed + working (localhost:10021); scope blacklist enforced (no agents/models)
+- [x] **One-shot `forensic_capture` command** (navigate → 13-file evidence bundle + SHA-256 manifest; smoke:mvp **15/15**) + 19-line Python client `tmp/real_world_test/capture_client.py` — see 2026-07-04_CAPTURE-CMD-GUI-RAG-AND-FILE-SIZE.md
+- [x] Local docs-RAG updated to latest multi-KB template (localhost:10021)
+
+### 🟡 In progress / ⏭️ next (2026-07-04 cont.)
+- [x] **Opt-in GUI** `--gui`/`BASSET_GUI=1` (or `npm run start:gui`) — DONE + live-verified: toggle + BOTH layout fixes (webview fills space, tabs horizontal); headless stays 15/15, unit 16/16
+- [x] **FILE-SIZE POLICE — no code file >1200 lines** — DONE: all 13 modularized (server.js 12,096→1,110 w/ 904 commands preserved; main.js 3,112→1,178; renderer 1,527→587; +proxy/extraction/config/fingerprint/image-metadata/interaction-recorder/network-forensics/page-monitor); smoke:mvp stayed 15/15
+- [x] Doc-INDEX coverage; differentiators proven live (Tor/proxy anonymity, coherent-UA fix, forensic_capture=MCP tool #18, GUI+headless capture); final verify **smoke 15/15 + mcp exit 0**
+- [ ] **NEXT — Phase 1: command-surface verification & repair** — inventory all 904 registered commands → auto-test → classify works/broken/stub/dead → fix → true "all tools working" map (only ~70 of 904 are PROVEN today). Then Phase 2 onboarding self-test, Phase 3 wire-capture/evasion-timing, Phase 4 palletai MCP integration.
+
+**➡️ Full detail:** [2026-07-04 Modularization & Differentiators session record](archives/session_records/2026-07-04_MODULARIZATION-AND-DIFFERENTIATORS.md)
 
 ## Current Status Summary
 
@@ -80,12 +98,31 @@ See: /docs/releases/GATE-DECISIONS-MATRIX.md
 - PROJECT-STATUS-2026.md - Current dashboard
 - docs/ROADMAP.md - Full roadmap
 
+## ARCHITECTURAL DECISION (June 20, 2026)
+
+**API-First Architecture Adopted**
+- ✅ SDK development discontinued (Python, JavaScript, Go, Java, etc.)
+- ✅ Focus shifted to auto-generated API documentation
+- ✅ Multi-language example scripts replace maintained SDKs
+- ✅ Docker deployment is standardized deployment method
+
+See: `/docs/DEVELOPMENT-BLACKLIST.md` for details
+See: `/docs/PROJECT-SCOPE.md` (updated Architecture section)
+See: `/docs/FORENSIC-FEATURES-ROADMAP.md` (new document with architectural decisions)
+
+**What Changed for Development:**
+- No SDK maintenance work in Phase 2 or v12.8.0
+- All development focuses on API quality and documentation
+- Example scripts (not SDKs) added to demonstrate integration patterns
+- OpenAPI/Swagger documentation is auto-generated
+
 ## WHAT'S NEXT
 
 **Immediate (June 25-28):**
 - Pre-flight checks for Phase 2 (See PHASE2-EXECUTION-CHECKLIST.md)
 - Environment verification
 - Final spec review
+- **NEW:** Verify Phase 2 plan excludes SDK development (API-first only)
 
 **June 29:**
 - Spawn Phase 2 Feature 1-4 Development Agents

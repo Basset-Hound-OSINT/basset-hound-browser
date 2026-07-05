@@ -49,15 +49,25 @@ class MockPriorityQueue {
   }
 
   dequeue() {
-    if (this.queues.critical.length) return this.queues.critical.shift();
-    if (this.queues.normal.length) return this.queues.normal.shift();
-    if (this.queues.low.length) return this.queues.low.shift();
+    if (this.queues.critical.length) {
+      return this.queues.critical.shift();
+    }
+    if (this.queues.normal.length) {
+      return this.queues.normal.shift();
+    }
+    if (this.queues.low.length) {
+      return this.queues.low.shift();
+    }
     return null;
   }
 
   classify(command) {
-    if (['screenshot', 'screenshot_full_page'].includes(command)) return 'critical';
-    if (['ping', 'status'].includes(command)) return 'low';
+    if (['screenshot', 'screenshot_full_page'].includes(command)) {
+      return 'critical';
+    }
+    if (['ping', 'status'].includes(command)) {
+      return 'low';
+    }
     return 'normal';
   }
 }
@@ -69,7 +79,9 @@ class MockRateLimiter {
   }
 
   canAccept() {
-    if (this.requests >= this.maxRequests) return false;
+    if (this.requests >= this.maxRequests) {
+      return false;
+    }
     this.requests++;
     return true;
   }
@@ -323,7 +335,9 @@ test('All command types execute together without conflicts', () => {
   for (let i = 0; i < 100; i++) {
     const cmd = commands[i % commands.length];
 
-    if (!limiter.canAccept()) break;
+    if (!limiter.canAccept()) {
+      break;
+    }
 
     queue.enqueue(cmd, queue.classify(cmd));
 
@@ -414,7 +428,9 @@ test('No conflicts under high load (100+ operations)', () => {
 
   try {
     for (let i = 0; i < 200; i++) {
-      if (!limiter.canAccept()) break;
+      if (!limiter.canAccept()) {
+        break;
+      }
 
       queue.enqueue(`cmd_${i}`, 'normal');
       cache.set(`key_${i}`, `val_${i}`);

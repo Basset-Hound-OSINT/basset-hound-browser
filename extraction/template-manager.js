@@ -621,8 +621,8 @@ class TemplateManager extends EventEmitter {
    * Extract field value
    */
   async _extractField(fieldConfig, contextHtml = null) {
-    let selector = fieldConfig.selector;
-    let selectors = fieldConfig.selectors || [selector];
+    const selector = fieldConfig.selector;
+    const selectors = fieldConfig.selectors || [selector];
 
     // Try each selector until we find a match
     for (const sel of selectors) {
@@ -705,12 +705,12 @@ class TemplateManager extends EventEmitter {
       // Try multiple attributes
       return `
         ${attributes.map(attr => {
-          if (attr === 'textContent' || attr === 'innerText') {
-            return `if (${elVar}.${attr}) return ${elVar}.${attr}.trim();`;
-          } else {
-            return `if (${elVar}.getAttribute('${attr}')) return ${elVar}.getAttribute('${attr}');`;
-          }
-        }).join('\n')}
+    if (attr === 'textContent' || attr === 'innerText') {
+      return `if (${elVar}.${attr}) return ${elVar}.${attr}.trim();`;
+    } else {
+      return `if (${elVar}.getAttribute('${attr}')) return ${elVar}.getAttribute('${attr}');`;
+    }
+  }).join('\n')}
         return null;
       `;
     }
@@ -720,26 +720,28 @@ class TemplateManager extends EventEmitter {
    * Transform extracted value
    */
   _transformValue(value, transform) {
-    if (!transform) return value;
+    if (!transform) {
+      return value;
+    }
 
     switch (transform) {
-      case 'extractNumber':
-        if (Array.isArray(value)) {
-          return value.map(v => this._extractNumber(v));
-        }
-        return this._extractNumber(value);
+    case 'extractNumber':
+      if (Array.isArray(value)) {
+        return value.map(v => this._extractNumber(v));
+      }
+      return this._extractNumber(value);
 
-      case 'toLowerCase':
-        return value.toLowerCase();
+    case 'toLowerCase':
+      return value.toLowerCase();
 
-      case 'toUpperCase':
-        return value.toUpperCase();
+    case 'toUpperCase':
+      return value.toUpperCase();
 
-      case 'trim':
-        return value.trim();
+    case 'trim':
+      return value.trim();
 
-      default:
-        return value;
+    default:
+      return value;
     }
   }
 
@@ -747,7 +749,9 @@ class TemplateManager extends EventEmitter {
    * Extract number from string
    */
   _extractNumber(str) {
-    if (typeof str !== 'string') return str;
+    if (typeof str !== 'string') {
+      return str;
+    }
 
     // Remove commas and extract first number
     const match = str.replace(/,/g, '').match(/\d+(\.\d+)?/);

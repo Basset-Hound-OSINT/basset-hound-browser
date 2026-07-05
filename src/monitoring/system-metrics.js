@@ -332,11 +332,15 @@ class SystemMetricsCollector extends EventEmitter {
           const lines = procNet.split('\n');
           for (let i = 2; i < lines.length; i++) {
             const line = lines[i];
-            if (!line.trim()) continue;
+            if (!line.trim()) {
+              continue;
+            }
 
             const parts = line.trim().split(/\s+/);
             // Skip loopback
-            if (parts[0].startsWith('lo:')) continue;
+            if (parts[0].startsWith('lo:')) {
+              continue;
+            }
 
             bytesIn += parseInt(parts[1]) || 0;
             packetsIn += parseInt(parts[2]) || 0;

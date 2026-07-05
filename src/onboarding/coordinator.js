@@ -29,7 +29,9 @@ class OnboardingCoordinator extends EventEmitter {
    * Initialize coordinator and load user data
    */
   async initialize() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
 
     try {
       await this.ensureDataDirectory();
@@ -49,7 +51,9 @@ class OnboardingCoordinator extends EventEmitter {
     try {
       await fs.mkdir(this.dataDir, { recursive: true });
     } catch (error) {
-      if (error.code !== 'EEXIST') throw error;
+      if (error.code !== 'EEXIST') {
+        throw error;
+      }
     }
   }
 
@@ -57,7 +61,9 @@ class OnboardingCoordinator extends EventEmitter {
    * Load user data from storage
    */
   async loadUserData() {
-    if (!this.userId) return;
+    if (!this.userId) {
+      return;
+    }
 
     const userDataFile = path.join(this.dataDir, `${this.userId}.json`);
     try {
@@ -79,8 +85,12 @@ class OnboardingCoordinator extends EventEmitter {
    * Register an onboarding step
    */
   registerStep(stepId, stepConfig) {
-    if (!stepConfig.name) throw new Error(`Step ${stepId} missing required name`);
-    if (!stepConfig.handler) throw new Error(`Step ${stepId} missing required handler`);
+    if (!stepConfig.name) {
+      throw new Error(`Step ${stepId} missing required name`);
+    }
+    if (!stepConfig.handler) {
+      throw new Error(`Step ${stepId} missing required handler`);
+    }
 
     this.stepRegistry.set(stepId, {
       id: stepId,
@@ -126,7 +136,9 @@ class OnboardingCoordinator extends EventEmitter {
    */
   validatePrerequisites(stepId) {
     const step = this.getStep(stepId);
-    if (!step) return { valid: false, reason: 'Step not found' };
+    if (!step) {
+      return { valid: false, reason: 'Step not found' };
+    }
 
     if (!step.prerequisites || step.prerequisites.length === 0) {
       return { valid: true };
@@ -303,7 +315,9 @@ class OnboardingCoordinator extends EventEmitter {
    */
   isOnboardingComplete() {
     const sequence = this.getStepSequence();
-    if (sequence.length === 0) return false;
+    if (sequence.length === 0) {
+      return false;
+    }
 
     const requiredSteps = sequence.filter(id => {
       const step = this.getStep(id);
@@ -389,7 +403,9 @@ class OnboardingCoordinator extends EventEmitter {
    * Calculate average time per step
    */
   calculateAverageStepTime() {
-    if (this.stepProgress.size === 0) return 0;
+    if (this.stepProgress.size === 0) {
+      return 0;
+    }
 
     let totalTime = 0;
     let count = 0;
@@ -463,7 +479,9 @@ class OnboardingCoordinator extends EventEmitter {
    * Persist user data to storage
    */
   async persistUserData() {
-    if (!this.userId) return;
+    if (!this.userId) {
+      return;
+    }
 
     const userDataFile = path.join(this.dataDir, `${this.userId}.json`);
     const data = {

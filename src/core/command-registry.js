@@ -118,7 +118,9 @@ class CommandRegistry {
    * @returns {Function|null} Handler function or null if not found
    */
   get(name) {
-    if (!name) return null;
+    if (!name) {
+      return null;
+    }
     return this.handlers.get(name.toLowerCase()) || null;
   }
 
@@ -128,7 +130,9 @@ class CommandRegistry {
    * @returns {boolean}
    */
   has(name) {
-    if (!name) return false;
+    if (!name) {
+      return false;
+    }
     return this.handlers.has(name.toLowerCase());
   }
 
@@ -159,7 +163,9 @@ class CommandRegistry {
    * @returns {Object|null} Metadata or null if not found
    */
   getMetadata(name) {
-    if (!name) return null;
+    if (!name) {
+      return null;
+    }
     return this.metadata.get(name.toLowerCase()) || null;
   }
 
@@ -209,7 +215,9 @@ class CommandRegistry {
    * @returns {boolean} True if command was removed
    */
   unregister(name) {
-    if (!name) return false;
+    if (!name) {
+      return false;
+    }
 
     const nameKey = name.toLowerCase();
     const removed = this.handlers.delete(nameKey) || this.metadata.delete(nameKey);

@@ -217,7 +217,7 @@ verifyManifestIntegrity(manifestId)
 
 ### 4. WebSocket Commands
 
-**File:** `websocket/commands/evidence-packaging.js`
+**File:** `websocket/commands/forensic/packaging/evidence-packaging.js`
 
 **19 Total Commands (14 original + 5 new):**
 
@@ -572,7 +572,7 @@ Monitor these metrics in production:
 | `evidence/chain-of-custody.js` | Enhanced | RFC 3161, ISO 27037, methods added |
 | `evidence/manifest-generator.js` | Enhanced | Timestamp support, compliance statements |
 | `evidence/package-builder.js` | Enhanced | ZIP export, performance monitoring |
-| `websocket/commands/evidence-packaging.js` | Enhanced | 5 new commands, improved validation |
+| `websocket/commands/forensic/packaging/evidence-packaging.js` | Enhanced | 5 new commands, improved validation |
 | `tests/unit/evidence-packaging.test.js` | Enhanced | 21 new test cases |
 | `tests/integration/evidence-packaging-workflow.test.js` | Enhanced | 12 new integration tests |
 

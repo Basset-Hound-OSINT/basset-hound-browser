@@ -102,7 +102,7 @@ async function testConnectionRefused() {
   console.log('\n--- Test: Connection Refused Handling ---');
 
   const badExtension = new MockExtension({
-    url: 'ws://localhost:59999',  // Non-existent server
+    url: 'ws://localhost:59999', // Non-existent server
     autoReconnect: false
   });
 
@@ -345,7 +345,7 @@ async function testHeartbeatKeepAlive() {
 
   const heartbeatExt = testUtils.createExtension({
     autoReconnect: false,
-    heartbeatMs: 100  // Fast heartbeat for testing
+    heartbeatMs: 100 // Fast heartbeat for testing
   });
 
   await heartbeatExt.connect();
@@ -384,7 +384,7 @@ async function testConnectionTimeout() {
   let timedOut = false;
 
   // Connect to non-responsive address (should timeout)
-  const slowServer = 'ws://10.255.255.1:8765';  // Non-routable address
+  const slowServer = 'ws://10.255.255.1:8765'; // Non-routable address
   const slowExt = new MockExtension({
     url: slowServer,
     autoReconnect: false
@@ -421,7 +421,7 @@ async function testConnectionEventOrdering() {
   eventExt.on('disconnected', () => events.push('disconnected'));
 
   await eventExt.connect();
-  await testUtils.delay(100);  // Wait for initial messages
+  await testUtils.delay(100); // Wait for initial messages
 
   eventExt.disconnect();
   await testUtils.delay(100);

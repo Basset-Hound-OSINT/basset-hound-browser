@@ -36,7 +36,9 @@ class PerformanceMetrics {
 
   getMetrics(label) {
     const filtered = this.measurements.filter(m => m.label === label);
-    if (filtered.length === 0) return null;
+    if (filtered.length === 0) {
+      return null;
+    }
 
     const durations = filtered.map(m => m.duration);
     const sum = durations.reduce((a, b) => a + b, 0);

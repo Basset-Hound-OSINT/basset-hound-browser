@@ -225,7 +225,9 @@ class SupportReports extends EventEmitter {
   calculateAverageResolutionTime(tickets) {
     const resolvedTickets = tickets.filter(t => t.resolvedAt);
 
-    if (resolvedTickets.length === 0) return 0;
+    if (resolvedTickets.length === 0) {
+      return 0;
+    }
 
     const totalTime = resolvedTickets.reduce((sum, t) => {
       const created = new Date(t.createdAt);
@@ -242,7 +244,9 @@ class SupportReports extends EventEmitter {
   calculateAverageResponseTime(tickets) {
     const respondedTickets = tickets.filter(t => t.firstResponseAt);
 
-    if (respondedTickets.length === 0) return 0;
+    if (respondedTickets.length === 0) {
+      return 0;
+    }
 
     const totalTime = respondedTickets.reduce((sum, t) => {
       const created = new Date(t.createdAt);
@@ -350,7 +354,9 @@ class SupportReports extends EventEmitter {
    * Calculate SLA compliance
    */
   calculateSLACompliance(tickets) {
-    if (tickets.length === 0) return 100;
+    if (tickets.length === 0) {
+      return 100;
+    }
 
     const compliant = tickets.filter(t =>
       t.sla.responseMet !== false && t.sla.resolutionMet !== false
@@ -372,7 +378,9 @@ class SupportReports extends EventEmitter {
    * Calculate breach rate
    */
   calculateBreachRate(tickets) {
-    if (tickets.length === 0) return 0;
+    if (tickets.length === 0) {
+      return 0;
+    }
 
     const breaches = this.calculateBreachCount(tickets);
     return Math.round((breaches / tickets.length) * 100);
@@ -382,7 +390,9 @@ class SupportReports extends EventEmitter {
    * Calculate escalation rate
    */
   calculateEscalationRate(tickets) {
-    if (tickets.length === 0) return 0;
+    if (tickets.length === 0) {
+      return 0;
+    }
 
     const escalated = tickets.filter(t => t.escalations.length > 0).length;
     return Math.round((escalated / tickets.length) * 100);
@@ -392,7 +402,9 @@ class SupportReports extends EventEmitter {
    * Calculate customer satisfaction
    */
   calculateCustomerSatisfaction(tickets) {
-    if (tickets.length === 0) return 0;
+    if (tickets.length === 0) {
+      return 0;
+    }
 
     // Simple satisfaction calculation based on resolution time and sentiment
     const satisfactionScores = tickets.map(t => {
@@ -401,16 +413,22 @@ class SupportReports extends EventEmitter {
       // Check sentiment of last response
       if (t.responses.length > 0) {
         const lastResponse = t.responses[t.responses.length - 1];
-        if (lastResponse.sentiment === 'positive') score += 1;
-        else if (lastResponse.sentiment === 'negative') score -= 1;
+        if (lastResponse.sentiment === 'positive') {
+          score += 1;
+        } else if (lastResponse.sentiment === 'negative') {
+          score -= 1;
+        }
       }
 
       // Adjust based on resolution time
       if (t.resolvedAt) {
         const time = new Date(t.resolvedAt) - new Date(t.createdAt);
         const expectedTime = 24 * 60 * 60 * 1000;
-        if (time < expectedTime) score += 1;
-        else if (time > expectedTime * 2) score -= 1;
+        if (time < expectedTime) {
+          score += 1;
+        } else if (time > expectedTime * 2) {
+          score -= 1;
+        }
       }
 
       return Math.max(1, Math.min(5, score));
@@ -576,7 +594,9 @@ class SupportReports extends EventEmitter {
    * Calculate NPS (Net Promoter Score)
    */
   calculateNPS(tickets) {
-    if (tickets.length === 0) return 0;
+    if (tickets.length === 0) {
+      return 0;
+    }
 
     const ratings = this.getRatingDistribution(tickets);
     const promoters = (ratings[5] || 0) + (ratings[4] || 0);
@@ -625,8 +645,11 @@ class SupportReports extends EventEmitter {
 
     if (ticket.responses.length > 0) {
       const lastResponse = ticket.responses[ticket.responses.length - 1];
-      if (lastResponse.sentiment === 'positive') rating += 1;
-      else if (lastResponse.sentiment === 'negative') rating -= 1;
+      if (lastResponse.sentiment === 'positive') {
+        rating += 1;
+      } else if (lastResponse.sentiment === 'negative') {
+        rating -= 1;
+      }
     }
 
     return Math.max(1, Math.min(5, rating));
@@ -638,9 +661,15 @@ class SupportReports extends EventEmitter {
   estimateEffort(ticket) {
     let effort = 3;
 
-    if (ticket.responses.length < 2) effort -= 1;
-    if (ticket.resolvedAt && (new Date(ticket.resolvedAt) - new Date(ticket.createdAt)) < 3600000) effort -= 1;
-    if (ticket.escalations.length > 0) effort += 1;
+    if (ticket.responses.length < 2) {
+      effort -= 1;
+    }
+    if (ticket.resolvedAt && (new Date(ticket.resolvedAt) - new Date(ticket.createdAt)) < 3600000) {
+      effort -= 1;
+    }
+    if (ticket.escalations.length > 0) {
+      effort += 1;
+    }
 
     return Math.max(1, Math.min(5, effort));
   }
@@ -775,7 +804,9 @@ class SupportReports extends EventEmitter {
    * Get average rating
    */
   calculateAverageRating(tickets) {
-    if (tickets.length === 0) return 0;
+    if (tickets.length === 0) {
+      return 0;
+    }
 
     const ratings = tickets.map(t => this.getTicketRating(t));
     const average = ratings.reduce((a, b) => a + b, 0) / ratings.length;
@@ -921,7 +952,9 @@ class SupportReports extends EventEmitter {
    * Calculate average escalation time
    */
   calculateAverageEscalationTime(escalations) {
-    if (escalations.length === 0) return 0;
+    if (escalations.length === 0) {
+      return 0;
+    }
 
     const totalTime = escalations.reduce((sum, ticket) => {
       if (ticket.escalations.length > 0) {

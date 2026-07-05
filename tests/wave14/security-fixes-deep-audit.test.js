@@ -55,20 +55,22 @@ class MockResidentialProxyManager {
   }
 
   getNextProxy() {
-    if (this.proxyPool.length === 0) return null;
+    if (this.proxyPool.length === 0) {
+      return null;
+    }
     let proxy;
 
     switch (this.rotationMode) {
-      case 'random':
-        const randomValue = crypto.randomBytes(4).readUInt32BE(0);
-        this.currentProxyIndex = randomValue % this.proxyPool.length;
-        proxy = this.proxyPool[this.currentProxyIndex];
-        break;
-      case 'round-robin':
-      default:
-        proxy = this.proxyPool[this.currentProxyIndex];
-        this.currentProxyIndex = (this.currentProxyIndex + 1) % this.proxyPool.length;
-        break;
+    case 'random':
+      const randomValue = crypto.randomBytes(4).readUInt32BE(0);
+      this.currentProxyIndex = randomValue % this.proxyPool.length;
+      proxy = this.proxyPool[this.currentProxyIndex];
+      break;
+    case 'round-robin':
+    default:
+      proxy = this.proxyPool[this.currentProxyIndex];
+      this.currentProxyIndex = (this.currentProxyIndex + 1) % this.proxyPool.length;
+      break;
     }
     return proxy;
   }
@@ -169,7 +171,9 @@ if (test('Proxy ID uses crypto.randomBytes instead of Math.random', () => {
   assert.strictEqual(id1.replace('proxy_', '').length, 32, 'ID should be 32 hex chars');
   // Should match format
   assert.match(id1, /^proxy_[a-f0-9]{32}$/, 'ID format correct');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Proxy IDs are unpredictable (no timestamp pattern)', () => {
@@ -190,7 +194,9 @@ if (test('Proxy IDs are unpredictable (no timestamp pattern)', () => {
     timestamps.add(hex.substring(0, 8));
   }
   assert(timestamps.size > 1, 'No obvious timestamp pattern');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Proxy IDs have high entropy', () => {
@@ -201,7 +207,9 @@ if (test('Proxy IDs have high entropy', () => {
   // Count unique characters
   const chars = new Set(hex.split(''));
   assert(chars.size > 12, 'High entropy in random component');
-})) passed++;
+})) {
+  passed++;
+}
 
 // TEST SUITE: CVE-W14-NEW-002 - Proxy Rotation RNG
 console.log('\n=== CVE-W14-NEW-002: Math.random() in Proxy Rotation ===');
@@ -224,7 +232,9 @@ if (test('Proxy rotation uses crypto.randomBytes', () => {
   // Should use multiple proxies
   const uniqueProxies = new Set(selected);
   assert(uniqueProxies.size > 1, 'Should rotate between proxies');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Proxy rotation distribution is unpredictable', () => {
@@ -250,7 +260,9 @@ if (test('Proxy rotation distribution is unpredictable', () => {
   // Patterns should differ (not deterministic)
   const uniquePatterns = new Set(patterns);
   assert(uniquePatterns.size > 1, 'Patterns should not be deterministic');
-})) passed++;
+})) {
+  passed++;
+}
 
 // TEST SUITE: CVE-W14-NEW-003 - JSDOM Timeout
 console.log('\n=== CVE-W14-NEW-003: Missing JSDOM Timeout ===');
@@ -260,7 +272,9 @@ if (test('JSDOM parsing includes timeout protection', () => {
   const detector = new MockChangeDetector();
   const result = detector._parseJsdomWithTimeout('<div>test</div>', 5000);
   assert.notStrictEqual(result, null, 'Should parse successfully');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Snapshot size validation is configured', () => {
@@ -271,7 +285,9 @@ if (test('Snapshot size validation is configured', () => {
 
   assertEquals(SIZE_LIMITS.SNAPSHOT, 50 * 1024 * 1024, '50MB snapshot limit');
   assertEquals(SIZE_LIMITS.MONITOR_DATA, 100 * 1024 * 1024, '100MB monitor limit');
-})) passed++;
+})) {
+  passed++;
+}
 
 // TEST SUITE: CVE-W14-NEW-004 - Proxy Reputation Validation
 console.log('\n=== CVE-W14-NEW-004: Unvalidated Proxy Reputation ===');
@@ -281,7 +297,9 @@ if (test('Proxy result validation checks success field', () => {
   const intel = new MockProxyIntelligence();
   const result = intel._validateProxyResult({ success: true, latency: 100 });
   assertEquals(result.valid, true, 'Valid result accepted');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Proxy result validation rejects invalid success', () => {
@@ -289,7 +307,9 @@ if (test('Proxy result validation rejects invalid success', () => {
   const result = intel._validateProxyResult({ success: 'invalid' });
   assertEquals(result.valid, false, 'Invalid success rejected');
   assert(result.errors.length > 0, 'Has error message');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Proxy result validation checks latency bounds', () => {
@@ -302,14 +322,18 @@ if (test('Proxy result validation checks latency bounds', () => {
 
   result = intel._validateProxyResult({ latency: 500 });
   assertEquals(result.valid, true, 'Valid latency accepted');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Proxy result validation checks blocked field', () => {
   const intel = new MockProxyIntelligence();
   const result = intel._validateProxyResult({ blocked: 'invalid' });
   assertEquals(result.valid, false, 'Invalid blocked field rejected');
-})) passed++;
+})) {
+  passed++;
+}
 
 // TEST SUITE: CVE-W14-NEW-005 - UUID Generation
 console.log('\n=== CVE-W14-NEW-005: Weak UUID Generation ===');
@@ -322,7 +346,9 @@ if (test('UUID generation uses crypto.randomUUID', () => {
   // Should be valid UUID v4 format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   assert.match(uuid, uuidRegex, 'Valid UUID v4 format');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Generated UUIDs are unique', () => {
@@ -334,7 +360,9 @@ if (test('Generated UUIDs are unique', () => {
   }
 
   assertEquals(uuids.size, 100, 'All 100 UUIDs are unique');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('UUIDs have correct version and variant', () => {
@@ -349,7 +377,9 @@ if (test('UUIDs have correct version and variant', () => {
   // Variant 10: first digit of 4th group should be 8, 9, a, or b
   const variant = parts[3][0];
   assert(['8', '9', 'a', 'b', 'A', 'B'].includes(variant), 'Valid RFC 4122 variant');
-})) passed++;
+})) {
+  passed++;
+}
 
 // TEST SUITE: CVE-W14-NEW-006 - Session Token Generation
 console.log('\n=== CVE-W14-NEW-006: Weak Session Token Generation ===');
@@ -364,7 +394,9 @@ if (test('Session ID uses crypto.randomBytes', () => {
   assert.notStrictEqual(id1, id2, 'Session IDs should be unique');
   // Should match format
   assert.match(id1, /^session-[a-f0-9]{32}$/, 'Correct format');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Session IDs are unpredictable', () => {
@@ -386,7 +418,9 @@ if (test('Session IDs are unpredictable', () => {
     prefixes.add(hex.substring(0, 8));
   }
   assert(prefixes.size > 10, 'No obvious patterns');
-})) passed++;
+})) {
+  passed++;
+}
 
 // TEST SUITE: CVE-W14-NEW-007 - Snapshot Size Validation
 console.log('\n=== CVE-W14-NEW-007: No Snapshot Size Validation ===');
@@ -400,13 +434,17 @@ if (test('Size limits are defined', () => {
 
   assert(SIZE_LIMITS.SNAPSHOT > 0, 'Snapshot limit defined');
   assert(SIZE_LIMITS.MONITOR_DATA > SIZE_LIMITS.SNAPSHOT, 'Monitor limit > Snapshot limit');
-})) passed++;
+})) {
+  passed++;
+}
 
 total++;
 if (test('Snapshot validation method exists', () => {
   // Simulating the validation logic
   const validateSnapshot = (snapshot) => {
-    if (!snapshot) return { valid: false, error: 'Null snapshot' };
+    if (!snapshot) {
+      return { valid: false, error: 'Null snapshot' };
+    }
 
     const serialized = JSON.stringify(snapshot);
     const sizeBytes = Buffer.byteLength(serialized, 'utf-8');
@@ -425,7 +463,9 @@ if (test('Snapshot validation method exists', () => {
   const largeData = { data: 'x'.repeat(60 * 1024 * 1024) };
   const largeResult = validateSnapshot(largeData);
   assertEquals(largeResult.valid, false, 'Oversized snapshot rejected');
-})) passed++;
+})) {
+  passed++;
+}
 
 // SUMMARY
 console.log('\n=== TEST SUMMARY ===');

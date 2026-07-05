@@ -215,44 +215,44 @@ class ReconnaissanceWorkflows extends EventEmitter {
     try {
       // Simulate step execution based on type
       switch (step.type) {
-        case 'lookup':
-          stepResult.result = await this.simulateLookup(config);
-          break;
-        case 'certificate':
-          stepResult.result = await this.simulateCertificateCheck(config);
-          break;
-        case 'dns':
-          stepResult.result = await this.simulateDNSResolution(config);
-          break;
-        case 'threat-intel':
-          stepResult.result = await this.simulateThreatIntelligence(config);
-          break;
-        case 'mapping':
-          stepResult.result = await this.simulateMapping(config);
-          break;
-        case 'correlation':
-          stepResult.result = await this.simulateCorrelation(config);
-          break;
-        case 'risk':
-          stepResult.result = await this.simulateRiskAssessment(config);
-          break;
-        case 'discovery':
-          stepResult.result = await this.simulateDiscovery(config);
-          break;
-        case 'services':
-          stepResult.result = await this.simulateServiceEnumeration(config);
-          break;
-        case 'asn':
-          stepResult.result = await this.simulateASNResearch(config);
-          break;
-        case 'enumeration':
-          stepResult.result = await this.simulateHostEnumeration(config);
-          break;
-        case 'analysis':
-          stepResult.result = await this.simulateAnalysis(config);
-          break;
-        default:
-          stepResult.result = { type: step.type, data: 'executed' };
+      case 'lookup':
+        stepResult.result = await this.simulateLookup(config);
+        break;
+      case 'certificate':
+        stepResult.result = await this.simulateCertificateCheck(config);
+        break;
+      case 'dns':
+        stepResult.result = await this.simulateDNSResolution(config);
+        break;
+      case 'threat-intel':
+        stepResult.result = await this.simulateThreatIntelligence(config);
+        break;
+      case 'mapping':
+        stepResult.result = await this.simulateMapping(config);
+        break;
+      case 'correlation':
+        stepResult.result = await this.simulateCorrelation(config);
+        break;
+      case 'risk':
+        stepResult.result = await this.simulateRiskAssessment(config);
+        break;
+      case 'discovery':
+        stepResult.result = await this.simulateDiscovery(config);
+        break;
+      case 'services':
+        stepResult.result = await this.simulateServiceEnumeration(config);
+        break;
+      case 'asn':
+        stepResult.result = await this.simulateASNResearch(config);
+        break;
+      case 'enumeration':
+        stepResult.result = await this.simulateHostEnumeration(config);
+        break;
+      case 'analysis':
+        stepResult.result = await this.simulateAnalysis(config);
+        break;
+      default:
+        stepResult.result = { type: step.type, data: 'executed' };
       }
 
       stepResult.status = 'success';
@@ -414,7 +414,7 @@ class ReconnaissanceWorkflows extends EventEmitter {
           status: execution.status,
           duration: `${execution.duration}ms`,
           steps: execution.steps.length
-        }},
+        } },
         { title: 'Results', content: execution.aggregated },
         { title: 'Errors', content: execution.errors }
       ];
@@ -430,7 +430,7 @@ class ReconnaissanceWorkflows extends EventEmitter {
           workflow: execution.metadata.templateName,
           outcome: execution.status,
           keyFindings: this.extractKeyFindings(execution)
-        }},
+        } },
         { title: 'Recommendations', content: this.generateRecommendations(execution) }
       ];
     }

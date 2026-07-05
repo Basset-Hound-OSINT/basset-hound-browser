@@ -10,11 +10,11 @@ const EventEmitter = require('events');
  * Anomaly Detection Strategies
  */
 const DETECTION_STRATEGIES = {
-  Z_SCORE: 'z-score',              // Standard deviation-based detection
-  IQR: 'iqr',                       // Interquartile range method
+  Z_SCORE: 'z-score', // Standard deviation-based detection
+  IQR: 'iqr', // Interquartile range method
   MOVING_AVERAGE: 'moving-average', // Moving average deviation
-  EXPONENTIAL: 'exponential',       // Exponential smoothing
-  PERCENTILE: 'percentile'          // Percentile-based thresholds
+  EXPONENTIAL: 'exponential', // Exponential smoothing
+  PERCENTILE: 'percentile' // Percentile-based thresholds
 };
 
 /**
@@ -26,13 +26,13 @@ class AnomalyDetector extends EventEmitter {
 
     this.options = {
       strategy: options.strategy || DETECTION_STRATEGIES.Z_SCORE,
-      zScoreThreshold: options.zScoreThreshold || 2.5,  // 2.5 standard deviations
-      iqrMultiplier: options.iqrMultiplier || 1.5,      // IQR * 1.5 for outliers
-      movingAverageWindow: options.movingAverageWindow || 7,  // 7-day window
-      percentileThreshold: options.percentileThreshold || 95,  // 95th percentile
+      zScoreThreshold: options.zScoreThreshold || 2.5, // 2.5 standard deviations
+      iqrMultiplier: options.iqrMultiplier || 1.5, // IQR * 1.5 for outliers
+      movingAverageWindow: options.movingAverageWindow || 7, // 7-day window
+      percentileThreshold: options.percentileThreshold || 95, // 95th percentile
       minDataPoints: options.minDataPoints || 5,
-      seasonalPeriod: options.seasonalPeriod || 7,  // 7 days for weekly seasonality
-      adaptiveThreshold: options.adaptiveThreshold !== false,  // Learn thresholds
+      seasonalPeriod: options.seasonalPeriod || 7, // 7 days for weekly seasonality
+      adaptiveThreshold: options.adaptiveThreshold !== false, // Learn thresholds
       enableAlerts: options.enableAlerts !== false,
       ...options
     };
@@ -163,18 +163,18 @@ class AnomalyDetector extends EventEmitter {
     const strategy = this.options.strategy;
 
     switch (strategy) {
-      case DETECTION_STRATEGIES.Z_SCORE:
-        return this.detectByZScore(monitor, change);
-      case DETECTION_STRATEGIES.IQR:
-        return this.detectByIQR(monitor, change);
-      case DETECTION_STRATEGIES.MOVING_AVERAGE:
-        return this.detectByMovingAverage(monitor, change);
-      case DETECTION_STRATEGIES.EXPONENTIAL:
-        return this.detectByExponentialSmoothing(monitor, change);
-      case DETECTION_STRATEGIES.PERCENTILE:
-        return this.detectByPercentile(monitor, change);
-      default:
-        return { isAnomaly: false, score: 0, severity: 'normal', reasons: [] };
+    case DETECTION_STRATEGIES.Z_SCORE:
+      return this.detectByZScore(monitor, change);
+    case DETECTION_STRATEGIES.IQR:
+      return this.detectByIQR(monitor, change);
+    case DETECTION_STRATEGIES.MOVING_AVERAGE:
+      return this.detectByMovingAverage(monitor, change);
+    case DETECTION_STRATEGIES.EXPONENTIAL:
+      return this.detectByExponentialSmoothing(monitor, change);
+    case DETECTION_STRATEGIES.PERCENTILE:
+      return this.detectByPercentile(monitor, change);
+    default:
+      return { isAnomaly: false, score: 0, severity: 'normal', reasons: [] };
     }
   }
 
@@ -414,7 +414,9 @@ class AnomalyDetector extends EventEmitter {
    */
   getMonitorStats(monitorId) {
     const monitor = this.monitors.get(monitorId);
-    if (!monitor) return null;
+    if (!monitor) {
+      return null;
+    }
 
     return {
       monitorId,
@@ -434,7 +436,9 @@ class AnomalyDetector extends EventEmitter {
    */
   recalibrateMonitor(monitorId) {
     const monitor = this.monitors.get(monitorId);
-    if (!monitor) return;
+    if (!monitor) {
+      return;
+    }
 
     monitor.stats = this.calculateStatistics(monitor.history);
     monitor.baseline = this.calculateBaseline(monitor.history);
@@ -453,7 +457,9 @@ class AnomalyDetector extends EventEmitter {
    * @private
    */
   calculatePercentile(values, percentile) {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {
+      return 0;
+    }
     const sorted = values.sort((a, b) => a - b);
     const index = Math.ceil((percentile / 100) * sorted.length) - 1;
     return sorted[Math.max(0, index)];
@@ -464,7 +470,9 @@ class AnomalyDetector extends EventEmitter {
    * @private
    */
   calculateSkewness(values, mean, stdDev) {
-    if (values.length < 3 || stdDev === 0) return 0;
+    if (values.length < 3 || stdDev === 0) {
+      return 0;
+    }
     const cubed = values.reduce((sum, val) => sum + Math.pow((val - mean) / stdDev, 3), 0);
     return cubed / values.length;
   }
@@ -474,7 +482,9 @@ class AnomalyDetector extends EventEmitter {
    * @private
    */
   calculateKurtosis(values, mean, stdDev) {
-    if (values.length < 4 || stdDev === 0) return 0;
+    if (values.length < 4 || stdDev === 0) {
+      return 0;
+    }
     const fourth = values.reduce((sum, val) => sum + Math.pow((val - mean) / stdDev, 4), 0);
     return (fourth / values.length) - 3;
   }
@@ -485,10 +495,18 @@ class AnomalyDetector extends EventEmitter {
    */
   calculateSeverity(deviation, threshold) {
     const ratio = deviation / (threshold || 1);
-    if (ratio < 1) return 'normal';
-    if (ratio < 1.5) return 'low';
-    if (ratio < 2.5) return 'medium';
-    if (ratio < 4) return 'high';
+    if (ratio < 1) {
+      return 'normal';
+    }
+    if (ratio < 1.5) {
+      return 'low';
+    }
+    if (ratio < 2.5) {
+      return 'medium';
+    }
+    if (ratio < 4) {
+      return 'high';
+    }
     return 'critical';
   }
 

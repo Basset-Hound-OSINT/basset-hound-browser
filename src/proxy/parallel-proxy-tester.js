@@ -16,11 +16,11 @@ const crypto = require('crypto');
 
 class ParallelProxyTester {
   constructor(options = {}) {
-    this.concurrency = options.concurrency || 4;           // Parallel tests
-    this.testTimeout = options.testTimeout || 5000;        // Per-proxy timeout (ms)
-    this.cacheExpiry = options.cacheExpiry || 600000;      // 10 minutes
-    this.resultCache = new Map();                           // proxyId -> cached result
-    this.testInProgress = new Map();                        // proxyId -> Promise
+    this.concurrency = options.concurrency || 4; // Parallel tests
+    this.testTimeout = options.testTimeout || 5000; // Per-proxy timeout (ms)
+    this.cacheExpiry = options.cacheExpiry || 600000; // 10 minutes
+    this.resultCache = new Map(); // proxyId -> cached result
+    this.testInProgress = new Map(); // proxyId -> Promise
     this.metrics = {
       testsStarted: 0,
       testsCompleted: 0,
@@ -217,7 +217,9 @@ class ParallelProxyTester {
    * @private
    */
   _updateAvgDuration() {
-    if (this.metrics.testDurations.length === 0) return;
+    if (this.metrics.testDurations.length === 0) {
+      return;
+    }
 
     const sum = this.metrics.testDurations.reduce((a, b) => a + b, 0);
     this.metrics.avgTestDuration = Math.round(sum / this.metrics.testDurations.length);

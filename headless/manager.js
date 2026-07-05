@@ -195,14 +195,12 @@ class HeadlessManager extends EventEmitter {
       fs.readFileSync('/proc/1/cgroup', 'utf8').includes('docker');
 
     // Check for CI environment
-    result.ciEnvironment = !!(
-      process.env.CI ||
+    result.ciEnvironment = Boolean(process.env.CI ||
       process.env.CONTINUOUS_INTEGRATION ||
       process.env.GITHUB_ACTIONS ||
       process.env.GITLAB_CI ||
       process.env.JENKINS_URL ||
-      process.env.TRAVIS
-    );
+      process.env.TRAVIS);
 
     // Check for WSL environment
     result.wslEnvironment = platform === 'linux' &&

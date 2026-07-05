@@ -153,7 +153,7 @@ Basset-hound-browser has been successfully refactored to focus exclusively on **
 - ❌ Investigation IDs and case numbers
 - ❌ Package-level verification and statistics
 
-### File 2: `websocket/commands/evidence-commands.js`
+### File 2: `websocket/commands/forensic/evidence/evidence-commands.js`
 - **Before:** 784 lines, 22 commands
 - **After:** 324 lines, 8 commands
 - **Removed:** 460 lines, 14 commands (58.7% reduction)

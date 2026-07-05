@@ -83,7 +83,9 @@ function getMemoryUsageMB() {
  * Calculate percentile from array of values
  */
 function calculatePercentile(values, percentile) {
-  if (values.length === 0) return 0;
+  if (values.length === 0) {
+    return 0;
+  }
   const sorted = [...values].sort((a, b) => a - b);
   const index = Math.ceil((percentile / 100) * sorted.length) - 1;
   return sorted[Math.max(0, index)];
@@ -176,7 +178,9 @@ async function testRapidCommands(connections) {
   const commandPromises = [];
 
   for (const connection of connections) {
-    if (!connection || connection.readyState !== WebSocket.OPEN) continue;
+    if (!connection || connection.readyState !== WebSocket.OPEN) {
+      continue;
+    }
 
     for (let i = 0; i < COMMANDS_PER_CONNECTION; i++) {
       const cmd = commands[i % commands.length];
@@ -286,7 +290,9 @@ async function testMalformedInput(connections) {
   ];
 
   for (const connection of connections) {
-    if (!connection || connection.readyState !== WebSocket.OPEN) continue;
+    if (!connection || connection.readyState !== WebSocket.OPEN) {
+      continue;
+    }
 
     for (const payload of malformedPayloads) {
       results.malformed_request_stats.total_sent++;
@@ -348,7 +354,9 @@ async function testConnectionRecovery(connections) {
   const testConnections = connections.slice(0, Math.min(10, connections.length));
 
   for (const connection of testConnections) {
-    if (!connection) continue;
+    if (!connection) {
+      continue;
+    }
 
     for (let attempt = 0; attempt < RECOVERY_TEST_ATTEMPTS; attempt++) {
       try {

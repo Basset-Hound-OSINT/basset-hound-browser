@@ -19,7 +19,7 @@ class RedisManager extends EventEmitter {
     this.config = {
       // Sentinel configuration
       sentinels: config.sentinels || [
-        { host: 'localhost', port: 26379 },
+        { host: 'localhost', port: 26379 }
       ],
       name: config.name || 'mymaster',
 
@@ -41,7 +41,7 @@ class RedisManager extends EventEmitter {
       sessionTTL: config.sessionTTL || 86400, // 24 hours in seconds
       password: config.password,
 
-      ...config,
+      ...config
     };
 
     // Connection pool
@@ -54,7 +54,7 @@ class RedisManager extends EventEmitter {
       state: 'CLOSED', // CLOSED, OPEN, HALF_OPEN
       failureCount: 0,
       successCount: 0,
-      lastFailureTime: null,
+      lastFailureTime: null
     };
 
     // Health status
@@ -62,7 +62,7 @@ class RedisManager extends EventEmitter {
       isHealthy: false,
       lastHealthCheck: null,
       connectionErrors: 0,
-      totalRequests: 0,
+      totalRequests: 0
     };
 
     // Primary Redis client (for monitoring)
@@ -84,10 +84,12 @@ class RedisManager extends EventEmitter {
         socket: {
           connectTimeout: this.config.connectionTimeoutMillis,
           reconnectStrategy: (retries) => {
-            if (retries > 10) return new Error('Redis reconnection failed');
+            if (retries > 10) {
+              return new Error('Redis reconnection failed');
+            }
             return Math.min(retries * 100, 3000);
-          },
-        },
+          }
+        }
       });
 
       this.client.on('error', (err) => {
@@ -149,8 +151,8 @@ class RedisManager extends EventEmitter {
         name: this.config.name,
         password: this.config.password,
         socket: {
-          connectTimeout: this.config.connectionTimeoutMillis,
-        },
+          connectTimeout: this.config.connectionTimeoutMillis
+        }
       });
 
       conn.on('error', (err) => {
@@ -209,7 +211,9 @@ class RedisManager extends EventEmitter {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         const idx = this.waitingQueue.indexOf(resolver);
-        if (idx >= 0) this.waitingQueue.splice(idx, 1);
+        if (idx >= 0) {
+          this.waitingQueue.splice(idx, 1);
+        }
         reject(new Error('Timeout acquiring Redis connection'));
       }, this.config.acquireTimeoutMillis);
 
@@ -477,20 +481,20 @@ class RedisManager extends EventEmitter {
       isConnected: this.isConnected,
       circuitBreaker: {
         state: this.circuitBreaker.state,
-        failureCount: this.circuitBreaker.failureCount,
+        failureCount: this.circuitBreaker.failureCount
       },
       pool: {
         available: this.connectionPool.length,
         inUse: this.inUseConnections.size,
-        waiting: this.waitingQueue.length,
+        waiting: this.waitingQueue.length
       },
       stats: {
         totalRequests: this.healthStatus.totalRequests,
         connectionErrors: this.healthStatus.connectionErrors,
         lastHealthCheck: this.healthStatus.lastHealthCheck
           ? new Date(this.healthStatus.lastHealthCheck).toISOString()
-          : null,
-      },
+          : null
+      }
     };
   }
 

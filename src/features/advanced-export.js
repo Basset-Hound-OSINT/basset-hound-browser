@@ -200,7 +200,7 @@ class AdvancedExportEngine extends EventEmitter {
 
       // Estimate size
       const dataStr = JSON.stringify(data);
-      let estimatedSize = dataStr.length;
+      const estimatedSize = dataStr.length;
 
       // Check size limit
       if (estimatedSize > this.maxExportSize) {
@@ -215,23 +215,23 @@ class AdvancedExportEngine extends EventEmitter {
       // Convert format
       let convertedData;
       switch (format) {
-        case 'json':
-          convertedData = this._convertToJSON(data);
-          break;
-        case 'csv':
-          convertedData = this._convertToCSV(data);
-          break;
-        case 'html':
-          convertedData = this._convertToHTML(data, options);
-          break;
-        case 'xml':
-          convertedData = this._convertToXML(data);
-          break;
-        case 'markdown':
-          convertedData = this._convertToMarkdown(data, options);
-          break;
-        default:
-          convertedData = dataStr;
+      case 'json':
+        convertedData = this._convertToJSON(data);
+        break;
+      case 'csv':
+        convertedData = this._convertToCSV(data);
+        break;
+      case 'html':
+        convertedData = this._convertToHTML(data, options);
+        break;
+      case 'xml':
+        convertedData = this._convertToXML(data);
+        break;
+      case 'markdown':
+        convertedData = this._convertToMarkdown(data, options);
+        break;
+      default:
+        convertedData = dataStr;
       }
 
       exportRecord.size = convertedData.length;
@@ -525,7 +525,9 @@ class AdvancedExportEngine extends EventEmitter {
     for (const item of data) {
       const values = headers.map(h => {
         const val = item[h];
-        if (val === null || val === undefined) return '';
+        if (val === null || val === undefined) {
+          return '';
+        }
         if (typeof val === 'string' && val.includes(',')) {
           return `"${val.replace(/"/g, '""')}"`;
         }
@@ -616,7 +618,9 @@ class AdvancedExportEngine extends EventEmitter {
    * Helper: Escape XML
    */
   _escapeXML(value) {
-    if (value === null || value === undefined) return '';
+    if (value === null || value === undefined) {
+      return '';
+    }
     return String(value)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')

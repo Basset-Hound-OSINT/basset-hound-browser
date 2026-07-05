@@ -180,22 +180,31 @@ class CompressionTuningV2 {
       if (algorithm === 'gzip') {
         result = await new Promise((resolve, reject) => {
           zlib.gunzip(data, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
           });
         });
       } else if (algorithm === 'deflate') {
         result = await new Promise((resolve, reject) => {
           zlib.inflate(data, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
           });
         });
       } else if (algorithm === 'brotli' && this.brotliAvailable) {
         result = await new Promise((resolve, reject) => {
           zlib.brotliDecompress(data, (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
           });
         });
       } else {
@@ -235,23 +244,35 @@ class CompressionTuningV2 {
   _getCompressionLevel(algorithm) {
     if (!this.enableAdaptiveLevel) {
       // Return static level
-      if (algorithm === 'gzip') return this.gzipLevel;
-      if (algorithm === 'deflate') return this.deflateLevel;
-      if (algorithm === 'brotli') return this.brotliLevel;
+      if (algorithm === 'gzip') {
+        return this.gzipLevel;
+      }
+      if (algorithm === 'deflate') {
+        return this.deflateLevel;
+      }
+      if (algorithm === 'brotli') {
+        return this.brotliLevel;
+      }
     }
 
     // Adaptive: under load, use lower compression (faster)
     const avgCompressionTime = this._getAverageCompressionTime();
     if (avgCompressionTime > 10) {
       // Compression is slow, reduce level
-      if (algorithm === 'gzip') return Math.max(1, this.gzipLevel - 2);
-      if (algorithm === 'deflate') return Math.max(1, this.deflateLevel - 2);
-      if (algorithm === 'brotli') return Math.max(1, this.brotliLevel - 2);
+      if (algorithm === 'gzip') {
+        return Math.max(1, this.gzipLevel - 2);
+      }
+      if (algorithm === 'deflate') {
+        return Math.max(1, this.deflateLevel - 2);
+      }
+      if (algorithm === 'brotli') {
+        return Math.max(1, this.brotliLevel - 2);
+      }
     }
 
     return algorithm === 'gzip' ? this.gzipLevel :
-           algorithm === 'deflate' ? this.deflateLevel :
-           this.brotliLevel;
+      algorithm === 'deflate' ? this.deflateLevel :
+        this.brotliLevel;
   }
 
   /**
@@ -261,8 +282,11 @@ class CompressionTuningV2 {
   _compressGzip(buffer, level) {
     return new Promise((resolve, reject) => {
       zlib.gzip(buffer, { level }, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
       });
     });
   }
@@ -274,8 +298,11 @@ class CompressionTuningV2 {
   _compressDeflate(buffer, level) {
     return new Promise((resolve, reject) => {
       zlib.deflate(buffer, { level }, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
       });
     });
   }
@@ -287,8 +314,11 @@ class CompressionTuningV2 {
   _compressBrotli(buffer, level) {
     return new Promise((resolve, reject) => {
       zlib.brotliCompress(buffer, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: level } }, (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
       });
     });
   }
@@ -298,7 +328,9 @@ class CompressionTuningV2 {
    * @private
    */
   _getAverageCompressionTime() {
-    if (this.metrics.compressionTimes.length === 0) return 0;
+    if (this.metrics.compressionTimes.length === 0) {
+      return 0;
+    }
 
     const recent = this.metrics.compressionTimes.slice(-100); // Last 100
     return recent.reduce((a, b) => a + b, 0) / recent.length;

@@ -267,10 +267,18 @@ class EvasionConfigurationManager {
   _calculateCoherenceScore() {
     let score = 50; // Base score
 
-    if (this.tlsConfig.enabled) score += 15;
-    if (this.http2Config.enabled) score += 15;
-    if (this.timingConfig.enabled) score += 10;
-    if (this.networkConfig.enabled) score += 10;
+    if (this.tlsConfig.enabled) {
+      score += 15;
+    }
+    if (this.http2Config.enabled) {
+      score += 15;
+    }
+    if (this.timingConfig.enabled) {
+      score += 10;
+    }
+    if (this.networkConfig.enabled) {
+      score += 10;
+    }
 
     return Math.min(score, 100);
   }
@@ -283,7 +291,7 @@ class EvasionConfigurationManager {
       networkObfuscated: this.networkConfig.enabled,
       coherenceLevelMet: this.coherenceConfig.score >= (
         this.coherenceConfig.level === 'low' ? 30 :
-        this.coherenceConfig.level === 'medium' ? 60 : 80
+          this.coherenceConfig.level === 'medium' ? 60 : 80
       )
     };
 

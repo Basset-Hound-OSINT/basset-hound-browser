@@ -17,7 +17,7 @@ const TEST_RESULTS = {
   totalTests: 0,
   totalPassed: 0,
   totalFailed: 0,
-  errors: [],
+  errors: []
 };
 
 /**
@@ -54,11 +54,15 @@ class TestWebSocketClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('Connection timeout'));
+          if (!this.connected) {
+            reject(new Error('Connection timeout'));
+          }
         }, timeout);
       } catch (err) {
         reject(err);
@@ -67,7 +71,9 @@ class TestWebSocketClient {
   }
 
   async sendCommand(command, params = {}, timeout = TEST_TIMEOUT) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     const requestId = ++this.requestId;
     return new Promise((resolve, reject) => {
@@ -80,7 +86,7 @@ class TestWebSocketClient {
         resolve: (msg) => {
           clearTimeout(timer);
           resolve(msg);
-        },
+        }
       });
 
       try {
@@ -94,7 +100,9 @@ class TestWebSocketClient {
   }
 
   disconnect() {
-    if (this.ws) this.ws.close();
+    if (this.ws) {
+      this.ws.close();
+    }
   }
 }
 
@@ -148,7 +156,7 @@ async function scenarioTechStackUpdates(client) {
             document.querySelector('meta[name="generator"]')?.content
           ].filter(Boolean)
         })
-      `,
+      `
     });
 
     console.log(`  Technologies detected: ${tech.result?.technologies?.length || 0}`);
@@ -204,7 +212,7 @@ async function scenarioPerformanceMonitoring(client) {
 
     // Measure page load time
     const timing = await client.sendCommand('executeJavaScript', {
-      code: 'window.performance.timing.loadEventEnd - window.performance.timing.navigationStart',
+      code: 'window.performance.timing.loadEventEnd - window.performance.timing.navigationStart'
     });
 
     console.log(`  Navigation time: ${navigationTime}ms`);
@@ -271,7 +279,7 @@ async function scenarioConcurrentNavigation(client) {
     const urls = [
       'https://example.com/page1',
       'https://example.com/page2',
-      'https://example.com/page3',
+      'https://example.com/page3'
     ];
 
     // Navigate to multiple pages in quick succession
@@ -306,7 +314,7 @@ async function scenarioCookiePersistence(client) {
     await client.sendCommand('setCookie', {
       name: 'testcookie',
       value: 'testvalue123',
-      domain: 'example.com',
+      domain: 'example.com'
     });
 
     // Get cookies
@@ -336,7 +344,7 @@ async function scenarioFormFillingAutoComplete(client) {
 
     // Check for autocomplete suggestions
     const suggestions = await client.sendCommand('getElements', {
-      selector: '.autocomplete-suggestion',
+      selector: '.autocomplete-suggestion'
     });
 
     console.log(`  Suggestions found: ${suggestions.count || 0}`);
@@ -362,11 +370,11 @@ async function scenarioScreenshotAnnotations(client) {
     const screenshot = await client.sendCommand('screenshot', {
       annotate: true,
       annotations: [
-        { type: 'box', x: 100, y: 100, width: 200, height: 100, color: 'red' },
-      ],
+        { type: 'box', x: 100, y: 100, width: 200, height: 100, color: 'red' }
+      ]
     });
 
-    console.log(`  Screenshot captured: ${!!screenshot.data}`);
+    console.log(`  Screenshot captured: ${Boolean(screenshot.data)}`);
 
     TEST_RESULTS.scenarios['screenshotAnnotations'] = { passed: 1, failed: 0 };
     return true;
@@ -388,18 +396,18 @@ async function scenarioProxyRotation(client) {
     // Test with different proxies
     const proxies = [
       { host: '10.0.0.1', port: 8080 },
-      { host: '10.0.0.2', port: 8080 },
+      { host: '10.0.0.2', port: 8080 }
     ];
 
     for (const proxy of proxies) {
       await client.sendCommand('setProxy', {
         protocol: 'http',
         host: proxy.host,
-        port: proxy.port,
+        port: proxy.port
       });
 
       const ip = await client.sendCommand('executeJavaScript', {
-        code: 'fetch("https://api.ipify.org?format=json").then(r => r.json()).then(d => d.ip)',
+        code: 'fetch("https://api.ipify.org?format=json").then(r => r.json()).then(d => d.ip)'
       });
 
       console.log(`  Proxy ${proxy.host}: IP detection possible`);
@@ -427,7 +435,7 @@ async function scenarioSessionBranching(client) {
 
     // Branch session
     const session2 = await client.sendCommand('createSession', {
-      branchFrom: session1.sessionId,
+      branchFrom: session1.sessionId
     });
 
     console.log(`  Original session: ${session1.sessionId}`);
@@ -454,7 +462,7 @@ async function scenarioRapidRequestThrottling(client) {
     for (let i = 0; i < 10; i++) {
       requests.push(
         client.sendCommand('navigate', {
-          url: `https://example.com/page${i}`,
+          url: `https://example.com/page${i}`
         })
       );
     }
@@ -501,7 +509,7 @@ async function runAllScenarios() {
       scenarioScreenshotAnnotations,
       scenarioProxyRotation,
       scenarioSessionBranching,
-      scenarioRapidRequestThrottling,
+      scenarioRapidRequestThrottling
     ];
 
     const results = [];

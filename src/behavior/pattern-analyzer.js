@@ -27,7 +27,7 @@ class PatternAnalyzer {
       click: [],
       dwell: [],
       navigation: [],
-      formInteraction: [],
+      formInteraction: []
     };
 
     this.metrics = {
@@ -37,13 +37,13 @@ class PatternAnalyzer {
       clickDistribution: { timing: [], duration: [], targets: [] },
       dwellDistribution: { duration: [] },
       navigationSequence: [],
-      formSequence: [],
+      formSequence: []
     };
 
     this.currentSession = {
       startTime: Date.now(),
       actionCount: 0,
-      anomalies: [],
+      anomalies: []
     };
 
     this.baselineStatistics = null;
@@ -72,7 +72,7 @@ class PatternAnalyzer {
       duration,
       velocity,
       acceleration,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.mouse.push(trajectory);
@@ -93,7 +93,7 @@ class PatternAnalyzer {
       distance,
       velocity,
       acceleration,
-      angle,
+      angle
     };
   }
 
@@ -110,7 +110,7 @@ class PatternAnalyzer {
       iki: ikiBefore,
       holdDuration,
       error: error || false,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.typing.push(event);
@@ -119,8 +119,12 @@ class PatternAnalyzer {
     }
 
     // Update distributions
-    if (ikiBefore) this.metrics.typingDistribution.iki.push(ikiBefore);
-    if (error) this.metrics.typingDistribution.errors.push(char);
+    if (ikiBefore) {
+      this.metrics.typingDistribution.iki.push(ikiBefore);
+    }
+    if (error) {
+      this.metrics.typingDistribution.errors.push(char);
+    }
 
     this.currentSession.actionCount++;
 
@@ -142,7 +146,7 @@ class PatternAnalyzer {
       velocity,
       duration,
       paused,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.scroll.push(event);
@@ -152,7 +156,9 @@ class PatternAnalyzer {
 
     this.metrics.scrollDistribution.speed.push(velocity);
     this.metrics.scrollDistribution.distance.push(distance);
-    if (paused) this.metrics.scrollDistribution.pauses.push(1);
+    if (paused) {
+      this.metrics.scrollDistribution.pauses.push(1);
+    }
 
     this.currentSession.actionCount++;
 
@@ -172,7 +178,7 @@ class PatternAnalyzer {
       y,
       target,
       duration: duration || 0,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.click.push(event);
@@ -206,7 +212,7 @@ class PatternAnalyzer {
     const event = {
       target,
       duration,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.dwell.push(event);
@@ -231,7 +237,7 @@ class PatternAnalyzer {
 
     const event = {
       action,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.navigation.push(event);
@@ -258,7 +264,7 @@ class PatternAnalyzer {
       field,
       action,
       duration: duration || 0,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
 
     this.patterns.formInteraction.push(event);
@@ -287,7 +293,7 @@ class PatternAnalyzer {
         stdDev: 0,
         min: 0,
         max: 0,
-        count: 0,
+        count: 0
       };
     }
 
@@ -307,7 +313,7 @@ class PatternAnalyzer {
       max: sorted[sorted.length - 1],
       count: values.length,
       p95: sorted[Math.floor(sorted.length * 0.95)],
-      p99: sorted[Math.floor(sorted.length * 0.99)],
+      p99: sorted[Math.floor(sorted.length * 0.99)]
     };
   }
 
@@ -331,9 +337,9 @@ class PatternAnalyzer {
         duration: Date.now() - this.currentSession.startTime,
         actionCount: this.currentSession.actionCount,
         actionsPerSecond: this.currentSession.actionCount /
-          ((Date.now() - this.currentSession.startTime) / 1000),
+          ((Date.now() - this.currentSession.startTime) / 1000)
       },
-      computationTime: performance.now() - startTime,
+      computationTime: performance.now() - startTime
     };
   }
 
@@ -350,7 +356,7 @@ class PatternAnalyzer {
       velocity: this.calculateStats(velocities),
       acceleration: this.calculateStats(accelerations),
       distance: this.calculateStats(distances),
-      directionChanges: this.calculateDirectionChanges(),
+      directionChanges: this.calculateDirectionChanges()
     };
   }
 
@@ -374,7 +380,7 @@ class PatternAnalyzer {
       errorRate,
       errors: errors,
       interKeystrokeInterval: this.calculateStats(iki),
-      estimatedWPM: wpm,
+      estimatedWPM: wpm
     };
   }
 
@@ -392,7 +398,7 @@ class PatternAnalyzer {
       distance: this.calculateStats(distances),
       pauseFrequency: this.patterns.scroll.length > 0
         ? pauses / this.patterns.scroll.length
-        : 0,
+        : 0
     };
   }
 
@@ -416,8 +422,8 @@ class PatternAnalyzer {
       targetFrequency: Array.from(targetFreq.entries()).map(([target, freq]) => ({
         target,
         frequency: freq,
-        percentage: (freq / this.patterns.click.length * 100).toFixed(2),
-      })),
+        percentage: (freq / this.patterns.click.length * 100).toFixed(2)
+      }))
     };
   }
 
@@ -429,7 +435,7 @@ class PatternAnalyzer {
 
     return {
       count: this.patterns.dwell.length,
-      duration: this.calculateStats(durations),
+      duration: this.calculateStats(durations)
     };
   }
 
@@ -447,8 +453,8 @@ class PatternAnalyzer {
       actions: Array.from(navFreq.entries()).map(([action, count]) => ({
         action,
         count,
-        percentage: (count / this.patterns.navigation.length * 100).toFixed(2),
-      })),
+        percentage: (count / this.patterns.navigation.length * 100).toFixed(2)
+      }))
     };
   }
 
@@ -468,12 +474,12 @@ class PatternAnalyzer {
       count: this.patterns.formInteraction.length,
       actions: Array.from(actionFreq.entries()).map(([action, count]) => ({
         action,
-        count,
+        count
       })),
       frequentFields: Array.from(fieldFreq.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([field, count]) => ({ field, count })),
+        .map(([field, count]) => ({ field, count }))
     };
   }
 
@@ -483,7 +489,9 @@ class PatternAnalyzer {
    * @returns {number} Number of direction changes
    */
   calculateDirectionChanges() {
-    if (this.patterns.mouse.length < 2) return 0;
+    if (this.patterns.mouse.length < 2) {
+      return 0;
+    }
 
     let changes = 0;
     for (let i = 1; i < this.patterns.mouse.length; i++) {
@@ -522,7 +530,7 @@ class PatternAnalyzer {
           severity: 'WARNING',
           value: lastMouse.velocity,
           expectedRange: [avgVelocity - velocityStdDev, avgVelocity + velocityStdDev],
-          timestamp: lastMouse.timestamp,
+          timestamp: lastMouse.timestamp
         });
       }
     }
@@ -536,7 +544,7 @@ class PatternAnalyzer {
           severity: 'WARNING',
           value: typingMetrics.errorRate,
           threshold: 0.1,
-          timestamp: Date.now(),
+          timestamp: Date.now()
         });
       }
 
@@ -548,7 +556,7 @@ class PatternAnalyzer {
           severity: 'INFO',
           value: lastTyping.iki,
           expectedMinimum: 80,
-          timestamp: lastTyping.timestamp,
+          timestamp: lastTyping.timestamp
         });
       }
     }
@@ -565,9 +573,9 @@ class PatternAnalyzer {
           value: lastScroll.velocity,
           expectedRange: [
             scrollMetrics.speed.mean - scrollMetrics.speed.stdDev,
-            scrollMetrics.speed.mean + scrollMetrics.speed.stdDev,
+            scrollMetrics.speed.mean + scrollMetrics.speed.stdDev
           ],
-          timestamp: lastScroll.timestamp,
+          timestamp: lastScroll.timestamp
         });
       }
     }
@@ -625,7 +633,9 @@ class PatternAnalyzer {
    * @returns {number} Entropy (0-1, normalized)
    */
   calculateEntropy(values) {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {
+      return 0;
+    }
 
     const frequency = new Map();
     for (const val of values) {
@@ -684,7 +694,7 @@ class PatternAnalyzer {
 
     return {
       deviations,
-      isConsistent: Object.values(deviations).every(dev => dev < 0.3), // <30% deviation
+      isConsistent: Object.values(deviations).every(dev => dev < 0.3) // <30% deviation
     };
   }
 
@@ -696,7 +706,9 @@ class PatternAnalyzer {
    * @returns {number} Deviation ratio (0-1)
    */
   calculateDeviation(baseline, current) {
-    if (!baseline || !current || !baseline.mean) return 0;
+    if (!baseline || !current || !baseline.mean) {
+      return 0;
+    }
 
     const meanDiff = Math.abs(baseline.mean - current.mean);
     const deviation = meanDiff / (baseline.mean || 1);
@@ -711,7 +723,7 @@ class PatternAnalyzer {
     this.currentSession = {
       startTime: Date.now(),
       actionCount: 0,
-      anomalies: [],
+      anomalies: []
     };
   }
 

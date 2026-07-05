@@ -287,7 +287,7 @@ describe('retryAsync', () => {
   describe('thisArg context', () => {
     it('should preserve this context when provided', async () => {
       const context = { value: 'context-value' };
-      const fn = jest.fn(function() {
+      const fn = jest.fn(function () {
         expect(this.value).toBe('context-value');
         return Promise.resolve('success');
       });
@@ -297,7 +297,7 @@ describe('retryAsync', () => {
     });
 
     it('should execute without context when thisArg not provided', async () => {
-      const fn = jest.fn(function() {
+      const fn = jest.fn(function () {
         expect(this).toBeUndefined();
         return Promise.resolve('success');
       });
@@ -866,9 +866,15 @@ describe('sequentialAsync', () => {
   describe('basic functionality', () => {
     it('should execute functions sequentially', async () => {
       const callOrder = [];
-      const fn1 = jest.fn(async () => { callOrder.push(1); return 'result1'; });
-      const fn2 = jest.fn(async () => { callOrder.push(2); return 'result2'; });
-      const fn3 = jest.fn(async () => { callOrder.push(3); return 'result3'; });
+      const fn1 = jest.fn(async () => {
+        callOrder.push(1); return 'result1';
+      });
+      const fn2 = jest.fn(async () => {
+        callOrder.push(2); return 'result2';
+      });
+      const fn3 = jest.fn(async () => {
+        callOrder.push(3); return 'result3';
+      });
 
       const results = await sequentialAsync([fn1, fn2, fn3]);
 

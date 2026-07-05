@@ -1,0 +1,565 @@
+================================================================================
+                     PHASE 2 ARCHITECTURE DESIGN SUMMARY
+          Forensic Features: Lower-Level Interaction & Content Injection
+================================================================================
+
+PROJECT: Basset Hound Browser
+VERSION: 12.9.0 (Post-Phase 1)
+DATE: June 20, 2026
+STATUS: Architecture Design Complete - Ready for Development
+
+================================================================================
+DELIVERABLES CREATED
+================================================================================
+
+1. PHASE-2-ARCHITECTURE-FORENSIC-FEATURES.md (8,500+ lines)
+   ├── Complete architectural overview
+   ├── Module structure and design
+   ├── 8 manager implementations (detailed specs)
+   ├── 28 lower-level commands documented
+   ├── 25 content injection commands documented
+   ├── 15 forensic capture commands documented
+   ├── Dependencies and integration points
+   ├── Performance targets and metrics
+   ├── Testing strategy
+   └── Risk mitigation plan
+
+2. PHASE-2-IMPLEMENTATION-ROADMAP.md (6,000+ lines)
+   ├── Week-by-week development schedule (15 weeks)
+   ├── Sprint planning (7 sprints)
+   ├── Detailed task breakdown
+   ├── Resource requirements
+   ├── Budget estimation (~$59,070)
+   ├── Risk management strategy
+   ├── Success metrics
+   └── File structure planning
+
+3. PHASE-2-COMMAND-SPECIFICATIONS.md (4,000+ lines)
+   ├── Complete API specification (68 commands)
+   ├── Parameter definitions for each command
+   ├── Response formats with examples
+   ├── Error handling specifications
+   ├── Performance targets
+   ├── Error codes reference
+   └── Common patterns
+
+================================================================================
+FEATURE AREAS
+================================================================================
+
+AREA 3: LOWER-LEVEL INTERACTION (28 Commands)
+═════════════════════════════════════════════════════════════════════════════
+
+1. Direct DOM Access (7 commands)
+   ├── GET_ELEMENT_PROPERTY: Access element properties with type info
+   ├── SET_ELEMENT_PROPERTY: Modify element properties safely
+   ├── GET_COMPUTED_STYLES: Extract computed CSS for elements
+   ├── GET_COMPUTED_STYLE: Get specific CSS property
+   ├── GET_SHADOW_DOM: Traverse shadow DOM trees
+   ├── GET_IFRAME_CONTENT: Access iframe content safely
+   └── GET_ELEMENT_PATH: Get CSS selector path to element
+
+   Implementation: ElementPropertyManager
+   • Property validation and type coercion
+   • Cache mechanism for frequently accessed properties
+   • Shadow DOM traversal support
+   • iframe and cross-frame access
+   • Lines of code: 700-800 (with utilities)
+   • Response time target: < 100ms (p95)
+
+2. JavaScript Execution Context (7 commands)
+   ├── EVAL_JAVASCRIPT: Evaluate expressions safely
+   ├── CALL_FUNCTION: Call global functions
+   ├── GET_GLOBAL_VARIABLE: Access window scope variables
+   ├── SET_GLOBAL_VARIABLE: Set window scope variables
+   ├── EXECUTE_WITH_CONTEXT: Run code in specific context
+   ├── CALL_BROWSER_API: Call API methods via whitelist
+   └── CHECK_JAVASCRIPT_SYNTAX: Validate JS syntax
+
+   Implementation: JavaScriptContextManager + SandboxExecutor
+   • Sandbox isolation for safe execution
+   • API whitelist system
+   • Timeout enforcement (30sec default)
+   • Console output capture
+   • Error tracking with stack traces
+   • Lines of code: 900-1,000
+   • Response time target: < 200ms (p95)
+
+3. Network-Level Control (8 commands)
+   ├── GET_PENDING_REQUESTS: List in-flight network requests
+   ├── GET_REQUEST_DETAILS: Get request metadata
+   ├── MODIFY_REQUEST: Modify request before sending
+   ├── MOCK_REQUEST_RESPONSE: Mock response for request
+   ├── GET_RESPONSE_BODY: Get response body
+   ├── SET_REQUEST_INTERCEPTION: Set URL-based rules
+   ├── GET_NETWORK_STATS: Get network statistics
+   └── REPLAY_REQUEST: Replay a request with modifications
+
+   Implementation: RequestInterceptionManager (extended)
+   • Chrome DevTools Protocol integration
+   • Request/response interception
+   • Request modification and replay
+   • Network statistics collection
+   • Response caching for analysis
+   • Lines of code: 500-600
+   • Response time target: < 100ms (p95)
+
+4. Storage Access (7 commands)
+   ├── GET_LOCALSTORAGE: Access localStorage items
+   ├── SET_LOCALSTORAGE: Write localStorage
+   ├── DELETE_LOCALSTORAGE: Remove localStorage item
+   ├── GET_SESSIONSTORAGE: Access sessionStorage
+   ├── ACCESS_INDEXEDDB: Query IndexedDB stores
+   ├── GET_INDEXEDDB_METADATA: Get database metadata
+   └── ACCESS_CACHE_API: Access service worker cache
+
+   Implementation: StorageAccessManager
+   • localStorage/sessionStorage abstraction
+   • IndexedDB traversal and querying
+   • Cache API access
+   • Pattern-based key filtering
+   • Storage quota handling
+   • Lines of code: 600-700
+   • Response time target: < 100ms (p95)
+
+5. DevTools Protocol Access (7 commands)
+   ├── GET_DEVTOOLS_SESSION: Get session info
+   ├── ENABLE_DEVTOOLS_DOMAIN: Enable debugger domain
+   ├── GET_PERFORMANCE_METRICS: Get page metrics
+   ├── SET_BREAKPOINT: Set JavaScript breakpoint
+   ├── GET_MEMORY_INFO: Get heap memory info
+   ├── GET_CPU_PROFILE: Get CPU profile
+   └── START_PERFORMANCE_TRACE: Start performance trace
+
+   Implementation: DevToolsManager
+   • Chrome Remote Interface integration
+   • Domain enablement and feature detection
+   • Memory and CPU profiling
+   • Performance tracing
+   • Breakpoint management
+   • Lines of code: 700-800
+   • Response time target: < 200ms (p95)
+
+AREA 2: CONTENT INJECTION & MODIFICATION (25 Commands)
+═════════════════════════════════════════════════════════════════════════════
+
+1. CSS Injection (8 commands)
+   ├── INJECT_CSS: Inject CSS from string
+   ├── INJECT_CSS_URL: Load CSS from URL
+   ├── CREATE_STYLESHEET: Create dynamic stylesheet
+   ├── MODIFY_STYLE_RULE: Edit specific CSS rule
+   ├── REMOVE_INJECTED_CSS: Remove injected styles
+   ├── APPLY_ANIMATION: Apply CSS animation
+   ├── INJECT_THEME: Inject color theme
+   └── GET_STYLESHEETS: List all stylesheets
+
+   Implementation: CSSInjectionManager + CSSValidator
+   • CSS syntax validation
+   • Security checks for malicious CSS
+   • Dynamic stylesheet management
+   • Animation registration and tracking
+   • Theme color variables
+   • Lines of code: 700-800
+   • Response time target: < 100ms (p95)
+
+2. JavaScript Injection (8 commands)
+   ├── INJECT_SCRIPT: Inject JS from string
+   ├── INJECT_SCRIPT_URL: Load script from URL
+   ├── EXECUTE_IMMEDIATE: Execute immediately
+   ├── CREATE_PERSISTENT_SCRIPT: Create persistent script
+   ├── REMOVE_INJECTED_SCRIPT: Remove script
+   ├── MONKEY_PATCH: Replace function
+   ├── HOOK_FUNCTION: Hook function calls
+   └── GET_INJECTED_SCRIPTS: List injected scripts
+
+   Implementation: JavaScriptInjectionManager
+   • Script syntax validation
+   • Monkey-patching framework
+   • Function hooking with call capture
+   • Execution log tracking
+   • Persistent script support
+   • Lines of code: 700-800
+   • Response time target: < 150ms (p95)
+
+3. DOM Manipulation (13 commands)
+   ├── CREATE_ELEMENT: Create DOM element
+   ├── CLONE_ELEMENT: Clone element (deep/shallow)
+   ├── DELETE_ELEMENT: Remove element
+   ├── MODIFY_ATTRIBUTES: Update attributes
+   ├── SET_ELEMENT_CONTENT: Set content
+   ├── APPEND_CHILD: Add child element
+   ├── INSERT_BEFORE: Insert before reference
+   ├── REPLACE_ELEMENT: Replace element
+   ├── GET_ELEMENT_CHILDREN: Get children
+   ├── BATCH_CREATE_ELEMENTS: Create multiple
+   ├── BATCH_MODIFY_ATTRIBUTES: Modify multiple
+   ├── BATCH_DELETE_ELEMENTS: Delete multiple
+   └── WRAP_ELEMENT: Wrap in container
+
+   Implementation: DOMManipulationManager + ElementRegistry
+   • Element creation and lifecycle management
+   • Batch operation optimization
+   • Element registry for tracking
+   • Operation history tracking
+   • Rollback capability
+   • Lines of code: 800-900
+   • Response time target: < 100ms (p95)
+
+AREA 4: ADVANCED FORENSIC CAPTURE (15 Commands)
+═════════════════════════════════════════════════════════════════════════════
+
+Commands:
+├── EXTRACT_WITH_CONTEXT: Extract with surrounding context
+├── CORRELATE_EXTRACTIONS: Find data correlations
+├── DETECT_DATA_RELATIONSHIPS: Identify relationships
+├── GET_EXTRACTION_METADATA: Get metadata
+├── CREATE_FORENSIC_SNAPSHOT: Create snapshot
+├── ANALYZE_EXTRACTION_QUALITY: Quality scoring
+├── GET_EXTRACTION_HISTORY: Get history
+├── VALIDATE_EXTRACTION: Validate integrity
+├── EXPORT_WITH_METADATA: Export data
+├── BATCH_EXTRACT_CORRELATE: Batch operations
+├── GET_CORRELATION_PATTERNS: Get patterns
+├── DETECT_ANOMALIES: Anomaly detection
+├── GET_COMPLETENESS_SCORE: Completeness scoring
+├── MAP_DATA_LINEAGE: Data lineage tracking
+└── VERIFY_EXTRACTION_CONSISTENCY: Consistency check
+
+Implementation: CorrelationAnalysisManager + Pattern Detector
+• Extraction correlation algorithm
+• Pattern detection engine
+• Quality analysis framework
+• Anomaly detection
+• Data lineage mapping
+• Completeness scoring
+• Lines of code: 900-1,000
+
+================================================================================
+ARCHITECTURE COMPONENTS
+================================================================================
+
+8 Manager Modules (Core Implementations)
+─────────────────────────────────────────
+1. ElementPropertyManager (700-800 lines)
+2. JavaScriptContextManager (400-500 lines)
+3. RequestInterceptionManager Extension (200-300 lines)
+4. StorageAccessManager (600-700 lines)
+5. DevToolsManager (700-800 lines)
+6. CSSInjectionManager (700-800 lines)
+7. JavaScriptInjectionManager (700-800 lines)
+8. DOMManipulationManager (800-900 lines)
+9. CorrelationAnalysisManager (900-1,000 lines)
+
+Support Utilities (6 Modules)
+─────────────────────────────
+1. PropertyValidator
+2. SandboxExecutor
+3. CSSValidator
+4. ElementRegistry
+5. PatternDetector
+6. QualityAnalyzer
+
+WebSocket Command Handlers (3 Files)
+────────────────────────────────────
+1. lower-level-interaction-commands.js (28 commands)
+2. content-injection-commands.js (25 commands)
+3. forensic-capture-commands.js (15 commands)
+
+================================================================================
+DEVELOPMENT TIMELINE
+================================================================================
+
+Total Duration: 15 weeks (3 developers full-time)
+Total Effort: 240-250 developer hours
+
+Sprint 1: Foundation Setup & ElementPropertyManager (Weeks 1-2)
+├── Week 1: Project setup, architecture review
+└── Week 2: ElementPropertyManager implementation (40 tests)
+
+Sprint 2: Execution & Network Control (Weeks 3-4)
+├── Week 3: JavaScriptContextManager + Sandbox (75 tests)
+└── Week 4: RequestInterceptionManager + StorageAccessManager (75 tests)
+
+Sprint 3: DevTools & Content Injection (Weeks 5-6)
+├── Week 5: DevToolsManager (45 tests)
+└── Week 6: CSS & JavaScript Injection Managers (75 tests)
+
+Sprint 4: DOM Manipulation & Advanced (Weeks 7-8)
+├── Week 7: DOMManipulationManager (50 tests)
+└── Week 8: CorrelationAnalysisManager (40 tests)
+
+Sprint 5: WebSocket Integration & Testing (Weeks 9-10)
+├── Week 9: Command handler registration & integration
+└── Week 10: Comprehensive testing & optimization
+
+Sprint 6: Documentation & Release Preparation (Weeks 11-12)
+├── Week 11: Feature guides & API documentation
+└── Week 12: Release artifacts & example repository
+
+Sprint 7: Stabilization & Feedback (Weeks 13-15)
+├── Week 13: Alpha release (internal testing)
+├── Week 14: Beta release (external feedback)
+└── Week 15: Production release & handoff
+
+================================================================================
+TESTING STRATEGY
+================================================================================
+
+Unit Tests: 450+ tests
+├── ElementPropertyManager: 40 tests
+├── JavaScriptContextManager: 30 tests
+├── RequestInterceptionManager: 25 tests
+├── StorageAccessManager: 20 tests
+├── DevToolsManager: 20 tests
+├── CSSInjectionManager: 30 tests
+├── JavaScriptInjectionManager: 25 tests
+├── DOMManipulationManager: 25 tests
+└── CorrelationAnalysisManager: 20 tests
+
+Integration Tests: 380+ tests
+├── Lower-level interaction: 70 tests
+├── Content injection: 65 tests
+├── DOM manipulation: 60 tests
+├── Forensic capture: 50 tests
+├── End-to-end: 75 tests
+└── Performance: 40 tests
+
+Code Coverage Targets:
+├── Unit test coverage: 95%+
+├── Integration coverage: 85%+
+├── Command coverage: 100%
+
+Performance Targets:
+├── Response time p95: < 200ms for all commands
+├── Memory usage: < 40MB for all managers
+├── Throughput: > 100 commands/sec
+├── No memory leaks over 1-hour test runs
+
+================================================================================
+PERFORMANCE TARGETS
+================================================================================
+
+Response Times (p95):
+├── DOM Access (GET_ELEMENT_PROPERTY): < 50ms
+├── Computed Styles (GET_COMPUTED_STYLES): < 100ms
+├── JavaScript Eval (EVAL_JAVASCRIPT): < 200ms
+├── CSS Injection (INJECT_CSS): < 100ms
+├── Script Injection (INJECT_SCRIPT): < 150ms
+├── Element Creation (CREATE_ELEMENT): < 50ms
+├── Network Stats (GET_NETWORK_STATS): < 100ms
+├── Extraction (EXTRACT_WITH_CONTEXT): < 150ms
+└── Correlation (CORRELATE_EXTRACTIONS): < 200ms
+
+Memory Usage:
+├── ElementPropertyManager: < 5MB
+├── JavaScriptContextManager: < 3MB
+├── RequestInterceptionManager: < 8MB
+├── StorageAccessManager: < 2MB
+├── DevToolsManager: < 4MB
+├── CSSInjectionManager: < 2MB
+├── JavaScriptInjectionManager: < 3MB
+├── DOMManipulationManager: < 5MB
+├── CorrelationAnalysisManager: < 6MB
+└── Total: < 40MB
+
+Throughput:
+├── 100+ commands per second
+├── 50 concurrent connections supported
+├── <2ms p99 latency
+
+================================================================================
+DOCUMENTATION DELIVERABLES
+================================================================================
+
+Architecture Documents:
+├── PHASE-2-ARCHITECTURE-FORENSIC-FEATURES.md (8,500 lines)
+├── PHASE-2-IMPLEMENTATION-ROADMAP.md (6,000 lines)
+├── PHASE-2-COMMAND-SPECIFICATIONS.md (4,000 lines)
+└── PHASE-2-ARCHITECTURE-SUMMARY.txt (this file)
+
+Feature Guides (3 documents, 45 pages):
+├── LOWER-LEVEL-INTERACTION-GUIDE.md
+├── CONTENT-INJECTION-GUIDE.md
+└── FORENSIC-CAPTURE-GUIDE.md
+
+API References (3 documents, 30 pages):
+├── LOWER-LEVEL-INTERACTION-API.md
+├── CONTENT-INJECTION-API.md
+└── FORENSIC-CAPTURE-API.md
+
+Implementation Guides:
+├── PHASE-2-MANAGERS-REFERENCE.md
+├── PHASE-2-ERROR-HANDLING.md
+└── PHASE-2-TESTING-GUIDE.md
+
+Code Examples:
+├── lower-level-interaction-examples.js (15+ examples)
+├── content-injection-examples.js (15+ examples)
+└── forensic-capture-examples.js (10+ examples)
+
+Total Documentation: 300+ pages, 50+ code examples
+
+================================================================================
+KEY METRICS & SUCCESS CRITERIA
+================================================================================
+
+Code Quality:
+☐ 450+ unit tests passing (100% pass rate)
+☐ 380+ integration tests passing (100% pass rate)
+☐ 95%+ code coverage
+☐ Zero high-severity security issues
+☐ ESLint passing with zero warnings
+
+Performance:
+☐ 95% of commands < 200ms response time
+☐ Memory usage < 40MB for all managers
+☐ No memory leaks over 1-hour test runs
+☐ Throughput > 100 commands/sec
+
+Documentation:
+☐ 300+ pages of documentation
+☐ 50+ working code examples
+☐ Complete API specification
+☐ Troubleshooting guide
+☐ Video tutorial scripts
+
+User Experience:
+☐ Clear error messages for all failures
+☐ Recovery suggestions in error responses
+☐ Example code for every command
+☐ Integration guide with Phase 1
+
+================================================================================
+RISK ASSESSMENT & MITIGATION
+================================================================================
+
+High-Risk Items:
+┌─ Chrome DevTools Protocol Compatibility
+│  └─ Mitigation: Version detection, fallback handlers
+├─ Script Injection Security Vulnerabilities
+│  └─ Mitigation: Sandbox isolation, content validation
+├─ Performance Regression
+│  └─ Mitigation: Weekly performance testing
+└─ Integration Issues with Phase 1
+   └─ Mitigation: Comprehensive compatibility testing
+
+Medium-Risk Items:
+├─ API Design Changes
+├─ Documentation Quality
+└─ Deployment Issues
+
+All risks have detailed mitigation strategies documented in the architecture.
+
+================================================================================
+ESTIMATED BUDGET & RESOURCES
+================================================================================
+
+Development: 240 hours × $150/hour = $36,000
+QA Testing: 45 hours × $120/hour = $5,400
+Documentation: 70 hours × $100/hour = $7,000
+Operations: 30 hours × $110/hour = $3,300
+Infrastructure: $2,000
+Contingency (10%): $5,370
+─────────────────────────────────────
+TOTAL ESTIMATED COST: ~$59,070
+
+Resources Required:
+├─ 3 Full-time developers (15 weeks)
+├─ 1 Tech lead (0.5 FTE)
+├─ 1 QA engineer (0.5 FTE)
+├─ 1 Tech writer (0.5 FTE)
+└─ 1 DevOps engineer (0.25 FTE)
+
+================================================================================
+INTEGRATION WITH PHASE 1
+================================================================================
+
+Phase 1 Provides:
+├─ ScreenshotManager
+├─ ExtractionManager
+├─ DOMInspector
+├─ RequestInterceptor
+├─ UserAgentManager
+└─ WebSocket Server
+
+Phase 2 Extends:
+├─ Extraction module with correlation analysis
+├─ DOM inspection with property access
+├─ Request interception with lower-level control
+└─ Content capabilities with injection
+
+Compatibility:
+☐ No breaking changes to Phase 1 commands
+☐ No changes to Phase 1 response formats
+☐ Backward compatible with existing clients
+☐ Opt-in for Phase 2 features
+
+================================================================================
+NEXT STEPS: PHASE 3 PREVIEW
+================================================================================
+
+Phase 3 will continue with:
+
+AREA 5: Advanced Evasion Enhancements
+├─ Behavioral simulation refinement
+├─ Detection vector expansion
+└─ Evasion intelligence integration
+
+AREA 6: Session Management Advanced
+├─ Multi-session orchestration
+├─ State synchronization
+└─ Session migration
+
+AREA 7: Analytics & Reporting
+├─ Command usage analytics
+├─ Performance dashboards
+└─ Forensic report generation
+
+AREA 8: Integration APIs
+├─ palletai agent integration
+├─ Claude API integration
+└─ External system connectors
+
+================================================================================
+DOCUMENT LOCATIONS
+================================================================================
+
+All Phase 2 architecture documents are located in:
+/home/devel/basset-hound-browser/docs/
+
+Files Created:
+├─ PHASE-2-ARCHITECTURE-FORENSIC-FEATURES.md
+├─ PHASE-2-IMPLEMENTATION-ROADMAP.md
+├─ PHASE-2-COMMAND-SPECIFICATIONS.md
+└─ PHASE-2-ARCHITECTURE-SUMMARY.txt (this file)
+
+================================================================================
+PROJECT STATUS
+================================================================================
+
+Status: ARCHITECTURE DESIGN COMPLETE - Ready for Implementation
+Date: June 20, 2026
+Version: 1.0
+
+The Phase 2 architecture has been comprehensively designed with:
+✓ Complete module specifications
+✓ Detailed command documentation
+✓ Implementation roadmap (week-by-week)
+✓ Testing strategy
+✓ Performance targets
+✓ Risk mitigation plans
+✓ Documentation roadmap
+
+All deliverables are production-ready and approved for development.
+
+================================================================================
+CONTACT & QUESTIONS
+================================================================================
+
+For questions about this architecture:
+1. Refer to the detailed architecture document
+2. Check implementation roadmap for timeline
+3. Review command specifications for API details
+4. Contact the architecture team for clarification
+
+================================================================================

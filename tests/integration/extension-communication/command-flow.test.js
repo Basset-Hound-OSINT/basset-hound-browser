@@ -424,7 +424,9 @@ async function testStorageCommandsFlow() {
     if (params.keys) {
       const items = {};
       params.keys.forEach(k => {
-        if (localStorage[k] !== undefined) items[k] = localStorage[k];
+        if (localStorage[k] !== undefined) {
+          items[k] = localStorage[k];
+        }
       });
       return { success: true, items };
     }

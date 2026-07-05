@@ -39,7 +39,7 @@ const {
 let videoEncoder = null;
 let videoStorage = null;
 let videoPlayer = null;
-let screenshotIntervalHandle = null;
+const screenshotIntervalHandle = null;
 
 const activeSessions = new Map();
 

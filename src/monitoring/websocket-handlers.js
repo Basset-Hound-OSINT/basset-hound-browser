@@ -380,7 +380,7 @@ function registerMonitoringHandlers(dispatcher, metricsCollector, aggregator, al
 
       // Auto-cleanup on close
       const originalClose = clientWs.close.bind(clientWs);
-      clientWs.close = function() {
+      clientWs.close = function () {
         if (clientWs.activeStreams?.has(streamId)) {
           clearInterval(clientWs.activeStreams.get(streamId));
           clientWs.activeStreams.delete(streamId);

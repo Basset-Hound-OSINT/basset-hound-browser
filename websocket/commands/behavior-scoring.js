@@ -60,7 +60,7 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
         scorerInstances.set(
           sessionId,
           new BehavioralCoherenceScorer({
-            analyzer: analyzerInstances.get(sessionId),
+            analyzer: analyzerInstances.get(sessionId)
           })
         );
       }
@@ -91,8 +91,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
                   timestamp: score.timestamp,
                   dimensionScores: includeBreakdown ? score.dimensions : null,
                   status: score.status,
-                  trend: score.trend,
-                },
+                  trend: score.trend
+                }
               });
             }
 
@@ -106,8 +106,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
                     dimension: anom.dimension,
                     severity: anom.anomaly.includes('high') ? 'WARNING' : 'INFO',
                     anomaly: anom.anomaly,
-                    timestamp: Date.now(),
-                  },
+                    timestamp: Date.now()
+                  }
                 });
               }
             }
@@ -125,8 +125,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
           scoringEnabled: true,
           updateInterval,
           sessionId,
-          message: 'Behavioral scoring enabled',
-        },
+          message: 'Behavioral scoring enabled'
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -159,8 +159,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
         data: {
           scoringEnabled: false,
           sessionId,
-          message: 'Behavioral scoring disabled',
-        },
+          message: 'Behavioral scoring disabled'
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -191,8 +191,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
           data: {
             sessionId,
             overallScore: 50,
-            message: 'Scoring not enabled - return neutral',
-          },
+            message: 'Scoring not enabled - return neutral'
+          }
         };
       }
 
@@ -202,7 +202,7 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
 
       return {
         success: true,
-        data: score,
+        data: score
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -239,8 +239,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
           data: {
             sessionId,
             dimension,
-            metrics: metrics[dimension] || null,
-          },
+            metrics: metrics[dimension] || null
+          }
         };
       }
 
@@ -248,8 +248,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
         success: true,
         data: {
           sessionId,
-          metrics,
-        },
+          metrics
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -286,7 +286,7 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
         history = history.map((entry) => ({
           timestamp: entry.timestamp,
           overallScore: entry.overallScore,
-          dimension: entry.dimensions[dimension] || null,
+          dimension: entry.dimensions[dimension] || null
         }));
       }
 
@@ -326,8 +326,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
           history,
           trend,
           volatility: Math.round(volatility * 10) / 10,
-          recordCount: history.length,
-        },
+          recordCount: history.length
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -360,29 +360,29 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
 
       // Record interaction based on type
       switch (type) {
-        case 'mouse':
-          analyzer.recordMouseMovement(data);
-          break;
-        case 'typing':
-          analyzer.recordTypingEvent(data);
-          break;
-        case 'click':
-          analyzer.recordClick(data);
-          break;
-        case 'scroll':
-          analyzer.recordScroll(data);
-          break;
-        case 'dwell':
-          analyzer.recordDwell(data);
-          break;
-        case 'navigation':
-          analyzer.recordNavigation(data);
-          break;
-        case 'form':
-          analyzer.recordFormInteraction(data);
-          break;
-        default:
-          return { success: false, error: 'Unknown interaction type' };
+      case 'mouse':
+        analyzer.recordMouseMovement(data);
+        break;
+      case 'typing':
+        analyzer.recordTypingEvent(data);
+        break;
+      case 'click':
+        analyzer.recordClick(data);
+        break;
+      case 'scroll':
+        analyzer.recordScroll(data);
+        break;
+      case 'dwell':
+        analyzer.recordDwell(data);
+        break;
+      case 'navigation':
+        analyzer.recordNavigation(data);
+        break;
+      case 'form':
+        analyzer.recordFormInteraction(data);
+        break;
+      default:
+        return { success: false, error: 'Unknown interaction type' };
       }
 
       return { success: true };
@@ -426,8 +426,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
           recommendations: score.recommendations,
           anomalies: score.anomalies,
           botDetectionRisk: score.botDetectionRisk,
-          estimatedDetectionProbability: Math.round(score.botDetectionRisk * 100),
-        },
+          estimatedDetectionProbability: Math.round(score.botDetectionRisk * 100)
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -464,8 +464,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
           sessionId,
           isConsistent: comparison.isConsistent,
           deviations: comparison.deviations,
-          consistencyScore: comparison.isConsistent ? 95 : 50,
-        },
+          consistencyScore: comparison.isConsistent ? 95 : 50
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -500,8 +500,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
         data: {
           sessionId,
           anomalyCount: anomalies.length,
-          anomalies,
-        },
+          anomalies
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -537,8 +537,8 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
         success: true,
         data: {
           sessionId,
-          message: 'Behavioral tracking reset',
-        },
+          message: 'Behavioral tracking reset'
+        }
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -547,5 +547,5 @@ function registerBehavioralScoringCommands(commandHandlers, executeInRenderer, w
 }
 
 module.exports = {
-  registerBehavioralScoringCommands,
+  registerBehavioralScoringCommands
 };

@@ -112,11 +112,15 @@ class TechnologyFingerprinter {
     const headerMap = this._normalizeHeaders(headers);
 
     for (const [techId, tech] of this.signatures.entries()) {
-      if (!tech.headers || Object.keys(tech.headers).length === 0) continue;
+      if (!tech.headers || Object.keys(tech.headers).length === 0) {
+        continue;
+      }
 
       for (const [headerName, pattern] of Object.entries(tech.headers)) {
         const headerValue = headerMap.get(headerName.toLowerCase()) || '';
-        if (!headerValue) continue;
+        if (!headerValue) {
+          continue;
+        }
 
         if (this._matchPattern(headerValue, pattern)) {
           detections.push({
@@ -146,13 +150,17 @@ class TechnologyFingerprinter {
    */
   async _detectHTML(html) {
     const detections = [];
-    if (!html || html.length === 0) return detections;
+    if (!html || html.length === 0) {
+      return detections;
+    }
 
     const metaGenerator = this._extractMetaTag(html, 'generator');
     const metaPoweredBy = this._extractMetaTag(html, 'powered-by');
 
     for (const [techId, tech] of this.signatures.entries()) {
-      if (!tech.html) continue;
+      if (!tech.html) {
+        continue;
+      }
 
       // Meta tag detection (highest confidence)
       if (tech.html.metaGenerator && metaGenerator) {
@@ -217,7 +225,9 @@ class TechnologyFingerprinter {
     const detections = [];
 
     for (const [techId, tech] of this.signatures.entries()) {
-      if (!tech.js || !tech.js.urls || tech.js.urls.length === 0) continue;
+      if (!tech.js || !tech.js.urls || tech.js.urls.length === 0) {
+        continue;
+      }
 
       for (const scriptUrl of scripts) {
         for (const urlPattern of tech.js.urls) {
@@ -250,10 +260,14 @@ class TechnologyFingerprinter {
    */
   async _detectDOM(html) {
     const detections = [];
-    if (!html || html.length === 0) return detections;
+    if (!html || html.length === 0) {
+      return detections;
+    }
 
     for (const [techId, tech] of this.signatures.entries()) {
-      if (!tech.dom || !tech.dom.markers || tech.dom.markers.length === 0) continue;
+      if (!tech.dom || !tech.dom.markers || tech.dom.markers.length === 0) {
+        continue;
+      }
 
       for (const marker of tech.dom.markers) {
         // Check for data attributes and class markers
@@ -281,7 +295,9 @@ class TechnologyFingerprinter {
    */
   async _detectFavicon(faviconBuffer) {
     const detections = [];
-    if (!faviconBuffer || !this.config.enableFaviconHashing) return detections;
+    if (!faviconBuffer || !this.config.enableFaviconHashing) {
+      return detections;
+    }
 
     try {
       const sha256Hash = crypto.createHash('sha256')
@@ -289,7 +305,9 @@ class TechnologyFingerprinter {
         .digest('hex');
 
       for (const [techId, tech] of this.signatures.entries()) {
-        if (!tech.favicon || !tech.favicon.sha256) continue;
+        if (!tech.favicon || !tech.favicon.sha256) {
+          continue;
+        }
 
         if (tech.favicon.sha256 === sha256Hash) {
           detections.push({
@@ -318,7 +336,9 @@ class TechnologyFingerprinter {
    */
   async _detectSSLCertificate(certificate) {
     const detections = [];
-    if (!certificate) return detections;
+    if (!certificate) {
+      return detections;
+    }
 
     // Extract certificate organization info
     const issuer = certificate.issuer?.O || '';
@@ -363,10 +383,14 @@ class TechnologyFingerprinter {
    */
   async _detectURL(url) {
     const detections = [];
-    if (!url) return detections;
+    if (!url) {
+      return detections;
+    }
 
     for (const [techId, tech] of this.signatures.entries()) {
-      if (!tech.url || !tech.url.patterns) continue;
+      if (!tech.url || !tech.url.patterns) {
+        continue;
+      }
 
       for (const pattern of tech.url.patterns) {
         if (this._matchPattern(url, pattern)) {
@@ -471,7 +495,9 @@ class TechnologyFingerprinter {
    */
   _normalizeHeaders(headers) {
     const map = new Map();
-    if (!headers || typeof headers !== 'object') return map;
+    if (!headers || typeof headers !== 'object') {
+      return map;
+    }
 
     for (const [key, value] of Object.entries(headers)) {
       if (value) {
@@ -486,7 +512,9 @@ class TechnologyFingerprinter {
    * @private
    */
   _matchPattern(value, pattern) {
-    if (!value) return false;
+    if (!value) {
+      return false;
+    }
     const str = String(value);
 
     if (typeof pattern === 'string') {
@@ -546,7 +574,9 @@ class TechnologyFingerprinter {
    * @private
    */
   _extractVersion(value, versionPatterns) {
-    if (!versionPatterns || versionPatterns.length === 0) return null;
+    if (!versionPatterns || versionPatterns.length === 0) {
+      return null;
+    }
 
     for (const pattern of versionPatterns) {
       if (typeof pattern === 'string') {
@@ -594,8 +624,12 @@ class TechnologyFingerprinter {
    * @private
    */
   _patternToString(pattern) {
-    if (typeof pattern === 'string') return pattern;
-    if (pattern instanceof RegExp) return pattern.source;
+    if (typeof pattern === 'string') {
+      return pattern;
+    }
+    if (pattern instanceof RegExp) {
+      return pattern.source;
+    }
     return String(pattern);
   }
 

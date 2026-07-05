@@ -28,18 +28,18 @@ class MockWebSocketHandler {
     const { action, platform, data, options = {} } = request;
 
     switch (action) {
-      case 'export_to_platform':
-        return this._handleExportToPlatform(platform, data, options);
-      case 'setup_webhook':
-        return this._handleSetupWebhook(request);
-      case 'trigger_event':
-        return this._handleTriggerEvent(request);
-      case 'list_webhooks':
-        return this._handleListWebhooks();
-      case 'test_webhook':
-        return this._handleTestWebhook(request);
-      default:
-        return { success: false, error: 'Unknown action' };
+    case 'export_to_platform':
+      return this._handleExportToPlatform(platform, data, options);
+    case 'setup_webhook':
+      return this._handleSetupWebhook(request);
+    case 'trigger_event':
+      return this._handleTriggerEvent(request);
+    case 'list_webhooks':
+      return this._handleListWebhooks();
+    case 'test_webhook':
+      return this._handleTestWebhook(request);
+    default:
+      return { success: false, error: 'Unknown action' };
     }
   }
 

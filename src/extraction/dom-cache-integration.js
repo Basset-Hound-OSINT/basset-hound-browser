@@ -25,8 +25,8 @@ const DOMExtractionCache = require('./dom-cache');
 function createGlobalDOMCache(options = {}) {
   if (!createGlobalDOMCache.instance) {
     createGlobalDOMCache.instance = new DOMExtractionCache({
-      ttl: options.ttl || 5000,           // 5 second default TTL
-      maxCacheSize: options.maxCacheSize || (10 * 1024 * 1024),  // 10MB default
+      ttl: options.ttl || 5000, // 5 second default TTL
+      maxCacheSize: options.maxCacheSize || (10 * 1024 * 1024), // 10MB default
       enableCompression: options.enableCompression || false
     });
   }
@@ -225,7 +225,9 @@ function createCachedFormsHandler(baseHandler, cache) {
  * };
  */
 function invalidateOnNavigation(cache, fromUrl, toUrl) {
-  if (!cache) return;
+  if (!cache) {
+    return;
+  }
 
   // Invalidate cache for the old URL
   if (fromUrl) {

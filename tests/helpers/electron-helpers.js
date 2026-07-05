@@ -65,7 +65,9 @@ async function waitForWebSocketServer(timeout = 10000) {
         ws.on('error', () => resolve(false));
         setTimeout(() => resolve(false), 2000);
       });
-      if (connected) return true;
+      if (connected) {
+        return true;
+      }
     } catch {
       // Ignore and retry
     }

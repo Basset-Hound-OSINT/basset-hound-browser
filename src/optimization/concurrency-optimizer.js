@@ -194,10 +194,14 @@ class ThreadPool extends EventEmitter {
    * @private
    */
   _processQueue() {
-    if (this.workQueue.length === 0) return;
+    if (this.workQueue.length === 0) {
+      return;
+    }
 
     const availableWorker = this.workers.find(w => !w.busy);
-    if (!availableWorker) return;
+    if (!availableWorker) {
+      return;
+    }
 
     const task = this.workQueue.shift();
     availableWorker.busy = true;

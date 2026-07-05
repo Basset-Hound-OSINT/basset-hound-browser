@@ -94,20 +94,20 @@ class KeyboardTyping {
           type: 'keydown',
           key: typoChar,
           delay,
-          holdTime,
+          holdTime
         });
 
         sequence.push({
           type: 'keyup',
           key: typoChar,
           delay: holdTime,
-          holdTime: 0,
+          holdTime: 0
         });
 
         // Pause before correcting (50-200ms of realization time)
         sequence.push({
           type: 'pause',
-          delay: 50 + Math.random() * 150,
+          delay: 50 + Math.random() * 150
         });
 
         // Backspace to correct
@@ -116,20 +116,20 @@ class KeyboardTyping {
           type: 'keydown',
           key: 'Backspace',
           delay: this.calculateKeyDelay('Backspace'),
-          holdTime: backspaceHoldTime,
+          holdTime: backspaceHoldTime
         });
 
         sequence.push({
           type: 'keyup',
           key: 'Backspace',
           delay: backspaceHoldTime,
-          holdTime: 0,
+          holdTime: 0
         });
 
         // Slight pause before retrying (100-300ms)
         sequence.push({
           type: 'pause',
-          delay: 100 + Math.random() * 200,
+          delay: 100 + Math.random() * 200
         });
 
         // Retry the correct character
@@ -146,7 +146,7 @@ class KeyboardTyping {
           type: 'keydown',
           key: 'Shift',
           delay: delay * 0.3, // Shift goes down slightly before letter
-          holdTime: 0,
+          holdTime: 0
         });
       }
 
@@ -154,14 +154,14 @@ class KeyboardTyping {
         type: 'keydown',
         key: char,
         delay: /[A-Z]/.test(char) ? 20 + Math.random() * 30 : delay,
-        holdTime,
+        holdTime
       });
 
       sequence.push({
         type: 'keyup',
         key: char,
         delay: holdTime,
-        holdTime: 0,
+        holdTime: 0
       });
 
       if (/[A-Z]/.test(char)) {
@@ -169,7 +169,7 @@ class KeyboardTyping {
           type: 'keyup',
           key: 'Shift',
           delay: 10 + Math.random() * 20,
-          holdTime: 0,
+          holdTime: 0
         });
       }
 
@@ -177,7 +177,7 @@ class KeyboardTyping {
       if (charIndex < text.length - 1) {
         sequence.push({
           type: 'pause',
-          delay: this.calculateKeyDelay(),
+          delay: this.calculateKeyDelay()
         });
       }
 
@@ -219,7 +219,7 @@ class KeyboardTyping {
       w: ['q', 'e', 'a'],
       x: ['z', 'c', 's'],
       y: ['t', 'u', 'h'],
-      z: ['x', 'a', 's'],
+      z: ['x', 'a', 's']
     };
 
     const lowerChar = char.toLowerCase();
@@ -290,8 +290,8 @@ class KeyboardTyping {
         'typos',
         'corrections',
         'key-hold-variation',
-        'realistic-timing',
-      ],
+        'realistic-timing'
+      ]
     };
   }
 }

@@ -586,7 +586,7 @@ describe('Session Persistence v12.2.0', () => {
       queue.queueCommand(sessionId, { type: 'navigate', url: 'https://example.com' });
       queue.queueCommand(sessionId, { type: 'click', selector: '.button' });
 
-      let queued = queue.getQueue(sessionId);
+      const queued = queue.getQueue(sessionId);
       assert.strictEqual(queued.length, 2);
 
       // Simulate replay

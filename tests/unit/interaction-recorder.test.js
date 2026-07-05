@@ -764,18 +764,29 @@ describe('InteractionRecorder', () => {
     });
 
     test('should not create checkpoint if not recording', () => {
+      // Create a new recorder in IDLE state (not recording)
+      const idleRecorder = new InteractionRecorder();
       expect(() => {
-        recorder.createCheckpoint({ name: 'Invalid' });
+        idleRecorder.createCheckpoint({ name: 'Invalid' });
       }).toThrow('Cannot create checkpoint');
     });
 
     test('should support auto checkpoints', (done) => {
-      recorder.options.autoCheckpointInterval = 100;
-      recorder.startRecording({ name: 'Auto Checkpoint Test' });
+      // Stop any existing recording first
+      if (recorder.state === RECORDING_STATE.RECORDING) {
+        recorder.stopRecording();
+      }
+
+      // Create a fresh recorder for this test
+      const autoRecorder = new InteractionRecorder({
+        autoCheckpointInterval: 100
+      });
+      autoRecorder.startRecording({ name: 'Auto Checkpoint Test' });
 
       setTimeout(() => {
-        expect(recorder.currentRecording.checkpoints.length).toBeGreaterThan(0);
-        recorder.stopRecording();
+        expect(autoRecorder.currentRecording.checkpoints.length).toBeGreaterThan(0);
+        autoRecorder.stopRecording();
+        autoRecorder.cleanup();
         done();
       }, 250);
     });

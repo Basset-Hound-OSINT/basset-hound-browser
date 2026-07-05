@@ -17,7 +17,7 @@ const metrics = {
   failedTests: 0,
   tests: [],
   startMemory: process.memoryUsage(),
-  startTime: Date.now(),
+  startTime: Date.now()
 };
 
 // Create a pending response map per connection
@@ -80,7 +80,7 @@ async function testNavigation(ws) {
   const urls = [
     'https://example.com',
     'https://httpbin.org/headers',
-    'https://example.org',
+    'https://example.org'
   ];
 
   for (const url of urls) {
@@ -88,7 +88,7 @@ async function testNavigation(ws) {
       const startTime = performance.now();
       const response = await sendCommand(ws, {
         command: 'navigate',
-        url: url,
+        url: url
       });
       const duration = performance.now() - startTime;
 
@@ -96,14 +96,14 @@ async function testNavigation(ws) {
       results.push({
         test: `Navigate to ${url}`,
         passed,
-        duration: duration.toFixed(2),
+        duration: duration.toFixed(2)
       });
       console.log(`[${passed ? 'PASS' : 'FAIL'}] ${url} - ${duration.toFixed(0)}ms`);
     } catch (e) {
       results.push({
         test: `Navigate to ${url}`,
         passed: false,
-        error: e.message,
+        error: e.message
       });
       console.log(`[FAIL] ${url} - ${e.message}`);
     }
@@ -126,7 +126,7 @@ async function testScreenshots(ws) {
       // Navigate first
       await sendCommand(ws, {
         command: 'navigate',
-        url: url,
+        url: url
       });
 
       // Wait for page to load
@@ -138,7 +138,7 @@ async function testScreenshots(ws) {
         ws,
         {
           command: 'screenshot',
-          format: 'png',
+          format: 'png'
         },
         5000
       );
@@ -164,13 +164,13 @@ async function testScreenshots(ws) {
         test: `Screenshot of ${url}`,
         passed,
         duration: duration.toFixed(2),
-        fileSize: fileSize,
+        fileSize: fileSize
       });
     } catch (e) {
       results.push({
         test: `Screenshot of ${url}`,
         passed: false,
-        error: e.message,
+        error: e.message
       });
       console.log(`[FAIL] Screenshot ${url} - ${e.message}`);
     }
@@ -188,26 +188,26 @@ async function testTabManagement(ws) {
   try {
     // Create tab 1
     let response = await sendCommand(ws, {
-      command: 'create_tab',
+      command: 'create_tab'
     });
     const tab1 = response.tab?.id;
     const pass1 = response.success && tab1 !== undefined;
     console.log(`[${pass1 ? 'PASS' : 'FAIL'}] Created tab 1: ${tab1}`);
     results.push({
       test: 'Create tab 1',
-      passed: pass1,
+      passed: pass1
     });
 
     // Create tab 2
     response = await sendCommand(ws, {
-      command: 'create_tab',
+      command: 'create_tab'
     });
     const tab2 = response.tab?.id;
     const pass2 = response.success && tab2 !== undefined;
     console.log(`[${pass2 ? 'PASS' : 'FAIL'}] Created tab 2: ${tab2}`);
     results.push({
       test: 'Create tab 2',
-      passed: pass2,
+      passed: pass2
     });
 
     if (tab1 && tab2) {
@@ -215,57 +215,57 @@ async function testTabManagement(ws) {
       response = await sendCommand(ws, {
         command: 'navigate_tab',
         tabId: tab1,
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       console.log(`[${response.success ? 'PASS' : 'FAIL'}] Navigate in tab 1`);
       results.push({
         test: 'Navigate in tab 1',
-        passed: response.success,
+        passed: response.success
       });
 
       // Navigate in tab 2
       response = await sendCommand(ws, {
         command: 'navigate_tab',
         tabId: tab2,
-        url: 'https://example.org',
+        url: 'https://example.org'
       });
       console.log(`[${response.success ? 'PASS' : 'FAIL'}] Navigate in tab 2`);
       results.push({
         test: 'Navigate in tab 2',
-        passed: response.success,
+        passed: response.success
       });
 
       // Switch to tab 1
       response = await sendCommand(ws, {
         command: 'switch_tab',
-        tabId: tab1,
+        tabId: tab1
       });
       console.log(`[${response.success ? 'PASS' : 'FAIL'}] Switch to tab 1`);
       results.push({
         test: 'Switch to tab 1',
-        passed: response.success,
+        passed: response.success
       });
 
       // Close tab 1
       response = await sendCommand(ws, {
         command: 'close_tab',
-        tabId: tab1,
+        tabId: tab1
       });
       console.log(`[${response.success ? 'PASS' : 'FAIL'}] Close tab 1`);
       results.push({
         test: 'Close tab 1',
-        passed: response.success,
+        passed: response.success
       });
 
       // Close tab 2
       response = await sendCommand(ws, {
         command: 'close_tab',
-        tabId: tab2,
+        tabId: tab2
       });
       console.log(`[${response.success ? 'PASS' : 'FAIL'}] Close tab 2`);
       results.push({
         test: 'Close tab 2',
-        passed: response.success,
+        passed: response.success
       });
     }
   } catch (e) {
@@ -273,7 +273,7 @@ async function testTabManagement(ws) {
     results.push({
       test: 'Tab management cycle',
       passed: false,
-      error: e.message,
+      error: e.message
     });
   }
 
@@ -290,7 +290,7 @@ async function testContentExtraction(ws) {
     // Navigate to a page
     let response = await sendCommand(ws, {
       command: 'navigate',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     // Wait for page to load
@@ -298,7 +298,7 @@ async function testContentExtraction(ws) {
 
     // Get content (returns in .content object with text, html, title, url)
     response = await sendCommand(ws, {
-      command: 'get_content',
+      command: 'get_content'
     });
 
     const textPassed = response.success && response.content?.text && response.content.text.length > 0;
@@ -310,7 +310,7 @@ async function testContentExtraction(ws) {
     results.push({
       test: 'Extract text content',
       passed: textPassed,
-      contentLength: response.content?.text ? response.content.text.length : 0,
+      contentLength: response.content?.text ? response.content.text.length : 0
     });
 
     // Links may not be extracted from simple pages like example.com
@@ -324,7 +324,7 @@ async function testContentExtraction(ws) {
     results.push({
       test: 'Extract links',
       passed: linksPassed,
-      linksCount: response.content?.links ? response.content.links.length : 0,
+      linksCount: response.content?.links ? response.content.links.length : 0
     });
 
     const htmlPassed = response.success && response.content?.html && response.content.html.length > 0;
@@ -336,14 +336,14 @@ async function testContentExtraction(ws) {
     results.push({
       test: 'Extract HTML',
       passed: htmlPassed,
-      htmlSize: response.content?.html ? response.content.html.length : 0,
+      htmlSize: response.content?.html ? response.content.html.length : 0
     });
   } catch (e) {
     console.log(`[FAIL] Content extraction - ${e.message}`);
     results.push({
       test: 'Content extraction',
       passed: false,
-      error: e.message,
+      error: e.message
     });
   }
 
@@ -366,7 +366,7 @@ async function testMemoryStability(ws) {
     for (let i = 0; i < operations; i++) {
       await sendCommand(ws, {
         command: 'navigate',
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       await new Promise((resolve) => setTimeout(resolve, 200));
@@ -375,7 +375,7 @@ async function testMemoryStability(ws) {
         ws,
         {
           command: 'screenshot',
-          format: 'png',
+          format: 'png'
         },
         5000
       );
@@ -406,14 +406,14 @@ async function testMemoryStability(ws) {
         memorySnapshots[memorySnapshots.length - 1].heapUsed /
         1024 /
         1024
-      ).toFixed(2),
+      ).toFixed(2)
     });
   } catch (e) {
     console.log(`[FAIL] Memory test - ${e.message}`);
     results.push({
       test: 'Memory stability',
       passed: false,
-      error: e.message,
+      error: e.message
     });
   }
 
@@ -453,7 +453,7 @@ async function runTests() {
       { name: 'Screenshots', fn: testScreenshots },
       { name: 'Tab Management', fn: testTabManagement },
       { name: 'Content Extraction', fn: testContentExtraction },
-      { name: 'Memory Stability', fn: testMemoryStability },
+      { name: 'Memory Stability', fn: testMemoryStability }
     ];
 
     for (const suite of testSuites) {
@@ -498,7 +498,9 @@ async function runTests() {
     process.exit(metrics.failedTests > 0 ? 1 : 0);
   } catch (e) {
     console.error('Fatal error:', e.message);
-    if (ws) ws.close();
+    if (ws) {
+      ws.close();
+    }
     process.exit(1);
   }
 }

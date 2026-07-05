@@ -142,7 +142,7 @@ function testIssue3() {
 
     // Test entropy
     const testId = `session-${crypto.randomBytes(16).toString('hex')}`;
-    if (testId.length === 40) {  // 'session-' (8 chars) + 32 hex chars
+    if (testId.length === 40) { // 'session-' (8 chars) + 32 hex chars
       log('pass', `Generated session ID entropy: 128 bits (32 hex characters, 40 total chars)`);
     } else {
       log('fail', `Session ID length incorrect: ${testId.length} chars (expected 40)`);

@@ -13,7 +13,7 @@
 
 const assert = require('assert');
 
-describe('Concurrency Security & Resource Exhaustion Tests', function() {
+describe('Concurrency Security & Resource Exhaustion Tests', function () {
   this.timeout(60000);
 
   // ==========================================
@@ -331,7 +331,9 @@ describe('Concurrency Security & Resource Exhaustion Tests', function() {
         }
 
         async add(value) {
-          while (this.lock) await new Promise(r => setTimeout(r, 1));
+          while (this.lock) {
+            await new Promise(r => setTimeout(r, 1));
+          }
           this.lock = true;
 
           try {
@@ -371,7 +373,9 @@ describe('Concurrency Security & Resource Exhaustion Tests', function() {
         }
 
         async increment() {
-          while (this.lock) await new Promise(r => setTimeout(r, 1));
+          while (this.lock) {
+            await new Promise(r => setTimeout(r, 1));
+          }
           this.lock = true;
 
           try {
@@ -406,7 +410,9 @@ describe('Concurrency Security & Resource Exhaustion Tests', function() {
         }
 
         async takeSnapshot() {
-          while (this.lock) await new Promise(r => setTimeout(r, 1));
+          while (this.lock) {
+            await new Promise(r => setTimeout(r, 1));
+          }
           this.lock = true;
 
           try {
@@ -420,7 +426,9 @@ describe('Concurrency Security & Resource Exhaustion Tests', function() {
         }
 
         async updateAll(values) {
-          while (this.lock) await new Promise(r => setTimeout(r, 1));
+          while (this.lock) {
+            await new Promise(r => setTimeout(r, 1));
+          }
           this.lock = true;
 
           try {

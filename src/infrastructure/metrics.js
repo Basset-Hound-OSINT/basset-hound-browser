@@ -16,7 +16,7 @@ class MetricsCollector extends EventEmitter {
 
     this.config = {
       windowSize: config.windowSize || 300000, // 5 minutes
-      ...config,
+      ...config
     };
 
     // Metrics storage
@@ -26,41 +26,41 @@ class MetricsCollector extends EventEmitter {
           total: 0,
           byMethod: {},
           byEndpoint: {},
-          byStatusCode: {},
+          byStatusCode: {}
         },
         responses: {
           total: 0,
           latency: [],
-          errors: 0,
-        },
+          errors: 0
+        }
       },
       database: {
         queries: {
           total: 0,
           byType: {},
           latency: [],
-          errors: 0,
-        },
+          errors: 0
+        }
       },
       redis: {
         operations: {
           total: 0,
           byCommand: {},
           latency: [],
-          errors: 0,
-        },
+          errors: 0
+        }
       },
       system: {
         memory: {
           current: 0,
           peak: 0,
-          average: 0,
+          average: 0
         },
         cpu: {
           usage: 0,
-          average: 0,
-        },
-      },
+          average: 0
+        }
+      }
     };
 
     // Time-based windows for rate calculations
@@ -171,7 +171,9 @@ class MetricsCollector extends EventEmitter {
    * Calculate percentiles from an array of values
    */
   calculatePercentiles(values, percentiles = [50, 90, 95, 99]) {
-    if (values.length === 0) return {};
+    if (values.length === 0) {
+      return {};
+    }
 
     const sorted = values.sort((a, b) => a - b);
     const result = {};
@@ -314,7 +316,7 @@ class MetricsCollector extends EventEmitter {
       this.getHttpMetrics(),
       this.getDatabaseMetrics(),
       this.getRedisMetrics(),
-      this.getSystemMetrics(),
+      this.getSystemMetrics()
     ];
 
     return sections.join('\n\n');
@@ -331,28 +333,28 @@ class MetricsCollector extends EventEmitter {
         errors: this.metrics.http.responses.errors,
         avgLatency: this.metrics.http.responses.latency.length > 0
           ? (this.metrics.http.responses.latency.reduce((a, b) => a + b) / this.metrics.http.responses.latency.length).toFixed(2)
-          : 0,
+          : 0
       },
       database: {
         totalQueries: this.metrics.database.queries.total,
         errors: this.metrics.database.queries.errors,
         avgLatency: this.metrics.database.queries.latency.length > 0
           ? (this.metrics.database.queries.latency.reduce((a, b) => a + b) / this.metrics.database.queries.latency.length).toFixed(2)
-          : 0,
+          : 0
       },
       redis: {
         totalOperations: this.metrics.redis.operations.total,
         errors: this.metrics.redis.operations.errors,
         avgLatency: this.metrics.redis.operations.latency.length > 0
           ? (this.metrics.redis.operations.latency.reduce((a, b) => a + b) / this.metrics.redis.operations.latency.length).toFixed(2)
-          : 0,
+          : 0
       },
       system: {
         currentMemory: this.metrics.system.memory.current,
         peakMemory: this.metrics.system.memory.peak,
         cpuUsage: this.metrics.system.cpu.usage,
-        uptime: ((Date.now() - this.startTime) / 1000).toFixed(2),
-      },
+        uptime: ((Date.now() - this.startTime) / 1000).toFixed(2)
+      }
     };
   }
 
@@ -366,41 +368,41 @@ class MetricsCollector extends EventEmitter {
           total: 0,
           byMethod: {},
           byEndpoint: {},
-          byStatusCode: {},
+          byStatusCode: {}
         },
         responses: {
           total: 0,
           latency: [],
-          errors: 0,
-        },
+          errors: 0
+        }
       },
       database: {
         queries: {
           total: 0,
           byType: {},
           latency: [],
-          errors: 0,
-        },
+          errors: 0
+        }
       },
       redis: {
         operations: {
           total: 0,
           byCommand: {},
           latency: [],
-          errors: 0,
-        },
+          errors: 0
+        }
       },
       system: {
         memory: {
           current: 0,
           peak: 0,
-          average: 0,
+          average: 0
         },
         cpu: {
           usage: 0,
-          average: 0,
-        },
-      },
+          average: 0
+        }
+      }
     };
   }
 }

@@ -56,7 +56,9 @@ class ResourcePool {
 
   release(resourceId) {
     const resource = this.inUse.get(resourceId);
-    if (!resource) return false;
+    if (!resource) {
+      return false;
+    }
 
     this.inUse.delete(resourceId);
     resource.resetCount++;
@@ -103,7 +105,9 @@ class LoadBalancer {
   }
 
   selectSession() {
-    if (this.sessions.length === 0) return null;
+    if (this.sessions.length === 0) {
+      return null;
+    }
 
     if (this.strategy === 'round-robin') {
       const session = this.sessions[this.currentIndex];
@@ -118,7 +122,9 @@ class LoadBalancer {
         .filter(s => s.currentLoad < s.capacity)
         .reduce((sum, s) => sum + (s.capacity - s.currentLoad), 0);
 
-      if (availableCapacity === 0) return null;
+      if (availableCapacity === 0) {
+        return null;
+      }
 
       let random = Math.random() * availableCapacity;
       for (const session of this.sessions) {
@@ -535,7 +541,9 @@ class SessionOrchestrationEngine extends EventEmitter {
   _startHealthChecks() {
     setInterval(() => {
       for (const [sessionId, session] of this.sessions) {
-        if (session.status !== 'active') continue;
+        if (session.status !== 'active') {
+          continue;
+        }
 
         const healthy = this._checkSessionHealth(session);
 

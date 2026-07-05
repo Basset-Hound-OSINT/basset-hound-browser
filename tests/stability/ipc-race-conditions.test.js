@@ -99,7 +99,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         };
 
         handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           resolve(result);
@@ -125,14 +127,18 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         };
 
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           resolve(result);
         };
 
         const timeoutHandler = () => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           reject(new Error('IPC timeout'));
@@ -156,14 +162,18 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
 
       const promise = new Promise((resolve, reject) => {
         handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           handlerCalls++;
           resolve(result);
         };
 
         setTimeout(() => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           handlerCalls++;
           reject(new Error('timeout'));
@@ -196,7 +206,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         let timeoutId;
 
         handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           clearTimeout(timeoutId);
           resolutionCount++;
@@ -204,7 +216,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         };
 
         timeoutId = setTimeout(() => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           resolutionCount++;
           reject(new Error('timeout'));
@@ -226,7 +240,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
 
       const promise = new Promise((resolve, reject) => {
         const atomicSet = () => {
-          if (completed) return false;
+          if (completed) {
+            return false;
+          }
           completed = true;
           return true;
         };
@@ -269,18 +285,24 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
 
         const cleanup = () => {
           cleanupsTriggered++;
-          if (timeoutId) clearTimeout(timeoutId);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
         };
 
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           resolve(result);
         };
 
         timeoutId = setTimeout(() => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           reject(new Error('timeout'));
@@ -305,18 +327,24 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
 
         const cleanup = () => {
           cleanupsTriggered++;
-          if (timeoutId) clearTimeout(timeoutId);
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+          }
         };
 
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           resolve(result);
         };
 
         timeoutId = setTimeout(() => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           reject(new Error('timeout'));
@@ -344,7 +372,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         };
 
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           resolve(result);
@@ -353,7 +383,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         try {
           throw new Error('Send failed');
         } catch (error) {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           cleanup();
           reject(error);
@@ -386,7 +418,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
           };
 
           const handler = (event, result) => {
-            if (completed) return;
+            if (completed) {
+              return;
+            }
             completed = true;
             cleanup();
             completions.push(id);
@@ -394,7 +428,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
           };
 
           const timeoutHandler = () => {
-            if (completed) return;
+            if (completed) {
+              return;
+            }
             completed = true;
             cleanup();
             reject(new Error(`timeout-${id}`));
@@ -477,7 +513,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
 
       const promise = new Promise((resolve) => {
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           responseValue = result;
           resolve(result);
@@ -498,7 +536,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
         let completed = false;
 
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           completionCount++;
           resolve(result);
@@ -527,14 +567,18 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
 
       const promise = new Promise((resolve, reject) => {
         const handler = (event, result) => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           completedBy = 'handler';
           resolve(result);
         };
 
         const timeoutHandler = () => {
-          if (completed) return;
+          if (completed) {
+            return;
+          }
           completed = true;
           completedBy = 'timeout';
           reject(new Error('timeout'));
@@ -564,7 +608,9 @@ describe('IPC Race Conditions Tests (Issue #3)', () => {
             let completed = false;
 
             const handler = () => {
-              if (completed) return;
+              if (completed) {
+                return;
+              }
               completed = true;
               resolve();
             };

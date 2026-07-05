@@ -281,8 +281,11 @@ class ObservabilityDashboard extends EventEmitter {
 
     // Determine overall health
     let overallHealth = 'healthy';
-    if (unhealthyServices > 0) overallHealth = 'unhealthy';
-    else if (degradedServices > 0) overallHealth = 'degraded';
+    if (unhealthyServices > 0) {
+      overallHealth = 'unhealthy';
+    } else if (degradedServices > 0) {
+      overallHealth = 'degraded';
+    }
 
     return {
       timestamp: Date.now(),
@@ -429,7 +432,9 @@ class ObservabilityDashboard extends EventEmitter {
    */
   _updateServiceHealth(serviceName) {
     const service = this.dashboard.services.get(serviceName);
-    if (!service) return;
+    if (!service) {
+      return;
+    }
 
     if (service.uptime < 95 || service.errorRate > 20) {
       service.status = 'unhealthy';
@@ -461,14 +466,18 @@ class ObservabilityDashboard extends EventEmitter {
     const visited = new Set();
 
     for (const [serviceName, service] of this.dashboard.services) {
-      if (visited.has(serviceName)) continue;
+      if (visited.has(serviceName)) {
+        continue;
+      }
 
       const cluster = new Set();
       const queue = [serviceName];
 
       while (queue.length > 0) {
         const current = queue.shift();
-        if (visited.has(current)) continue;
+        if (visited.has(current)) {
+          continue;
+        }
 
         visited.add(current);
         cluster.add(current);
@@ -476,10 +485,14 @@ class ObservabilityDashboard extends EventEmitter {
         const currentService = this.dashboard.services.get(current);
         if (currentService) {
           for (const dep of currentService.dependencies) {
-            if (!visited.has(dep)) queue.push(dep);
+            if (!visited.has(dep)) {
+              queue.push(dep);
+            }
           }
           for (const dep of currentService.dependents) {
-            if (!visited.has(dep)) queue.push(dep);
+            if (!visited.has(dep)) {
+              queue.push(dep);
+            }
           }
         }
       }

@@ -106,33 +106,33 @@ function createMockSSLServer(options = {}) {
     const { id, command } = message;
 
     switch (command) {
-      case 'ping':
-        return { id, success: true, message: 'pong', timestamp: Date.now() };
-      case 'status':
-        return {
-          id,
-          success: true,
-          status: {
-            ready: true,
-            port,
-            secure: true,
-            protocol: 'wss'
-          }
-        };
-      case 'echo':
-        return { id, success: true, data: message };
-      case 'get_ssl_info':
-        return {
-          id,
-          success: true,
-          ssl: {
-            enabled: true,
-            protocol: 'TLSv1.3',
-            cipher: 'TLS_AES_256_GCM_SHA384'
-          }
-        };
-      default:
-        return { id, success: false, error: `Unknown command: ${command}` };
+    case 'ping':
+      return { id, success: true, message: 'pong', timestamp: Date.now() };
+    case 'status':
+      return {
+        id,
+        success: true,
+        status: {
+          ready: true,
+          port,
+          secure: true,
+          protocol: 'wss'
+        }
+      };
+    case 'echo':
+      return { id, success: true, data: message };
+    case 'get_ssl_info':
+      return {
+        id,
+        success: true,
+        ssl: {
+          enabled: true,
+          protocol: 'TLSv1.3',
+          cipher: 'TLS_AES_256_GCM_SHA384'
+        }
+      };
+    default:
+      return { id, success: false, error: `Unknown command: ${command}` };
     }
   }
 
@@ -205,7 +205,9 @@ function createMockWSServer(options = {}) {
   let wss = null;
 
   return {
-    get wss() { return wss; },
+    get wss() {
+      return wss;
+    },
     start() {
       return new Promise((resolve, reject) => {
         wss = new WebSocket.Server({ port, host });
@@ -785,8 +787,12 @@ describe('SSL Connection Tests (No Certificates Required)', () => {
       function validateSslConfig(config) {
         const errors = [];
         if (config.ssl === true) {
-          if (!config.cert) errors.push('Certificate path required');
-          if (!config.key) errors.push('Key path required');
+          if (!config.cert) {
+            errors.push('Certificate path required');
+          }
+          if (!config.key) {
+            errors.push('Key path required');
+          }
         }
         return { valid: errors.length === 0, errors };
       }

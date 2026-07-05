@@ -28,7 +28,7 @@ describe('Security Phase 2: Entropy Tests', () => {
       expect(session.id).toMatch(/^session-[a-f0-9]{32}$/);
 
       const randomPart = session.id.split('-')[1];
-      expect(randomPart.length).toBe(32);  // 16 bytes = 32 hex chars
+      expect(randomPart.length).toBe(32); // 16 bytes = 32 hex chars
     });
 
     test('Session IDs are cryptographically random', () => {
@@ -57,7 +57,7 @@ describe('Security Phase 2: Entropy Tests', () => {
       for (let pos = 0; pos < 32; pos++) {
         const chars = new Set();
         ids.forEach(id => {
-          chars.add(id.charAt(pos + 8));  // Skip 'session-' prefix
+          chars.add(id.charAt(pos + 8)); // Skip 'session-' prefix
         });
 
         // Should have good distribution (not all same character)
@@ -135,7 +135,7 @@ describe('Security Phase 2: Entropy Tests', () => {
       const randomPart = parts[parts.length - 1];
 
       expect(randomPart).toMatch(/^[a-f0-9]{32}$/);
-      expect(randomPart.length).toBe(32);  // 16 bytes = 32 hex chars
+      expect(randomPart.length).toBe(32); // 16 bytes = 32 hex chars
     });
 
     test('Platform IDs are unique across exports', () => {
@@ -194,14 +194,14 @@ describe('Security Phase 2: Entropy Tests', () => {
       const variance = times.reduce((sum, t) => sum + Math.pow(t - avgTime, 2)) / times.length;
 
       // Low variance indicates not exploitable via timing
-      expect(variance).toBeLessThan(10);  // ms^2
+      expect(variance).toBeLessThan(10); // ms^2
     });
   });
 
   describe('Entropy Comparison: Old vs New', () => {
     test('Old entropy (4 bytes) vs New entropy (16 bytes) - space', () => {
-      const oldEntropyBits = 4 * 8;  // 32 bits
-      const newEntropyBits = 16 * 8;  // 128 bits
+      const oldEntropyBits = 4 * 8; // 32 bits
+      const newEntropyBits = 16 * 8; // 128 bits
 
       // New entropy space is 2^96 times larger
       expect(newEntropyBits).toBe(oldEntropyBits + 96);

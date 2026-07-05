@@ -43,7 +43,7 @@ const PREDEFINED_BLOCK_RULES = {
     '*://static.ads-twitter.com/*',
     '*://*.moatads.com/*',
     '*://*.serving-sys.com/*',
-    '*://*.2mdn.net/*',
+    '*://*.2mdn.net/*'
   ],
   trackers: [
     '*://www.google-analytics.com/*',
@@ -66,7 +66,7 @@ const PREDEFINED_BLOCK_RULES = {
     '*://*.optimizely.com/*',
     '*://*.quantserve.com/*',
     '*://*.scorecardresearch.com/*',
-    '*://*.newrelic.com/*',
+    '*://*.newrelic.com/*'
   ],
   social: [
     '*://platform.twitter.com/*',
@@ -78,7 +78,7 @@ const PREDEFINED_BLOCK_RULES = {
     '*://widgets.pinterest.com/*',
     '*://static.addtoany.com/*',
     '*://*.sharethis.com/*',
-    '*://*.addthis.com/*',
+    '*://*.addthis.com/*'
   ]
 };
 
@@ -254,10 +254,14 @@ class RequestInterceptor {
    * @returns {boolean} - Whether the URL matches
    */
   matchesPattern(url, pattern) {
-    if (!pattern || !url) return false;
+    if (!pattern || !url) {
+      return false;
+    }
 
     // Handle exact matches
-    if (pattern === url) return true;
+    if (pattern === url) {
+      return true;
+    }
 
     // Convert wildcard pattern to regex
     const regexPattern = pattern
@@ -502,7 +506,9 @@ class RequestInterceptor {
         pattern,
         description: `Predefined ${category} rule`
       });
-      if (result.success) added++;
+      if (result.success) {
+        added++;
+      }
     }
 
     console.log(`[RequestInterceptor] Applied ${added} predefined ${category} rules`);
@@ -542,8 +548,11 @@ class RequestInterceptor {
     if (Array.isArray(rules.blockRules)) {
       for (const rule of rules.blockRules) {
         const result = this.addBlockRule(rule);
-        if (result.success) results.blockRules.added++;
-        else results.blockRules.failed++;
+        if (result.success) {
+          results.blockRules.added++;
+        } else {
+          results.blockRules.failed++;
+        }
       }
     }
 
@@ -551,8 +560,11 @@ class RequestInterceptor {
     if (Array.isArray(rules.allowRules)) {
       for (const rule of rules.allowRules) {
         const result = this.addAllowRule(rule);
-        if (result.success) results.allowRules.added++;
-        else results.allowRules.failed++;
+        if (result.success) {
+          results.allowRules.added++;
+        } else {
+          results.allowRules.failed++;
+        }
       }
     }
 
@@ -560,8 +572,11 @@ class RequestInterceptor {
     if (Array.isArray(rules.headerRules)) {
       for (const rule of rules.headerRules) {
         const result = this.addHeaderRule(rule);
-        if (result.success) results.headerRules.added++;
-        else results.headerRules.failed++;
+        if (result.success) {
+          results.headerRules.added++;
+        } else {
+          results.headerRules.failed++;
+        }
       }
     }
 

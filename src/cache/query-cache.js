@@ -26,7 +26,7 @@ class QueryCache extends EventEmitter {
       tags = [],
       dependencies = [],
       partition = null,
-      minCacheSize = this.minCacheableSize,
+      minCacheSize = this.minCacheableSize
     } = config;
 
     this.queryConfigs.set(queryType, {
@@ -35,7 +35,7 @@ class QueryCache extends EventEmitter {
       dependencies,
       partition,
       minCacheSize,
-      enabled: true,
+      enabled: true
     });
 
     // Register dependency mapping
@@ -80,14 +80,14 @@ class QueryCache extends EventEmitter {
       const cacheOptions = {
         ttl: config.ttl,
         tags: config.tags,
-        tier: 'memory',
+        tier: 'memory'
       };
 
       // Partition the cache if configured
       if (config.partition) {
         cacheOptions.tags = [
           ...config.tags,
-          `partition:${config.partition}(${params[config.partition]})`,
+          `partition:${config.partition}(${params[config.partition]})`
         ];
       }
 
@@ -109,7 +109,9 @@ class QueryCache extends EventEmitter {
 
     for (const queryType of dependentQueries) {
       const config = this.queryConfigs.get(queryType);
-      if (!config) continue;
+      if (!config) {
+        continue;
+      }
 
       // Invalidate all tags associated with this query
       for (const tag of config.tags) {
@@ -127,7 +129,9 @@ class QueryCache extends EventEmitter {
    */
   async invalidateQuery(queryType, params = {}) {
     const config = this.queryConfigs.get(queryType);
-    if (!config) return 0;
+    if (!config) {
+      return 0;
+    }
 
     const cacheKey = this._generateCacheKey(queryType, params, config);
     await this.cacheManager.delete(cacheKey);
@@ -175,7 +179,7 @@ class QueryCache extends EventEmitter {
       hits: 0,
       misses: 0,
       avgExecutionTime: 0,
-      avgCachedTime: 0,
+      avgCachedTime: 0
     };
   }
 
@@ -189,7 +193,7 @@ class QueryCache extends EventEmitter {
         ...metrics,
         hitRate: metrics.hits + metrics.misses > 0
           ? ((metrics.hits / (metrics.hits + metrics.misses)) * 100).toFixed(2) + '%'
-          : 'N/A',
+          : 'N/A'
       };
     }
     return result;
@@ -202,7 +206,7 @@ class QueryCache extends EventEmitter {
     return {
       registeredQueries: this.queryConfigs.size,
       metrics: this.getAllMetrics(),
-      cacheManagerStats: this.cacheManager.getMetrics(),
+      cacheManagerStats: this.cacheManager.getMetrics()
     };
   }
 
@@ -230,7 +234,7 @@ class QueryCache extends EventEmitter {
         misses: 0,
         totalHitTime: 0,
         totalMissTime: 0,
-        executionCount: 0,
+        executionCount: 0
       });
     }
 

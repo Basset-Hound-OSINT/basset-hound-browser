@@ -618,7 +618,7 @@ class StorageManager {
       // Import localStorage
       if (storageData.localStorage && !storageData.localStorage.error) {
         let localStorageImported = 0;
-        let localStorageErrors = [];
+        const localStorageErrors = [];
 
         for (const [key, value] of Object.entries(storageData.localStorage)) {
           const result = await this.setLocalStorageItem(origin, key, value);
@@ -639,7 +639,7 @@ class StorageManager {
       // Import sessionStorage
       if (storageData.sessionStorage && !storageData.sessionStorage.error) {
         let sessionStorageImported = 0;
-        let sessionStorageErrors = [];
+        const sessionStorageErrors = [];
 
         for (const [key, value] of Object.entries(storageData.sessionStorage)) {
           const result = await this.setSessionStorageItem(origin, key, value);

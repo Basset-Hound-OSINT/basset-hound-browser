@@ -23,10 +23,10 @@ const EventEmitter = require('events');
 class CustodyEntry {
   constructor(action, actor, timestamp = null, notes = '') {
     this.timestamp = timestamp || new Date().toISOString();
-    this.action = action;  // 'created', 'modified', 'accessed', 'exported', 'sealed'
-    this.actor = actor;    // Who performed the action
-    this.notes = notes;    // Additional context
-    this.hash = null;      // Hash at time of action (optional)
+    this.action = action; // 'created', 'modified', 'accessed', 'exported', 'sealed'
+    this.actor = actor; // Who performed the action
+    this.notes = notes; // Additional context
+    this.hash = null; // Hash at time of action (optional)
   }
 
   toJSON() {
@@ -35,7 +35,7 @@ class CustodyEntry {
       action: this.action,
       actor: this.actor,
       notes: this.notes,
-      hash: this.hash,
+      hash: this.hash
     };
   }
 }
@@ -48,8 +48,8 @@ class CustodyEntry {
 class ChainOfCustodyManager extends EventEmitter {
   constructor(options = {}) {
     super();
-    this.chains = new Map();  // evidenceId -> chain array
-    this.complianceMode = options.complianceMode || 'iso27037';  // iso27037, nist, acpo
+    this.chains = new Map(); // evidenceId -> chain array
+    this.complianceMode = options.complianceMode || 'iso27037'; // iso27037, nist, acpo
     this.autoTimestamp = options.autoTimestamp !== false;
   }
 
@@ -82,7 +82,7 @@ class ChainOfCustodyManager extends EventEmitter {
     this.emit('chainInitialized', {
       evidenceId,
       timestamp: entry.timestamp,
-      actor: entry.actor,
+      actor: entry.actor
     });
 
     return chain;
@@ -115,7 +115,7 @@ class ChainOfCustodyManager extends EventEmitter {
       evidenceId,
       action,
       actor,
-      timestamp: entry.timestamp,
+      timestamp: entry.timestamp
     });
 
     return entry;
@@ -214,20 +214,20 @@ class ChainOfCustodyManager extends EventEmitter {
     const authority = options.authority || 'freetsa.org';
     const token = {
       version: '1',
-      policyId: options.policyId || '1.2.840.113549.1.9.16.3.3',  // RFC 3161 policy OID
+      policyId: options.policyId || '1.2.840.113549.1.9.16.3.3', // RFC 3161 policy OID
       messageImprint: {
         hashAlgorithm: 'sha256',
-        hashedMessage: hash,
+        hashedMessage: hash
       },
       serialNumber: crypto.randomBytes(16).toString('hex'),
       genTime: new Date().toISOString(),
       accuracy: {
         seconds: 1,
-        millis: 0,
+        millis: 0
       },
       ordering: false,
       nonce: crypto.randomBytes(8).toString('hex'),
-      tsa: authority,
+      tsa: authority
       // TODO: In production, add TSA signature field
       // tst: base64_encoded_timestamp_token,
     };
@@ -267,21 +267,21 @@ actor information. No evidence has been modified except as expressly documented 
         minimization: 'Only necessary evidence was collected and preserved',
         integrity: 'Chain of custody maintained throughout handling',
         documentation: 'Complete action log with timestamps and actors',
-        traceability: 'All modifications and accesses fully documented',
+        traceability: 'All modifications and accesses fully documented'
       },
       requirements: {
         chainIntegrity: verification.valid,
         totalActions: chain.length,
         documentedModifications: chain.filter(e => e.action === 'modified').length,
         documentedAccesses: chain.filter(e => e.action === 'accessed').length,
-        sealed: chain.some(e => e.action === 'sealed'),
+        sealed: chain.some(e => e.action === 'sealed')
       },
       complianceChecks: {
         unbrokenChain: !verification.issues.includes('Chronological violation'),
         allActionsDocumented: chain.every(e => e.actor && e.timestamp),
-        noPostSealModifications: !verification.issues.includes('Modifications or exports detected after sealing'),
+        noPostSealModifications: !verification.issues.includes('Modifications or exports detected after sealing')
       },
-      generatedAt: new Date().toISOString(),
+      generatedAt: new Date().toISOString()
     };
   }
 
@@ -315,7 +315,7 @@ actor information. No evidence has been modified except as expressly documented 
       issues: [],
       entryCount: chain.length,
       firstEntry: chain[0]?.timestamp,
-      lastEntry: chain[chain.length - 1]?.timestamp,
+      lastEntry: chain[chain.length - 1]?.timestamp
     };
 
     // Check for required actions
@@ -373,8 +373,8 @@ actor information. No evidence has been modified except as expressly documented 
         actors: [...new Set(chain.map(e => e.actor))],
         firstAction: chain[0]?.timestamp,
         lastAction: chain[chain.length - 1]?.timestamp,
-        sealed: verification.valid && chain.some(e => e.action === 'sealed'),
-      },
+        sealed: verification.valid && chain.some(e => e.action === 'sealed')
+      }
     };
 
     if (format === 'text') {
@@ -413,8 +413,12 @@ actor information. No evidence has been modified except as expressly documented 
       text += `${idx + 1}. ${entry.action.toUpperCase()}\n`;
       text += `   Timestamp: ${entry.timestamp}\n`;
       text += `   Actor: ${entry.actor}\n`;
-      if (entry.notes) text += `   Notes: ${entry.notes}\n`;
-      if (entry.hash) text += `   Hash: ${entry.hash.substring(0, 16)}...\n`;
+      if (entry.notes) {
+        text += `   Notes: ${entry.notes}\n`;
+      }
+      if (entry.hash) {
+        text += `   Hash: ${entry.hash.substring(0, 16)}...\n`;
+      }
       text += '\n';
     });
 
@@ -493,7 +497,7 @@ actor information. No evidence has been modified except as expressly documented 
       evidenceId,
       exportedAt: new Date().toISOString(),
       chain: this.getChain(evidenceId).map(e => e.toJSON()),
-      verification: this.verifyChainIntegrity(evidenceId),
+      verification: this.verifyChainIntegrity(evidenceId)
     };
   }
 
@@ -509,7 +513,7 @@ actor information. No evidence has been modified except as expressly documented 
       this.emit('chainCleared', {
         evidenceId,
         clearedBy: actor,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     }
   }
@@ -524,7 +528,7 @@ actor information. No evidence has been modified except as expressly documented 
       totalChains: this.chains.size,
       totalEntries: 0,
       actorCount: new Set(),
-      actionCounts: {},
+      actionCounts: {}
     };
 
     for (const chain of this.chains.values()) {
@@ -543,5 +547,5 @@ actor information. No evidence has been modified except as expressly documented 
 
 module.exports = {
   ChainOfCustodyManager,
-  CustodyEntry,
+  CustodyEntry
 };

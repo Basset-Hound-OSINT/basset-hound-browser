@@ -127,9 +127,15 @@ class AdaptiveLoadBalancer extends EventEmitter {
    * @private
    */
   _estimateWorkSize(workItem) {
-    if (typeof workItem === 'number') return workItem;
-    if (workItem.size) return workItem.size;
-    if (workItem.length) return workItem.length;
+    if (typeof workItem === 'number') {
+      return workItem;
+    }
+    if (workItem.size) {
+      return workItem.size;
+    }
+    if (workItem.length) {
+      return workItem.length;
+    }
     return 1; // Default unit
   }
 
@@ -378,8 +384,12 @@ class DistributedMerge {
    * @returns {Array} Merged sorted array
    */
   static mergeMultiple(arrays) {
-    if (arrays.length === 0) return [];
-    if (arrays.length === 1) return arrays[0];
+    if (arrays.length === 0) {
+      return [];
+    }
+    if (arrays.length === 1) {
+      return arrays[0];
+    }
 
     // Use tree-based merging for efficiency
     let current = arrays;

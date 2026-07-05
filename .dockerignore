@@ -1,63 +1,106 @@
-# Docker build optimization - exclude unnecessary files
-# This reduces build context size and improves build speed
+# Docker build context exclusions - reduces image size and improves build speed
 
-# Version control
+# Version control and git
 .git
 .gitignore
+.gitattributes
 .gitmodules
 
-# Dependencies (will be reinstalled in container)
-node_modules
+# Dependencies (reinstalled during build via npm ci)
+node_modules/
+package-lock.json.backup
 
-# Build outputs
-dist
-out
-release
+# Build outputs and artifacts
+dist/
+build/
+release/
+out/
+*.egg-info/
 
-# Development files
-.vscode
-.idea
+# Development and IDE files
+.vscode/
+.idea/
+.atom/
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
+.project
+.settings/
+*.sublime-project
+*.sublime-workspace
 
-# Test files
-tests
-coverage
+# Testing infrastructure (not needed in production)
+tests/
+coverage/
+.nyc_output/
 *.test.js
 jest.config.js
+.mocha_output/
 
-# Documentation (not needed in container)
-docs
+# Documentation (not needed in runtime image)
+docs/
 *.md
-!README.md
+README*
+CHANGELOG*
+LICENSE
+AUTHORS
 
-# Client libraries (external tools)
-clients
+# Client libraries (external tooling)
+clients/
 
-# Example configurations
+# Example/template configurations
 *.example.*
+.env.example
+.editorconfig
+.prettierrc
+.prettierignore
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Temporary files
-tmp
-temp
-*.tmp
+# Temporary and cache files
+tmp/
+temp/
+.cache/
+.ccache/
+.gradle/
+.parcel-cache/
+logs/
 *.log
+.npm/
 
 # IDE metadata
-.claude
+.claude/
 
-# Runtime data directories (created at runtime)
-# Note: sessions/, screenshots/, downloads/ contain source code (manager.js)
-# So we only exclude the recordings data directory
-recordings/data
+# Runtime data directories (user-specific, created at runtime)
+recordings/data/
+profiles/data/
+cache/
+sessions/data/
 
-# Development scripts (not needed in production)
-scripts/install
+# Development-only scripts
+scripts/install/
 
-# Profiles data (user-specific)
-profiles/data
+# CI/CD configuration (not needed in container)
+.github/
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Archives and backups
+*.tar.gz
+*.zip
+*.rar
+*.7z
+*.bak
+*.backup
+
+# Miscellaneous
+Makefile
+.npmrc
+.yarnrc
+.npmignore

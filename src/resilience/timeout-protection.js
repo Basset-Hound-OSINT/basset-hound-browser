@@ -10,18 +10,18 @@ const { execSync } = require('child_process');
 
 // Default timeout values (in milliseconds)
 const DEFAULT_TIMEOUTS = {
-  executeJavaScript: 5000,      // 5 seconds
-  navigate: 30000,              // 30 seconds
-  screenshot: 10000,            // 10 seconds
-  wait: 30000,                  // 30 seconds (user can override, capped)
-  click: 2000,                  // 2 seconds
-  fill: 2000,                   // 2 seconds per field
-  formSubmit: 5000,             // 5 seconds
-  request: 10000,               // 10 seconds
-  deviceCapture: 5000,          // 5 seconds
-  processExec: 5000,            // 5 seconds
-  socketConnect: 10000,         // 10 seconds
-  defaultMax: 30000             // Absolute maximum timeout
+  executeJavaScript: 5000, // 5 seconds
+  navigate: 30000, // 30 seconds
+  screenshot: 10000, // 10 seconds
+  wait: 30000, // 30 seconds (user can override, capped)
+  click: 2000, // 2 seconds
+  fill: 2000, // 2 seconds per field
+  formSubmit: 5000, // 5 seconds
+  request: 10000, // 10 seconds
+  deviceCapture: 5000, // 5 seconds
+  processExec: 5000, // 5 seconds
+  socketConnect: 10000, // 10 seconds
+  defaultMax: 30000 // Absolute maximum timeout
 };
 
 class TimeoutError extends Error {
@@ -43,10 +43,10 @@ class TimeoutProtection {
   constructor(options = {}) {
     this.logger = options.logger || console;
     this.maxTimeout = options.maxTimeout || DEFAULT_TIMEOUTS.defaultMax;
-    this.activeTasks = new Map();  // Track active operations
-    this.activeTimeouts = new Set();  // P3-003: Track all timeout IDs for cleanup
-    this.abortControllers = new Map();  // P3-003: Track AbortControllers
-    this.cleanupHandlers = [];  // P3-003: Emergency cleanup handlers
+    this.activeTasks = new Map(); // Track active operations
+    this.activeTimeouts = new Set(); // P3-003: Track all timeout IDs for cleanup
+    this.abortControllers = new Map(); // P3-003: Track AbortControllers
+    this.cleanupHandlers = []; // P3-003: Emergency cleanup handlers
   }
 
   /**
@@ -142,7 +142,7 @@ class TimeoutProtection {
             await new Promise(resolve => setTimeout(resolve, backoffMs));
           }
         } else {
-          throw error;  // Non-timeout errors aren't retried
+          throw error; // Non-timeout errors aren't retried
         }
       }
     }

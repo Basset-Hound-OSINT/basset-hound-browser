@@ -21,8 +21,12 @@ describe('CookieManager', () => {
             }
 
             return mockCookies.filter(c => {
-              if (filter.name && c.name !== filter.name) return false;
-              if (filter.domain && !c.domain.includes(filter.domain)) return false;
+              if (filter.name && c.name !== filter.name) {
+                return false;
+              }
+              if (filter.domain && !c.domain.includes(filter.domain)) {
+                return false;
+              }
               return true;
             });
           }),

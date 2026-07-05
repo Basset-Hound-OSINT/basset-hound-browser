@@ -100,27 +100,30 @@ class MockDashboardWithConfig extends EventEmitter {
     const { key, newValue } = change;
 
     switch (key) {
-      case 'refreshInterval':
-        this.updateRefreshInterval(newValue);
-        break;
-      case 'theme':
-        this.displayState.theme = newValue;
-        this.emit('theme-changed', newValue);
-        break;
-      case 'autoRefresh':
-        if (newValue) this.startAutoRefresh();
-        else this.stopAutoRefresh();
-        break;
-      case 'compactView':
-        this.displayState.compactView = newValue;
-        this.emit('view-changed', newValue ? 'compact' : 'expanded');
-        break;
-      case 'maxAlerts':
-        this.displayState.maxAlerts = newValue;
-        this.emit('alert-limit-changed', newValue);
-        break;
-      default:
-        this.displayState[key] = newValue;
+    case 'refreshInterval':
+      this.updateRefreshInterval(newValue);
+      break;
+    case 'theme':
+      this.displayState.theme = newValue;
+      this.emit('theme-changed', newValue);
+      break;
+    case 'autoRefresh':
+      if (newValue) {
+        this.startAutoRefresh();
+      } else {
+        this.stopAutoRefresh();
+      }
+      break;
+    case 'compactView':
+      this.displayState.compactView = newValue;
+      this.emit('view-changed', newValue ? 'compact' : 'expanded');
+      break;
+    case 'maxAlerts':
+      this.displayState.maxAlerts = newValue;
+      this.emit('alert-limit-changed', newValue);
+      break;
+    default:
+      this.displayState[key] = newValue;
     }
 
     this.emit('config-applied', change);
@@ -162,7 +165,7 @@ class MockDashboardWithConfig extends EventEmitter {
   }
 }
 
-describe('Dashboard Integration - Configuration', function() {
+describe('Dashboard Integration - Configuration', function () {
   this.timeout(20000);
 
   let configManager;
@@ -173,15 +176,15 @@ describe('Dashboard Integration - Configuration', function() {
     dashboard = new MockDashboardWithConfig(configManager);
   });
 
-  describe('Scenario 1: Basic Config Changes', function() {
-    it('should update refresh interval', function() {
+  describe('Scenario 1: Basic Config Changes', () => {
+    it('should update refresh interval', () => {
       configManager.updateConfig('refreshInterval', 60000);
 
       const value = configManager.getConfigValue('refreshInterval');
       assert.strictEqual(value, 60000);
     });
 
-    it('should reflect config change in dashboard immediately', function(done) {
+    it('should reflect config change in dashboard immediately', (done) => {
       dashboard.once('config-applied', (change) => {
         assert.strictEqual(change.key, 'refreshInterval');
         done();
@@ -190,14 +193,14 @@ describe('Dashboard Integration - Configuration', function() {
       configManager.updateConfig('refreshInterval', 45000);
     });
 
-    it('should change theme', function() {
+    it('should change theme', () => {
       configManager.updateConfig('theme', 'light');
 
       const config = configManager.getConfig();
       assert.strictEqual(config.theme, 'light');
     });
 
-    it('should update dashboard theme immediately', function(done) {
+    it('should update dashboard theme immediately', (done) => {
       dashboard.once('theme-changed', (theme) => {
         assert.strictEqual(theme, 'light');
         done();
@@ -207,27 +210,27 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 2: Boolean Config Changes', function() {
-    it('should toggle autoRefresh', function() {
+  describe('Scenario 2: Boolean Config Changes', () => {
+    it('should toggle autoRefresh', () => {
       configManager.updateConfig('autoRefresh', false);
 
       const value = configManager.getConfigValue('autoRefresh');
       assert.strictEqual(value, false);
     });
 
-    it('should stop auto-refresh when disabled', function() {
+    it('should stop auto-refresh when disabled', () => {
       configManager.updateConfig('autoRefresh', false);
 
       assert(!dashboard.refreshTimer, 'Should clear refresh timer');
     });
 
-    it('should start auto-refresh when enabled', function() {
+    it('should start auto-refresh when enabled', () => {
       configManager.updateConfig('autoRefresh', true);
 
       assert(dashboard.refreshTimer, 'Should set refresh timer');
     });
 
-    it('should toggle compact view', function() {
+    it('should toggle compact view', () => {
       configManager.updateConfig('compactView', true);
 
       const value = configManager.getConfigValue('compactView');
@@ -235,22 +238,22 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 3: Numeric Config Changes', function() {
-    it('should update max alerts limit', function() {
+  describe('Scenario 3: Numeric Config Changes', () => {
+    it('should update max alerts limit', () => {
       configManager.updateConfig('maxAlerts', 5000);
 
       const value = configManager.getConfigValue('maxAlerts');
       assert.strictEqual(value, 5000);
     });
 
-    it('should update retention days', function() {
+    it('should update retention days', () => {
       configManager.updateConfig('retentionDays', 60);
 
       const value = configManager.getConfigValue('retentionDays');
       assert.strictEqual(value, 60);
     });
 
-    it('should reflect numeric changes in dashboard', function(done) {
+    it('should reflect numeric changes in dashboard', (done) => {
       dashboard.once('alert-limit-changed', (limit) => {
         assert.strictEqual(limit, 5000);
         done();
@@ -260,8 +263,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 4: Config Persistence', function() {
-    it('should save config to storage', function() {
+  describe('Scenario 4: Config Persistence', () => {
+    it('should save config to storage', () => {
       configManager.updateConfig('theme', 'light');
       configManager.updateConfig('refreshInterval', 45000);
 
@@ -272,7 +275,7 @@ describe('Dashboard Integration - Configuration', function() {
       assert.strictEqual(saved.refreshInterval, 45000);
     });
 
-    it('should load config from storage', function() {
+    it('should load config from storage', () => {
       const loaded = configManager.loadConfig();
 
       assert(loaded, 'Should load config');
@@ -280,7 +283,7 @@ describe('Dashboard Integration - Configuration', function() {
       assert.strictEqual(loaded.refreshInterval, 45000);
     });
 
-    it('should restore dashboard settings on reload', function() {
+    it('should restore dashboard settings on reload', () => {
       // Simulate app reload
       const newDashboard = new MockDashboardWithConfig(configManager);
       const displayState = newDashboard.getDisplayState();
@@ -289,8 +292,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 5: Config History Tracking', function() {
-    it('should track config change history', function() {
+  describe('Scenario 5: Config History Tracking', () => {
+    it('should track config change history', () => {
       configManager.updateConfig('theme', 'dark');
       configManager.updateConfig('autoRefresh', true);
       configManager.updateConfig('compactView', false);
@@ -300,7 +303,7 @@ describe('Dashboard Integration - Configuration', function() {
       assert(history.length > 0, 'Should have history');
     });
 
-    it('should show before and after values', function() {
+    it('should show before and after values', () => {
       const history = configManager.getHistory();
       const lastChange = history[history.length - 1];
 
@@ -310,8 +313,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 6: Multiple Config Changes', function() {
-    it('should handle rapid config changes', function() {
+  describe('Scenario 6: Multiple Config Changes', () => {
+    it('should handle rapid config changes', () => {
       const changes = [
         { key: 'refreshInterval', value: 30000 },
         { key: 'maxAlerts', value: 10000 },
@@ -330,8 +333,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 7: Config Validation', function() {
-    it('should validate interval values', function() {
+  describe('Scenario 7: Config Validation', () => {
+    it('should validate interval values', () => {
       const validIntervals = [5000, 30000, 60000, 300000];
 
       for (const interval of validIntervals) {
@@ -341,7 +344,7 @@ describe('Dashboard Integration - Configuration', function() {
       }
     });
 
-    it('should validate alert limits', function() {
+    it('should validate alert limits', () => {
       const limits = [1000, 5000, 10000, 50000];
 
       for (const limit of limits) {
@@ -352,8 +355,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 8: Config Reset', function() {
-    it('should reset to default config', function() {
+  describe('Scenario 8: Config Reset', () => {
+    it('should reset to default config', () => {
       configManager.updateConfig('theme', 'light');
       configManager.updateConfig('refreshInterval', 90000);
 
@@ -364,7 +367,7 @@ describe('Dashboard Integration - Configuration', function() {
       assert.strictEqual(config.refreshInterval, 30000);
     });
 
-    it('should emit reset event', function(done) {
+    it('should emit reset event', (done) => {
       configManager.once('config-reset', () => {
         done();
       });
@@ -373,8 +376,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 9: Dashboard Settings Save', function() {
-    it('should save dashboard settings', function(done) {
+  describe('Scenario 9: Dashboard Settings Save', () => {
+    it('should save dashboard settings', (done) => {
       dashboard.once('settings-saved', () => {
         const saved = configManager.storage.config;
         assert(saved, 'Should have saved config');
@@ -385,22 +388,22 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 10: Config Impact on Dashboard Behavior', function() {
-    it('should apply theme to display state', function() {
+  describe('Scenario 10: Config Impact on Dashboard Behavior', () => {
+    it('should apply theme to display state', () => {
       configManager.updateConfig('theme', 'light');
 
       const state = dashboard.getDisplayState();
       assert.strictEqual(state.theme, 'light');
     });
 
-    it('should apply view mode to display state', function() {
+    it('should apply view mode to display state', () => {
       configManager.updateConfig('compactView', true);
 
       const state = dashboard.getDisplayState();
       assert.strictEqual(state.compactView, true);
     });
 
-    it('should update refresh interval in display state', function() {
+    it('should update refresh interval in display state', () => {
       configManager.updateConfig('refreshInterval', 60000);
 
       const state = dashboard.getDisplayState();
@@ -408,8 +411,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 11: Timezone Config', function() {
-    it('should update timezone setting', function() {
+  describe('Scenario 11: Timezone Config', () => {
+    it('should update timezone setting', () => {
       const timezones = ['UTC', 'EST', 'PST', 'Europe/London'];
 
       for (const tz of timezones) {
@@ -420,8 +423,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 12: Alert Sound Config', function() {
-    it('should toggle alert sound', function() {
+  describe('Scenario 12: Alert Sound Config', () => {
+    it('should toggle alert sound', () => {
       configManager.updateConfig('alertSound', false);
 
       let soundEnabled = configManager.getConfigValue('alertSound');
@@ -433,8 +436,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 13: Config Consistency Across Instances', function() {
-    it('should maintain config consistency', function() {
+  describe('Scenario 13: Config Consistency Across Instances', () => {
+    it('should maintain config consistency', () => {
       configManager.updateConfig('theme', 'dark');
 
       const config1 = configManager.getConfig();
@@ -444,8 +447,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 14: Config Performance', function() {
-    it('should handle 100 config changes efficiently', function() {
+  describe('Scenario 14: Config Performance', () => {
+    it('should handle 100 config changes efficiently', () => {
       const startTime = Date.now();
 
       for (let i = 0; i < 100; i++) {
@@ -456,7 +459,7 @@ describe('Dashboard Integration - Configuration', function() {
       assert(elapsed < 500, `100 config changes should be <500ms, was ${elapsed}ms`);
     });
 
-    it('should save large config efficiently', function() {
+    it('should save large config efficiently', () => {
       const startTime = Date.now();
 
       configManager.saveConfig();
@@ -466,8 +469,8 @@ describe('Dashboard Integration - Configuration', function() {
     });
   });
 
-  describe('Scenario 15: Configuration Integration Summary', function() {
-    it('should provide config summary', function() {
+  describe('Scenario 15: Configuration Integration Summary', () => {
+    it('should provide config summary', () => {
       const config = configManager.getConfig();
       const history = configManager.getHistory();
 

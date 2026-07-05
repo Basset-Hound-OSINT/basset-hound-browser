@@ -64,7 +64,7 @@ const CONFIG = {
 
   // Memory thresholds
   MEMORY_THRESHOLD_MB: 2048, // Alert if heap exceeds 2GB
-  MEMORY_GROWTH_THRESHOLD_MB: 500, // Alert if growth >500MB in 10 minutes
+  MEMORY_GROWTH_THRESHOLD_MB: 500 // Alert if growth >500MB in 10 minutes
 };
 
 /**
@@ -159,7 +159,9 @@ class LoadTestMetrics {
   }
 
   getPercentile(percentile) {
-    if (this.latencies.length === 0) return 0;
+    if (this.latencies.length === 0) {
+      return 0;
+    }
     const sorted = [...this.latencies].sort((a, b) => a - b);
     const index = Math.ceil((percentile / 100) * sorted.length) - 1;
     return sorted[Math.max(0, index)];
@@ -291,7 +293,7 @@ class ConnectionPool extends EventEmitter {
     console.log(`[POOL] Sending ${messagesPerSecond} msg/s per connection for ${(durationMs / 1000).toFixed(0)}s...`);
     const startTime = Date.now();
     let messageCount = 0;
-    let throughputSamples = [];
+    const throughputSamples = [];
 
     while (Date.now() - startTime < durationMs) {
       const batchStart = Date.now();
@@ -518,7 +520,9 @@ class LoadTester {
   }
 
   _generateSummary() {
-    if (this.results.tests.length === 0) return;
+    if (this.results.tests.length === 0) {
+      return;
+    }
 
     const allLatencies = [];
     let totalMessages = 0;

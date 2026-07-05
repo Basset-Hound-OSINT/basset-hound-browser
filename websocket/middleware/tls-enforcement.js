@@ -59,7 +59,7 @@ function getTLSInfo(req) {
   const tlsSession = req.socket.getSession ? req.socket.getSession() : null;
 
   return {
-    isEncrypted: !!req.socket.encrypted,
+    isEncrypted: Boolean(req.socket.encrypted),
     cipher: req.socket.getCipher ? req.socket.getCipher().name : null,
     protocol: req.socket.getProtocol ? req.socket.getProtocol() : null,
     version: req.socket.getProtocolVersion ? req.socket.getProtocolVersion() : null

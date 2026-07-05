@@ -179,7 +179,9 @@ class CensysExport extends PlatformIntegration {
    * @private
    */
   _extractServices(data) {
-    if (!data.technologies) return [];
+    if (!data.technologies) {
+      return [];
+    }
 
     return data.technologies.map(tech => ({
       name: tech.name,
@@ -194,7 +196,9 @@ class CensysExport extends PlatformIntegration {
    * @private
    */
   _extractCertificates(data) {
-    if (!data.certificates || !Array.isArray(data.certificates)) return [];
+    if (!data.certificates || !Array.isArray(data.certificates)) {
+      return [];
+    }
 
     return data.certificates.map(cert => ({
       fingerprint: cert.fingerprint || cert.sha256 || null,

@@ -11,21 +11,21 @@ const { EventEmitter } = require('events');
  */
 const MEMORY_THRESHOLDS = {
   low: {
-    warning: 256,    // 256 MB - warning threshold
-    critical: 384,   // 384 MB - critical threshold
-    cleanup: 192     // 192 MB - trigger cleanup when above this after GC
+    warning: 256, // 256 MB - warning threshold
+    critical: 384, // 384 MB - critical threshold
+    cleanup: 192 // 192 MB - trigger cleanup when above this after GC
   },
   medium: {
-    warning: 512,    // 512 MB - warning threshold
-    critical: 768,   // 768 MB - critical threshold
-    cleanup: 384     // 384 MB - trigger cleanup when above this after GC
+    warning: 512, // 512 MB - warning threshold
+    critical: 768, // 768 MB - critical threshold
+    cleanup: 384 // 384 MB - trigger cleanup when above this after GC
   },
   high: {
-    warning: 1024,   // 1 GB - warning threshold
-    critical: 1536,  // 1.5 GB - critical threshold
-    cleanup: 768     // 768 MB - trigger cleanup when above this after GC
+    warning: 1024, // 1 GB - warning threshold
+    critical: 1536, // 1.5 GB - critical threshold
+    cleanup: 768 // 768 MB - trigger cleanup when above this after GC
   },
-  custom: null       // Will be set via configuration
+  custom: null // Will be set via configuration
 };
 
 /**
@@ -91,7 +91,9 @@ class MemoryManager extends EventEmitter {
    * @param {string} level - Log level (log, warn, error)
    */
   log(message, level = 'log') {
-    if (!this.enableLogging) return;
+    if (!this.enableLogging) {
+      return;
+    }
     const timestamp = new Date().toISOString();
     const logMessage = `${this.logPrefix} [${timestamp}] ${message}`;
     console[level](logMessage);
@@ -441,7 +443,9 @@ class MemoryManager extends EventEmitter {
    * @param {Object} memInfo - Memory information
    */
   broadcastMemoryAlert(level, memInfo) {
-    if (!this.wsServer) return;
+    if (!this.wsServer) {
+      return;
+    }
 
     try {
       this.wsServer.broadcast({

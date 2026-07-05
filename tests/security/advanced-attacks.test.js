@@ -15,7 +15,7 @@ const assert = require('assert');
 const crypto = require('crypto');
 const WebSocket = require('ws');
 
-describe('Advanced Attack Scenario Tests', function() {
+describe('Advanced Attack Scenario Tests', function () {
   this.timeout(30000);
 
   const WS_URL = 'ws://localhost:8765';
@@ -208,7 +208,9 @@ describe('Advanced Attack Scenario Tests', function() {
 
       // Constant-time comparison (all chars checked, not early exit)
       const constantTimeCompare = (a, b) => {
-        if (a.length !== b.length) return false;
+        if (a.length !== b.length) {
+          return false;
+        }
 
         let diff = 0;
         for (let i = 0; i < a.length; i++) {
@@ -328,9 +330,13 @@ describe('Advanced Attack Scenario Tests', function() {
         let work = 0;
 
         if (isValid) {
-          for (let i = 0; i < 1000; i++) work += i;
+          for (let i = 0; i < 1000; i++) {
+            work += i;
+          }
         } else {
-          for (let i = 0; i < 1000; i++) work += i * 2;
+          for (let i = 0; i < 1000; i++) {
+            work += i * 2;
+          }
         }
 
         return work;

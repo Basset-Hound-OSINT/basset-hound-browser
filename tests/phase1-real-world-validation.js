@@ -332,9 +332,15 @@ class Phase1Validator {
   }
 
   categorizeBug(failure) {
-    if (failure.errors.some(e => e.includes('Navigation'))) return 'Navigation';
-    if (failure.errors.some(e => e.includes('Content'))) return 'Content Extraction';
-    if (failure.errors.some(e => e.includes('timeout'))) return 'Timeout';
+    if (failure.errors.some(e => e.includes('Navigation'))) {
+      return 'Navigation';
+    }
+    if (failure.errors.some(e => e.includes('Content'))) {
+      return 'Content Extraction';
+    }
+    if (failure.errors.some(e => e.includes('timeout'))) {
+      return 'Timeout';
+    }
     return 'Unknown';
   }
 

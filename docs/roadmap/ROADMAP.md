@@ -1,0 +1,1826 @@
+# Basset Hound Browser - Product Roadmap
+
+**Last Updated:** July 4, 2026
+**Status:** ✅ **MVP COMPLETE + PROVEN (2026-07-04)** — boots + drives headless + GUI (`npm run start:headless` / `npm run start:gui`; `npm run smoke:mvp` = **15/15**), **18-tool MCP** (incl. `forensic_capture`), **Tor/proxy anonymity + clean stealth identity PROVEN**, all 13 files modularized <1200 lines, security hardened, 78 dead files pruned.
+**⚠️ AUTHORITATIVE STATUS → [docs/planning/PROJECT-STATUS-MATRIX.md](../planning/PROJECT-STATUS-MATRIX.md).** Trust it, NOT the older "v12.8.0 production ready / 100% / production complete" claims below — those were **inflated** (13 docs bannered 2026-07-04). Historical content below kept for reference only.
+**Latest Session Record:** [2026-07-04 Modularization & Differentiators](../archives/session_records/2026-07-04_MODULARIZATION-AND-DIFFERENTIATORS.md) — all 13 files >1200 lines split to <1200 (server.js 12,096→1,110, 904 commands preserved); differentiators proven live (Tor/proxy anonymity, coherent-UA fix, `forensic_capture` = MCP tool #18); final verify **smoke:mvp 15/15 + mcp exit 0**. · prior [2026-07-04 MVP Completion](../archives/session_records/2026-07-04_MVP-COMPLETION-ORCHESTRATED.md) · [2026-07-03 Scope Reset & Research](../archives/session_records/2026-07-03_SCOPE-RESET-AND-RESEARCH.md)
+**Next tier (see the session record §6 PLAN):** Phase 1 = command-surface verification & repair (inventory all 904 registered → auto-test → classify works/broken/stub/dead → fix; only ~70 proven today); then onboarding self-test, wire-capture/evasion-timing, palletai MCP integration. Deferred: evasion/CAPTCHA research, Collaboration API, dynamic `.onion`.
+
+---
+
+## 🎯 PROJECT COMPLETION PATH (⚠️ HISTORICAL — June-era estimate, SUPERSEDED)
+
+> ⚠️ **SUPERSEDED** by the 2026-07-04 status above → [PROJECT-STATUS-MATRIX.md](../planning/PROJECT-STATUS-MATRIX.md). The "60% / July-1 GA / 35-45 hours" figures below are the old June estimate and are stale. The real next step is **Phase 1 — command-surface verification & repair** → [PHASE-1-COMMAND-VERIFICATION-PLAN.md](../planning/PHASE-1-COMMAND-VERIFICATION-PLAN.md) + [NEXT-SESSION-PLAYBOOK.md](../planning/NEXT-SESSION-PLAYBOOK.md).
+
+**Status (June estimate, stale):** 60% ready for external app integration  
+**Timeline:** July 1, 2026 (External GA Release target)  
+**Effort:** 35-45 hours remaining
+
+**→ [PROJECT-COMPLETION-PATH.md](../PROJECT-COMPLETION-PATH.md)** — Detailed plan for finishing this project:
+- Current state (what works, what doesn't)
+- 5 CRITICAL blockers (11-14 hours to fix)
+- 8 HIGH-priority items (15-25 hours)
+- Execution phases with timeline
+- Success criteria for external app readiness
+
+**Start here if you want to know:** "What exactly needs to be done to finish this?"
+
+---
+
+## 🎯 SCOPE CLARIFICATION (June 13, 2026)
+
+**Basset Hound Browser is a focused WebSocket API for browser automation and forensic data collection.**
+
+### ✅ IN SCOPE
+- WebSocket API endpoints for browser control
+- Navigation, interaction, content extraction
+- Forensic evidence capture (screenshots, HAR, metadata)
+- Bot evasion (fingerprinting, behavioral simulation)
+- Tor integration for .onion access
+- Profile and session management
+
+### ❌ OUT OF SCOPE (Removed from Roadmap)
+- **Third-party API integrations:** Shodan, Maltego, Censys, threat intelligence services (not implemented)
+- **ML integrations:** No machine learning models, APIs, or ML-based analysis
+- **OSINT analysis:** Pattern detection, data classification, intelligence decisions
+- **Case/investigation management:** External systems handle investigations
+- **External system integration:** Credential fetching, activity syncing, sock puppet management
+
+**Principle:** External applications consuming the browser API can optionally add these services in their own layers. The browser provides raw data only.
+
+---
+
+## Next Release: v12.7.0 Phase 2 (June 29 - July 12, 2026)
+
+### v12.7.0 Phase 2 - PLANNED ✓
+- **Timeline:** June 29 - July 12, 2026
+- **Features:** 4 major enhancements across TOTP/HOTP, Sessions, Evasion, Monitoring
+- **Work Items:** 85+ specific items
+- **Planned Tests:** 170+
+- **Gate Reviews:** July 5 (mid-point), July 12 (completion)
+- **Status:** Fully specified, ready for autonomous development
+
+### Details (See `/docs/findings/V12.7.0-PHASE2-MASTER-PLAN-2026-06-15.md`)
+- **Feature 1:** TOTP/HOTP Enhancements - Key management, backup codes, hardware tokens (15+ items)
+- **Feature 2:** Session Management - Multi-session parallelization, inheritance, performance (18+ items)
+- **Feature 3:** Advanced Evasion - ML-based detection prediction, adaptive response (22+ items)
+- **Feature 4:** Metrics Expansion - Dashboards, predictive analysis, alerts (30+ items)
+
+---
+
+## Latest Release: v12.8.0 (June 22, 2026)
+
+### v12.8.0 - COMPLETE ✅ (Phase 1 Forensic Commands - June 22, 2026)
+- ✅ **HTML Capture Commands:** 17 commands for comprehensive HTML extraction with multiple preservation strategies
+- ✅ **DOM Snapshot Commands:** 7 commands for JavaScript DOM state capture with mutation detection
+- ✅ **JavaScript & Console Extraction:** 10 commands for JS context and runtime state analysis
+- ✅ **Export Formats & Templates:** 18 commands with JSON, CSV, HAR, HTML, Markdown, XML, YAML, PDF support
+- ✅ **Batch Operations:** 8 commands for multi-URL processing with queue management
+- ✅ **Correlation & Analysis:** 5 commands for evidence correlation and pattern detection
+- ✅ **Total:** 50 new commands (140+ total), 350+ tests (100% pass), 7,500+ LOC
+- ✅ **Performance:** <100ms average execution, 1.15% memory utilization
+- ✅ **Documentation:** 15+ comprehensive guides and API references
+- **Status:** PRODUCTION READY - IMMEDIATE DEPLOYMENT APPROVED
+- **Details:** [RELEASE-NOTES-v12.8.0.md](../wiki/releases/RELEASE-NOTES-v12.8.0.md) | [Version History](../wiki/releases/VERSION-HISTORY.md)
+
+## Future: v12.9.0 (July 2026)
+
+### v12.9.0 - PLANNED
+- **Timeline:** July 2026 (1-week post v12.8.0)
+- **Focus:** Advanced analysis and ML-based pattern detection
+- **Features:** Predictive evasion, real-time collaboration, extended export formats
+- **Estimated Tests:** 400+
+- **New Commands:** 30+
+
+**Advanced-feature modules:**
+- ✅ **Export Formats** — extended export/compression formats (complete, in scope)
+- ✅ **Forensic Analysis** — deterministic artifact capture, hashing, and chain-of-custody (in scope)
+- ~~**Multi-Agent Orchestration**~~ — **REMOVED (2026-07-03)** as out-of-scope per the [SCOPE blacklist](../architecture/SCOPE.md#0-internal-agent-orchestration--aiml-models-blacklist--hard-boundary). The browser must not spawn or orchestrate agents internally; multi-agent coordination is driven by EXTERNAL agents via the MCP server and WebSocket/HTTP API.
+
+---
+
+## Previous Release: v12.7.0 Phase 1 (June 16, 2026)
+
+### v12.7.0 Phase 1 - COMPLETE ✅ (June 14-16, 2026)
+- ✅ **TOTP/HOTP Credentials Generator:** RFC 6238/4226 compliant, 99 tests (100% pass), 671 LOC
+- ✅ **Session Persistence:** 5-layer validation, 111 tests (100% pass), 1,155 LOC
+- ✅ **Extended Evasion Vectors:** 6+ detection vectors, 92 tests (100% pass), 1,820 LOC
+- ✅ **Monitoring Metrics Framework:** Real-time metrics, 47 tests (100% pass), 1,566 LOC
+- ✅ **Integration:** 28 new WebSocket commands (192+ total), comprehensive API reference
+- ✅ **Deployment Automation:** 5 production-ready scripts (2,905 LOC) - deploy, canary, health-check, rollback, monitor
+- ✅ **Release Materials:** Comprehensive docs (160 KB), deployment checklist, API reference
+- **Total:** 288+ tests (100% pass), 6,212 LOC, production-ready
+- **Status:** PRODUCTION DEPLOYED - Superseded by v12.8.0
+- **Details:** [Session Record](archives/session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md)
+
+---
+
+## Previous Release: v12.1.0
+
+### v12.1.0 Wave 15 Completion ✅ (Complete June 2-3, 2026)
+- ✅ **Dashboard MVP:** 5,416 lines, 83 tests, enterprise-ready competitor monitoring
+- ✅ **Slack Integration:** 16 WebSocket commands, 140+ tests, real-time alerts
+- ✅ **Proxy Partnerships:** 8 vendor integrations, 90+ tests, intelligent failover
+- ✅ **Customer Readiness:** 12 guides, 6,431 lines, onboarding + FAQ + troubleshooting
+- ✅ **Wave 16 Architecture:** 10 docs, 5,922 lines, 250-hour implementation plan
+- ✅ **Wave 16 Components:** 18 docs, 6,673 lines, 14 subsystems detailed
+- ✅ **Performance Optimization:** 5 modules, 1,809 lines, +50-85% throughput
+- ✅ **Market Launch:** 16 docs, 3,681 lines, GTM strategy, sales materials
+- ✅ **Production Rollout:** 10 docs, 9,822 lines, staged deployment ready
+- ✅ **Compliance Planning:** 5 docs, 5,500+ lines, 12-month roadmap (SOC 2, ISO, GDPR)
+- ✅ **Enterprise Sales:** 12 docs, 6,204 lines, 3 case studies, ROI models
+- ✅ **Advanced Testing:** 6 suites, 95 tests, 98.9% pass, zero critical issues
+- **Total Delivered:** 75,000+ lines, 12 parallel agents, A+/A quality grade
+- **Status:** PRODUCTION-READY for v12.1.0 deployment
+- **Details:** [Session Record](archives/session_records/2026-06-02_WAVE15-COMPLETION-AND-WAVE16-FOUNDATION.md)
+
+---
+
+## Current Release: v12.0.0
+
+### v12.0.0 Production Deployment ✅ (Complete May 11, 2026)
+- ✅ **Canary Deployment:** Validated and healthy (4+ hour monitoring)
+- ✅ **Progressive Rollout:** All 3 phases executed successfully
+  - Phase 1: 10% traffic (1 instance) → PASS
+  - Phase 2: 50% traffic (3 instances) → PASS
+  - Phase 3: 100% production (5 instances) → COMPLETE
+- ✅ **Performance:** Throughput +22-27%, Memory -60-80%, Latency improvements
+- ✅ **Production Status:** LIVE & STABLE - 99.7% confidence
+- **Details:** See [Session Records](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md)
+
+---
+
+## Recent Updates
+
+### January 31, 2026 - Docker Network & Test Infrastructure ✅
+- ✅ **Docker Network:** Added `basset-hound-browser` bridge network for multi-container support
+  - Enables future frontend/API containers to communicate without port conflicts
+  - Single port (8765) exposed externally
+- ✅ **Deployment Scripts Updated:** `deploy.sh` and `redeploy.sh` now create/use the network
+- ✅ **Test Output Standardized:** All test outputs now go to `tests/results/`
+  - Screenshots: `tests/results/screenshots/`
+  - Reports: `tests/results/reports/`
+  - SSL certs: `tests/results/ssl/`
+- ✅ **Test Portability Fixed:** 9 test files updated from hardcoded `/app/node_modules/ws` to `require('ws')`
+- ✅ **Repository Cleanup:**
+  - Moved `PHASES-29-31-SUMMARY.txt` to `docs/archive/`
+  - Removed `buildlog.txt` from root
+  - Updated `.gitignore` for test outputs and build logs
+- ✅ **Configuration Validated:** docker-compose.yml and shell scripts syntax verified
+- 📄 Docker registry connectivity issue blocked live deployment test (temporary)
+
+### January 21, 2026 - Tor Master Switch & Scope Cleanup ✅
+- ✅ **Tor Master Switch:** Implemented ON/OFF/AUTO modes for intelligent Tor routing
+  - **ON:** Always route through Tor (requires TOR_MODE=1 for .onion)
+  - **OFF:** Never route through Tor (direct connection)
+  - **AUTO:** Automatically detect .onion URLs and switch appropriately
+  - Commands: `set_tor_mode`, `get_tor_mode`
+- ✅ **Evidence System Cleanup:** Removed Phase 29 investigation management (15 commands)
+  - Removed: `evidence-chain-commands.js`, `evidence-manager.js`
+  - Kept: Basic evidence capture (`evidence-collector.js`, `evidence-commands.js`)
+- ✅ **MCP Server Verified:** 164 tools remaining, all in-scope
+- ✅ **.onion Detection:** Helpful error when navigating to .onion without TOR_MODE
+- ✅ **Performance Analysis:** 15 lazy-loading opportunities identified (520-890ms potential savings)
+- 📄 See [findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md](findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md)
+
+### January 21, 2026 - Deployment Testing Complete ✅
+- ✅ Docker build and deployment validated
+- ✅ 9 deployment issues identified and fixed
+- ✅ WebSocket API verified working (**91% pass rate** - 10/11 core commands)
+- ✅ All page-dependent commands work with proper timing (wait 2-4s after navigation)
+- ✅ Deployment scripts created: `scripts/deploy.sh` and `scripts/redeploy.sh`
+- 📄 See [integration_readiness.md](integration_readiness.md) for full status
+- 📄 See [findings/DEPLOYMENT-FIXES-2026-01-21.md](findings/DEPLOYMENT-FIXES-2026-01-21.md) for fixes
+- 📄 See [findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md](findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md) for timing requirements
+
+### Key Insight: Webview Timing
+Commands like `get_page_state`, `screenshot`, `get_content` require the page to load first. Wait 2-4 seconds after `navigate` or use `wait_for_element`. This is standard browser automation behavior (same as Puppeteer, Playwright, Selenium).
+
+### January 21, 2026 - Full Tor Integration Complete ✅
+- ✅ Tor Mode (`TOR_MODE=1` or `--tor-mode`) enables .onion site access
+- ✅ Embedded/portable Tor works in Docker containers
+- ✅ Successfully accessed DuckDuckGo .onion (375KB HTML retrieved)
+- ✅ Command-line flags prevent DNS leaks for .onion domains
+- ✅ **NEW:** System-level Tor in Docker (smaller image, faster startup)
+- ✅ **NEW:** Dynamic Tor toggle (`tor_enable`, `tor_disable`, `tor_toggle`)
+- ✅ **NEW:** Exit node configuration (`tor_get_exit_info`, `tor_set_exit_country`)
+- ✅ **NEW:** Fixed race condition - tab creation now waits for renderer
+- 📄 See [findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md](findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md) for full details
+- 📄 See [findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md](findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md)
+- 📄 See [findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md](findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md) for Docker setup options
+
+---
+
+## Feature Dependency Tree (v12.1.0)
+
+```mermaid
+graph TD
+    A["Core Browser<br/>Engine"] --> B["WebSocket API<br/>164 Commands"]
+    A --> C["Evasion Framework<br/>85-90% Bypass"]
+    
+    B --> D["Navigation &<br/>Interaction"]
+    B --> E["Data Extraction"]
+    B --> F["File Operations"]
+    
+    C --> G["Fingerprinting<br/>Spoofing"]
+    C --> H["Behavioral<br/>Simulation"]
+    C --> I["Session<br/>Management"]
+    
+    D --> J["Technology<br/>Detection<br/>v12.1.0 NEW"]
+    E --> J
+    E --> K["Forensic Evidence<br/>Export<br/>v12.1.0 NEW"]
+    
+    F --> L["Platform<br/>Integrations<br/>v12.1.0 NEW"]
+    K --> L
+    
+    G --> M["Security<br/>Framework<br/>v12.1.0 NEW"]
+    H --> M
+    I --> M
+    
+    F --> N["Path Traversal<br/>Prevention<br/>v12.1.0"]
+    M --> N
+    
+    B --> O["Screenshot &<br/>Recording"]
+    O --> P["Parallel<br/>Processing<br/>v12.1.0 NEW"]
+    
+    B --> Q["Priority<br/>Queue<br/>v12.1.0 NEW"]
+    
+    style A fill:#bbdefb
+    style B fill:#c8e6c9
+    style C fill:#fff9c4
+    style D fill:#f8bbd0
+    style E fill:#f8bbd0
+    style F fill:#f8bbd0
+    style J fill:#ffccbc
+    style K fill:#ffccbc
+    style L fill:#ffccbc
+    style M fill:#ffccbc
+    style N fill:#ffccbc
+    style O fill:#d1c4e9
+    style P fill:#ffccbc
+    style Q fill:#ffccbc
+```
+
+**Legend:**
+- Blue: Core infrastructure
+- Green: API layer (164 commands)
+- Yellow: Evasion framework
+- Pink: Feature families
+- Orange: v12.1.0 Wave 12 new features
+- Purple: Screenshot system
+
+---
+
+## Upcoming Releases
+
+### v12.1.0 - Core Data Collection & Stability (June 15, 2026) ✅ PRODUCTION LIVE
+**Status:** Production Deployment Complete
+**Focus:** Stable, reliable data collection tool
+- ✅ **WebSocket API:** 164 commands for complete browser control
+- ✅ **Data Extraction:** HTML, text, images, metadata, network capture
+- ✅ **Evidence Capture:** Screenshots, archives, HAR, DOM snapshots
+- ✅ **Forensic Quality:** SHA-256 hashing, timestamps, chain of custody
+- ✅ **Bot Evasion:** Fingerprinting, behavioral AI, Tor integration
+- ✅ **Stability:** Memory management, cleanup, error recovery
+- ✅ **Performance:** 285-481 msg/sec @ 50-200 concurrent load
+- **Status:** PRODUCTION READY - Actively deployed
+
+### v12.2.0 - Data Collection Improvements & Reliability (July 15, 2026)
+**Status:** Development Planning | Target: July 15
+**Focus:** Enhance data collection capabilities and system reliability
+- **Screenshot Improvements** - Better quality, faster capture, more formats
+- **Video Recording** - Capture browser interaction as video (NEW)
+- **Reliability Hardening** - 99.9% uptime, better error recovery
+- **Performance Optimization** - 350-400+ msg/sec target
+- **Session Persistence** - 500+ concurrent requests per profile
+- **Extended Load Testing** - 500+ concurrent connection validation
+- **Additional Data Formats** - PDF export, video capture, audio logs
+- **Documentation Expansion** - Integration guides, troubleshooting
+
+### v12.3.0 - Advanced Data Capture (August 15, 2026)
+**Status:** Planning Phase | Target: August 15
+**Focus:** Advanced data collection without intelligence analysis
+- **Advanced Screenshot Modes** - Parallax detection, scroll capture, viewport variants
+- **Video Recording Enhancement** - Multi-track, selective capture, compression
+- **Additional Metadata Capture** - Performance metrics, resource timing, custom headers
+- **Data Collection Templates** - Reusable extraction patterns (CSS, XPath, Regex)
+- **Concurrent Capture** - Parallel screenshots, multi-page recording
+- **Export Formats** - WARC improvements, metadata standards, forensic packages
+- **Stability** - Further reliability improvements
+
+### Out of Scope (NOT Planned for v12.x)
+- ❌ **Third-party API integrations** - Shodan, Maltego, Censys, STIX/TAXII (belongs in external apps)
+- ❌ **Intelligence analysis** - Pattern detection, data classification, confidence scoring
+- ❌ **Investigation management** - Case management, evidence packages, workflow orchestration
+- ❌ **External system integration** - basset-hound sync, credential management
+- ❌ **Enterprise clustering** - K8s, Terraform, multi-node deployment (post-project phase)
+- ❌ **AI/Agent integration** - Browser stays focused on data collection
+
+**Architecture Note:** External applications consuming the browser's data can add their own intelligence layers. Browser provides raw data only.
+
+---
+
+## Overview
+
+Basset Hound Browser is a **focused data collection tool** - a custom browser designed to be controlled by external applications, AI agents, or automation scripts via WebSocket API. It captures forensic-quality evidence from web pages, providing raw data for external analysis while remaining **intelligence-agnostic**.
+
+### Key Principle
+
+> **Basset Hound Browser is a DATA COLLECTION TOOL, not an intelligence system.**
+
+- The browser **captures and provides** raw data from web pages
+- External agents/applications **analyze and decide** what that data means
+- The browser does not make intelligence decisions about what is important
+- All capabilities exist to support accurate, forensic-grade data capture
+
+### Architecture Position
+
+```
+┌─────────────────────────────────────────────────────────┐
+│              AI AGENTS (palletai)                        │
+│  Intelligence • Analysis • Decision-Making               │
+└────────────────────┬────────────────────────────────────┘
+                     │
+              MCP / WebSocket API
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│         BASSET HOUND BROWSER (This Tool)                │
+│  Navigate • Extract • Capture • Evade • Control         │
+└────────────────────┬────────────────────────────────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │  Web Pages  │
+              └─────────────┘
+```
+
+---
+
+## Quick Reference
+
+### Historical Context
+
+**Phases 1-11** are archived in [ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md) and include:
+- Phase 1-9: Core browser automation, proxy/Tor, WebSocket API, evasion
+- Phase 10-11: Distribution and embedded Tor
+
+### Scope Boundaries
+
+See [SCOPE.md](SCOPE.md) for detailed architectural boundaries:
+- **IN SCOPE:** Browser automation, data extraction, forensic capture, evasion, network control
+- **OUT OF SCOPE:** Intelligence analysis, investigation management, data processing, external integrations
+
+---
+
+## Current Active Development
+
+### Phase 14: Forensic Image Capabilities
+
+**Status:** ✅ COMPLETED
+**Goal:** Extract forensic metadata and text from images for evidence collection.
+
+#### 14.1 Image Forensic Extraction
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| EXIF metadata | ✅ Done | Camera, GPS, date, settings via `exifr` library |
+| IPTC metadata | ✅ Done | Caption, keywords, copyright via `exifreader` |
+| XMP metadata | ✅ Done | Adobe metadata via `exifreader` |
+| GPS extraction | ✅ Done | Extract GPS coordinates from EXIF |
+| Dimensions/format | ✅ Done | Width, height, file type via `sharp`/`jimp` |
+
+#### 14.2 Image Analysis
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| OCR (text extraction) | ✅ Done | Extract text via `tesseract.js` |
+| Image hashing | ✅ Done | Perceptual hash (pHash) for similarity detection |
+| Image comparison | ✅ Done | Compare images using perceptual hashing |
+
+#### 14.3 Advanced Extraction (Jan 9, 2026)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Canvas element capture | ✅ Done | Capture canvas as base64 PNG/JPEG with metadata |
+| SVG extraction (inline) | ✅ Done | Extract inline SVG elements with structure |
+| SVG extraction (external) | ✅ Done | Extract external SVG file references |
+| Favicon extraction | ✅ Done | All favicon variations (16x16, 32x32, etc.) |
+| Open Graph images | ✅ Done | Extract og:image with dimensions |
+| Twitter Card images | ✅ Done | Extract twitter:image with metadata |
+| Apple touch icons | ✅ Done | Extract apple-touch-icon variations |
+
+#### 14.4 WebSocket Commands
+
+Available commands:
+- `extract_image_metadata` - Full metadata extraction from image
+- `extract_image_gps` - GPS coordinates from image
+- `extract_image_text` - OCR text extraction
+- `generate_image_hash` - Perceptual hash generation
+- `compare_images` - Image similarity comparison
+- `extract_page_images` - Extract all images from page with metadata
+- `configure_image_extractor` - Configure extractor options
+- `get_image_extractor_stats` - Get extractor statistics
+- `cleanup_image_extractor` - Clean up resources
+- `capture_canvas_elements` - Capture canvas elements as images
+- `extract_svg_elements` - Extract inline and external SVG
+- `extract_favicon_og_images` - Extract favicons and OG images
+
+**Implementation:**
+- `extraction/image-metadata-extractor.js` - Core extraction engine
+- `websocket/commands/image-commands.js` - WebSocket API (12 commands)
+- `tests/unit/image-metadata-extractor.test.js` - Unit tests (60+ test cases)
+- `docs/findings/PHASE-14-ENHANCEMENTS-2026-01-09.md` - Enhancement documentation
+
+---
+
+### Phase 15: MCP Server for AI Agents
+
+**Status:** 🔄 REFACTORING
+**Goal:** Expose browser control capabilities via Model Context Protocol (MCP) for AI agents.
+
+#### 15.1 Core Browser Control Tools
+
+| Tool | Status | Description |
+|------|--------|-------------|
+| `browser_navigate` | ✅ Done | Navigate to URL with wait options |
+| `browser_click` | ✅ Done | Click element with human-like behavior |
+| `browser_fill` | ✅ Done | Fill form field with typing simulation |
+| `browser_screenshot` | ✅ Done | Capture page screenshot |
+| `browser_get_page_state` | ✅ Done | Get comprehensive page state |
+| `browser_extract_content` | ✅ Done | Extract content (text, HTML, links, images) |
+| `browser_execute_script` | ✅ Done | Execute custom JavaScript |
+
+#### 15.2 Advanced Control Tools
+
+| Category | Tools | Count |
+|----------|-------|-------|
+| Navigation | navigate, back, forward, refresh, get_url, get_title | 6 |
+| Interaction | click, fill, type, press_key, hover, scroll, select, clear | 8 |
+| Content | get_content, get_html, get_page_state, extract_links, extract_forms, extract_images, extract_metadata | 7 |
+| Screenshots | screenshot, screenshot_element, screenshot_full_page | 3 |
+| Profile | switch_profile, create_profile, list_profiles, delete_profile | 4 |
+| Proxy/Tor | set_proxy, clear_proxy, tor_start, tor_stop, tor_new_identity, tor_get_circuit | 6 |
+| Advanced | execute_script, wait_for_element, wait_for_navigation, get_cookies, set_cookies | 5 |
+
+#### 15.3 Tools to Remove (OUT OF SCOPE)
+
+The following tools need to be removed as they perform intelligence analysis:
+- ❌ `browser_detect_data_types` - Pattern detection (OUT OF SCOPE)
+- ❌ `browser_configure_ingestion` - Data processing decisions (OUT OF SCOPE)
+- ❌ `browser_ingest_selected` - Intelligence workflow (OUT OF SCOPE)
+- ❌ `browser_ingest_all` - Intelligence workflow (OUT OF SCOPE)
+- ❌ `browser_fill_form_with_entity` - External system integration (OUT OF SCOPE)
+- ❌ `browser_fill_form_with_sock_puppet` - External system integration (OUT OF SCOPE)
+
+**Refactoring Status:**
+- Keep: ~40 browser control tools
+- Remove: ~6 intelligence/integration tools
+- Target: Pure browser automation API
+
+#### 15.4 Configuration
+
+**For AI Agents (Claude Desktop, palletAI):**
+```json
+{
+  "mcpServers": {
+    "basset-hound-browser": {
+      "command": "python",
+      "args": ["-m", "basset_hound_browser.mcp.server"],
+      "env": {
+        "BASSET_WS_URL": "ws://localhost:8765"
+      }
+    }
+  }
+}
+```
+
+**Implementation:**
+- `mcp/server.py` - FastMCP server (to be refactored)
+- `mcp/requirements.txt` - Dependencies (fastmcp, websockets, aiohttp)
+- `tests/unit/mcp-server.test.js` - Unit tests
+
+---
+
+### Phase 17: Bot Detection Evasion
+
+**Status:** ✅ COMPLETED
+**Goal:** Advanced evasion techniques for sophisticated bot detection systems.
+
+#### 17.1 Fingerprint Profile System
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| FingerprintProfile class | ✅ Done | Platform-consistent fingerprint generation |
+| FingerprintProfileManager | ✅ Done | Profile storage and management |
+| Platform-specific configs | ✅ Done | Windows, macOS, Linux configurations |
+| WebGL vendor/renderer matching | ✅ Done | Consistent GPU fingerprints |
+| Screen/timezone/locale matching | ✅ Done | Region-appropriate settings |
+| Chrome version management | ✅ Done | Realistic UA versions |
+| Injection script generation | ✅ Done | Complete fingerprint override script |
+
+#### 17.2 Behavioral AI
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| BehavioralProfile class | ✅ Done | Session-consistent behavioral characteristics |
+| MouseMovementAI | ✅ Done | Fitts's Law + minimum-jerk trajectory |
+| Physiological tremor | ✅ Done | 8-12 Hz tremor simulation |
+| Micro-corrections | ✅ Done | Near-target correction patterns |
+| Overshoot behavior | ✅ Done | Realistic overshoot and correction |
+| TypingAI | ✅ Done | Biometric typing patterns |
+| Hand alternation speedup | ✅ Done | Faster for hand switches |
+| Common digraph detection | ✅ Done | 30 common letter pairs |
+| Typing errors/corrections | ✅ Done | Natural typo simulation |
+| Fatigue simulation | ✅ Done | Session-based slowdown |
+
+#### 17.3 Detection Avoidance
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| HoneypotDetector class | ✅ Done | 8+ honeypot indicators |
+| Hidden field detection | ✅ Done | display:none, visibility:hidden, etc. |
+| Suspicious name detection | ✅ Done | honeypot, trap, confirm_email, etc. |
+| Zero-dimension detection | ✅ Done | 0x0 and 1x1 pixel fields |
+| Off-screen detection | ✅ Done | Position < -1000px |
+| RateLimitAdapter class | ✅ Done | Adaptive rate limiting |
+| Exponential backoff | ✅ Done | Configurable with jitter |
+| Retry-After support | ✅ Done | Respects HTTP header |
+
+#### 17.4 TLS/JA3 Fingerprinting
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| JA3 fingerprint research | ✅ Done | Research completed - proxy approach recommended |
+| JA4 fingerprint support | 📋 Deferred | Requires proxy-based TLS interception |
+
+**Note:** TLS fingerprinting requires proxy-based approach since Electron's TLS stack is distinctive. Recommend using TLS proxy (e.g., `curl_cffi`, `tls-client`) for JA3 spoofing.
+
+#### 17.5 WebSocket Commands (24 commands)
+
+Available commands:
+- `create_fingerprint_profile`, `create_regional_fingerprint`, `get_fingerprint_profile`, `list_fingerprint_profiles`
+- `set_active_fingerprint`, `get_active_fingerprint`, `apply_fingerprint`, `delete_fingerprint_profile`
+- `get_fingerprint_options`, `create_behavioral_profile`, `generate_mouse_path`, `generate_scroll_behavior`
+- `generate_typing_events`, `get_behavioral_profile`, `list_behavioral_sessions`, `check_honeypot`
+- `filter_honeypots`, `get_rate_limit_state`, `record_request_success`, `record_rate_limit`
+- `is_rate_limited`, `reset_rate_limit`, `list_rate_limit_adapters`
+
+**Implementation:**
+- `evasion/fingerprint-profile.js` - Profile-based fingerprint system (700+ lines)
+- `evasion/behavioral-ai.js` - Physics-based behavior simulation (800+ lines)
+- `websocket/commands/evasion-commands.js` - WebSocket API (24 commands)
+- `tests/unit/fingerprint-profile.test.js` - Fingerprint tests (200+ test cases)
+- `tests/unit/behavioral-ai.test.js` - Behavioral tests (150+ test cases)
+
+---
+
+### Phase 18: Evidence Collection
+
+**Status:** 🔄 REFACTORING
+**Goal:** Streamlined forensic evidence capture with chain of custody.
+
+#### 18.1 Evidence Capture (Keep)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Screenshot capture | ✅ Done | captureScreenshot() with SHA-256 hash |
+| Page archiving | ✅ Done | capturePageArchive() - MHTML/HTML/WARC/PDF |
+| Network HAR capture | ✅ Done | captureNetworkHAR() with entry count |
+| DOM snapshot | ✅ Done | captureDOMSnapshot() |
+| Console logs | ✅ Done | captureConsoleLogs() |
+| Cookie capture | ✅ Done | captureCookies() |
+| Local storage capture | ✅ Done | captureLocalStorage() |
+
+#### 18.2 Chain of Custody (Keep)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| SHA-256 hash generation | ✅ Done | Every evidence item hashed |
+| Timestamp every action | ✅ Done | capturedAt timestamp |
+| User/agent identification | ✅ Done | capturedBy field |
+
+#### 18.3 Package Management (Simplify)
+
+**Current Complexity (OUT OF SCOPE):**
+- ❌ Investigation IDs and case numbers - Belongs in external system
+- ❌ Package sealing and court exports - Belongs in investigation management
+- ❌ Evidence packages with investigations - Belongs in evidence manager
+
+**Simplified Scope (IN SCOPE):**
+- ✅ Individual evidence capture with hash
+- ✅ Timestamp and custody metadata
+- ✅ Simple bundle capture (multiple items at once)
+
+**Refactoring Status:**
+- Keep: Core capture functions with hashing
+- Remove: Investigation package management
+- Simplify: Return raw evidence items with metadata
+
+#### 18.4 WebSocket Commands (Simplified)
+
+Commands to keep:
+- `capture_screenshot_evidence` - Capture screenshot with hash
+- `capture_page_archive_evidence` - Capture archive with hash
+- `capture_har_evidence` - Capture HAR with hash
+- `capture_dom_evidence` - Capture DOM with hash
+- `capture_console_evidence` - Capture console logs
+- `capture_cookies_evidence` - Capture cookies
+- `capture_storage_evidence` - Capture localStorage
+
+Commands to remove (investigation management):
+- ❌ `create_evidence_package`, `seal_evidence_package`, `export_for_court`
+- ❌ `get_evidence_package`, `list_evidence_packages`, `set_active_evidence_package`
+
+**Implementation:**
+- `evidence/evidence-collector.js` - Simplified capture API (to be refactored)
+- `websocket/commands/forensic/evidence/evidence-commands.js` - WebSocket API (to be simplified)
+
+---
+
+### Phase 19: Network Forensics
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Comprehensive network-level forensic data capture for security analysis and evidence collection.
+
+#### 19.1 Network Capture
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| DNS query tracking | ✅ Done | Capture all DNS lookups with timing and cache status |
+| TLS certificate capture | ✅ Done | Extract and analyze TLS certificates with chain validation |
+| WebSocket connection tracking | ✅ Done | Monitor WebSocket connections and messages |
+| HTTP header analysis | ✅ Done | Security header analysis (CSP, HSTS, XFO, etc.) |
+| Cookie provenance | ✅ Done | Track cookie origins and modifications |
+| Timeline generation | ✅ Done | Chronological network event timeline |
+
+#### 19.2 Export Formats
+
+| Format | Status | Description |
+|--------|--------|-------------|
+| JSON | ✅ Done | Structured JSON export |
+| CSV | ✅ Done | Spreadsheet-compatible format |
+| HTML Report | ✅ Done | Human-readable report |
+| Timeline | ✅ Done | Chronological event log |
+
+#### 19.3 WebSocket Commands (16 commands)
+
+Available commands:
+- `start_network_forensics_capture`, `stop_network_forensics_capture`
+- `get_dns_queries`, `analyze_dns_queries`
+- `get_tls_certificates`, `analyze_tls_certificates`
+- `get_websocket_connections`, `analyze_websocket_connections`
+- `get_http_headers`, `analyze_http_headers`
+- `get_cookies_with_provenance`, `get_cookie_provenance`, `analyze_cookies`
+- `export_forensic_report`, `get_network_forensics_stats`, `clear_forensic_data`
+
+**Implementation:**
+- `network-forensics/forensics.js` - Network forensics engine (~1,200 lines)
+- `websocket/commands/forensic/network/network-forensics-commands.js` - WebSocket API (16 commands)
+- `tests/unit/network-forensics.test.js` - Unit tests (70+ test cases)
+
+---
+
+### Phase 20: Interaction Recording
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Record and replay browser interactions for automation script generation.
+
+#### 20.1 Recording Capabilities
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Mouse tracking | ✅ Done | All mouse events (move, click, scroll) |
+| Keyboard tracking | ✅ Done | All keyboard events with timing |
+| Navigation tracking | ✅ Done | Page navigation and URL changes |
+| Timeline with checkpoints | ✅ Done | Annotated interaction timeline |
+| Sensitive data masking | ✅ Done | Auto-mask passwords and sensitive fields |
+
+#### 20.2 Export Formats
+
+| Format | Status | Description |
+|--------|--------|-------------|
+| Selenium | ✅ Done | Python Selenium script generation |
+| Puppeteer | ✅ Done | Node.js Puppeteer script |
+| Playwright | ✅ Done | Playwright script generation |
+| JSON | ✅ Done | Raw interaction data |
+
+#### 20.3 WebSocket Commands (10 commands)
+
+Available commands:
+- `start_interaction_recording`, `stop_interaction_recording`, `pause_interaction_recording`, `resume_interaction_recording`
+- `export_recording_as_script`, `get_interaction_timeline`, `create_recording_checkpoint`, `annotate_recording`
+- `get_recording_stats`, `replay_recording`, `list_interaction_recordings`, `delete_interaction_recording`
+
+**Implementation:**
+- `recording/interaction-recorder.js` - Recording engine (~800 lines)
+- `websocket/commands/recording-commands.js` - WebSocket API (10 commands)
+- `tests/unit/interaction-recorder.test.js` - Unit tests (55+ test cases)
+
+---
+
+### Phase 21: Advanced Screenshots
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Enhanced screenshot capabilities with visual diff, OCR, and forensic features.
+
+#### 21.1 Screenshot Features
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Visual diff comparison | ✅ Done | Compare screenshots with diff highlighting |
+| Screenshot stitching | ✅ Done | Combine multiple screenshots |
+| Annotation support | ✅ Done | Add arrows, rectangles, text annotations |
+| OCR text overlay | ✅ Done | Overlay detected text on screenshot |
+| PII blurring | ✅ Done | Auto-blur sensitive information |
+| Forensic capture | ✅ Done | Full metadata and hash generation |
+
+#### 21.2 WebSocket Commands (10 commands)
+
+Available commands:
+- `screenshot_diff`, `screenshot_stitch`, `screenshot_annotate`
+- `screenshot_ocr`, `screenshot_with_blur`, `screenshot_forensic`
+- `screenshot_similarity`, `screenshot_element_context`, `screenshot_configure_quality`
+
+**Implementation:**
+- Enhanced `screenshots/manager.js` (+400 lines)
+- `websocket/commands/screenshot-commands.js` - WebSocket API (10 commands)
+- `tests/unit/screenshot-manager.test.js` - Unit tests (50+ test cases)
+
+---
+
+### Phase 22: Smart Form Filling
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Intelligent form analysis and automated filling with bot detection evasion.
+
+#### 22.1 Form Analysis
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Field type detection | ✅ Done | 25+ field types (email, name, phone, etc.) |
+| Honeypot detection | ✅ Done | Identify and skip trap fields |
+| CAPTCHA detection | ✅ Done | Detect CAPTCHA challenges |
+| Validation detection | ✅ Done | Identify validation requirements |
+| Form structure analysis | ✅ Done | Complete form analysis |
+
+#### 22.2 Smart Filling
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Automatic value generation | ✅ Done | Generate appropriate test data |
+| Human-like typing | ✅ Done | Realistic typing speed and patterns |
+| Profile-based filling | ✅ Done | Personal, business, testing profiles |
+| Validation compliance | ✅ Done | Generate valid data for requirements |
+
+#### 22.3 WebSocket Commands (10 commands)
+
+Available commands:
+- `analyze_forms`, `analyze_form`, `fill_form`, `fill_form_smart`
+- `detect_honeypots`, `detect_captchas`
+- `get_field_types`, `configure_form_filler`, `get_form_filler_stats`, `reset_form_filler_stats`
+
+**Implementation:**
+- `forms/smart-form-filler.js` - Smart form engine (~650 lines)
+- `websocket/commands/form-commands.js` - WebSocket API (10 commands)
+- `tests/unit/smart-form-filler.test.js` - Unit tests (50+ test cases)
+
+---
+
+### Phase 23: Browser Profile Templates
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Pre-configured browser profiles for different use cases.
+
+#### 23.1 Built-in Templates
+
+| Template | Risk Level | Description |
+|----------|-----------|-------------|
+| osint_investigator | MEDIUM | Balanced stealth for intelligence gathering |
+| stealth_mode | PARANOID | Maximum evasion with Tor |
+| web_scraper | LOW | Fast scraping with images disabled |
+| social_media_monitor | LOW | Social platform optimized |
+| ecommerce_shopper | LOW | Shopping behavior patterns |
+| news_reader | LOW | Content consumption patterns |
+| testing_profile | LOW | QA and testing |
+| mobile_simulator | LOW | Mobile device simulation |
+
+#### 23.2 Profile Components
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| Fingerprint settings | ✅ Done | Platform, region, hardware tier |
+| Behavioral patterns | ✅ Done | Mouse speed, typing speed, error rate |
+| Browser settings | ✅ Done | User agent, viewport, cookies |
+| Network configuration | ✅ Done | Proxy, Tor, WebRTC settings |
+| Activity patterns | ✅ Done | Session duration, pages per session |
+
+#### 23.3 WebSocket Commands (13 commands)
+
+Available commands:
+- `list_profile_templates`, `get_profile_template`, `search_profile_templates`
+- `generate_profile_from_template`, `create_profile_template`, `clone_profile_template`, `delete_profile_template`
+- `export_profile_template`, `import_profile_template`
+- `get_profile_template_stats`, `get_template_categories`, `get_template_risk_levels`, `get_template_activity_patterns`
+
+**Implementation:**
+- `profiles/profile-templates.js` - Template system (~800 lines)
+- `websocket/commands/profile-template-commands.js` - WebSocket API (13 commands)
+- `tests/unit/profile-templates.test.js` - Unit tests (60+ test cases)
+
+---
+
+### Tor Integration for Network Forensics
+
+**Status:** ✅ COMPLETE (January 21, 2026)
+**Goal:** Enable .onion site access and anonymous browsing for network forensics.
+
+> **Scope Clarification:** Generic proxy configuration is NOT user-accessible. Tor integration exists specifically for network forensics capabilities - accessing .onion sites and anonymous investigation.
+
+#### Tor Mode Configuration
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Tor Mode flag | ✅ Done | `TOR_MODE=1`, `--tor-mode`, or `config.tor.enabled` |
+| Embedded Tor | ✅ Done | Portable Tor Expert Bundle (v0.4.8.21) |
+| System Tor (Docker) | ✅ Done | Pre-installed Tor in Docker image (15MB vs 80MB) |
+| .onion access | ✅ Done | DNS resolution via Tor SOCKS proxy |
+| DNS leak prevention | ✅ Done | `--host-resolver-rules` command-line flag |
+| Tor bootstrap | ✅ Done | Start/stop Tor daemon via WebSocket commands |
+| New identity | ✅ Done | Request new Tor circuit for IP rotation |
+| Dynamic Tor toggle | ✅ Done | Enable/disable routing at runtime |
+| Exit node config | ✅ Done | Get exit info, set preferred countries |
+
+#### Tor Master Switch
+
+The browser provides a **master switch** for Tor networking with three modes:
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **OFF** | Never route through Tor | Normal browsing, maximum speed |
+| **ON** | Always route through Tor | Maximum anonymity, manual control |
+| **AUTO** | Intelligently switch based on .onion URLs | Best of both worlds |
+
+**Commands:**
+| Command | Description |
+|---------|-------------|
+| `set_tor_mode` | Set master switch mode: `off`, `on`, or `auto` |
+| `get_tor_mode` | Get current master switch mode and status |
+
+**AUTO Mode Behavior:**
+- When navigating to `.onion` domains, automatically enables Tor routing
+- When navigating to clearnet (non-.onion) domains, automatically disables Tor routing
+- Useful for investigations that might encounter sites with Tor-facing redirects
+- Operators/agents can always override by switching to ON or OFF mode
+
+**Example:**
+```json
+// Set to AUTO mode
+{"command": "set_tor_mode", "mode": "auto"}
+// Response: {"success": true, "mode": "auto", "routing": {"enabled": false}}
+
+// Navigate to .onion - routing auto-enables
+{"command": "navigate", "url": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/"}
+// Tor routing automatically enabled
+
+// Navigate to clearnet - routing auto-disables
+{"command": "navigate", "url": "https://example.com"}
+// Tor routing automatically disabled
+```
+
+> **Note:** For full `.onion` support, start with `TOR_MODE=1`. AUTO mode works best when TOR_MODE is enabled at startup.
+
+> **Architectural Note:** The Tor Master Switch is the **ONLY** user-facing network routing control in this browser. Generic proxy management (pools, rotation, health checks) has been migrated to `basset-hound-networking`. This browser handles Tor because it directly enables network forensics capabilities (.onion access, anonymous investigations).
+
+#### Dynamic Tor Routing Commands
+
+| Command | Description |
+|---------|-------------|
+| `tor_enable` | Route browser traffic through Tor SOCKS proxy |
+| `tor_disable` | Return to direct connection |
+| `tor_toggle` | Toggle current routing state |
+| `get_tor_routing_status` | Get current routing configuration |
+| `tor_get_exit_info` | Get current exit node IP, fingerprint, country |
+| `tor_set_exit_country` | Set preferred exit countries (e.g., `["US", "CA"]`) |
+
+> **Note:** Dynamic routing works for clearnet sites. For `.onion` access, use `TOR_MODE=1` at startup.
+
+#### Usage
+
+**Docker with System Tor (recommended for production):**
+```bash
+docker run -d -p 8765:8765 basset-hound-browser
+# System Tor starts automatically
+```
+
+**Docker with Tor Mode for .onion access:**
+```bash
+docker run -d -p 8765:8765 -e TOR_MODE=1 basset-hound-browser
+```
+
+**Start Tor daemon via WebSocket (if not using system Tor):**
+```json
+{"command": "tor_start", "mode": "embedded"}
+```
+
+**Enable Tor routing dynamically:**
+```json
+{"command": "tor_enable"}
+```
+
+**Navigate to .onion site:**
+```json
+{"command": "navigate", "url": "https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/"}
+```
+
+**Get exit node info:**
+```json
+{"command": "tor_get_exit_info"}
+// Response: {"success": true, "exitIp": "155.31.50.112", "country": "DE"}
+```
+
+#### Docker Deployment Options
+
+| Option | Size | Startup | Best For |
+|--------|------|---------|----------|
+| System Tor (default) | +15MB | Fast | Production, Docker containers |
+| Embedded Tor | +80MB | Slow (first run downloads) | Development, cross-platform |
+
+**To disable system Tor and use embedded:**
+```bash
+docker run -d -p 8765:8765 -e USE_SYSTEM_TOR=false basset-hound-browser
+```
+
+**Implementation:**
+- `main.js` - Tor Mode configuration (command-line switches), race condition fix
+- `proxy/manager.js` - Dynamic Tor routing methods
+- `proxy/tor-advanced.js` - Tor daemon management, exit node config
+- `utils/tor-auto-setup.js` - Embedded Tor download/setup
+- `Dockerfile` - System Tor installation
+- `docs/findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md` - Full implementation details
+- `docs/findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md` - Initial verification
+- `docs/findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md` - Docker options research
+
+---
+
+### Phase 24: Advanced Proxy Rotation
+
+**Status:** 🚀 MIGRATED TO BASSET HOUND NETWORKING
+
+> **Migration Note:** As of v11.0.0, all proxy rotation and networking infrastructure has been migrated to the standalone `basset-hound-networking` package. This allows the browser to focus purely on browser automation while networking concerns are handled by a dedicated service. The browser can still use proxies via the standard proxy configuration commands, but pool management and rotation is now handled externally.
+
+> **Exception - Tor:** Basic Tor integration remains in this browser because it directly enables network forensics (.onion access). See "Tor Integration for Network Forensics" section above.
+
+#### 24.1 Proxy Pool Features (Migrated)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Proxy health checking | 🚀 Migrated | Automatic health monitoring |
+| Rotation strategies | 🚀 Migrated | Round-robin, random, fastest, geo-based |
+| Geographic targeting | 🚀 Migrated | Country-based proxy selection |
+| Automatic failover | 🚀 Migrated | Switch on proxy failure |
+| Performance tracking | 🚀 Migrated | Latency and success rate metrics |
+| Blacklist/whitelist | 🚀 Migrated | Manual proxy management |
+
+#### 24.2 WebSocket Commands (Removed - Use basset-hound-networking)
+
+Previously available commands (now in basset-hound-networking):
+- `add_proxy_to_pool`, `remove_proxy_from_pool`, `get_next_proxy`
+- `set_proxy_rotation_strategy`, `list_proxy_pool`, `get_proxy_stats`
+- `test_proxy_health`, `test_all_proxies_health`
+- `blacklist_proxy`, `whitelist_proxy`, `get_proxies_by_country`
+- `configure_health_check`, `clear_proxy_pool`
+
+**Implementation:** Migrated to `basset-hound-networking` package
+- Previous: `proxy/proxy-pool.js` - Proxy pool manager (~900 lines)
+- Previous: `websocket/commands/proxy-pool-commands.js` - WebSocket API (13 commands)
+- Previous: `tests/unit/proxy-pool.test.js` - Unit tests (65+ test cases)
+
+---
+
+### Phase 25: Page Monitoring
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Automated page change detection and monitoring.
+
+#### 25.1 Change Detection Methods
+
+| Method | Status | Description |
+|--------|--------|-------------|
+| DOM diff | ✅ Done | Structural HTML changes |
+| Screenshot diff | ✅ Done | Visual appearance changes |
+| Content hash | ✅ Done | Text content changes |
+| Zone-based monitoring | ✅ Done | Monitor specific page areas |
+
+#### 25.2 Monitoring Features
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Scheduled checks | ✅ Done | Periodic monitoring with intervals |
+| Change threshold | ✅ Done | Configurable sensitivity |
+| Screenshot capture | ✅ Done | Auto-capture on change |
+| Change timeline | ✅ Done | Historical change tracking |
+| Version comparison | ✅ Done | Compare any two versions |
+
+#### 25.3 WebSocket Commands (13 commands)
+
+Available commands:
+- `start_monitoring_page`, `stop_monitoring_page`, `pause_monitoring_page`, `resume_monitoring_page`
+- `check_page_changes_now`, `get_page_changes`, `compare_page_versions`
+- `get_monitoring_schedule`, `configure_monitoring`, `export_monitoring_report`
+- `get_monitoring_stats`, `add_monitoring_zone`, `list_monitored_pages`
+
+**Implementation:**
+- `monitoring/page-monitor.js` - Page monitoring engine (~850 lines)
+- `websocket/commands/monitoring-commands.js` - WebSocket API (13 commands)
+- `tests/unit/page-monitor.test.js` - Unit tests (55+ test cases)
+
+---
+
+### Phase 27: Advanced Cookie Management
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Enterprise-grade cookie management with security analysis, jar-based profiles, and forensic tracking.
+
+#### 27.1 Cookie Jar System
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Profile-based jars | ✅ Done | Create isolated cookie environments |
+| Jar switching | ✅ Done | Switch between jars with auto save/load |
+| Jar synchronization | ✅ Done | Sync cookies between jars (merge/replace/update) |
+| Metadata support | ✅ Done | Tag and annotate jars |
+
+#### 27.2 Security Analysis
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Cookie security scanner | ✅ Done | Detect missing Secure, HttpOnly, SameSite flags |
+| Cookie classification | ✅ Done | Classify by type (auth, analytics, advertising, etc.) |
+| Security scoring | ✅ Done | Individual and overall security scores (0-100) |
+| Issue recommendations | ✅ Done | Actionable security recommendations |
+
+#### 27.3 Import/Export
+
+| Format | Status | Description |
+|--------|--------|-------------|
+| JSON | ✅ Done | Structured format with metadata |
+| Netscape | ✅ Done | curl-compatible cookie file format |
+| CSV | ✅ Done | Spreadsheet-friendly format |
+| cURL | ✅ Done | Generate cURL command with cookies |
+
+#### 27.4 WebSocket Commands (16 commands)
+
+Available commands:
+- **Jar Management (7):** `create_cookie_jar`, `delete_cookie_jar`, `list_cookie_jars`, `switch_cookie_jar`, `save_to_cookie_jar`, `load_from_cookie_jar`, `sync_cookie_jars`
+- **Security (4):** `analyze_cookie_security`, `analyze_all_cookies`, `find_insecure_cookies`, `get_cookies_by_classification`
+- **Import/Export (2):** `export_cookies`, `import_cookies`
+- **Utility (3):** `get_cookie_history`, `clear_all_cookies`, `get_cookie_manager_stats`
+
+#### 27.5 Cookie Classifications
+
+- **authentication**: Session, auth tokens, JWT
+- **analytics**: Google Analytics, tracking cookies
+- **advertising**: Ad tracking, marketing cookies
+- **preferences**: User preferences, settings
+- **security**: CSRF tokens, security cookies
+- **functional**: Other functional cookies
+
+**Implementation:**
+- `cookies/cookie-manager.js` - Cookie management engine (~950 lines)
+- `websocket/commands/cookie-commands.js` - WebSocket API (16 commands)
+- `tests/unit/cookie-manager.test.js` - Unit tests (60+ test cases)
+
+---
+
+### Phase 28: Multi-Page Concurrent Browsing
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Concurrent page management for parallel investigations with intelligent rate limiting and resource monitoring.
+
+#### 28.1 Configuration Profiles
+
+| Profile | Pages | Navigations | Rate Limit | Use Case |
+|---------|-------|-------------|------------|----------|
+| stealth | 2 | 1 | 5s | Maximum evasion, sensitive investigations |
+| balanced | 5 | 3 | 2s | General purpose, moderate concurrency |
+| aggressive | 10 | 5 | 1s | Fast investigations, less stealth |
+| single | 1 | 1 | 0s | Traditional single-page mode |
+
+#### 28.2 Page Management
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| BrowserView pattern | ✅ Done | Native Electron multi-page support |
+| Isolated sessions | ✅ Done | Independent cookies/storage per page |
+| Active page switching | ✅ Done | Switch visible page |
+| Page lifecycle | ✅ Done | Create, navigate, destroy pages |
+| Concurrent limits | ✅ Done | Configurable concurrency controls |
+
+#### 28.3 Rate Limiting
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Per-domain limiting | ✅ Done | Prevent overloading specific domains |
+| Navigation queue | ✅ Done | Queue excess navigations |
+| Adaptive delays | ✅ Done | Profile-based delay configuration |
+| Global navigation limits | ✅ Done | Max concurrent navigations |
+
+#### 28.4 Resource Monitoring
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Memory tracking | ✅ Done | Monitor heap usage |
+| CPU tracking | ✅ Done | Monitor CPU usage |
+| Threshold alerts | ✅ Done | Alert when limits exceeded |
+| Auto-protection | ✅ Done | Prevent page creation when unhealthy |
+
+#### 28.5 WebSocket Commands (15 commands)
+
+Available commands:
+- **Initialization (1):** `init_multi_page`
+- **Page Management (7):** `create_page`, `destroy_page`, `list_pages`, `get_page_info`, `set_active_page`, `close_all_pages`, `close_other_pages`
+- **Navigation (2):** `navigate_page`, `navigate_pages_batch`
+- **Operations (3):** `execute_on_page`, `get_page_screenshot`, `get_multi_page_stats`
+- **Configuration (2):** `update_multi_page_config`, `shutdown_multi_page`
+
+**Implementation:**
+- `multi-page/multi-page-manager.js` - Multi-page engine (~650 lines)
+- `websocket/commands/multi-page-commands.js` - WebSocket API (15 commands)
+- `tests/unit/multi-page-manager.test.js` - Unit tests (65+ test cases)
+
+---
+
+### Phase 29: Evidence Chain of Custody
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Forensic-grade evidence collection with cryptographic verification and legal admissibility.
+
+#### 29.1 Standards Compliance
+
+| Standard | Purpose | Implementation |
+|----------|---------|----------------|
+| RFC 3161 | Cryptographic timestamping | SHA-256 hashing, timestamp support |
+| ISO 27037 | Digital evidence preservation | Chain of custody, audit trails |
+| SWGDE | Forensic report writing | Court-compliant report generation |
+| NIST IR 8387 | Digital evidence preservation | Complete evidence lifecycle |
+
+#### 29.2 Core Features
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Cryptographic hashing | ✅ Done | SHA-256 hash of all evidence |
+| Chain of custody | ✅ Done | Complete audit trail (8 event types) |
+| Evidence verification | ✅ Done | Tamper detection via hash comparison |
+| Evidence sealing | ✅ Done | Make evidence immutable |
+| Package management | ✅ Done | Group related evidence items |
+| SWGDE reports | ✅ Done | Court-compliant forensic reports |
+| Audit logging | ✅ Done | Complete action history |
+
+#### 29.3 Evidence Types
+
+Supported evidence types:
+- Screenshots (with metadata)
+- HTML source code
+- Network logs (HAR format)
+- Cookies
+- Local storage
+- DOM snapshots
+- Console logs
+- Interaction recordings
+- Custom evidence
+
+#### 29.4 WebSocket Commands (15 commands)
+
+Evidence Management:
+- `init_evidence_chain` - Initialize evidence manager
+- `create_investigation` - Start new investigation
+- `collect_evidence_chain` - Collect with chain of custody
+- `verify_evidence_chain` - Verify integrity
+- `seal_evidence_chain` - Make immutable
+- `get_evidence_chain` - Retrieve evidence
+- `list_evidence_chain` - List all evidence
+
+Package Management:
+- `create_evidence_package` - Create package
+- `add_to_evidence_package` - Add items to package
+- `seal_evidence_package` - Seal package
+- `export_evidence_package` - Export (JSON/SWGDE report)
+
+Audit & Stats:
+- `get_evidence_chain_stats` - Statistics
+- `get_chain_audit_log` - Full audit trail
+- `export_chain_audit_log` - Export audit log
+- `collect_screenshot_chain` - Screenshot with chain of custody
+
+#### 29.5 MCP Tools (12 tools)
+
+All evidence commands available via MCP for AI agents:
+- `browser_init_evidence_chain`
+- `browser_create_investigation`
+- `browser_collect_evidence_chain`
+- `browser_verify_evidence_chain`
+- `browser_seal_evidence_chain`
+- `browser_create_evidence_package`
+- `browser_add_to_evidence_package`
+- `browser_seal_evidence_package`
+- `browser_export_evidence_package`
+- `browser_list_evidence_chain`
+- `browser_get_evidence_chain_stats`
+- `browser_export_chain_audit_log`
+
+**Implementation:**
+- `evidence/evidence-manager.js` - Core evidence system (~950 lines)
+- `websocket/commands/evidence-chain-commands.js` - WebSocket API (15 commands)
+- `tests/unit/evidence-chain.test.js` - Unit tests (65+ test cases)
+
+**Use Cases:**
+- Legal investigations with court-admissible evidence
+- Corporate forensics and compliance audits
+- Incident response with complete audit trails
+- Chain of custody for regulatory compliance
+
+---
+
+### Phase 30: Geolocation & Location Simulation
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** GPS, timezone, and locale spoofing for regional content access.
+
+**Dependencies:** OPTIONAL - Works standalone (FREE) or enhanced with Phase 24 proxies (PAID)
+**Resource Usage:** Lazy loaded - only activates when explicitly used
+
+#### 30.1 Geolocation Features
+
+| Feature | Status | Description | FREE | PAID |
+|---------|--------|-------------|------|------|
+| GPS coordinates | ✅ Done | Override navigator.geolocation | ✅ Yes | ✅ Yes |
+| Timezone simulation | ✅ Done | Override system timezone | ✅ Yes | ✅ Yes |
+| Language/locale | ✅ Done | Override browser locale | ✅ Yes | ✅ Yes |
+| Location profiles | ✅ Done | Pre-configured global locations | ✅ Yes | ✅ Yes |
+| Proxy matching | ✅ Done | Match location to proxy IP | ❌ No | ✅ Yes |
+
+#### 30.2 Location Profiles (50+ Pre-configured)
+
+**North America:**
+- us-east-coast, us-west-coast, us-midwest, us-south
+- canada-toronto, canada-vancouver, mexico-city
+
+**Europe:**
+- eu-london, eu-paris, eu-berlin, eu-madrid, eu-rome
+- eu-amsterdam, eu-stockholm, eu-zurich
+
+**Asia Pacific:**
+- asia-tokyo, asia-beijing, asia-singapore, asia-mumbai
+- asia-sydney, asia-seoul
+
+**Others:**
+- africa-lagos, south-america-sao-paulo, middle-east-dubai
+
+#### 30.3 WebSocket Commands (8 commands)
+
+Location Configuration:
+- `set_geolocation` - Set GPS coordinates
+- `set_location_profile` - Use pre-configured location
+- `set_timezone` - Override timezone
+- `set_locale` - Set language/region
+
+Advanced Features:
+- `enable_location_spoofing` - Activate/deactivate
+- `get_location_status` - Current location settings
+- `match_location_to_proxy` - Auto-configure from proxy (requires Phase 24)
+- `reset_location` - Clear all overrides
+
+#### 30.4 MCP Tools (8 tools)
+
+AI agent access to geolocation:
+- `browser_set_geolocation`
+- `browser_set_location_profile`
+- `browser_set_timezone`
+- `browser_set_locale`
+- `browser_enable_location_spoofing`
+- `browser_get_location_status`
+- `browser_match_location_to_proxy`
+- `browser_reset_location`
+
+**Implementation:**
+- `geolocation/location-manager.js` - Location manager (~400 lines)
+- `websocket/commands/location-commands.js` - WebSocket API (8 commands)
+- `tests/unit/geolocation-manager.test.js` - Unit tests (50+ test cases)
+
+**Use Cases:**
+- Access region-restricted content for investigations
+- Investigate local news/businesses in different cities
+- Test geo-targeted websites
+- **FREE Mode:** GPS spoofing for local content (no proxies needed)
+- **PAID Mode:** Complete location matching with proxies
+
+**Resource Optimization:**
+- Lazy loading - only activates when first used
+- Dependency checking - validates proxy availability if matching requested
+- Graceful degradation - works standalone without proxies
+
+---
+
+### Phase 31: Data Extraction Templates
+
+**Status:** ✅ COMPLETED (January 9, 2026)
+**Goal:** Automated data extraction with pre-built and custom templates.
+
+**Dependencies:** None (works standalone, integrates with Phase 28 for bulk extraction)
+**Resource Usage:** Lazy loaded - templates only parse when used
+
+#### 31.1 Template System
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| JSON schema templates | ✅ Done | Define extraction patterns |
+| CSS selectors | ✅ Done | Extract via CSS selectors |
+| XPath support | ✅ Done | Extract via XPath queries |
+| Regex patterns | ✅ Done | Extract via regex |
+| Field validation | ✅ Done | Validate extracted data |
+| Bulk extraction | ✅ Done | Extract multiple items |
+| Custom templates | ✅ Done | User-defined templates |
+
+#### 31.2 Pre-built Templates
+
+**Social Media:**
+- LinkedIn Profile (name, title, company, location, connections)
+- LinkedIn Company (name, industry, size, description)
+- LinkedIn Job (title, company, location, description)
+- Twitter/X Profile (username, bio, followers, verified)
+- Twitter/X Tweet (text, timestamp, likes, retweets)
+- Facebook Profile (name, location, work, education)
+- Facebook Page (name, category, likes, description)
+
+**Developer Platforms:**
+- GitHub Profile (username, repos, followers, contributions)
+- GitHub Repository (name, description, stars, forks, language)
+
+**Generic:**
+- Article Extraction (title, author, date, content, images)
+- Blog Post (title, author, date, content, tags)
+- Product Listing (name, price, description, images, ratings)
+
+#### 31.3 WebSocket Commands (10 commands)
+
+Template Management:
+- `create_extraction_template` - Define new template
+- `get_extraction_template` - Retrieve template
+- `list_extraction_templates` - Show available templates
+- `update_extraction_template` - Modify template
+- `delete_extraction_template` - Remove template
+- `validate_extraction_template` - Check template validity
+
+Extraction Operations:
+- `use_extraction_template` - Apply template to current page
+- `extract_with_template` - Extract data with specific template
+- `extract_bulk` - Extract multiple items from page
+- `get_extraction_stats` - Usage statistics
+
+#### 31.4 MCP Tools (10 tools)
+
+AI agent access to extraction:
+- `browser_create_extraction_template`
+- `browser_use_extraction_template`
+- `browser_extract_with_template`
+- `browser_list_extraction_templates`
+- `browser_get_extraction_template`
+- `browser_update_extraction_template`
+- `browser_delete_extraction_template`
+- `browser_validate_extraction_template`
+- `browser_extract_bulk`
+- `browser_get_extraction_stats`
+
+**Implementation:**
+- `extraction/template-manager.js` - Template engine (~600 lines)
+- `websocket/commands/extraction-commands.js` - WebSocket API (10 commands)
+- `tests/unit/extraction-manager.test.js` - Unit tests (40+ test cases)
+
+**Use Cases:**
+- Social media profile investigations
+- Company research (LinkedIn data extraction)
+- Competitive intelligence
+- Bulk data collection from search results
+- Multi-page extraction with Phase 28
+
+---
+
+## Future Roadmap
+
+### Version 9.0.0 - Scope Compliance
+
+**Target:** Q1 2026
+
+#### Goals
+1. Remove out-of-scope features from MCP server
+2. Simplify evidence collection to capture-only
+3. Update documentation to reflect scope boundaries
+4. Clean up WebSocket API commands
+
+#### Breaking Changes
+- Remove OSINT/intelligence tools from MCP server
+- Remove investigation package management
+- Remove external system integrations (sock puppets, basset-hound API)
+
+---
+
+### Version 10.0.0 - Enhanced Forensics
+
+**Status:** PARTIALLY COMPLETED
+
+#### Completed Features (Jan 9, 2026)
+
+**Image Forensics:**
+- ✅ Canvas element capture
+- ✅ SVG extraction (inline and external)
+- ✅ Favicon and Open Graph image extraction
+
+#### Remaining Features
+
+**Image Forensics:**
+- Advanced EXIF parsing (maker notes, thumbnails)
+
+**Network Forensics:**
+- WebSocket message capture
+- WebRTC connection logging
+- DNS query capture
+- Certificate chain extraction
+
+**Browser Forensics:**
+- IndexedDB capture
+- Service Worker state capture
+- Cache API extraction
+- WebAssembly module capture
+
+---
+
+### Version 11.0.0 - Advanced Evasion
+
+**Target:** Q3 2026
+
+#### Planned Features
+
+**CAPTCHA Handling:**
+- 2Captcha integration
+- Anti-Captcha integration
+- CAPTCHA detection and notification
+
+**Advanced Evasion:**
+- Canvas randomization improvements
+- WebGL noise injection
+- Audio fingerprint randomization
+- Font fingerprint evasion
+
+**Rate Limiting:**
+- Per-domain rate limiting
+- Automatic backoff strategies
+- Request queue management
+
+---
+
+## Success Metrics
+
+### Technical Metrics
+- **API Stability:** WebSocket command compatibility across versions
+- **Test Coverage:** >80% unit test coverage for core modules
+- **Performance:** <100ms overhead for evasion techniques
+- **Evasion Success:** Pass bot detection on major platforms
+
+### Architectural Metrics
+- **Separation of Concerns:** 0 intelligence decisions in browser code
+- **API Clarity:** All commands express actions, not goals
+- **Statelessness:** 0 investigation state maintained in browser
+- **Raw Data:** 100% of extractions return unprocessed data
+
+### Integration Metrics
+- **MCP Compatibility:** Compatible with Claude Desktop, palletai
+- **WebSocket Stability:** <1% connection failure rate
+- **Agent Integration:** >5 agent types using browser via MCP
+
+---
+
+## Version History
+
+### Recent Releases
+
+**v11.0.0** (Current - Scope Cleanup Release) ✅
+- **Scope Cleanup:** Removed networking infrastructure from browser
+- **Phase 24 Migration:** Advanced proxy rotation moved to `basset-hound-networking` package
+  - Proxy pool management now handled externally
+  - Browser focuses purely on browser automation
+  - Cleaner separation of concerns
+- **Breaking Changes:**
+  - Removed 13 proxy pool WebSocket commands
+  - Removed `proxy/proxy-pool.js` and related files
+  - Proxy configuration still available via standard commands
+- **Architecture:** Browser is now a pure automation tool without networking infrastructure
+
+**v10.6.0** (Feature Complete Release) ✅
+- **12 major phases implemented** (Phases 19-25, 27-31)
+- **Phase 29:** Evidence chain of custody (RFC 3161, ISO 27037, SWGDE compliant)
+  - Cryptographic hashing (SHA-256)
+  - Complete audit trails
+  - Court-admissible forensic reports
+- **Phase 30:** Geolocation & location simulation
+  - GPS, timezone, locale spoofing
+  - 50+ pre-configured location profiles
+  - Optional proxy matching (FREE standalone mode available)
+- **Phase 31:** Data extraction templates
+  - Pre-built templates (LinkedIn, Twitter, GitHub, etc.)
+  - Custom template creation
+  - Bulk and multi-page extraction
+- **WebSocket API:** 194 commands (+33 from v10.2.0)
+- **MCP Tools:** 184 tools (+28 from v10.2.0)
+- **Tests:** 680+ comprehensive test cases (+155 from v10.2.0)
+- **Status:** Ready for integration testing
+
+**v10.3.0** (Multi-Page Concurrent Browsing Release)
+- Phase 28: Multi-page concurrent browsing
+- 4 configuration profiles (stealth, balanced, aggressive, single)
+- Rate limiting and resource monitoring
+- 40-66% performance improvement for investigations
+- WebSocket API: 161 commands
+- MCP Tools: 154 tools
+- Tests: 554+
+
+**v10.2.0** (Cookie Management Release)
+- Phase 27: Advanced cookie management
+- Cookie jars, security analysis, import/export
+- WebSocket API: 146 commands
+- MCP Tools: 141 tools
+- Tests: 525+
+
+**v10.1.0** (Feature Enhancement Release)
+- 7 major new phases implemented (Phases 19-25)
+- Network forensics (DNS, TLS, WebSocket, HTTP headers)
+- Interaction recording with Selenium/Puppeteer export
+- Advanced screenshots (diff, stitch, OCR, annotation)
+- Smart form filling (25+ field types, honeypot detection)
+- Browser profile templates (8 built-in templates)
+- Advanced proxy rotation with health checking
+- Page monitoring with multiple detection methods
+- WebSocket API expanded to 130+ commands
+- MCP server expanded to 130+ tools
+- 400+ comprehensive tests
+
+**v10.0.0** (Major Breaking Release)
+- Scope refactored: Pure browser automation focus
+- WebSocket API with 65 commands (OSINT tools removed)
+- MCP server with 61 tools (intelligence tools removed)
+- Bot detection evasion (fingerprints, behavioral AI)
+- Tor/proxy integration
+- Image forensics (EXIF, OCR, hashing)
+- Simplified evidence collection
+
+**v8.2.4** (Previous)
+- WebSocket API with 98+ commands (including OSINT)
+- Bot detection evasion (fingerprints, behavioral AI)
+- Tor/proxy integration
+- Image metadata extraction
+- MCP server for AI agents (88 tools)
+
+**v7.x**
+- Advanced orchestration
+- Enhanced data extraction
+- Tor integration
+
+**v6.x**
+- Security and stability improvements
+- Enhanced data extraction API
+
+**v5.x**
+- Advanced features (recording, technology detection)
+- Testing and validation
+
+**v1.x - v4.x**
+- Core foundation
+- Basic automation capabilities
+- WebSocket API development
+
+See [ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md) for detailed history of Phases 1-11.
+
+---
+
+## Architectural Principles
+
+### 1. Stateless Operation
+- Browser does not maintain investigation state
+- Each command is independent
+- Agent maintains context and state
+
+### 2. Raw Data First
+- Always return unprocessed data
+- No filtering or classification
+- Let the agent decide what's important
+
+### 3. Capability-Focused API
+- Commands express **actions** (navigate, click, extract)
+- Not **goals** (investigate, analyze, classify)
+
+### 4. Separation of Concerns
+- **Browser:** Technical capabilities (this tool)
+- **Agent:** Intelligence decisions (palletai)
+- **Storage:** Entity management (basset-hound)
+
+### 5. Tool, Not Platform
+- Browser is a tool in a larger system
+- It doesn't know about investigations, cases, or missions
+- It just does what it's told and reports back
+
+---
+
+## Related Projects
+
+- **basset-hound:** Entity storage and graph database for OSINT
+- **palletai:** AI agent framework for multi-agent OSINT automation
+- **autofill-extension:** Lightweight Chrome extension for quick OSINT tasks
+
+---
+
+## Development Status
+
+### Current Priorities (January 21, 2026)
+
+#### Priority 1: Integration Testing with palletai 🔜
+The browser is ready for integration testing with AI agents.
+- Test MCP server connection with palletai agents
+- Test Tor Master Switch via MCP (`browser_set_tor_mode`, `browser_get_tor_mode`)
+- Validate basic evidence capture workflow
+- Verify multi-page concurrent browsing for parallel investigations
+
+#### Priority 2: Bot Detection Validation 🧪
+Test evasion capabilities on real platforms (from palletai):
+- Cloudflare, DataDome, PerimeterX
+- Validate fingerprint consistency across sessions
+- Test behavioral AI mouse/typing patterns
+
+---
+
+### Session Summary (January 21, 2026)
+
+**Completed This Session:**
+- ✅ Evidence System Cleanup - Removed 15 out-of-scope Phase 29 commands
+- ✅ MCP Server Verified - 164 tools, all in-scope
+- ✅ Tor Master Switch - Implemented ON/OFF/AUTO modes
+- ✅ .onion Detection - Helpful errors when TOR_MODE not enabled
+- ✅ Documentation - Updated SCOPE.md, ROADMAP.md with architectural boundaries
+
+**Ready for Integration Testing:**
+- WebSocket API (164 commands)
+- MCP Server (166 tools including new Tor Master Switch)
+- Tor integration with master switch
+- Basic evidence capture
+- Bot detection evasion
+
+---
+
+### Future Development Suggestions (Deferred)
+
+The following items were analyzed but deferred. They can be addressed after integration testing or as needed.
+
+#### Test Coverage Gaps
+| Test File Needed | Priority | Functions to Cover |
+|------------------|----------|-------------------|
+| `tests/unit/tor-master-switch.test.js` | HIGH | `setTorMasterMode()`, `handleAutoModeNavigation()`, `isOnionUrl()` |
+| `tests/unit/error-recovery.test.js` | MEDIUM | `isRetryableError()`, `calculateRetryDelay()`, circuit breaker |
+| `tests/unit/rate-limiting.test.js` | MEDIUM | `checkRateLimit()`, burst allowance, window reset |
+
+#### Memory Leak Fix (Real Issue)
+| Issue | Location | Impact |
+|-------|----------|--------|
+| Rate limit data cleanup | `websocket/server.js:313` | Unbounded growth in long sessions |
+
+**Fix:** Add periodic cleanup to heartbeat loop - remove rate limit entries older than the window.
+
+#### Performance Optimizations (SKIPPED)
+> **Decision:** Lazy loading optimizations were analyzed but skipped. Network I/O is the real bottleneck (100ms-5000ms per operation), not internal processing (1-50ms). Optimizing startup by 500ms provides diminishing returns when actual usage is network-bound.
+
+| Optimization | Savings | Status |
+|--------------|---------|--------|
+| Lazy load managers | 370-570ms | ⏸️ Skipped - network is bottleneck |
+| Conditional Tor loading | 50-100ms | ⏸️ Skipped - network is bottleneck |
+| Plugin system lazy load | 150-200ms | ⏸️ Skipped - network is bottleneck |
+
+#### Documentation Gaps (Low Priority)
+| Doc Needed | Content |
+|------------|---------|
+| `docs/features/rate-limiting.md` | Configuration, defaults, recovery behavior |
+| `docs/features/memory-management.md` | Thresholds, cleanup callbacks, GC behavior |
+
+#### Code Cleanup (Low Priority)
+- Replace `console.*` with `this.logger` in websocket/server.js (~10 occurrences)
+- Remove commented migration code in main.js:8-9
+
+---
+
+## Infrastructure & Scaling - OUT OF SCOPE (For Now)
+
+### Explicit Scope Clarification
+
+The following infrastructure and deployment automation is **explicitly OUT OF SCOPE** for v11.3.0 and initial production releases:
+
+- ❌ **Kubernetes (K8s) orchestration** - Deployments, service mesh, container orchestration
+- ❌ **Terraform/IaC** - Infrastructure-as-code, cloud resource management  
+- ❌ **Auto-scaling policies** - Horizontal/vertical pod autoscaling
+- ❌ **Cloud-native deployment** - Cloud provider-specific features (AWS, GCP, Azure)
+- ❌ **Advanced networking** - Service discovery, network policies, service mesh
+- ❌ **Distributed systems** - Multi-node clusters, cluster management
+- ❌ **Secrets management** - Kubernetes secrets, Vault integration
+- ❌ **GitOps/CI-CD automation** - Flux, ArgoCD, automated deployments
+
+### Why Out of Scope Now
+
+**v11.3.0 Focus:** Browser functionality, stability, and performance
+- The browser is designed for **single-container deployment** (Docker)
+- Multi-instance scaling uses standard external load balancing (Nginx, HAProxy, cloud LB)
+- Docker Compose handles local multi-service coordination
+- Manual infrastructure decisions are simpler than complex automation
+
+### When This Will Change
+
+Infrastructure automation (Kubernetes, Terraform) will be addressed in a **separate Phase** after:
+1. ✅ v11.3.0 core functionality completion
+2. ✅ Production validation (24-48 hour monitoring)
+3. ✅ Integration testing with palletai and external systems
+4. ✅ Performance baseline establishment
+
+This "Phase 4" will focus on cloud-native patterns, automated scaling, and infrastructure-as-code.
+
+---
+
+### What's Next
+
+1. **Integration Testing** - Test from palletai with real workflows
+2. **Bot Detection Validation** - Run against real anti-bot systems
+3. **Address Issues Found** - Fix any bugs discovered during integration
+4. **Memory Leak Fix** - If long-running sessions show problems
+
+---
+
+### Legacy Priorities (Reference Only)
+
+<details>
+<summary>Previous priorities before January 21 cleanup</summary>
+
+#### Chain of Custody Documentation 📋
+Clarify scope of chain of custody feature for external systems:
+- Everything the browser does should be recorded for forensic purposes
+- External systems (like palletai) consume this audit trail
+- Ensure all WebSocket commands log to the evidence chain when active
+
+#### Performance Optimization ⚡
+- Test concurrent page management under load
+- Memory usage optimization for long-running sessions
+- Connection pooling for high-throughput scenarios
+
+</details>
+
+### Completed Features (All Phases)
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1-11 | Core browser automation | ✅ Complete |
+| 14 | Forensic Image Capabilities | ✅ Complete |
+| 15 | MCP Server for AI Agents | ✅ Complete |
+| 17 | Bot Detection Evasion | ✅ Complete |
+| 18 | Evidence Collection | ✅ Complete |
+| 19 | Network Forensics | ✅ Complete |
+| 20 | Interaction Recording | ✅ Complete |
+| 21 | Advanced Screenshots | ✅ Complete |
+| 22 | Smart Form Filling | ✅ Complete |
+| 23 | Browser Profile Templates | ✅ Complete |
+| 24 | Advanced Proxy Rotation | 🚀 Migrated to basset-hound-networking |
+| 25 | Page Monitoring | ✅ Complete |
+| 26 | Browser Extension Communication | ⏸️ Deferred (not needed with MCP) |
+| 27 | Advanced Cookie Management | ✅ Complete |
+| 28 | Multi-Page Concurrent Browsing | ✅ Complete |
+| 29 | Evidence Chain of Custody | ✅ Complete |
+| 30 | Geolocation & Location Simulation | ✅ Complete |
+| 31 | Data Extraction Templates | ⏸️ Skipped (prefer raw HTML → LLM approach) |
+
+### Deployment Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Docker Build | ✅ Working | All 9 fixes applied |
+| Container Startup | ✅ Working | Xvfb + Electron headless |
+| WebSocket Server | ✅ Working | Port 8765 |
+| API Commands | ✅ 91% pass rate | Timing required for page commands |
+| MCP Server | ✅ Available | `mcp/server.py` |
+| Deployment Scripts | ✅ Created | `scripts/deploy.sh`, `scripts/redeploy.sh` |
+
+### Documentation
+- **SCOPE.md:** Architectural boundaries and scope definition
+- **ROADMAP-ARCHIVE-V1.md:** Historical phases 1-11
+- **ROADMAP.md:** Current roadmap (this document)
+- **integration_readiness.md:** Current deployment and API status
+- **findings/DEPLOYMENT-FIXES-2026-01-21.md:** Deployment fixes applied
+- **findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md:** Timing requirements for page commands
+
+---
+
+*Last updated: January 21, 2026*
+*Version: 11.0.0*
+*Status: Ready for Integration Testing*
+*Session: Scope cleanup, Tor Master Switch, development analysis complete*

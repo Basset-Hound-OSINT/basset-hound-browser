@@ -22,7 +22,7 @@ const path = require('path');
 const os = require('os');
 
 const WS_URL = process.env.WS_URL || 'ws://localhost:8765';
-const TIMEOUT = 60000;  // Longer timeout for scale tests
+const TIMEOUT = 60000; // Longer timeout for scale tests
 const RESULTS_DIR = path.join(__dirname, '..', 'results', 'edge-cases');
 
 if (!fs.existsSync(RESULTS_DIR)) {
@@ -246,7 +246,9 @@ class ExtremeScaleTester {
       // Check for increasing trend (memory leak)
       let increasing = 0;
       for (let i = 1; i < memSnapshots.length; i++) {
-        if (memSnapshots[i] > memSnapshots[i-1]) increasing++;
+        if (memSnapshots[i] > memSnapshots[i - 1]) {
+          increasing++;
+        }
       }
 
       // Allow some natural fluctuation, but shouldn't be consistently increasing
@@ -255,7 +257,7 @@ class ExtremeScaleTester {
 
     await this.runTest('Track long session operations', async () => {
       const session = this.simulateSessionDuration(48);
-      const opRate = session.operationCount / (session.duration * 3600);  // ops per second
+      const opRate = session.operationCount / (session.duration * 3600); // ops per second
       assert(opRate > 0, 'Should calculate operation rate');
       this.results.scaleMetrics.longestSessionDuration = session.duration;
     });
@@ -306,7 +308,7 @@ class ExtremeScaleTester {
       let queued = 0;
 
       ops.forEach(op => {
-        if (Math.random() > 0.001) {  // 99.9% success rate simulation
+        if (Math.random() > 0.001) { // 99.9% success rate simulation
           queued++;
         } else {
           dropped++;

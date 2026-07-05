@@ -343,7 +343,9 @@ class EventRouter extends EventEmitter {
     const matching = [];
 
     for (const [routeId, route] of this.routes.entries()) {
-      if (!route.enabled) continue;
+      if (!route.enabled) {
+        continue;
+      }
 
       // Check if event matches pattern
       const eventType = event.type || event.change_type || 'unknown';

@@ -48,7 +48,7 @@ class StreamFragmentOptimizer extends EventEmitter {
       chunksCoalesced: 0,
       backpressureEvents: 0,
       bytesOptimized: 0,
-      averageChunkSize: 0,
+      averageChunkSize: 0
     };
   }
 
@@ -84,25 +84,25 @@ class StreamFragmentOptimizer extends EventEmitter {
    */
   _getTypeOptimizedChunkSize(payloadType, baseSize) {
     switch (payloadType) {
-      case 'screenshot':
-      case 'image':
-        // Images compress well, use larger chunks
-        return Math.min(baseSize * 1.5, 128 * 1024);
+    case 'screenshot':
+    case 'image':
+      // Images compress well, use larger chunks
+      return Math.min(baseSize * 1.5, 128 * 1024);
 
-      case 'json':
-        // JSON is text-based, smaller chunks are OK
-        return Math.max(baseSize * 0.75, 8192);
+    case 'json':
+      // JSON is text-based, smaller chunks are OK
+      return Math.max(baseSize * 0.75, 8192);
 
-      case 'binary':
-        // Binary data: stick with standard size
-        return baseSize;
+    case 'binary':
+      // Binary data: stick with standard size
+      return baseSize;
 
-      case 'text':
-        // Text: can use medium chunks
-        return baseSize;
+    case 'text':
+      // Text: can use medium chunks
+      return baseSize;
 
-      default:
-        return baseSize;
+    default:
+      return baseSize;
     }
   }
 
@@ -133,8 +133,8 @@ class StreamFragmentOptimizer extends EventEmitter {
       timestamps: {
         prepared: Date.now(),
         started: null,
-        completed: null,
-      },
+        completed: null
+      }
     };
 
     this.stats.streamsOptimized++;
@@ -184,7 +184,9 @@ class StreamFragmentOptimizer extends EventEmitter {
    * @returns {boolean} True if should backpressure
    */
   shouldBackpressure(socket) {
-    if (!socket) return false;
+    if (!socket) {
+      return false;
+    }
 
     // Check socket write buffer size
     const writeBufferSize = socket.writableLength || 0;
@@ -264,12 +266,12 @@ class StreamFragmentOptimizer extends EventEmitter {
         chunkCount,
         totalBytes: streamConfig.payloadSize,
         duration,
-        throughput: (streamConfig.payloadSize / (duration / 1000)) / (1024 * 1024), // MB/s
+        throughput: (streamConfig.payloadSize / (duration / 1000)) / (1024 * 1024) // MB/s
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   }
@@ -303,7 +305,7 @@ class StreamFragmentOptimizer extends EventEmitter {
           ? 'Use streaming'
           : payloadSize > 4096
             ? 'Consider streaming'
-            : 'Single send recommended',
+            : 'Single send recommended'
     };
   }
 
@@ -318,8 +320,8 @@ class StreamFragmentOptimizer extends EventEmitter {
         mediumChunkSize: this.mediumChunkSize,
         largeChunkSize: this.largeChunkSize,
         coalescingThreshold: this.coalescingThreshold,
-        maxStagingSize: this.maxStagingSize,
-      },
+        maxStagingSize: this.maxStagingSize
+      }
     };
   }
 
@@ -332,7 +334,7 @@ class StreamFragmentOptimizer extends EventEmitter {
       chunksCoalesced: 0,
       backpressureEvents: 0,
       bytesOptimized: 0,
-      averageChunkSize: 0,
+      averageChunkSize: 0
     };
   }
 
@@ -345,5 +347,5 @@ class StreamFragmentOptimizer extends EventEmitter {
 }
 
 module.exports = {
-  StreamFragmentOptimizer,
+  StreamFragmentOptimizer
 };

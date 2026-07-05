@@ -91,7 +91,9 @@ class BrowserStateRestore {
         results.failed.cookies = cookieResult.failed;
       } catch (error) {
         results.errors.push(`Cookie restoration failed: ${error.message}`);
-        if (!mergedOptions.partial) throw error;
+        if (!mergedOptions.partial) {
+          throw error;
+        }
       }
 
       // Phase 3: Restore storage (priority 2 - medium speed, required for app state)
@@ -104,7 +106,9 @@ class BrowserStateRestore {
         results.failed.storage_items = storageResult.failed;
       } catch (error) {
         results.errors.push(`Storage restoration failed: ${error.message}`);
-        if (!mergedOptions.partial) throw error;
+        if (!mergedOptions.partial) {
+          throw error;
+        }
       }
 
       // Phase 4: Restore DOM state (priority 3 - optional)
@@ -344,7 +348,9 @@ class BrowserStateRestore {
 
     // Check for expired cookies
     const expiredCookies = (state.cookies || []).filter(c => {
-      if (!c.expires) return false;
+      if (!c.expires) {
+        return false;
+      }
       return new Date(c.expires).getTime() < now;
     });
 
@@ -498,9 +504,15 @@ class BrowserStateRestore {
       return 'None';
     }
     const normalized = sameSite.toLowerCase();
-    if (normalized === 'strict') return 'Strict';
-    if (normalized === 'lax') return 'Lax';
-    if (normalized === 'none') return 'None';
+    if (normalized === 'strict') {
+      return 'Strict';
+    }
+    if (normalized === 'lax') {
+      return 'Lax';
+    }
+    if (normalized === 'none') {
+      return 'None';
+    }
     return 'Lax';
   }
 }

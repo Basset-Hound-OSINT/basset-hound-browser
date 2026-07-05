@@ -52,7 +52,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Apple',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -69,7 +69,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -82,7 +82,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Apple',
         timezone: 'Europe/London',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -95,7 +95,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'Asia/Tokyo',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -111,7 +111,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -124,7 +124,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Apple',
         timezone: 'Europe/London',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -135,7 +135,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -151,7 +151,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Apple',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       vendors.forEach(vendor => {
@@ -165,7 +165,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -181,7 +181,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Apple',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -196,7 +196,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -207,14 +207,14 @@ describe('BrowserProfileGenerator', () => {
       const testCases = [
         { timezone: 'America/New_York', expectedLocale: 'en-US' },
         { timezone: 'Europe/London', expectedLocale: 'en-GB' },
-        { timezone: 'Asia/Tokyo', expectedLocale: 'ja-JP' },
+        { timezone: 'Asia/Tokyo', expectedLocale: 'ja-JP' }
       ];
 
       testCases.forEach(test => {
         const profile = {
           vendor: 'Google',
           timezone: test.timezone,
-          deviceType: 'mobile',
+          deviceType: 'mobile'
         };
 
         const browserProfile = generator.initializeFromProfile(profile);
@@ -229,7 +229,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -241,11 +241,11 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'Asia/Tokyo',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
-      let hasAsianFont = browserProfile.fonts.some(f =>
+      const hasAsianFont = browserProfile.fonts.some(f =>
         f.includes('Hiragino') || f.includes('Meiryo') || f.includes('SimSun')
       );
       expect(hasAsianFont).toBe(true);
@@ -258,7 +258,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -275,7 +275,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       const browserProfile = generator.initializeFromProfile(profile);
@@ -288,7 +288,7 @@ describe('BrowserProfileGenerator', () => {
         languages: ['en-US'],
         locale: 'en-US',
         plugins: [],
-        fonts: ['Arial'],
+        fonts: ['Arial']
       };
 
       expect(generator.validateBrowserProfile(invalidProfile)).toBe(false);
@@ -296,7 +296,7 @@ describe('BrowserProfileGenerator', () => {
 
     it('should reject profile without required fields', () => {
       const incompleteProfile = {
-        timezone: 'America/New_York',
+        timezone: 'America/New_York'
         // Missing languages, locale, plugins, fonts
       };
 
@@ -310,7 +310,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       generator.initializeFromProfile(profile);
@@ -328,7 +328,7 @@ describe('BrowserProfileGenerator', () => {
       const profile = {
         vendor: 'Google',
         timezone: 'America/New_York',
-        deviceType: 'mobile',
+        deviceType: 'mobile'
       };
 
       generator.initializeFromProfile(profile);
@@ -369,7 +369,7 @@ describe('BrowserProfileGenerator', () => {
         const profile = {
           vendor: 'Google',
           timezone: 'America/New_York',
-          deviceType: 'mobile',
+          deviceType: 'mobile'
         };
 
         const gen = new BrowserProfileGenerator();

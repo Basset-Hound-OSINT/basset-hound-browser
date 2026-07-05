@@ -33,3 +33,20 @@ class TimeoutError(BassetHoundError):
 class AuthenticationError(BassetHoundError):
     """Raised when authentication fails."""
     pass
+
+
+class SSLError(BassetHoundError):
+    """Raised when SSL/TLS certificate validation fails."""
+
+    def __init__(self, message: str, cert_info: dict = None):
+        super().__init__(message)
+        self.cert_info = cert_info or {}
+
+
+class CertificateValidationError(SSLError):
+    """Raised when certificate validation fails."""
+
+    def __init__(self, message: str, cert_file: str = None, reason: str = None):
+        super().__init__(message)
+        self.cert_file = cert_file
+        self.reason = reason

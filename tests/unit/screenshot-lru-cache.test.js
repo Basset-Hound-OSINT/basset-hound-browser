@@ -233,12 +233,12 @@ describe('LRUCache', () => {
     it('should calculate hit rate', () => {
       cache.set('key1', 'value1');
 
-      cache.get('key1');  // hit
-      cache.get('key1');  // hit
-      cache.get('key2');  // miss
+      cache.get('key1'); // hit
+      cache.get('key1'); // hit
+      cache.get('key2'); // miss
 
       const stats = cache.getStats();
-      expect(parseFloat(stats.hitRate)).toBe(66.67);  // 2 hits out of 3
+      expect(parseFloat(stats.hitRate)).toBe(66.67); // 2 hits out of 3
     });
 
     it('should track access count', () => {
@@ -310,7 +310,7 @@ describe('LRUCache', () => {
       const stats2 = cache.getStats();
       expect(stats2.hits).toBe(0);
       expect(stats2.misses).toBe(0);
-      expect(stats2.entries).toBe(1);  // Entry still exists
+      expect(stats2.entries).toBe(1); // Entry still exists
     });
   });
 
@@ -349,7 +349,7 @@ describe('Cache Performance', () => {
     }
 
     const duration = Date.now() - start;
-    expect(duration).toBeLessThan(1000);  // Should be very fast
+    expect(duration).toBeLessThan(1000); // Should be very fast
   });
 
   it('should maintain high hit rate with working set', () => {
@@ -367,7 +367,7 @@ describe('Cache Performance', () => {
     }
 
     const stats = cache.getStats();
-    expect(parseFloat(stats.hitRate)).toBe(100);  // All hits
+    expect(parseFloat(stats.hitRate)).toBe(100); // All hits
   });
 
   it('should size estimate accurately', () => {

@@ -444,7 +444,9 @@ class ResourceTracker extends EventEmitter {
    * Calculate memory efficiency
    */
   _calculateMemoryEfficiency(memory) {
-    if (memory.heapTotalAfter === 0) return 0;
+    if (memory.heapTotalAfter === 0) {
+      return 0;
+    }
     return (memory.heapUsedAfter / memory.heapTotalAfter) * 100;
   }
 
@@ -452,7 +454,7 @@ class ResourceTracker extends EventEmitter {
    * Calculate overall efficiency
    */
   _calculateOverallEfficiency(resources) {
-    let efficiencyScores = [];
+    const efficiencyScores = [];
 
     if (resources.memory) {
       efficiencyScores.push(Math.max(0, 100 - resources.memory.memoryEfficiency));
@@ -464,7 +466,9 @@ class ResourceTracker extends EventEmitter {
       efficiencyScores.push(resources.diskIO.ioEfficiency * 100);
     }
 
-    if (efficiencyScores.length === 0) return 0;
+    if (efficiencyScores.length === 0) {
+      return 0;
+    }
     return efficiencyScores.reduce((a, b) => a + b, 0) / efficiencyScores.length;
   }
 
@@ -493,15 +497,21 @@ class ResourceTracker extends EventEmitter {
    * Calculate trend
    */
   _calculateTrend(values) {
-    if (values.length < 2) return 'insufficient_data';
+    if (values.length < 2) {
+      return 'insufficient_data';
+    }
     const recent = values.slice(-5);
     const older = values.slice(0, Math.max(1, Math.floor(values.length / 2)));
     const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
     const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
     const change = ((recentAvg - olderAvg) / olderAvg) * 100;
 
-    if (change > 10) return 'increasing';
-    if (change < -10) return 'decreasing';
+    if (change > 10) {
+      return 'increasing';
+    }
+    if (change < -10) {
+      return 'decreasing';
+    }
     return 'stable';
   }
 

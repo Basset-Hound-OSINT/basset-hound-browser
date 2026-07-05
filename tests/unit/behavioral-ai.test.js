@@ -11,7 +11,7 @@ const {
   HoneypotDetector,
   RateLimitAdapter,
   PHYSICS,
-  TYPING,
+  TYPING
 } = require('../../evasion/behavioral-ai');
 
 describe('BehavioralProfile', () => {
@@ -191,7 +191,7 @@ describe('MouseMovementAI', () => {
       const originalPoints = [
         { x: 0, y: 0, t: 0 },
         { x: 50, y: 50, t: 250 },
-        { x: 100, y: 100, t: 500 },
+        { x: 100, y: 100, t: 500 }
       ];
 
       const tremorPoints = mouseAI.addPhysiologicalTremor(originalPoints);
@@ -452,7 +452,7 @@ describe('HoneypotDetector', () => {
     test('detects display:none', () => {
       const element = {
         style: { display: 'none' },
-        name: 'email',
+        name: 'email'
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -463,7 +463,7 @@ describe('HoneypotDetector', () => {
     test('detects visibility:hidden', () => {
       const element = {
         style: { visibility: 'hidden' },
-        name: 'email',
+        name: 'email'
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -475,7 +475,7 @@ describe('HoneypotDetector', () => {
       const element = {
         width: 0,
         height: 0,
-        style: {},
+        style: {}
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -487,7 +487,7 @@ describe('HoneypotDetector', () => {
       const element = {
         width: 1,
         height: 1,
-        style: {},
+        style: {}
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -498,7 +498,7 @@ describe('HoneypotDetector', () => {
     test('detects suspicious names', () => {
       const honeypotElement = {
         name: 'honeypot_field',
-        style: {},
+        style: {}
       };
 
       const result = HoneypotDetector.isHoneypot(honeypotElement);
@@ -510,8 +510,8 @@ describe('HoneypotDetector', () => {
       const element = {
         style: {
           position: 'absolute',
-          left: '-9999px',
-        },
+          left: '-9999px'
+        }
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -522,7 +522,7 @@ describe('HoneypotDetector', () => {
     test('detects tabindex:-1', () => {
       const element = {
         tabindex: -1,
-        style: {},
+        style: {}
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -536,7 +536,7 @@ describe('HoneypotDetector', () => {
         id: 'user-email',
         style: { display: 'block' },
         width: 200,
-        height: 30,
+        height: 30
       };
 
       const result = HoneypotDetector.isHoneypot(element);
@@ -546,7 +546,7 @@ describe('HoneypotDetector', () => {
 
     test('requires multiple indicators for honeypot', () => {
       const singleIndicator = {
-        style: { display: 'none' },
+        style: { display: 'none' }
       };
 
       const result = HoneypotDetector.isHoneypot(singleIndicator);
@@ -558,7 +558,7 @@ describe('HoneypotDetector', () => {
     test('multiple indicators means honeypot', () => {
       const multipleIndicators = {
         name: 'honeypot',
-        style: { display: 'none' },
+        style: { display: 'none' }
       };
 
       const result = HoneypotDetector.isHoneypot(multipleIndicators);
@@ -570,13 +570,13 @@ describe('HoneypotDetector', () => {
     test('confidence increases with indicators', () => {
       const fewIndicators = {
         style: { display: 'none' },
-        name: 'trap',
+        name: 'trap'
       };
 
       const manyIndicators = {
         style: { display: 'none', visibility: 'hidden', opacity: '0' },
         name: 'honeypot',
-        tabindex: -1,
+        tabindex: -1
       };
 
       const result1 = HoneypotDetector.isHoneypot(fewIndicators);
@@ -591,7 +591,7 @@ describe('HoneypotDetector', () => {
       const fields = [
         { name: 'email', style: {} },
         { name: 'honeypot', style: { display: 'none' } },
-        { name: 'password', style: {} },
+        { name: 'password', style: {} }
       ];
 
       const result = HoneypotDetector.filterHoneypots(fields);
@@ -609,7 +609,7 @@ describe('HoneypotDetector', () => {
 
     test('honeypot results include detection info', () => {
       const fields = [
-        { name: 'trap', style: { display: 'none' } },
+        { name: 'trap', style: { display: 'none' } }
       ];
 
       const result = HoneypotDetector.filterHoneypots(fields);

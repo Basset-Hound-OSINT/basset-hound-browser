@@ -218,7 +218,7 @@ describe('CoherenceCheckCommands', () => {
         sessionId: 'session_1',
         interactionData: {
           type: 'type',
-          behavior: { typingSpeed: 150 }  // Violation
+          behavior: { typingSpeed: 150 } // Violation
         }
       });
     });
@@ -315,7 +315,7 @@ describe('CoherenceCheckCommands', () => {
         sessionId: 'session_1',
         interactionData: {
           type: 'click',
-          behavior: { typingSpeed: 200 }  // Violation
+          behavior: { typingSpeed: 200 } // Violation
         }
       });
     });

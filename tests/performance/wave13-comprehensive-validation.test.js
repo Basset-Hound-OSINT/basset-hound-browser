@@ -19,7 +19,7 @@ const { PriorityQueue } = require('../../src/queuing/priority-queue');
 const DOMExtractionCache = require('../../src/extraction/dom-cache');
 
 describe('Wave 13 Comprehensive Performance Validation', () => {
-  let results = {
+  const results = {
     timestamp: new Date().toISOString(),
     optimizations: {
       opt08: { name: 'Parallel Screenshot Processing', results: {} },

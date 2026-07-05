@@ -417,11 +417,13 @@ class ProfileStateStorageManager {
    * @param {string} profileId
    */
   async isValidProfile(profileId) {
-    if (!this.profileManager) return true; // No validation if profileManager not available
+    if (!this.profileManager) {
+      return true;
+    } // No validation if profileManager not available
 
     try {
       const profile = await this.profileManager.getProfile(profileId);
-      return !!profile;
+      return Boolean(profile);
     } catch (e) {
       return false;
     }

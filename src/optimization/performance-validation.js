@@ -214,7 +214,9 @@ class ContinuousProfiler extends EventEmitter {
    * Start profiling
    */
   start() {
-    if (this.profiling) return;
+    if (this.profiling) {
+      return;
+    }
 
     this.profiling = true;
 
@@ -227,7 +229,9 @@ class ContinuousProfiler extends EventEmitter {
    * Stop profiling
    */
   stop() {
-    if (!this.profiling) return;
+    if (!this.profiling) {
+      return;
+    }
 
     this.profiling = false;
 
@@ -321,7 +325,9 @@ class ContinuousProfiler extends EventEmitter {
    * @private
    */
   _analyzeMetrics(metrics, field) {
-    if (metrics.length === 0) return null;
+    if (metrics.length === 0) {
+      return null;
+    }
 
     const values = metrics.map(m => m[field]);
     const sorted = [...values].sort((a, b) => a - b);
@@ -392,7 +398,9 @@ class RegressionDetector extends EventEmitter {
     const recentValues = history.slice(-5).map(h => h.value);
     const olderValues = history.slice(0, -5).map(h => h.value);
 
-    if (olderValues.length === 0) return;
+    if (olderValues.length === 0) {
+      return;
+    }
 
     const oldAvg = olderValues.reduce((a, b) => a + b) / olderValues.length;
     const recentAvg = recentValues.reduce((a, b) => a + b) / recentValues.length;

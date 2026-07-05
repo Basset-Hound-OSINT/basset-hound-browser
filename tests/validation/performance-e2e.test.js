@@ -19,12 +19,12 @@ const TEST_RESULTS = {
     click: { latencies: [], passed: 0, failed: 0 },
     fill: { latencies: [], passed: 0, failed: 0 },
     getContent: { latencies: [], passed: 0, failed: 0 },
-    executeJavaScript: { latencies: [], passed: 0, failed: 0 },
+    executeJavaScript: { latencies: [], passed: 0, failed: 0 }
   },
   totalOperations: 0,
   totalPassed: 0,
   totalFailed: 0,
-  errors: [],
+  errors: []
 };
 
 const LATENCY_TARGETS = {
@@ -33,7 +33,7 @@ const LATENCY_TARGETS = {
   click: { p50: 50, p95: 100, p99: 200 },
   fill: { p50: 50, p95: 100, p99: 200 },
   getContent: { p50: 75, p95: 150, p99: 300 },
-  executeJavaScript: { p50: 100, p95: 200, p99: 500 },
+  executeJavaScript: { p50: 100, p95: 200, p99: 500 }
 };
 
 /**
@@ -72,11 +72,15 @@ class PerformanceTestClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('Connection timeout'));
+          if (!this.connected) {
+            reject(new Error('Connection timeout'));
+          }
         }, timeout);
       } catch (err) {
         reject(err);
@@ -85,7 +89,9 @@ class PerformanceTestClient {
   }
 
   async sendCommand(command, params = {}, timeout = TEST_TIMEOUT) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     const requestId = ++this.requestId;
     return new Promise((resolve, reject) => {
@@ -99,7 +105,7 @@ class PerformanceTestClient {
           clearTimeout(timer);
           resolve(result);
         },
-        startTime: Date.now(),
+        startTime: Date.now()
       });
 
       try {
@@ -113,7 +119,9 @@ class PerformanceTestClient {
   }
 
   disconnect() {
-    if (this.ws) this.ws.close();
+    if (this.ws) {
+      this.ws.close();
+    }
   }
 }
 
@@ -134,7 +142,7 @@ function getLatencyStats(latencies) {
     avg: Math.round(sum / sorted.length),
     p50: sorted[Math.floor(sorted.length * 0.50)],
     p95: sorted[Math.floor(sorted.length * 0.95)],
-    p99: sorted[Math.floor(sorted.length * 0.99)],
+    p99: sorted[Math.floor(sorted.length * 0.99)]
   };
 }
 
@@ -147,7 +155,7 @@ async function testNavigateLatency(client) {
   for (let i = 0; i < ITERATIONS; i++) {
     try {
       const result = await client.sendCommand('navigate', {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
       TEST_RESULTS.operations.navigate.latencies.push(result.latency);
       TEST_RESULTS.operations.navigate.passed++;
@@ -209,7 +217,7 @@ async function testClickLatency(client) {
   for (let i = 0; i < ITERATIONS; i++) {
     try {
       const result = await client.sendCommand('click', {
-        selector: 'button',
+        selector: 'button'
       });
       TEST_RESULTS.operations.click.latencies.push(result.latency);
       TEST_RESULTS.operations.click.passed++;
@@ -242,7 +250,7 @@ async function testFillLatency(client) {
     try {
       const result = await client.sendCommand('fill', {
         selector: 'input',
-        text: 'test value',
+        text: 'test value'
       });
       TEST_RESULTS.operations.fill.latencies.push(result.latency);
       TEST_RESULTS.operations.fill.passed++;
@@ -274,7 +282,7 @@ async function testGetContentLatency(client) {
   for (let i = 0; i < ITERATIONS; i++) {
     try {
       const result = await client.sendCommand('getContent', {
-        selector: 'body',
+        selector: 'body'
       });
       TEST_RESULTS.operations.getContent.latencies.push(result.latency);
       TEST_RESULTS.operations.getContent.passed++;
@@ -306,7 +314,7 @@ async function testExecuteJavaScriptLatency(client) {
   for (let i = 0; i < ITERATIONS; i++) {
     try {
       const result = await client.sendCommand('executeJavaScript', {
-        code: '1 + 1',
+        code: '1 + 1'
       });
       TEST_RESULTS.operations.executeJavaScript.latencies.push(result.latency);
       TEST_RESULTS.operations.executeJavaScript.passed++;
@@ -389,7 +397,9 @@ async function runPerformanceTests() {
     console.error('Test suite error:', error.message);
     return 1;
   } finally {
-    if (client) client.disconnect();
+    if (client) {
+      client.disconnect();
+    }
   }
 }
 

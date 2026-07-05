@@ -20,11 +20,11 @@ class HMACSignerMessage {
    */
   static DEFAULT_CONFIG = {
     algorithm: 'sha256',
-    maxMessageAge: 60000,  // 60 seconds
+    maxMessageAge: 60000, // 60 seconds
     enableTimestamp: true,
     enableNonce: true,
     enableRequestDedup: false,
-    dedupWindow: 60000  // 60 seconds
+    dedupWindow: 60000 // 60 seconds
   };
 
   /**

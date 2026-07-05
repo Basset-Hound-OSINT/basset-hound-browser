@@ -188,7 +188,7 @@ describe('Anomaly Detector', () => {
 
       // Simulate 50 changes
       for (let i = 0; i < 50; i++) {
-        detector.analyzeChange('monitor1', { magnitude: 10 + (Math.random() * 1) });
+        detector.analyzeChange('monitor1', { magnitude: 10 + (Number(Math.random())) });
       }
 
       const stats = detector.getMonitorStats('monitor1');
@@ -337,7 +337,7 @@ describe('Anomaly Detector', () => {
     test('should limit anomaly results', () => {
       const history = Array.from({ length: 15 }, (_, i) => ({
         timestamp: i * 1000,
-        magnitude: 10 + (Math.random() * 1)
+        magnitude: 10 + (Number(Math.random()))
       }));
 
       detector.addMonitor('monitor1', history);

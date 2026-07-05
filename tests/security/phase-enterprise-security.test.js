@@ -88,7 +88,7 @@ describe('Enterprise Security & Compliance - Phase 2-5', () => {
           'INSECURE_DESERIALIZATION', 'BUFFER_OVERFLOW'
         ];
 
-        const codeSnippet = "query = \"SELECT * FROM users WHERE id=\" + userInput;";
+        const codeSnippet = 'query = "SELECT * FROM users WHERE id=" + userInput;';
         const results = vulnerabilityScanner.analyzeCode(codeSnippet);
 
         expect(results).toBeDefined();
@@ -118,7 +118,7 @@ describe('Enterprise Security & Compliance - Phase 2-5', () => {
       });
 
       test('should flag unsafe file operations', () => {
-        const unsafeCode = "fs.readFileSync(userPath);";
+        const unsafeCode = 'fs.readFileSync(userPath);';
         const results = vulnerabilityScanner.analyzeCode(unsafeCode);
 
         expect(results).toBeDefined();

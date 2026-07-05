@@ -8,15 +8,15 @@ const { describe, it, expect, beforeEach } = require('@jest/globals');
 const crypto = require('crypto');
 const {
   ChainOfCustodyManager,
-  CustodyEntry,
+  CustodyEntry
 } = require('../../evidence/chain-of-custody');
 const {
   ForensicManifest,
-  ManifestEntry,
+  ManifestEntry
 } = require('../../evidence/manifest-generator');
 const {
   EvidencePackage,
-  PackageBuilder,
+  PackageBuilder
 } = require('../../evidence/package-builder');
 
 // ==========================================
@@ -28,7 +28,7 @@ describe('ChainOfCustodyManager', () => {
 
   beforeEach(() => {
     custodyManager = new ChainOfCustodyManager({
-      complianceMode: 'iso27037',
+      complianceMode: 'iso27037'
     });
   });
 
@@ -37,7 +37,7 @@ describe('ChainOfCustodyManager', () => {
       capturedBy: 'investigator_john',
       capturedAt: '2026-06-13T10:00:00Z',
       url: 'https://example.com',
-      hash: 'abc123def456',
+      hash: 'abc123def456'
     });
 
     expect(chain).toHaveLength(1);
@@ -48,19 +48,19 @@ describe('ChainOfCustodyManager', () => {
 
   it('should throw error on duplicate chain initialization', () => {
     custodyManager.initializeChain('ev_test_002', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     expect(() => {
       custodyManager.initializeChain('ev_test_002', {
-        capturedBy: 'system',
+        capturedBy: 'system'
       });
     }).toThrow('Chain already exists');
   });
 
   it('should add custody entries', () => {
     custodyManager.initializeChain('ev_test_003', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     custodyManager.addEntry('ev_test_003', 'accessed', 'analyst_jane', 'For analysis');
@@ -74,7 +74,7 @@ describe('ChainOfCustodyManager', () => {
 
   it('should record access events', () => {
     custodyManager.initializeChain('ev_test_004', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     const entry = custodyManager.recordAccess('ev_test_004', 'analyst_jane', 'forensic examination');
@@ -87,7 +87,7 @@ describe('ChainOfCustodyManager', () => {
   it('should record modifications', () => {
     custodyManager.initializeChain('ev_test_005', {
       capturedBy: 'system',
-      hash: 'oldHash123',
+      hash: 'oldHash123'
     });
 
     const oldHash = 'oldHash123';
@@ -108,7 +108,7 @@ describe('ChainOfCustodyManager', () => {
 
   it('should record sealing events', () => {
     custodyManager.initializeChain('ev_test_006', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     const sealHash = 'sealHash789';
@@ -128,7 +128,7 @@ describe('ChainOfCustodyManager', () => {
 
   it('should verify chain integrity', () => {
     custodyManager.initializeChain('ev_test_007', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     custodyManager.addEntry('ev_test_007', 'accessed', 'analyst_jane');
@@ -144,7 +144,7 @@ describe('ChainOfCustodyManager', () => {
   it('should detect chronological violations', () => {
     custodyManager.initializeChain('ev_test_008', {
       capturedBy: 'system',
-      capturedAt: '2026-06-13T10:00:00Z',
+      capturedAt: '2026-06-13T10:00:00Z'
     });
 
     // Get the chain and directly manipulate it to create violation
@@ -174,7 +174,7 @@ describe('ChainOfCustodyManager', () => {
 
   it('should generate text custody report', () => {
     custodyManager.initializeChain('ev_test_009', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     custodyManager.addEntry('ev_test_009', 'accessed', 'analyst_jane');
@@ -189,7 +189,7 @@ describe('ChainOfCustodyManager', () => {
 
   it('should export chain data', () => {
     custodyManager.initializeChain('ev_test_010', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     custodyManager.addEntry('ev_test_010', 'accessed', 'analyst_jane');
@@ -209,7 +209,7 @@ describe('ChainOfCustodyManager', () => {
     const stats = custodyManager.getStatistics();
 
     expect(stats.totalChains).toBe(2);
-    expect(stats.totalEntries).toBe(3);  // 2 created + 1 accessed
+    expect(stats.totalEntries).toBe(3); // 2 created + 1 accessed
     expect(stats.actionCounts.created).toBe(2);
   });
 });
@@ -225,7 +225,7 @@ describe('ForensicManifest', () => {
     manifest = new ForensicManifest('manifest_test_001', {
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
   });
 
@@ -238,7 +238,7 @@ describe('ForensicManifest', () => {
 
   it('should add evidence entries', () => {
     manifest.addEvidence('ev_001', 'screenshot', Buffer.from('image_data'), {
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     expect(manifest.entries).toHaveLength(1);
@@ -307,17 +307,17 @@ describe('ForensicManifest', () => {
   it('should generate timeline', () => {
     const now = new Date();
     manifest.addEvidence('ev_001', 'screenshot', 'img', {
-      capturedAt: new Date(now - 5000).toISOString(),
+      capturedAt: new Date(now - 5000).toISOString()
     });
     manifest.addEvidence('ev_002', 'har', 'data', {
-      capturedAt: now.toISOString(),
+      capturedAt: now.toISOString()
     });
 
     const timeline = manifest.getTimeline();
 
     expect(timeline).toHaveLength(2);
-    expect(timeline[0].evidenceId).toBe('ev_001');  // First by time
-    expect(timeline[1].evidenceId).toBe('ev_002');  // Second by time
+    expect(timeline[0].evidenceId).toBe('ev_001'); // First by time
+    expect(timeline[1].evidenceId).toBe('ev_002'); // Second by time
   });
 
   it('should generate text report', () => {
@@ -335,7 +335,7 @@ describe('ForensicManifest', () => {
     manifest.addCustodyEntry('accessed', 'analyst_jane', 'For analysis');
     manifest.addCustodyEntry('exported', 'investigator_john', 'Sent to court');
 
-    expect(manifest.custodyChain).toHaveLength(3);  // created + 2 entries
+    expect(manifest.custodyChain).toHaveLength(3); // created + 2 entries
     expect(manifest.custodyChain[1].action).toBe('accessed');
     expect(manifest.custodyChain[2].action).toBe('exported');
   });
@@ -361,7 +361,7 @@ describe('EvidencePackage', () => {
     manifest = new ForensicManifest('manifest_pkg_001', {
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     manifest.addEvidence('ev_001', 'screenshot', 'img_data', {});
@@ -393,7 +393,7 @@ describe('EvidencePackage', () => {
 
     expect(() => {
       pkg.seal({ sealedBy: 'other' });
-    }).not.toThrow();  // Actually allows reseal in current implementation
+    }).not.toThrow(); // Actually allows reseal in current implementation
   });
 
   it('should verify package integrity when valid', () => {
@@ -475,7 +475,7 @@ describe('PackageBuilder', () => {
     const manifest = builder.createManifest({
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     expect(manifest.id).toBeDefined();
@@ -485,7 +485,7 @@ describe('PackageBuilder', () => {
   it('should create packages from manifests', () => {
     const manifest = builder.createManifest({
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     manifest.addEvidence('ev_001', 'screenshot', 'img', {});
@@ -500,13 +500,13 @@ describe('PackageBuilder', () => {
     const evidenceItems = [
       { id: 'ev_001', type: 'screenshot', data: 'img1', metadata: { url: 'https://example.com' } },
       { id: 'ev_002', type: 'har', data: 'har_data', metadata: { url: 'https://example.com' } },
-      { id: 'ev_003', type: 'dom', data: 'html_content', metadata: { url: 'https://example.com' } },
+      { id: 'ev_003', type: 'dom', data: 'html_content', metadata: { url: 'https://example.com' } }
     ];
 
     const pkg = builder.buildPackage(evidenceItems, {
       sessionId: 'session_001',
       url: 'https://example.com',
-      autoSeal: true,
+      autoSeal: true
     });
 
     expect(pkg.packageId).toBeDefined();
@@ -557,7 +557,7 @@ describe('PackageBuilder', () => {
   it('should retrieve manifest by ID', () => {
     const created = builder.createManifest({
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const retrieved = builder.getManifest(created.id);
@@ -568,7 +568,7 @@ describe('PackageBuilder', () => {
   it('should retrieve package by ID', () => {
     const manifest = builder.createManifest({
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const created = builder.createPackage(manifest);
@@ -596,15 +596,15 @@ describe('Evidence Packaging Integration', () => {
     const manifest = builder.createManifest({
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     // 2. Add evidence
     manifest.addEvidence('ev_001', 'screenshot', 'img_data', {
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
     manifest.addEvidence('ev_002', 'har', 'har_data', {
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     manifest.setEndTime();
@@ -633,14 +633,14 @@ describe('Evidence Packaging Integration', () => {
     const manifest = builder.createManifest({
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     // Add various evidence types
     const types = ['screenshot', 'har', 'dom', 'console_log', 'cookies', 'local_storage'];
     types.forEach((type, idx) => {
       manifest.addEvidence(`ev_${idx}`, type, `data_${type}`, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     });
 
@@ -669,7 +669,7 @@ describe('RFC 3161 Timestamp Integration', () => {
     manifest = new ForensicManifest('manifest_rfc_001', {
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     manifest.addEvidence('ev_001', 'screenshot', 'img_data', {});
@@ -678,7 +678,7 @@ describe('RFC 3161 Timestamp Integration', () => {
 
   it('should request RFC 3161 timestamp for custody chain', () => {
     custodyManager.initializeChain('ev_test_001', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     const token = custodyManager.requestRFC3161Timestamp('ev_test_001', 'abc123hash');
@@ -694,11 +694,11 @@ describe('RFC 3161 Timestamp Integration', () => {
 
   it('should generate RFC 3161 timestamp with custom authority', () => {
     custodyManager.initializeChain('ev_test_002', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     const token = custodyManager.requestRFC3161Timestamp('ev_test_002', 'hash456', {
-      authority: 'custom-tsa.example.com',
+      authority: 'custom-tsa.example.com'
     });
 
     expect(token.tsa).toBe('custom-tsa.example.com');
@@ -706,7 +706,7 @@ describe('RFC 3161 Timestamp Integration', () => {
 
   it('should request RFC 3161 timestamp for manifest', () => {
     const token = manifest.requestRFC3161Timestamp({
-      authority: 'freetsa.org',
+      authority: 'freetsa.org'
     });
 
     expect(token).toBeDefined();
@@ -727,7 +727,7 @@ describe('RFC 3161 Timestamp Integration', () => {
   it('should detect timestamp readiness issues for empty manifest', () => {
     const emptyManifest = new ForensicManifest('empty_manifest', {
       sessionId: 'session_001',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     const readiness = emptyManifest.verifyTimestampReadiness();
@@ -740,7 +740,7 @@ describe('RFC 3161 Timestamp Integration', () => {
     pkg.seal({ sealedBy: 'investigator' });
 
     const token = pkg.requestRFC3161Timestamp({
-      authority: 'rfc3161.example.com',
+      authority: 'rfc3161.example.com'
     });
 
     expect(token).toBeDefined();
@@ -756,14 +756,14 @@ describe('RFC 3161 Timestamp Integration', () => {
 
   it('should record timestamp in custody chain', () => {
     custodyManager.initializeChain('ev_test_003', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     const chain = custodyManager.getChain('ev_test_003');
     const initialLength = chain.length;
 
     custodyManager.requestRFC3161Timestamp('ev_test_003', 'hash789', {
-      authority: 'tsa.example.com',
+      authority: 'tsa.example.com'
     });
 
     const updatedChain = custodyManager.getChain('ev_test_003');
@@ -783,19 +783,19 @@ describe('ISO 27037 Compliance', () => {
 
   beforeEach(() => {
     custodyManager = new ChainOfCustodyManager({
-      complianceMode: 'iso27037',
+      complianceMode: 'iso27037'
     });
     manifest = new ForensicManifest('manifest_iso_001', {
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
     builder = new PackageBuilder({ custodyManager });
   });
 
   it('should generate ISO 27037 compliance statement for custody chain', () => {
     custodyManager.initializeChain('ev_test_001', {
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     const statement = custodyManager.generateISO27037Statement('ev_test_001');
@@ -810,7 +810,7 @@ describe('ISO 27037 Compliance', () => {
 
   it('should verify ISO 27037 principles in statement', () => {
     custodyManager.initializeChain('ev_test_002', {
-      capturedBy: 'system',
+      capturedBy: 'system'
     });
 
     const statement = custodyManager.generateISO27037Statement('ev_test_002');
@@ -866,13 +866,13 @@ describe('Performance & Optimization', () => {
   it('should complete seal operation in under 100ms', () => {
     const manifest = new ForensicManifest('perf_manifest_001', {
       sessionId: 'perf_session',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     // Add 50 evidence items
     for (let i = 0; i < 50; i++) {
       manifest.addEvidence(`ev_${i}`, 'screenshot', `data_${i}`, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     }
 
@@ -890,13 +890,13 @@ describe('Performance & Optimization', () => {
     const builder = new PackageBuilder();
     const manifest = builder.createManifest({
       sessionId: 'large_manifest',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     // Add 100 evidence items
     for (let i = 0; i < 100; i++) {
       manifest.addEvidence(`ev_${i}`, 'screenshot', `data_${i}`, {
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     }
 
@@ -914,7 +914,7 @@ describe('Performance & Optimization', () => {
   it('should estimate package size accurately', () => {
     const manifest = new ForensicManifest('size_manifest', {
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     manifest.addEvidence('ev_001', 'screenshot', 'test_data_content', { size: 1024 });
@@ -929,7 +929,7 @@ describe('Performance & Optimization', () => {
   it('should measure seal performance metrics', () => {
     const manifest = new ForensicManifest('perf_measure', {
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     for (let i = 0; i < 25; i++) {
@@ -949,7 +949,7 @@ describe('Performance & Optimization', () => {
   it('should provide comprehensive performance statistics', () => {
     const manifest = new ForensicManifest('stats_manifest', {
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     manifest.addEvidence('ev_001', 'screenshot', 'img', {});
@@ -976,7 +976,7 @@ describe('Large Manifest Handling', () => {
     const builder = new PackageBuilder();
     const manifest = builder.createManifest({
       sessionId: 'large_session',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const startTime = Date.now();
@@ -994,13 +994,13 @@ describe('Large Manifest Handling', () => {
     const duration = Date.now() - startTime;
 
     expect(manifest.entries).toHaveLength(150);
-    expect(duration).toBeLessThan(5000);  // Should complete reasonably quickly
+    expect(duration).toBeLessThan(5000); // Should complete reasonably quickly
   });
 
   it('should verify integrity of large manifests consistently', () => {
     const manifest = new ForensicManifest('large_verify', {
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     for (let i = 0; i < 100; i++) {
@@ -1035,7 +1035,7 @@ describe('Large Manifest Handling', () => {
     const duration = Date.now() - startTime;
     const chain = custodyManager.getChain('large_chain_001');
 
-    expect(chain).toHaveLength(501);  // 1 created + 500 added
+    expect(chain).toHaveLength(501); // 1 created + 500 added
     expect(duration).toBeLessThan(1000);
   });
 });

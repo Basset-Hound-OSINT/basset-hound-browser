@@ -66,7 +66,7 @@ Client              Auth Server         Resource Server
 
 **Key Format:**
 ```
-sk_test_abc123xyz789_rest_of_key
+sk_test_REDACTED_EXAMPLE_rest_of_key
 
 Prefix:
   sk_test_     = Testable (sandbox)
@@ -77,7 +77,7 @@ Hashed in database (bcrypt)
 
 **Header:**
 ```
-X-API-Key: sk_test_abc123xyz789
+X-API-Key: sk_test_REDACTED_EXAMPLE
 ```
 
 ### 1.3 mTLS (Service-to-service)

@@ -475,13 +475,17 @@ class RecoveryTracker extends EventEmitter {
    * Calculate percentile
    */
   _percentile(arr, p) {
-    if (arr.length === 0) return 0;
+    if (arr.length === 0) {
+      return 0;
+    }
     const index = (p / 100) * (arr.length - 1);
     const lower = Math.floor(index);
     const upper = Math.ceil(index);
     const weight = index % 1;
 
-    if (lower === upper) return arr[lower];
+    if (lower === upper) {
+      return arr[lower];
+    }
     return arr[lower] * (1 - weight) + arr[upper] * weight;
   }
 
@@ -489,7 +493,9 @@ class RecoveryTracker extends EventEmitter {
    * Calculate standard deviation
    */
   _calculateStdDev(arr) {
-    if (arr.length === 0) return 0;
+    if (arr.length === 0) {
+      return 0;
+    }
     const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
     const squareDiffs = arr.map(v => Math.pow(v - avg, 2));
     const avgSquareDiff = squareDiffs.reduce((a, b) => a + b, 0) / arr.length;

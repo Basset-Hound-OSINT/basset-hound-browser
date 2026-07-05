@@ -549,7 +549,9 @@ class DashboardService extends EventEmitter {
    * Calculate percentile
    */
   percentile(values, p) {
-    if (values.length === 0) return 0;
+    if (values.length === 0) {
+      return 0;
+    }
     const sorted = [...values].sort((a, b) => a - b);
     const index = Math.ceil(sorted.length * p) - 1;
     return sorted[Math.max(0, index)];
@@ -584,7 +586,9 @@ class DashboardService extends EventEmitter {
    * Start auto-save of dashboards
    */
   startAutoSave() {
-    if (this.autoSaveTimer) return;
+    if (this.autoSaveTimer) {
+      return;
+    }
 
     this.autoSaveTimer = setInterval(() => {
       this.saveDashboards().catch(err => {

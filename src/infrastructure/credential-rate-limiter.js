@@ -31,11 +31,11 @@ class CredentialRateLimiter {
     // Exponential backoff delays (in milliseconds) indexed by failure count
     // failCount 1: no wait, 2: 1s, 3: 5s, 4: 10s, 5+: 60s
     this.backoff = {
-      1: 0,      // First attempt allowed immediately
-      2: 1000,   // 1 second
-      3: 5000,   // 5 seconds
-      4: 10000,  // 10 seconds
-      5: 60000   // 60 seconds (1 minute)
+      1: 0, // First attempt allowed immediately
+      2: 1000, // 1 second
+      3: 5000, // 5 seconds
+      4: 10000, // 10 seconds
+      5: 60000 // 60 seconds (1 minute)
     };
   }
 

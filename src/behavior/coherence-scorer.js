@@ -43,7 +43,7 @@ class BehavioralCoherenceScorer {
       browserInteraction: 0.08,
       interactionSequencing: 0.07,
       deviceSpecific: 0.06,
-      entropyMetrics: 0.08,
+      entropyMetrics: 0.08
     };
 
     // Anomaly sensitivity (lower = more sensitive)
@@ -55,7 +55,7 @@ class BehavioralCoherenceScorer {
       typingSpeedJump: 0.20,
       impossibleTiming: 0.30,
       entropy: 0.15,
-      patternShifts: 0.10,
+      patternShifts: 0.10
     };
   }
 
@@ -70,7 +70,7 @@ class BehavioralCoherenceScorer {
         accelerationMean: 2.0,
         accelerationStdDev: 0.8,
         pauseFrequency: 0.15, // 15% of movements have pauses
-        directnessRatio: 0.85, // How straight the path is
+        directnessRatio: 0.85 // How straight the path is
       },
       typingPattern: {
         wpmMin: 30,
@@ -80,13 +80,13 @@ class BehavioralCoherenceScorer {
         interKeystrokeMax: 300,
         interKeystrokeMean: 120,
         errorRate: 0.01, // 1% baseline error rate
-        errorCorrectionTime: 800,
+        errorCorrectionTime: 800
       },
       scrollBehavior: {
         averageVelocity: 300, // pixels per second
         velocityStdDev: 100,
         pauseFrequency: 0.3, // 30% scroll events include pauses
-        accelerationProfile: 'eased', // Natural deceleration
+        accelerationProfile: 'eased' // Natural deceleration
       },
       clickTiming: {
         averageClickDuration: 150, // milliseconds
@@ -94,28 +94,28 @@ class BehavioralCoherenceScorer {
         interClickMin: 500, // milliseconds
         interClickMax: 8000,
         interClickMean: 2500,
-        doubleClickRate: 0.02, // 2% of clicks are double-clicks
+        doubleClickRate: 0.02 // 2% of clicks are double-clicks
       },
       idlePatterns: {
         averageIdleDuration: 5000, // milliseconds
         idleFrequency: 0.3, // 30% of time is idle
-        maxIdleDuration: 60000, // Max 1 minute idle
+        maxIdleDuration: 60000 // Max 1 minute idle
       },
       navigationTiming: {
         pageLoadAwareness: 500, // How quickly aware of page load
         clickToNavigationDelay: 200, // Delay between click and navigation
-        interPageDelay: 2000, // Delay between page navigations
+        interPageDelay: 2000 // Delay between page navigations
       },
       formInteraction: {
         focusToTypeDelay: 300, // Delay after focusing field
         fieldCompletionTime: 3000, // Average time per field
         tabVsClickUsage: 0.7, // 70% use Tab, 30% click
-        fieldSkipRate: 0.05, // 5% skip fields
+        fieldSkipRate: 0.05 // 5% skip fields
       },
       entropyMetrics: {
         maxAcceptableEntropy: 0.6, // Normalized entropy 0-1
-        minAcceptableEntropy: 0.1,
-      },
+        minAcceptableEntropy: 0.1
+      }
     };
   }
 
@@ -127,43 +127,43 @@ class BehavioralCoherenceScorer {
    * @returns {Object} Dimension score and analysis
    */
   scoreDimension(dimension, metrics) {
-    let score = 50; // Default neutral score
+    const score = 50; // Default neutral score
     const analysis = {
       dimension,
       score: 0,
       status: 'UNKNOWN',
       confidence: 0.5,
       metrics: {},
-      anomalies: [],
+      anomalies: []
     };
 
     switch (dimension) {
-      case 'mouseMovement':
-        return this.scoreMouseMovement(metrics);
-      case 'typingPattern':
-        return this.scoreTypingPattern(metrics);
-      case 'scrollBehavior':
-        return this.scoreScrollBehavior(metrics);
-      case 'clickTiming':
-        return this.scoreClickTiming(metrics);
-      case 'idlePatterns':
-        return this.scoreIdlePatterns(metrics);
-      case 'navigationTiming':
-        return this.scoreNavigationTiming(metrics);
-      case 'formInteraction':
-        return this.scoreFormInteraction(metrics);
-      case 'viewportUsage':
-        return this.scoreViewportUsage(metrics);
-      case 'browserInteraction':
-        return this.scoreBrowserInteraction(metrics);
-      case 'interactionSequencing':
-        return this.scoreInteractionSequencing(metrics);
-      case 'deviceSpecific':
-        return this.scoreDeviceSpecific(metrics);
-      case 'entropyMetrics':
-        return this.scoreEntropyMetrics(metrics);
-      default:
-        return analysis;
+    case 'mouseMovement':
+      return this.scoreMouseMovement(metrics);
+    case 'typingPattern':
+      return this.scoreTypingPattern(metrics);
+    case 'scrollBehavior':
+      return this.scoreScrollBehavior(metrics);
+    case 'clickTiming':
+      return this.scoreClickTiming(metrics);
+    case 'idlePatterns':
+      return this.scoreIdlePatterns(metrics);
+    case 'navigationTiming':
+      return this.scoreNavigationTiming(metrics);
+    case 'formInteraction':
+      return this.scoreFormInteraction(metrics);
+    case 'viewportUsage':
+      return this.scoreViewportUsage(metrics);
+    case 'browserInteraction':
+      return this.scoreBrowserInteraction(metrics);
+    case 'interactionSequencing':
+      return this.scoreInteractionSequencing(metrics);
+    case 'deviceSpecific':
+      return this.scoreDeviceSpecific(metrics);
+    case 'entropyMetrics':
+      return this.scoreEntropyMetrics(metrics);
+    default:
+      return analysis;
     }
   }
 
@@ -388,7 +388,7 @@ class BehavioralCoherenceScorer {
    */
   scoreNavigationTiming(metrics) {
     const ref = this.referencePatterns.navigationTiming;
-    let score = 100;
+    const score = 100;
     const anomalies = [];
 
     // This is typically scored in context of actual navigation events
@@ -410,7 +410,7 @@ class BehavioralCoherenceScorer {
     }
 
     const ref = this.referencePatterns.formInteraction;
-    let score = 100;
+    const score = 100;
     const anomalies = [];
 
     // Form interaction scoring
@@ -428,7 +428,7 @@ class BehavioralCoherenceScorer {
    * Score viewport usage dimension
    */
   scoreViewportUsage(metrics) {
-    let score = 100;
+    const score = 100;
     const anomalies = [];
 
     // Viewport usage typically scored based on scroll patterns and element focus
@@ -471,7 +471,7 @@ class BehavioralCoherenceScorer {
    * Score interaction sequencing dimension
    */
   scoreInteractionSequencing(metrics) {
-    let score = 100;
+    const score = 100;
     const anomalies = [];
 
     // Sequencing is typically evaluated against expected user flows
@@ -488,7 +488,7 @@ class BehavioralCoherenceScorer {
    * Score device-specific behavior dimension
    */
   scoreDeviceSpecific(metrics) {
-    let score = 100;
+    const score = 100;
     const anomalies = [];
 
     // Device-specific scoring (DPI awareness, screen size awareness, etc.)
@@ -542,7 +542,7 @@ class BehavioralCoherenceScorer {
       score: Math.round(score),
       status,
       confidence: Math.round(confidence * 100) / 100,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
   }
 
@@ -591,7 +591,7 @@ class BehavioralCoherenceScorer {
         anomalies.push({
           dimension,
           score: score.score,
-          status: score.status,
+          status: score.status
         });
       }
     }
@@ -612,7 +612,7 @@ class BehavioralCoherenceScorer {
       anomalies,
       botDetectionRisk,
       recommendations,
-      trend: this.calculateTrend(),
+      trend: this.calculateTrend()
     };
 
     this.scoreHistory.push(analysis);
@@ -666,7 +666,9 @@ class BehavioralCoherenceScorer {
     const confidences = Object.values(dimensionScores)
       .map(s => s.confidence);
 
-    if (confidences.length === 0) return 0;
+    if (confidences.length === 0) {
+      return 0;
+    }
 
     const avgConfidence = confidences.reduce((a, b) => a + b, 0) / confidences.length;
     return Math.round(avgConfidence * 100) / 100;
@@ -686,24 +688,24 @@ class BehavioralCoherenceScorer {
     for (const [dimension, score] of Object.entries(dimensionScores)) {
       if (score.score < 60) {
         switch (dimension) {
-          case 'mouseMovement':
-            recommendations.push('Add natural mouse movement curves and pauses');
-            break;
-          case 'typingPattern':
-            recommendations.push('Vary typing speed and add keyboard pauses');
-            break;
-          case 'scrollBehavior':
-            recommendations.push('Add scroll pauses and natural deceleration');
-            break;
-          case 'clickTiming':
-            recommendations.push('Vary click intervals and hold durations');
-            break;
-          case 'idlePatterns':
-            recommendations.push('Add realistic idle periods between actions');
-            break;
-          case 'formInteraction':
-            recommendations.push('Simulate natural form filling patterns');
-            break;
+        case 'mouseMovement':
+          recommendations.push('Add natural mouse movement curves and pauses');
+          break;
+        case 'typingPattern':
+          recommendations.push('Vary typing speed and add keyboard pauses');
+          break;
+        case 'scrollBehavior':
+          recommendations.push('Add scroll pauses and natural deceleration');
+          break;
+        case 'clickTiming':
+          recommendations.push('Vary click intervals and hold durations');
+          break;
+        case 'idlePatterns':
+          recommendations.push('Add realistic idle periods between actions');
+          break;
+        case 'formInteraction':
+          recommendations.push('Simulate natural form filling patterns');
+          break;
         }
       }
     }
@@ -722,14 +724,20 @@ class BehavioralCoherenceScorer {
    * @returns {string} IMPROVING | STABLE | DEGRADING
    */
   calculateTrend() {
-    if (this.scoreHistory.length < 3) return 'STABLE';
+    if (this.scoreHistory.length < 3) {
+      return 'STABLE';
+    }
 
     const recent = this.scoreHistory.slice(-3).map(h => h.overallScore);
     const avgRecent = recent.reduce((a, b) => a + b, 0) / recent.length;
     const trend = recent[recent.length - 1] - recent[0];
 
-    if (trend > 5) return 'IMPROVING';
-    if (trend < -5) return 'DEGRADING';
+    if (trend > 5) {
+      return 'IMPROVING';
+    }
+    if (trend < -5) {
+      return 'DEGRADING';
+    }
     return 'STABLE';
   }
 
@@ -769,7 +777,7 @@ class BehavioralCoherenceScorer {
       overallDifference: scoreDifference,
       dimensionDifferences,
       areSimilar: scoreDifference < 10,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
   }
 
@@ -792,15 +800,15 @@ class BehavioralCoherenceScorer {
         trend: this.calculateTrend(),
         analysisWindow: [
           this.scoreHistory[0]?.timestamp,
-          this.scoreHistory[this.scoreHistory.length - 1]?.timestamp,
-        ],
+          this.scoreHistory[this.scoreHistory.length - 1]?.timestamp
+        ]
       },
       recentAnalyses: history,
       metadata: {
         version: '1.0.0',
         exported: Date.now(),
-        software: 'Basset Hound Browser v12.1.0',
-      },
+        software: 'Basset Hound Browser v12.1.0'
+      }
     };
   }
 

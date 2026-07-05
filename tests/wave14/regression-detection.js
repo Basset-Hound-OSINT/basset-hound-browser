@@ -27,26 +27,26 @@ const RESULTS_DIR = path.join(__dirname);
 const REGRESSION_TARGETS = {
   // Priority Queue improvements
   priorityQueue: {
-    throughputImprovement: 0.15,  // 15% improvement expected
-    maxQueueDelay: 10              // ms
+    throughputImprovement: 0.15, // 15% improvement expected
+    maxQueueDelay: 10 // ms
   },
 
   // Compression effectiveness
   compression: {
-    minCompressionRatio: 0.30,     // At least 70% reduction (1 - 0.30 = 0.70)
-    maxCompressionRatio: 0.95      // No worse than 93% of original
+    minCompressionRatio: 0.30, // At least 70% reduction (1 - 0.30 = 0.70)
+    maxCompressionRatio: 0.95 // No worse than 93% of original
   },
 
   // Memory stability
   memory: {
-    maxGrowthPerHour: 0.9 * 1024 * 1024,  // 0.9 MB/hour
+    maxGrowthPerHour: 0.9 * 1024 * 1024, // 0.9 MB/hour
     maxHeapGrowthPercent: 5
   },
 
   // Latency targets
   latency: {
-    coreOperationsP99: 1.0,        // ms
-    p99P999Ratio: 10               // P999 should be < 10x P99
+    coreOperationsP99: 1.0, // ms
+    p99P999Ratio: 10 // P999 should be < 10x P99
   }
 };
 
@@ -78,7 +78,7 @@ class RegressionDetector {
     };
 
     // Simulate priority queue operations with different priority levels
-    const priorities = [1, 5, 10, 15, 20];  // High to low priority
+    const priorities = [1, 5, 10, 15, 20]; // High to low priority
     const operationsPerPriority = 1000;
 
     for (const priority of priorities) {
@@ -146,7 +146,7 @@ class RegressionDetector {
     };
 
     // Generate test payloads of various sizes
-    const payloadSizes = [1024, 10240, 102400, 1024000];  // 1KB to 1MB
+    const payloadSizes = [1024, 10240, 102400, 1024000]; // 1KB to 1MB
     const payloadTypes = [
       { name: 'JSON', generator: () => JSON.stringify({ data: 'x'.repeat(100) }) },
       { name: 'HTML', generator: () => '<html>' + '<div>content</div>'.repeat(100) + '</html>' },
@@ -221,8 +221,8 @@ class RegressionDetector {
     };
 
     // Simulate 1 hour of operation with snapshots every 5 minutes
-    const testDuration = 3600 * 1000;  // 1 hour in ms
-    const snapshotInterval = 5 * 60 * 1000;  // 5 minutes
+    const testDuration = 3600 * 1000; // 1 hour in ms
+    const snapshotInterval = 5 * 60 * 1000; // 5 minutes
 
     const startMemory = process.memoryUsage();
     const startTime = Date.now();
@@ -234,7 +234,7 @@ class RegressionDetector {
       const elapsed = (Date.now() - startTime) / 1000;
 
       results.snapshots.push({
-        elapsed: (elapsed / 60).toFixed(1),  // minutes
+        elapsed: (elapsed / 60).toFixed(1), // minutes
         heapUsed: currentMemory.heapUsed,
         heapTotal: currentMemory.heapTotal,
         rss: currentMemory.rss,

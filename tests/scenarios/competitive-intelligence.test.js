@@ -218,7 +218,9 @@ class CompetitiveIntelligenceMonitor {
   }
 
   detectFeatureChanges(oldSnapshot, newSnapshot) {
-    if (!oldSnapshot || !newSnapshot) return [];
+    if (!oldSnapshot || !newSnapshot) {
+      return [];
+    }
 
     const changes = [];
     const oldFeatures = new Set(oldSnapshot.features || []);
@@ -252,7 +254,9 @@ class CompetitiveIntelligenceMonitor {
   }
 
   detectPricingChanges(oldSnapshot, newSnapshot) {
-    if (!oldSnapshot || !newSnapshot) return [];
+    if (!oldSnapshot || !newSnapshot) {
+      return [];
+    }
 
     const changes = [];
     const oldPricing = oldSnapshot.pricing || [];
@@ -285,7 +289,7 @@ class CompetitiveIntelligenceMonitor {
         featureRichness: featureCount,
         pricingFlexibility: pricingOptions,
         conversionFocus: ctas,
-        marketScore: (featureCount * 2 + pricingOptions * 1.5 + ctas * 1) / 4.5
+        marketScore: (featureCount * 2 + pricingOptions * 1.5 + Number(ctas)) / 4.5
       };
 
       positioning.push(position);
@@ -468,13 +472,13 @@ class CompetitiveIntelligenceMonitor {
       features: [
         'AI-powered analytics',
         'Real-time dashboards',
-        'Mobile app',          // NEW
+        'Mobile app', // NEW
         'API access',
         'Custom integrations',
         'Advanced reporting',
-        'Predictive analytics'  // NEW
+        'Predictive analytics' // NEW
       ],
-      pricing: ['$79/month', '$249/month', '$899/month'],  // Price changes
+      pricing: ['$79/month', '$249/month', '$899/month'], // Price changes
       ctas: ['Start Free Trial', 'Book Demo', 'Contact Sales']
     };
 

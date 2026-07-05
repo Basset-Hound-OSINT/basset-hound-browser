@@ -14,7 +14,9 @@ class BaseParser {
    * @returns {string} Decoded string
    */
   decodeHtmlEntities(str) {
-    if (!str || typeof str !== 'string') return '';
+    if (!str || typeof str !== 'string') {
+      return '';
+    }
 
     const entities = {
       '&amp;': '&',
@@ -92,7 +94,9 @@ class BaseParser {
    * @returns {string} Cleaned string
    */
   cleanString(str) {
-    if (!str || typeof str !== 'string') return '';
+    if (!str || typeof str !== 'string') {
+      return '';
+    }
     return str.trim().replace(/\s+/g, ' ');
   }
 }
@@ -643,24 +647,24 @@ class MicrodataParser extends BaseParser {
 
       // Determine value based on tag type
       switch (tagName) {
-        case 'meta':
-          value = this.extractAttribute(fullTag, 'content');
-          break;
-        case 'img':
-          value = this.extractAttribute(fullTag, 'src');
-          break;
-        case 'a':
-        case 'link':
-          value = this.extractAttribute(fullTag, 'href');
-          break;
-        case 'time':
-          value = this.extractAttribute(fullTag, 'datetime') || this.cleanString(textContent);
-          break;
-        case 'data':
-          value = this.extractAttribute(fullTag, 'value') || this.cleanString(textContent);
-          break;
-        default:
-          value = this.cleanString(this.decodeHtmlEntities(textContent));
+      case 'meta':
+        value = this.extractAttribute(fullTag, 'content');
+        break;
+      case 'img':
+        value = this.extractAttribute(fullTag, 'src');
+        break;
+      case 'a':
+      case 'link':
+        value = this.extractAttribute(fullTag, 'href');
+        break;
+      case 'time':
+        value = this.extractAttribute(fullTag, 'datetime') || this.cleanString(textContent);
+        break;
+      case 'data':
+        value = this.extractAttribute(fullTag, 'value') || this.cleanString(textContent);
+        break;
+      default:
+        value = this.cleanString(this.decodeHtmlEntities(textContent));
       }
 
       // Handle multiple values for same property
@@ -762,7 +766,7 @@ class RdfaParser extends BaseParser {
         const property = match[2];
         const textContent = match[3] || '';
 
-        let value = this.extractAttribute(fullTag, 'content') ||
+        const value = this.extractAttribute(fullTag, 'content') ||
                     this.extractAttribute(fullTag, 'href') ||
                     this.extractAttribute(fullTag, 'src') ||
                     this.cleanString(this.decodeHtmlEntities(textContent));

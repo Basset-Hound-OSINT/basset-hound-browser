@@ -173,7 +173,9 @@ class CircuitBreaker {
         // Reopen circuit
         this.state = 'open';
         if (typeof this.onOpen === 'function') {
-          try { this.onOpen(error); } catch (e) { /* ignore */ }
+          try {
+            this.onOpen(error);
+          } catch (e) { /* ignore */ }
         }
         throw error;
       }
@@ -199,7 +201,9 @@ class CircuitBreaker {
       this.state = 'open';
       this.lastFailureTime = Date.now();
       if (typeof this.onOpen === 'function') {
-        try { this.onOpen(); } catch (e) { /* ignore */ }
+        try {
+          this.onOpen();
+        } catch (e) { /* ignore */ }
       }
     }
   }
@@ -214,7 +218,9 @@ class CircuitBreaker {
       this.successCount = 0;
       this.lastFailureTime = null;
       if (typeof this.onClose === 'function') {
-        try { this.onClose(); } catch (e) { /* ignore */ }
+        try {
+          this.onClose();
+        } catch (e) { /* ignore */ }
       }
     }
   }

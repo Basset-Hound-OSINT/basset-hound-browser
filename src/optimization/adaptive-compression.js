@@ -32,7 +32,7 @@ const INCOMPRESSIBLE_TYPES = new Set([
   'application/zip',
   'application/gzip',
   'application/x-rar',
-  'application/x-7z-compressed',
+  'application/x-7z-compressed'
 ]);
 
 // Content type patterns
@@ -43,7 +43,7 @@ const COMPRESSIBLE_PATTERNS = [
   /javascript/i,
   /html/i,
   /css/i,
-  /svg/i,
+  /svg/i
 ];
 
 class AdaptiveCompression extends EventEmitter {
@@ -80,7 +80,7 @@ class AdaptiveCompression extends EventEmitter {
       compressionSkipped: 0,
       bytesOriginal: 0,
       bytesCompressed: 0,
-      totalCompressionTime: 0,
+      totalCompressionTime: 0
     };
 
     this._initializeCodecStats();
@@ -98,7 +98,7 @@ class AdaptiveCompression extends EventEmitter {
         totalTime: 0,
         avgRatio: 0,
         totalBytesOriginal: 0,
-        totalBytesCompressed: 0,
+        totalBytesCompressed: 0
       });
     }
 
@@ -107,7 +107,7 @@ class AdaptiveCompression extends EventEmitter {
       this.payloadTypeStats.set(type, {
         uses: 0,
         avgRatio: 0,
-        recommendedCodec: 'deflate',
+        recommendedCodec: 'deflate'
       });
     }
   }
@@ -138,11 +138,21 @@ class AdaptiveCompression extends EventEmitter {
   _getPayloadType(buffer, contentType = '') {
     // Check content type first
     if (contentType) {
-      if (/json/i.test(contentType)) return 'json';
-      if (/html/i.test(contentType)) return 'html';
-      if (/text/i.test(contentType)) return 'text';
-      if (/image/i.test(contentType)) return 'image';
-      if (/screenshot|png/i.test(contentType)) return 'screenshot';
+      if (/json/i.test(contentType)) {
+        return 'json';
+      }
+      if (/html/i.test(contentType)) {
+        return 'html';
+      }
+      if (/text/i.test(contentType)) {
+        return 'text';
+      }
+      if (/image/i.test(contentType)) {
+        return 'image';
+      }
+      if (/screenshot|png/i.test(contentType)) {
+        return 'screenshot';
+      }
     }
 
     // Try to detect from content
@@ -209,7 +219,7 @@ class AdaptiveCompression extends EventEmitter {
           ratio: 1.0,
           time: 0,
           skipped: true,
-          reason: 'Incompressible',
+          reason: 'Incompressible'
         };
       }
 
@@ -225,8 +235,11 @@ class AdaptiveCompression extends EventEmitter {
       // Try compression with deflate
       const compressed = await new Promise((resolve, reject) => {
         zlib.deflate(filtered, { level }, (err, result) => {
-          if (err) reject(err);
-          else resolve(result);
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
         });
       });
 
@@ -243,7 +256,7 @@ class AdaptiveCompression extends EventEmitter {
           ratio: 1.0,
           time,
           skipped: true,
-          reason: 'Ineffective (ratio: ' + (ratio * 100).toFixed(1) + '%)',
+          reason: 'Ineffective (ratio: ' + (ratio * 100).toFixed(1) + '%)'
         };
       }
 
@@ -264,7 +277,7 @@ class AdaptiveCompression extends EventEmitter {
         time,
         payloadType,
         level,
-        savings: payloadSize - compressed.length,
+        savings: payloadSize - compressed.length
       };
     } catch (error) {
       return {
@@ -272,7 +285,7 @@ class AdaptiveCompression extends EventEmitter {
         codec: 'none',
         ratio: 1.0,
         time: performance.now() - startTime,
-        error: error.message,
+        error: error.message
       };
     }
   }
@@ -283,7 +296,9 @@ class AdaptiveCompression extends EventEmitter {
    */
   _updateCodecStats(codec, originalSize, compressedSize, time) {
     const stats = this.codecStats.get(codec);
-    if (!stats) return;
+    if (!stats) {
+      return;
+    }
 
     stats.uses++;
     stats.totalTime += time;
@@ -301,7 +316,9 @@ class AdaptiveCompression extends EventEmitter {
    */
   _updatePayloadTypeStats(payloadType, ratio) {
     const stats = this.payloadTypeStats.get(payloadType);
-    if (!stats) return;
+    if (!stats) {
+      return;
+    }
 
     stats.uses++;
     stats.avgRatio = (stats.avgRatio * (stats.uses - 1) + ratio) / stats.uses;
@@ -326,7 +343,7 @@ class AdaptiveCompression extends EventEmitter {
   getRecommendations() {
     const recommendations = {
       bestCodec: 'deflate', // deflate is most supported
-      codecs: [],
+      codecs: []
     };
 
     for (const [codec, stats] of this.codecStats) {
@@ -335,7 +352,7 @@ class AdaptiveCompression extends EventEmitter {
           name: codec,
           uses: stats.uses,
           avgRatio: (stats.avgRatio * 100).toFixed(1) + '%',
-          avgTime: (stats.totalTime / stats.uses).toFixed(2) + 'ms',
+          avgTime: (stats.totalTime / stats.uses).toFixed(2) + 'ms'
         });
       }
     }
@@ -362,8 +379,8 @@ class AdaptiveCompression extends EventEmitter {
         ) + '%',
       codecStats: Array.from(this.codecStats.entries()).map(([name, stats]) => ({
         name,
-        ...stats,
-      })),
+        ...stats
+      }))
     };
   }
 
@@ -377,7 +394,7 @@ class AdaptiveCompression extends EventEmitter {
       compressionSkipped: 0,
       bytesOriginal: 0,
       bytesCompressed: 0,
-      totalCompressionTime: 0,
+      totalCompressionTime: 0
     };
 
     this._initializeCodecStats();
@@ -393,5 +410,5 @@ class AdaptiveCompression extends EventEmitter {
 }
 
 module.exports = {
-  AdaptiveCompression,
+  AdaptiveCompression
 };

@@ -23,33 +23,33 @@ class BrowserProfileGenerator {
         'Chrome PDF Plugin',
         'Chrome PDF Viewer',
         'Native Client Executable',
-        'Shockwave Flash',
+        'Shockwave Flash'
       ],
       'Safari-macOS': [
         'Chrome PDF Plugin',
         'Chrome PDF Viewer',
         'Native Client Executable',
         'Shockwave Flash',
-        'Java Applet Plug-in',
+        'Java Applet Plug-in'
       ],
       // Chrome plugins
       'Chrome': [
         'Chrome PDF Plugin',
         'Chrome PDF Viewer',
         'Native Client Executable',
-        'Shockwave Flash',
+        'Shockwave Flash'
       ],
       // Firefox plugins
       'Firefox': [
         'Shockwave Flash',
-        'Java(TM) Plug-in',
+        'Java(TM) Plug-in'
       ],
       // Edge plugins
       'Edge': [
         'Chrome PDF Plugin',
         'Chrome PDF Viewer',
-        'Native Client Executable',
-      ],
+        'Native Client Executable'
+      ]
     };
   }
 
@@ -65,7 +65,7 @@ class BrowserProfileGenerator {
         languages: ['en-US', 'es-US', 'fr-US'],
         primaryLanguage: 'en-US',
         locale: 'en-US',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'America/Los_Angeles': {
         region: 'US',
@@ -73,7 +73,7 @@ class BrowserProfileGenerator {
         languages: ['en-US', 'es-US', 'zh-CN'],
         primaryLanguage: 'en-US',
         locale: 'en-US',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'America/Chicago': {
         region: 'US',
@@ -81,7 +81,7 @@ class BrowserProfileGenerator {
         languages: ['en-US', 'es-US'],
         primaryLanguage: 'en-US',
         locale: 'en-US',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'America/Toronto': {
         region: 'CA',
@@ -89,7 +89,7 @@ class BrowserProfileGenerator {
         languages: ['en-CA', 'fr-CA', 'en-US'],
         primaryLanguage: 'en-CA',
         locale: 'en-CA',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       // Europe
       'Europe/London': {
@@ -98,7 +98,7 @@ class BrowserProfileGenerator {
         languages: ['en-GB', 'en-US', 'en'],
         primaryLanguage: 'en-GB',
         locale: 'en-GB',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'Europe/Paris': {
         region: 'FR',
@@ -106,7 +106,7 @@ class BrowserProfileGenerator {
         languages: ['fr-FR', 'en-US', 'de-DE'],
         primaryLanguage: 'fr-FR',
         locale: 'fr-FR',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'Europe/Berlin': {
         region: 'DE',
@@ -114,7 +114,7 @@ class BrowserProfileGenerator {
         languages: ['de-DE', 'en-US', 'fr-FR'],
         primaryLanguage: 'de-DE',
         locale: 'de-DE',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'Europe/Madrid': {
         region: 'ES',
@@ -122,7 +122,7 @@ class BrowserProfileGenerator {
         languages: ['es-ES', 'ca-ES', 'en-US'],
         primaryLanguage: 'es-ES',
         locale: 'es-ES',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       // Asia Pacific
       'Asia/Tokyo': {
@@ -131,7 +131,7 @@ class BrowserProfileGenerator {
         languages: ['ja-JP', 'en-US'],
         primaryLanguage: 'ja-JP',
         locale: 'ja-JP',
-        fonts: ['Arial', 'Hiragino Sans', 'Meiryo'],
+        fonts: ['Arial', 'Hiragino Sans', 'Meiryo']
       },
       'Asia/Shanghai': {
         region: 'CN',
@@ -139,7 +139,7 @@ class BrowserProfileGenerator {
         languages: ['zh-CN', 'en-US'],
         primaryLanguage: 'zh-CN',
         locale: 'zh-CN',
-        fonts: ['Arial', 'SimSun', 'Microsoft YaHei'],
+        fonts: ['Arial', 'SimSun', 'Microsoft YaHei']
       },
       'Asia/Hong_Kong': {
         region: 'HK',
@@ -147,7 +147,7 @@ class BrowserProfileGenerator {
         languages: ['zh-HK', 'en-HK', 'en-US'],
         primaryLanguage: 'zh-HK',
         locale: 'zh-HK',
-        fonts: ['Arial', 'Apple LiGothic', 'SimHei'],
+        fonts: ['Arial', 'Apple LiGothic', 'SimHei']
       },
       'Asia/Singapore': {
         region: 'SG',
@@ -155,7 +155,7 @@ class BrowserProfileGenerator {
         languages: ['en-SG', 'zh-SG', 'en-US'],
         primaryLanguage: 'en-SG',
         locale: 'en-SG',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'Asia/Bangkok': {
         region: 'TH',
@@ -163,7 +163,7 @@ class BrowserProfileGenerator {
         languages: ['th-TH', 'en-US'],
         primaryLanguage: 'th-TH',
         locale: 'th-TH',
-        fonts: ['Arial', 'Garuda', 'Cordia New'],
+        fonts: ['Arial', 'Garuda', 'Cordia New']
       },
       'Asia/Seoul': {
         region: 'KR',
@@ -171,7 +171,7 @@ class BrowserProfileGenerator {
         languages: ['ko-KR', 'en-US'],
         primaryLanguage: 'ko-KR',
         locale: 'ko-KR',
-        fonts: ['Arial', 'Malgun Gothic', 'Segoe UI'],
+        fonts: ['Arial', 'Malgun Gothic', 'Segoe UI']
       },
       // Australia/NZ
       'Australia/Sydney': {
@@ -180,7 +180,7 @@ class BrowserProfileGenerator {
         languages: ['en-AU', 'en-US'],
         primaryLanguage: 'en-AU',
         locale: 'en-AU',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
       },
       'Pacific/Auckland': {
         region: 'NZ',
@@ -188,8 +188,8 @@ class BrowserProfileGenerator {
         languages: ['en-NZ', 'en-US'],
         primaryLanguage: 'en-NZ',
         locale: 'en-NZ',
-        fonts: ['Arial', 'Georgia', 'Trebuchet MS'],
-      },
+        fonts: ['Arial', 'Georgia', 'Trebuchet MS']
+      }
     };
   }
 
@@ -235,7 +235,7 @@ class BrowserProfileGenerator {
       sessionStorageEnabled: true,
       indexedDBEnabled: true,
       webWorkersEnabled: true,
-      serviceWorkerEnabled: true,
+      serviceWorkerEnabled: true
     };
   }
 
@@ -290,20 +290,32 @@ class BrowserProfileGenerator {
     const { timezone, languages, locale, plugins, fonts } = profile;
 
     // Check timezone is valid IANA format
-    if (!timezone || typeof timezone !== 'string') return false;
-    if (!timezone.includes('/')) return false;
+    if (!timezone || typeof timezone !== 'string') {
+      return false;
+    }
+    if (!timezone.includes('/')) {
+      return false;
+    }
 
     // Check languages array exists and has items
-    if (!Array.isArray(languages) || languages.length === 0) return false;
+    if (!Array.isArray(languages) || languages.length === 0) {
+      return false;
+    }
 
     // Check locale format (en-US, zh-CN, etc)
-    if (!locale || !/^[a-z]{2}-[A-Z]{2}/.test(locale)) return false;
+    if (!locale || !/^[a-z]{2}-[A-Z]{2}/.test(locale)) {
+      return false;
+    }
 
     // Check plugins array exists
-    if (!Array.isArray(plugins)) return false;
+    if (!Array.isArray(plugins)) {
+      return false;
+    }
 
     // Check fonts array exists and has items
-    if (!Array.isArray(fonts) || fonts.length === 0) return false;
+    if (!Array.isArray(fonts) || fonts.length === 0) {
+      return false;
+    }
 
     return true;
   }

@@ -24,7 +24,9 @@ class ScriptStorage {
    * Ensure storage directory exists
    */
   async ensureDirectory() {
-    if (this.initialized) return;
+    if (this.initialized) {
+      return;
+    }
 
     try {
       await fs.mkdir(this.basePath, { recursive: true });

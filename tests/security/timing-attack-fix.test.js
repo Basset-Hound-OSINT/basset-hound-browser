@@ -19,7 +19,9 @@ describe('Timing Attack Prevention - Token Validation', () => {
 
       // The fixed implementation using crypto.timingSafeEqual()
       validateToken(token) {
-        if (!this.authToken) return false;
+        if (!this.authToken) {
+          return false;
+        }
 
         try {
           return crypto.timingSafeEqual(
@@ -76,7 +78,7 @@ describe('Timing Attack Prevention - Token Validation', () => {
 
     test('should prevent partial token matching attacks', () => {
       const validToken = 'test-secret-token-12345';
-      const partialToken = 'test-secret-token-1234';  // Missing last character
+      const partialToken = 'test-secret-token-1234'; // Missing last character
 
       const result = mockServer.validateToken(partialToken);
       expect(result).toBe(false);
@@ -140,9 +142,9 @@ describe('Timing Attack Prevention - Token Validation', () => {
       const similarTokens = [
         'secret-token-124',
         'secret-token-122',
-        'Secret-token-123',  // Case sensitive
-        'secret-token-123 ',  // Trailing space
-        ' secret-token-123'   // Leading space
+        'Secret-token-123', // Case sensitive
+        'secret-token-123 ', // Trailing space
+        ' secret-token-123' // Leading space
       ];
 
       similarTokens.forEach(token => {

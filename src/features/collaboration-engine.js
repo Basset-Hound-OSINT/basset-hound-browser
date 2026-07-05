@@ -538,10 +538,14 @@ class CollaborationEngine extends EventEmitter {
    */
   _hasPermission(sessionId, userId, action) {
     const session = this.sessions.get(sessionId);
-    if (!session) return false;
+    if (!session) {
+      return false;
+    }
 
     const perms = session.permissions.get(userId);
-    if (!perms) return false;
+    if (!perms) {
+      return false;
+    }
 
     return perms.permissions.includes(action);
   }
@@ -551,7 +555,9 @@ class CollaborationEngine extends EventEmitter {
    */
   _getPermissions(sessionId, userId) {
     const session = this.sessions.get(sessionId);
-    if (!session) return null;
+    if (!session) {
+      return null;
+    }
 
     return session.permissions.get(userId);
   }

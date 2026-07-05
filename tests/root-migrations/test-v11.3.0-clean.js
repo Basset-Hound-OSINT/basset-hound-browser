@@ -20,7 +20,7 @@ ws.on('error', (err) => {
 ws.on('open', async () => {
   console.log('[CONNECTION] WebSocket connected to ws://localhost:8765');
   console.log('[VERSION] Testing v11.3.0-fixed deployment\n');
-  
+
   const startTime = Date.now();
   const startMemory = process.memoryUsage().heapUsed / 1024 / 1024;
   TEST_RESULTS.memory.baseline = startMemory;
@@ -43,7 +43,7 @@ ws.on('open', async () => {
     console.log('TEST 1: Navigation (3 URLs)');
     console.log('==============================');
     const urls = ['https://example.com', 'https://httpbin.org', 'https://example.org'];
-    
+
     for (const url of urls) {
       const t = Date.now();
       const result = await sendCommand({ command: 'navigate', params: { url } });
@@ -95,7 +95,7 @@ ws.on('open', async () => {
         TEST_RESULTS.issues.push(`Tab ${i + 1} creation failed: ${result.error}`);
       }
     }
-    
+
     let closeSuccess = 0;
     for (let i = 0; i < tabs.length; i++) {
       const tabId = tabs[i];
@@ -141,19 +141,19 @@ ws.on('open', async () => {
     console.log('=========================');
     const memBefore = process.memoryUsage().heapUsed / 1024 / 1024;
     TEST_RESULTS.memory.peak = memBefore;
-    
+
     // Wait 5 seconds for memory stabilization
     await new Promise(resolve => setTimeout(resolve, 5000));
-    
+
     const memAfter = process.memoryUsage().heapUsed / 1024 / 1024;
     TEST_RESULTS.memory.final = memAfter;
     const memGrowth = memAfter - startMemory;
-    
+
     console.log(`Baseline:     ${startMemory.toFixed(2)}MB`);
     console.log(`Peak:         ${TEST_RESULTS.memory.peak.toFixed(2)}MB`);
     console.log(`Final:        ${memAfter.toFixed(2)}MB`);
     console.log(`Growth:       ${memGrowth.toFixed(2)}MB`);
-    
+
     const memStatus = memGrowth < 100 ? 'PASS' : 'WARN';
     console.log(`[${memStatus}] Memory growth ${memGrowth < 100 ? 'within' : 'exceeds'} acceptable range (<100MB)`);
     TEST_RESULTS.memory.status = memStatus;
@@ -163,19 +163,19 @@ ws.on('open', async () => {
     console.log('=====================================');
     console.log('           TEST SUMMARY');
     console.log('=====================================');
-    
+
     const navPass = TEST_RESULTS.navigation.filter(r => r.status === 'PASS').length;
     const screenshotPass = TEST_RESULTS.screenshots.filter(r => r.status === 'PASS').length;
     const tabPass = TEST_RESULTS.tabs.filter(r => r.status === 'PASS').length;
     const contentPass = TEST_RESULTS.content.filter(r => r.status === 'PASS').length;
-    
+
     console.log(`Navigation:         ${navPass}/${TEST_RESULTS.navigation.length} PASS`);
     console.log(`Screenshots:        ${screenshotPass}/${TEST_RESULTS.screenshots.length} PASS`);
     console.log(`Tab Management:     ${tabPass}/${TEST_RESULTS.tabs.length} PASS`);
     console.log(`Content Extraction: ${contentPass}/${TEST_RESULTS.content.length} PASS`);
     console.log(`Memory Status:      ${TEST_RESULTS.memory.status}`);
-    
-    const totalTests = 
+
+    const totalTests =
       TEST_RESULTS.navigation.length +
       TEST_RESULTS.screenshots.length +
       TEST_RESULTS.tabs.length +
@@ -185,14 +185,14 @@ ws.on('open', async () => {
       screenshotPass +
       tabPass +
       contentPass;
-    
+
     const passRate = ((totalPass / totalTests) * 100).toFixed(1);
     console.log(`\nOVERALL:            ${totalPass}/${totalTests} PASS (${passRate}%)`);
-    
+
     const totalTime = Date.now() - startTime;
     console.log(`TEST DURATION:      ${(totalTime / 1000).toFixed(2)}s`);
     console.log('=====================================\n');
-    
+
     // Issues list
     if (TEST_RESULTS.issues.length > 0) {
       console.log('ISSUES DETECTED:');
@@ -201,7 +201,7 @@ ws.on('open', async () => {
       }
       console.log();
     }
-    
+
     // Determine final outcome
     if (passRate >= 95) {
       console.log('DEPLOYMENT STATUS: APPROVED (100% of core features working)\n');

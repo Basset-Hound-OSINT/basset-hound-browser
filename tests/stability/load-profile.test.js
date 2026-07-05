@@ -20,11 +20,11 @@ const TEST_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 // Load profile: [concurrency, duration in hours]
 const LOAD_PROFILE = [
-  { name: 'Night', concurrency: 10, durationHours: 6, startHour: 0 },   // 12am-6am
-  { name: 'Morning Peak', concurrency: 300, durationHours: 4, startHour: 7 },  // 7am-11am
+  { name: 'Night', concurrency: 10, durationHours: 6, startHour: 0 }, // 12am-6am
+  { name: 'Morning Peak', concurrency: 300, durationHours: 4, startHour: 7 }, // 7am-11am
   { name: 'Afternoon Normal', concurrency: 150, durationHours: 6, startHour: 12 }, // 12pm-6pm
-  { name: 'Evening Low', concurrency: 50, durationHours: 4, startHour: 19 },  // 7pm-11pm
-  { name: 'Night Maintenance', concurrency: 10, durationHours: 4, startHour: 23 }  // 11pm-3am
+  { name: 'Evening Low', concurrency: 50, durationHours: 4, startHour: 19 }, // 7pm-11pm
+  { name: 'Night Maintenance', concurrency: 10, durationHours: 4, startHour: 23 } // 11pm-3am
 ];
 
 class LoadProfileClient {
@@ -338,7 +338,7 @@ class LoadProfileTest {
     let totalMessages = 0;
     let totalSuccess = 0;
     let totalFailures = 0;
-    let allLatencies = [];
+    const allLatencies = [];
 
     for (const phase of this.metrics.phaseMetrics) {
       totalMessages += phase.totalMessages;

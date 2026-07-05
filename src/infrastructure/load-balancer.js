@@ -31,10 +31,10 @@ class LoadBalancer extends EventEmitter {
       maxConnectionsPerBackend: config.maxConnectionsPerBackend || 1000,
       rateLimit: config.rateLimit || {
         connectionsPerSec: 100, // max new connections per second per IP
-        requestsPerSec: 1000,   // max requests per second per IP
+        requestsPerSec: 1000 // max requests per second per IP
       },
       sessionAffinityTTL: config.sessionAffinityTTL || 86400000, // 24 hours
-      ...config,
+      ...config
     };
 
     // State tracking
@@ -46,18 +46,18 @@ class LoadBalancer extends EventEmitter {
       connections: {
         current: 0,
         total: 0,
-        rate: 0,
+        rate: 0
       },
       requests: {
         total: 0,
-        rate: 0,
+        rate: 0
       },
       errors: {
         connection: 0,
         request: 0,
-        timeout: 0,
+        timeout: 0
       },
-      backends: {},
+      backends: {}
     };
 
     this.server = null;
@@ -89,8 +89,8 @@ class LoadBalancer extends EventEmitter {
         errors: 0,
         lastCheck: Date.now(),
         uptime: 0,
-        downtime: 0,
-      },
+        downtime: 0
+      }
     });
 
     this.metrics.backends[id] = {
@@ -98,7 +98,7 @@ class LoadBalancer extends EventEmitter {
       connections: 0,
       requests: 0,
       errors: 0,
-      responseTime: 0,
+      responseTime: 0
     };
 
     // Start health checks for this backend
@@ -111,7 +111,9 @@ class LoadBalancer extends EventEmitter {
    */
   removeBackend(id) {
     const backend = this.backends.get(id);
-    if (!backend) return;
+    if (!backend) {
+      return;
+    }
 
     // Stop health checks
     if (this.healthCheckIntervals.has(id)) {
@@ -147,12 +149,14 @@ class LoadBalancer extends EventEmitter {
    */
   checkBackendHealth(backendId) {
     const backend = this.backends.get(backendId);
-    if (!backend) return;
+    if (!backend) {
+      return;
+    }
 
     const socket = net.createConnection({
       host: backend.host,
       port: backend.port,
-      timeout: this.config.healthCheckTimeout,
+      timeout: this.config.healthCheckTimeout
     });
 
     let isHealthy = false;
@@ -182,7 +186,7 @@ class LoadBalancer extends EventEmitter {
         this.emit('backend:health', {
           id: backendId,
           healthy: isHealthy,
-          timestamp: Date.now(),
+          timestamp: Date.now()
         });
 
         if (!isHealthy) {
@@ -205,13 +209,13 @@ class LoadBalancer extends EventEmitter {
     if (!this.rateLimitTracking.has(key)) {
       this.rateLimitTracking.set(key, {
         connections: [],
-        requests: [],
+        requests: []
       });
     }
 
     const tracking = this.rateLimitTracking.get(key);
     const limit = isConnection ? this.config.rateLimit.connectionsPerSec
-                                : this.config.rateLimit.requestsPerSec;
+      : this.config.rateLimit.requestsPerSec;
 
     const list = isConnection ? tracking.connections : tracking.requests;
 
@@ -301,7 +305,7 @@ class LoadBalancer extends EventEmitter {
         this.emit('started', {
           port: this.config.port,
           host: this.config.host,
-          backends: this.backends.size,
+          backends: this.backends.size
         });
         resolve();
       });
@@ -345,7 +349,7 @@ class LoadBalancer extends EventEmitter {
     // Connect to backend
     const backendSocket = net.createConnection({
       host: backend.host,
-      port: backend.port,
+      port: backend.port
     });
 
     let isConnected = false;
@@ -355,7 +359,7 @@ class LoadBalancer extends EventEmitter {
       this.emit('connection:established', {
         clientIp,
         backendId: backend.id,
-        timestamp: Date.now(),
+        timestamp: Date.now()
       });
     });
 
@@ -438,13 +442,13 @@ class LoadBalancer extends EventEmitter {
       timestamp: Date.now(),
       connections: {
         current: this.metrics.connections.current,
-        total: this.metrics.connections.total,
+        total: this.metrics.connections.total
       },
       requests: {
-        total: this.metrics.requests.total,
+        total: this.metrics.requests.total
       },
       errors: {
-        ...this.metrics.errors,
+        ...this.metrics.errors
       },
       backends: Array.from(this.backends.entries()).map(([id, backend]) => ({
         id,
@@ -455,9 +459,9 @@ class LoadBalancer extends EventEmitter {
         stats: {
           totalConnections: backend.stats.totalConnections,
           totalRequests: backend.stats.totalRequests,
-          errors: backend.stats.errors,
-        },
-      })),
+          errors: backend.stats.errors
+        }
+      }))
     };
   }
 
@@ -471,7 +475,7 @@ class LoadBalancer extends EventEmitter {
       port: b.port,
       status: b.healthy ? 'UP' : 'DOWN',
       connections: b.connections,
-      lastCheck: new Date(b.stats.lastCheck).toISOString(),
+      lastCheck: new Date(b.stats.lastCheck).toISOString()
     }));
 
     const healthyCount = backends.filter(b => b.status === 'UP').length;
@@ -483,8 +487,8 @@ class LoadBalancer extends EventEmitter {
       summary: {
         healthy: healthyCount,
         total: totalCount,
-        healthPercentage: totalCount > 0 ? (healthyCount / totalCount * 100).toFixed(2) + '%' : 'N/A',
-      },
+        healthPercentage: totalCount > 0 ? (healthyCount / totalCount * 100).toFixed(2) + '%' : 'N/A'
+      }
     };
   }
 
@@ -493,7 +497,9 @@ class LoadBalancer extends EventEmitter {
    */
   drainBackend(backendId) {
     const backend = this.backends.get(backendId);
-    if (!backend) return;
+    if (!backend) {
+      return;
+    }
 
     backend.healthy = false; // Stop accepting new connections
 

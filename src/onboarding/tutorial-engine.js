@@ -327,7 +327,9 @@ class TutorialEngine extends EventEmitter {
   getAvailableTutorials() {
     return Array.from(this.tutorials.values()).filter(tutorial => {
       // Check prerequisites
-      if (tutorial.prerequisites.length === 0) return true;
+      if (tutorial.prerequisites.length === 0) {
+        return true;
+      }
       return tutorial.prerequisites.every(prereq => this.completedTutorials.has(prereq));
     });
   }
@@ -412,7 +414,9 @@ class TutorialEngine extends EventEmitter {
    */
   getCurrentStep(tutorialId) {
     const activeTutorial = this.activeTutorials.get(tutorialId);
-    if (!activeTutorial) return null;
+    if (!activeTutorial) {
+      return null;
+    }
 
     const tutorial = this.getTutorial(tutorialId);
     return tutorial.steps[activeTutorial.currentStepIndex];

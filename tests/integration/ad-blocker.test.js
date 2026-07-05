@@ -24,16 +24,24 @@ const createMockSession = () => {
         }
       }),
       onBeforeSendHeaders: jest.fn((filter, listener) => {
-        if (listener) listeners.onBeforeSendHeaders = listener;
+        if (listener) {
+          listeners.onBeforeSendHeaders = listener;
+        }
       }),
       onHeadersReceived: jest.fn((filter, listener) => {
-        if (listener) listeners.onHeadersReceived = listener;
+        if (listener) {
+          listeners.onHeadersReceived = listener;
+        }
       }),
       onCompleted: jest.fn((filter, listener) => {
-        if (listener) listeners.onCompleted = listener;
+        if (listener) {
+          listeners.onCompleted = listener;
+        }
       }),
       onErrorOccurred: jest.fn((filter, listener) => {
-        if (listener) listeners.onErrorOccurred = listener;
+        if (listener) {
+          listeners.onErrorOccurred = listener;
+        }
       }),
       on: jest.fn((event, filter, listener) => {
         listeners[event] = typeof filter === 'function' ? filter : listener;

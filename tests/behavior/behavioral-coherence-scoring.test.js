@@ -28,7 +28,7 @@ describe('PatternAnalyzer', () => {
       const movement = {
         from: { x: 0, y: 0 },
         to: { x: 100, y: 100 },
-        duration: 100,
+        duration: 100
       };
 
       const result = analyzer.recordMouseMovement(movement);
@@ -46,7 +46,7 @@ describe('PatternAnalyzer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100 + i, y: 100 },
-          duration: 100,
+          duration: 100
         });
       }
 
@@ -69,7 +69,7 @@ describe('PatternAnalyzer', () => {
       analyzer.recordTypingEvent({
         char: 'a',
         ikiBefore: 100,
-        holdDuration: 80,
+        holdDuration: 80
       });
 
       assert.strictEqual(analyzer.patterns.typing.length, 1);
@@ -91,7 +91,7 @@ describe('PatternAnalyzer', () => {
         analyzer.recordTypingEvent({
           char: 'a',
           ikiBefore: 100,
-          holdDuration: 80,
+          holdDuration: 80
         });
       }
 
@@ -107,7 +107,7 @@ describe('PatternAnalyzer', () => {
         direction: 'down',
         distance: 200,
         duration: 500,
-        paused: false,
+        paused: false
       });
 
       assert.strictEqual(analyzer.patterns.scroll.length, 1);
@@ -119,7 +119,7 @@ describe('PatternAnalyzer', () => {
         direction: 'down',
         distance: 300,
         duration: 1000,
-        paused: false,
+        paused: false
       });
 
       assert.strictEqual(event.velocity, 0.3); // 300px / 1000ms
@@ -130,13 +130,13 @@ describe('PatternAnalyzer', () => {
         direction: 'down',
         distance: 200,
         duration: 500,
-        paused: true,
+        paused: true
       });
       analyzer.recordScroll({
         direction: 'down',
         distance: 200,
         duration: 500,
-        paused: false,
+        paused: false
       });
 
       const metrics = analyzer.getScrollMetrics();
@@ -150,7 +150,7 @@ describe('PatternAnalyzer', () => {
         x: 100,
         y: 200,
         target: 'button.submit',
-        duration: 150,
+        duration: 150
       });
 
       assert.strictEqual(analyzer.patterns.click.length, 1);
@@ -180,7 +180,7 @@ describe('PatternAnalyzer', () => {
     it('should record dwell times', () => {
       analyzer.recordDwell({
         target: 'div.content',
-        duration: 5000,
+        duration: 5000
       });
 
       assert.strictEqual(analyzer.patterns.dwell.length, 1);
@@ -213,7 +213,7 @@ describe('PatternAnalyzer', () => {
       analyzer.recordFormInteraction({
         field: 'email',
         action: 'focus',
-        duration: 0,
+        duration: 0
       });
 
       assert.strictEqual(analyzer.patterns.formInteraction.length, 1);
@@ -258,7 +258,7 @@ describe('PatternAnalyzer', () => {
           char: 'x',
           ikiBefore: 100,
           holdDuration: 80,
-          error: true,
+          error: true
         });
       }
 
@@ -275,12 +275,12 @@ describe('PatternAnalyzer', () => {
         analyzer.recordMouseMovement({
           from: { x: i * 10, y: 0 },
           to: { x: i * 10 + 100, y: 100 },
-          duration: 50 + Math.random() * 100,
+          duration: 50 + Math.random() * 100
         });
         analyzer.recordTypingEvent({
           char: String.fromCharCode(97 + (i % 26)),
           ikiBefore: 80 + Math.random() * 50,
-          holdDuration: 80,
+          holdDuration: 80
         });
       }
 
@@ -296,7 +296,7 @@ describe('PatternAnalyzer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
       }
 
@@ -326,7 +326,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: i * 50, y: 0 },
           to: { x: i * 50 + 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
       }
 
@@ -343,7 +343,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordTypingEvent({
           char: 'a',
           ikiBefore: 100 + Math.random() * 50,
-          holdDuration: 80,
+          holdDuration: 80
         });
       }
 
@@ -361,7 +361,7 @@ describe('BehavioralCoherenceScorer', () => {
           direction: 'down',
           distance: 200,
           duration: 500,
-          paused: i % 2 === 0,
+          paused: i % 2 === 0
         });
       }
 
@@ -378,7 +378,7 @@ describe('BehavioralCoherenceScorer', () => {
           x: 100 + i * 50,
           y: 200,
           target: 'button',
-          duration: 150,
+          duration: 150
         });
       }
 
@@ -396,20 +396,20 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: Math.random() * 1000, y: Math.random() * 1000 },
           to: { x: Math.random() * 1000, y: Math.random() * 1000 },
-          duration: 50 + Math.random() * 100,
+          duration: 50 + Math.random() * 100
         });
         if (i % 3 === 0) {
           analyzer.recordTypingEvent({
             char: String.fromCharCode(97 + (i % 26)),
             ikiBefore: 80 + Math.random() * 50,
-            holdDuration: 80,
+            holdDuration: 80
           });
         }
         if (i % 5 === 0) {
           analyzer.recordClick({
             x: Math.random() * 1000,
             y: Math.random() * 1000,
-            target: 'button' + i,
+            target: 'button' + i
           });
         }
       }
@@ -429,12 +429,12 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 100, y: 100 },
           to: { x: 200 + Math.random() * 100, y: 200 + Math.random() * 100 },
-          duration: 100 + Math.random() * 100,
+          duration: 100 + Math.random() * 100
         });
         analyzer.recordTypingEvent({
           char: 'a',
           ikiBefore: 100 + Math.random() * 50,
-          holdDuration: 80 + Math.random() * 20,
+          holdDuration: 80 + Math.random() * 20
         });
       }
 
@@ -450,13 +450,13 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: i * 10, y: i * 10 },
           to: { x: i * 10 + 100, y: i * 10 + 100 },
-          duration: 50, // Perfectly consistent timing
+          duration: 50 // Perfectly consistent timing
         });
         analyzer.recordTypingEvent({
           char: 'a',
           ikiBefore: 50, // Too fast and consistent
           holdDuration: 50,
-          error: false, // No errors (unnatural)
+          error: false // No errors (unnatural)
         });
       }
 
@@ -478,7 +478,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
       }
 
@@ -496,7 +496,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
         scorer.calculateCoherenceScore(analyzer.getMetricsSummary());
       }
@@ -511,7 +511,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
         scorer.calculateCoherenceScore(analyzer.getMetricsSummary());
       }
@@ -530,7 +530,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
       }
 
@@ -556,7 +556,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
-          duration: 50,
+          duration: 50
         });
         scorer.calculateCoherenceScore(analyzer.getMetricsSummary());
       }
@@ -567,7 +567,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer2.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100 + Math.random() * 100, y: 100 + Math.random() * 100 },
-          duration: 100 + Math.random() * 100,
+          duration: 100 + Math.random() * 100
         });
       }
 
@@ -587,7 +587,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
       }
 
@@ -604,7 +604,7 @@ describe('BehavioralCoherenceScorer', () => {
         analyzer.recordMouseMovement({
           from: { x: 0, y: 0 },
           to: { x: 100, y: 100 },
-          duration: 100,
+          duration: 100
         });
         analyzer.recordTypingEvent({ char: 'a', ikiBefore: 100, holdDuration: 80 });
       }
@@ -638,41 +638,41 @@ describe('Integration Tests', () => {
       // Scroll
       { type: 'scroll', direction: 'down', distance: 200, duration: 500, paused: true },
       // More typing
-      { type: 'typing', char: 'c', iki: 120, hold: 85 },
+      { type: 'typing', char: 'c', iki: 120, hold: 85 }
     ];
 
     for (const interaction of interactions) {
       switch (interaction.type) {
-        case 'mouse':
-          analyzer.recordMouseMovement({
-            from: interaction.from,
-            to: interaction.to,
-            duration: interaction.duration,
-          });
-          break;
-        case 'typing':
-          analyzer.recordTypingEvent({
-            char: interaction.char,
-            ikiBefore: interaction.iki,
-            holdDuration: interaction.hold,
-          });
-          break;
-        case 'click':
-          analyzer.recordClick({
-            x: interaction.x,
-            y: interaction.y,
-            target: interaction.target,
-            duration: interaction.duration,
-          });
-          break;
-        case 'scroll':
-          analyzer.recordScroll({
-            direction: interaction.direction,
-            distance: interaction.distance,
-            duration: interaction.duration,
-            paused: interaction.paused,
-          });
-          break;
+      case 'mouse':
+        analyzer.recordMouseMovement({
+          from: interaction.from,
+          to: interaction.to,
+          duration: interaction.duration
+        });
+        break;
+      case 'typing':
+        analyzer.recordTypingEvent({
+          char: interaction.char,
+          ikiBefore: interaction.iki,
+          holdDuration: interaction.hold
+        });
+        break;
+      case 'click':
+        analyzer.recordClick({
+          x: interaction.x,
+          y: interaction.y,
+          target: interaction.target,
+          duration: interaction.duration
+        });
+        break;
+      case 'scroll':
+        analyzer.recordScroll({
+          direction: interaction.direction,
+          distance: interaction.distance,
+          duration: interaction.duration,
+          paused: interaction.paused
+        });
+        break;
       }
     }
 

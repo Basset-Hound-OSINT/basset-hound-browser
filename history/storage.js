@@ -130,7 +130,9 @@ class HistoryStorage {
    * Perform immediate save
    */
   _saveNow() {
-    if (!this.dirty) return;
+    if (!this.dirty) {
+      return;
+    }
 
     try {
       const data = {
@@ -243,7 +245,9 @@ class HistoryStorage {
 
     for (let i = 0; i < this.timestampIndex.length && results.length < limit; i++) {
       const entry = this.entries.find(e => e.id === this.timestampIndex[i].id);
-      if (!entry) continue;
+      if (!entry) {
+        continue;
+      }
 
       const urlMatch = caseSensitive
         ? entry.url.includes(searchQuery)
@@ -267,7 +271,9 @@ class HistoryStorage {
    */
   deleteEntry(id) {
     const index = this.entries.findIndex(e => e.id === id);
-    if (index === -1) return false;
+    if (index === -1) {
+      return false;
+    }
 
     const entry = this.entries[index];
 
@@ -361,7 +367,9 @@ class HistoryStorage {
 
     // Sort by count descending, then by last visit
     urlCounts.sort((a, b) => {
-      if (b.count !== a.count) return b.count - a.count;
+      if (b.count !== a.count) {
+        return b.count - a.count;
+      }
       return new Date(b.lastVisit) - new Date(a.lastVisit);
     });
 

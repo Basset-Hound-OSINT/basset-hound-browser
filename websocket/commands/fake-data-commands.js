@@ -21,7 +21,7 @@ function getGeneratorsForTab(tabId) {
       userAgent: new UserAgentGenerator(),
       screenResolution: new ScreenResolutionGenerator(),
       gpuCpu: new GPUCPUGenerator(),
-      browserProfile: new BrowserProfileGenerator(),
+      browserProfile: new BrowserProfileGenerator()
     });
   }
   return tabGenerators.get(tabId);
@@ -53,7 +53,7 @@ function registerFakeDataCommands(commandHandlers) {
       return {
         success: true,
         userAgent: ua,
-        validated: true,
+        validated: true
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -95,7 +95,7 @@ function registerFakeDataCommands(commandHandlers) {
           resolution.width,
           resolution.height
         ),
-        validated: true,
+        validated: true
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -124,7 +124,7 @@ function registerFakeDataCommands(commandHandlers) {
       return {
         success: true,
         specs: specs,
-        validated: true,
+        validated: true
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -153,7 +153,7 @@ function registerFakeDataCommands(commandHandlers) {
       return {
         success: true,
         browserProfile: browserProfile,
-        validated: true,
+        validated: true
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -184,7 +184,7 @@ function registerFakeDataCommands(commandHandlers) {
         userAgent: generators.userAgent.validateUserAgent(userAgent),
         resolution: generators.screenResolution.validateResolution(resolution),
         specs: generators.gpuCpu.validateSpecs(specs),
-        browserProfile: generators.browserProfile.validateBrowserProfile(browserProfile),
+        browserProfile: generators.browserProfile.validateBrowserProfile(browserProfile)
       };
 
       const allValid = Object.values(validations).every(v => v === true);
@@ -195,10 +195,10 @@ function registerFakeDataCommands(commandHandlers) {
           userAgent: userAgent,
           resolution: resolution,
           specs: specs,
-          browserProfile: browserProfile,
+          browserProfile: browserProfile
         },
         validations: validations,
-        error: allValid ? null : 'Some generated data failed validation',
+        error: allValid ? null : 'Some generated data failed validation'
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -225,12 +225,12 @@ function registerFakeDataCommands(commandHandlers) {
           generators.userAgent.generatedUA !== null &&
           generators.screenResolution.generatedResolution !== null &&
           generators.gpuCpu.generatedSpecs !== null &&
-          generators.browserProfile.generatedBrowserProfile !== null,
+          generators.browserProfile.generatedBrowserProfile !== null
       };
 
       return {
         success: true,
-        consistency: consistency,
+        consistency: consistency
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -257,7 +257,7 @@ function registerFakeDataCommands(commandHandlers) {
 
       return {
         success: true,
-        message: `Fake data reset for tab ${tabId || 'default'}`,
+        message: `Fake data reset for tab ${tabId || 'default'}`
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -281,7 +281,7 @@ function registerFakeDataCommands(commandHandlers) {
 
       return {
         success: true,
-        message: `Cleaned up resources for tab ${tabId}`,
+        message: `Cleaned up resources for tab ${tabId}`
       };
     } catch (error) {
       return { success: false, error: error.message };
@@ -291,5 +291,5 @@ function registerFakeDataCommands(commandHandlers) {
 
 module.exports = {
   registerFakeDataCommands,
-  getGeneratorsForTab, // Export for testing
+  getGeneratorsForTab // Export for testing
 };

@@ -96,7 +96,9 @@ class WebhookManager {
     const results = [];
 
     for (const [webhookId, config] of this.webhooks.entries()) {
-      if (!config.enabled) continue;
+      if (!config.enabled) {
+        continue;
+      }
 
       const result = await this._sendWebhook(webhookId, eventType, payload);
       results.push(result);
@@ -291,9 +293,15 @@ class WebhookManager {
    * @private
    */
   _determineStatus(config) {
-    if (!config.enabled) return 'disabled';
-    if (!config.lastSuccess) return 'never_tested';
-    if (config.lastError) return 'failing';
+    if (!config.enabled) {
+      return 'disabled';
+    }
+    if (!config.lastSuccess) {
+      return 'never_tested';
+    }
+    if (config.lastError) {
+      return 'failing';
+    }
     return 'healthy';
   }
 

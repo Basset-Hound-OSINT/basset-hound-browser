@@ -34,7 +34,7 @@ All features include **chain of custody tracking**, **cryptographic hashing** (S
    - Export to multiple formats
    - Chain of custody tracking
 
-2. **`websocket/commands/network-forensics-commands.js`** (584 lines)
+2. **`websocket/commands/forensic/network/network-forensics-commands.js`** (584 lines)
    - 27 WebSocket commands for forensics control
    - Full CRUD operations for all forensic data types
    - Analysis commands for pattern detection
@@ -977,7 +977,7 @@ The network forensics system is ready for use in security research, penetration 
 
 ### Created
 - `/home/devel/basset-hound-browser/network-forensics/forensics.js` (1,472 lines)
-- `/home/devel/basset-hound-browser/websocket/commands/network-forensics-commands.js` (584 lines)
+- `/home/devel/basset-hound-browser/websocket/commands/forensic/network/network-forensics-commands.js` (584 lines)
 - `/home/devel/basset-hound-browser/tests/unit/network-forensics.test.js` (863 lines)
 - `/home/devel/basset-hound-browser/docs/findings/PHASE-19-IMPLEMENTATION-2026-01-09.md` (this file)
 

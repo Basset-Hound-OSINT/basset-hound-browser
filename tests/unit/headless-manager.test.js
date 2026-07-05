@@ -360,8 +360,12 @@ describe('HeadlessManager', () => {
     test('should start Xvfb with default options', () => {
       headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
-        if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
-        if (cmd.includes('pgrep')) return '12345 Xvfb :99';
+        if (cmd === 'which Xvfb') {
+          return '/usr/bin/Xvfb';
+        }
+        if (cmd.includes('pgrep')) {
+          return '12345 Xvfb :99';
+        }
         return '';
       });
 
@@ -378,8 +382,12 @@ describe('HeadlessManager', () => {
     test('should accept custom display options', () => {
       headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
-        if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
-        if (cmd.includes('pgrep')) return '12345 Xvfb :50';
+        if (cmd === 'which Xvfb') {
+          return '/usr/bin/Xvfb';
+        }
+        if (cmd.includes('pgrep')) {
+          return '12345 Xvfb :50';
+        }
         return '';
       });
 
@@ -397,8 +405,12 @@ describe('HeadlessManager', () => {
     test('should set DISPLAY environment variable', () => {
       headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
-        if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
-        if (cmd.includes('pgrep')) return '12345 Xvfb :99';
+        if (cmd === 'which Xvfb') {
+          return '/usr/bin/Xvfb';
+        }
+        if (cmd.includes('pgrep')) {
+          return '12345 Xvfb :99';
+        }
         return '';
       });
 
@@ -421,8 +433,12 @@ describe('HeadlessManager', () => {
     test('should stop running virtual display', () => {
       headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
-        if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
-        if (cmd.includes('pgrep')) return '12345 Xvfb :99';
+        if (cmd === 'which Xvfb') {
+          return '/usr/bin/Xvfb';
+        }
+        if (cmd.includes('pgrep')) {
+          return '12345 Xvfb :99';
+        }
         return '';
       });
 
@@ -764,8 +780,12 @@ describe('HeadlessManager', () => {
     test('should stop virtual display if running', () => {
       headlessManager.setPlatform('linux');
       execSync.mockImplementation((cmd) => {
-        if (cmd === 'which Xvfb') return '/usr/bin/Xvfb';
-        if (cmd.includes('pgrep')) return '12345 Xvfb :99';
+        if (cmd === 'which Xvfb') {
+          return '/usr/bin/Xvfb';
+        }
+        if (cmd.includes('pgrep')) {
+          return '12345 Xvfb :99';
+        }
         return '';
       });
 

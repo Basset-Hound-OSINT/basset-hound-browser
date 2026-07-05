@@ -1,3 +1,5 @@
+> ⚠️ **HISTORICAL / SUPERSEDED** — authoritative status: **docs/planning/PROJECT-STATUS-MATRIX.md** (2026-07-04). Claims below (version labels, "production ready", "100%"/test-pass counts, command counts, evasion %) are inflated or stale — verify against the matrix and the 2026-07-04 session records before relying on them.
+
 # Basset Hound Browser - Demo Scenarios Completion Report
 
 **Date:** June 13, 2026  

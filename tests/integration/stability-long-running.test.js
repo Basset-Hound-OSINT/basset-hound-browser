@@ -23,7 +23,7 @@ const TEST_CONFIG = {
   // Long-running test durations
   STABILITY_DURATION: 5 * 60 * 1000, // 5 minutes
   OPERATION_INTERVAL: 500, // ms between operations
-  MEMORY_CHECK_INTERVAL: 30 * 1000, // Check memory every 30s
+  MEMORY_CHECK_INTERVAL: 30 * 1000 // Check memory every 30s
 };
 
 // Ensure results directory exists
@@ -224,7 +224,7 @@ describe('Stability Tests - Long Running Operations', () => {
   });
 
   const skipIfNoServer = (testFn) => {
-    return async function(...args) {
+    return async function (...args) {
       if (!client || !client.isConnected()) {
         console.log('Skipping test - WebSocket server not available');
         return;

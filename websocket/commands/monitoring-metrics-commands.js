@@ -422,7 +422,9 @@ function registerConsentCommands(commandHandlers, consentManager = null) {
     }
   }
 
-  if (!consent) return;
+  if (!consent) {
+    return;
+  }
 
   /**
    * Command: init_monitoring_consent

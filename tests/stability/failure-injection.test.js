@@ -87,7 +87,7 @@ class FailureInjectionTest {
   async testConnectionReset() {
     const startTime = Date.now();
     let recovered = false;
-    let dataLoss = false;
+    const dataLoss = false;
 
     try {
       // Create client
@@ -155,7 +155,7 @@ class FailureInjectionTest {
   async testTimeoutRecovery() {
     const startTime = Date.now();
     let recovered = false;
-    let dataLoss = false;
+    const dataLoss = false;
 
     try {
       const client = new WebSocket(WS_URL);
@@ -211,7 +211,7 @@ class FailureInjectionTest {
   async testMultipleReconnections() {
     const startTime = Date.now();
     let recovered = false;
-    let dataLoss = false;
+    const dataLoss = false;
     const maxAttempts = 5;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
@@ -520,7 +520,7 @@ class FailureInjectionTest {
   async testSystemRecovery() {
     const startTime = Date.now();
     let recovered = false;
-    let dataConsistency = true;
+    const dataConsistency = true;
 
     try {
       // Try rapid fire connections

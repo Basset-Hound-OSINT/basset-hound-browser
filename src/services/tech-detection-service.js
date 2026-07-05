@@ -101,7 +101,9 @@ class TechDetectionService {
   async _detectByHeaders(headers) {
     const detections = [];
 
-    if (!headers) return detections;
+    if (!headers) {
+      return detections;
+    }
 
     // Check common header signatures
     const headerSignatures = {
@@ -112,7 +114,9 @@ class TechDetectionService {
 
     for (const [headerName, signatures] of Object.entries(headerSignatures)) {
       const headerValue = this._getHeaderValue(headers, headerName);
-      if (!headerValue) continue;
+      if (!headerValue) {
+        continue;
+      }
 
       for (const sig of signatures) {
         if (this._matchesSignature(headerValue, sig)) {
@@ -137,7 +141,9 @@ class TechDetectionService {
   async _detectByJavaScript(scripts) {
     const detections = [];
 
-    if (!Array.isArray(scripts)) return detections;
+    if (!Array.isArray(scripts)) {
+      return detections;
+    }
 
     const jsSignatures = this.signatures.javascript || [];
 
@@ -167,7 +173,9 @@ class TechDetectionService {
   async _detectByHTML(html) {
     const detections = [];
 
-    if (!html) return detections;
+    if (!html) {
+      return detections;
+    }
 
     const htmlSignatures = this.signatures.html || [];
 
@@ -191,7 +199,9 @@ class TechDetectionService {
    * @private
    */
   _matchesSignature(text, signature) {
-    if (!text || !signature.pattern) return false;
+    if (!text || !signature.pattern) {
+      return false;
+    }
 
     try {
       const regex = this.regexCache.get(signature.pattern);
@@ -266,7 +276,9 @@ class TechDetectionService {
    * @private
    */
   _calculateConfidence(technologies) {
-    if (technologies.length === 0) return 0;
+    if (technologies.length === 0) {
+      return 0;
+    }
 
     const avgConfidence = technologies.reduce((sum, t) => sum + t.confidence, 0) / technologies.length;
     return Math.min(1.0, avgConfidence);

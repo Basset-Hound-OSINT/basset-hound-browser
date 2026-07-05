@@ -143,9 +143,15 @@ class ProxyAnalytics {
       metrics.successfulRequests++;
     } else {
       metrics.failedRequests++;
-      if (data.blocked) metrics.blockedRequests++;
-      if (data.captcha) metrics.captchaRequests++;
-      if (data.ratelimited) metrics.ratelimitedRequests++;
+      if (data.blocked) {
+        metrics.blockedRequests++;
+      }
+      if (data.captcha) {
+        metrics.captchaRequests++;
+      }
+      if (data.ratelimited) {
+        metrics.ratelimitedRequests++;
+      }
     }
 
     if (data.latency !== undefined) {
@@ -494,7 +500,7 @@ class ProxyAnalytics {
       'User Agent Acceptance (%)'
     ];
 
-    let rows = [headers];
+    const rows = [headers];
 
     if (metricsKeys === null) {
       // Export all

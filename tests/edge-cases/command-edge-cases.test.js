@@ -128,7 +128,7 @@ class CommandEdgeCasesTester {
   }
 }
 
-describe('Command Edge Cases Tests', function() {
+describe('Command Edge Cases Tests', function () {
   this.timeout(TIMEOUT);
   let tester;
 
@@ -464,7 +464,7 @@ describe('Command Edge Cases Tests', function() {
 
     it('CMD025: Should handle max nesting depth', async () => {
       try {
-        let nested = {};
+        const nested = {};
         let current = nested;
         for (let i = 0; i < 1000; i++) {
           current.child = {};

@@ -96,7 +96,9 @@ class AnomalyDetector {
    */
   _updateBaseline(sampleType) {
     const samples = this.samples[sampleType];
-    if (samples.length === 0) return;
+    if (samples.length === 0) {
+      return;
+    }
 
     const values = samples.map(s => s.data);
 
@@ -137,7 +139,7 @@ class AnomalyDetector {
     }
 
     // Flatten values if they're objects
-    let flatValues = [];
+    const flatValues = [];
     for (const v of values) {
       if (typeof v === 'number') {
         flatValues.push(v);
@@ -407,10 +409,18 @@ class AnomalyDetector {
    * @returns {string}
    */
   _scoreToSeverity(score) {
-    if (score < 0.2) return ANOMALY_SEVERITY.NORMAL;
-    if (score < 0.4) return ANOMALY_SEVERITY.MINOR;
-    if (score < 0.6) return ANOMALY_SEVERITY.MODERATE;
-    if (score < 0.8) return ANOMALY_SEVERITY.SEVERE;
+    if (score < 0.2) {
+      return ANOMALY_SEVERITY.NORMAL;
+    }
+    if (score < 0.4) {
+      return ANOMALY_SEVERITY.MINOR;
+    }
+    if (score < 0.6) {
+      return ANOMALY_SEVERITY.MODERATE;
+    }
+    if (score < 0.8) {
+      return ANOMALY_SEVERITY.SEVERE;
+    }
     return ANOMALY_SEVERITY.CRITICAL;
   }
 
@@ -421,7 +431,9 @@ class AnomalyDetector {
    * @returns {number}
    */
   _calculateConfidence(anomalies) {
-    if (anomalies.length === 0) return 0;
+    if (anomalies.length === 0) {
+      return 0;
+    }
 
     // Confidence based on consistency of anomaly severity
     const severities = anomalies.map(a => a.score);

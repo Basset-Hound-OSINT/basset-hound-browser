@@ -81,7 +81,7 @@ function setupExtractionHandlers() {
         success: true,
         selector,
         content: selectorContent[selector] || '',
-        found: !!selectorContent[selector]
+        found: Boolean(selectorContent[selector])
       };
     }
 

@@ -180,7 +180,9 @@ class HistoryManager {
    */
   endPageTracking(tabId) {
     const tracking = this.activePages.get(tabId);
-    if (!tracking) return;
+    if (!tracking) {
+      return;
+    }
 
     const duration = Date.now() - tracking.startTime;
 
@@ -426,15 +428,15 @@ class HistoryManager {
     let mimeType;
 
     switch (format.toLowerCase()) {
-      case 'csv':
-        data = this.storage.exportAsCSV();
-        mimeType = 'text/csv';
-        break;
-      case 'json':
-      default:
-        data = this.storage.exportAsJSON();
-        mimeType = 'application/json';
-        break;
+    case 'csv':
+      data = this.storage.exportAsCSV();
+      mimeType = 'text/csv';
+      break;
+    case 'json':
+    default:
+      data = this.storage.exportAsJSON();
+      mimeType = 'application/json';
+      break;
     }
 
     return {
@@ -551,8 +553,12 @@ class HistoryManager {
     if (tracking) {
       const entry = this.storage.getEntry(tracking.entryId);
       if (entry) {
-        if (title) entry.title = title;
-        if (favicon) entry.favicon = favicon;
+        if (title) {
+          entry.title = title;
+        }
+        if (favicon) {
+          entry.favicon = favicon;
+        }
         this.storage.save();
       }
     }

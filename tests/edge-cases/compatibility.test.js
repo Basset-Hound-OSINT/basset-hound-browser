@@ -273,7 +273,9 @@ class CompatibilityTester {
     let combinationCount = 0;
     for (const browser of browserSubset) {
       for (const proxy of proxySubset) {
-        if (combinationCount >= 10) break;
+        if (combinationCount >= 10) {
+          break;
+        }
 
         await this.runTest(`${browser.name} + ${proxy.name}`, async () => {
           const compat = this.testBrowserProxyCompatibility(browser, proxy);
@@ -349,7 +351,9 @@ class CompatibilityTester {
       let rotationSuccess = 0;
       for (const proxy of proxyChain) {
         const validation = this.validateProxyConnection(proxy);
-        if (validation.valid) rotationSuccess++;
+        if (validation.valid) {
+          rotationSuccess++;
+        }
       }
 
       assert(rotationSuccess === 3, 'All proxies in chain should be valid');

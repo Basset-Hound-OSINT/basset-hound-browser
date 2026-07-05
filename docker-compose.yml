@@ -1,0 +1,148 @@
+# Basset Hound Browser - Docker Compose Configuration
+# Production-ready setup with resource limits, health checks, and logging
+# Usage: docker-compose up -d
+
+version: '3.9'
+
+services:
+  basset-hound-browser:
+    image: basset-hound-browser:12.7.0
+    container_name: basset-hound-browser
+
+    # Network configuration
+    networks:
+      - basset-net
+
+    # Port mapping
+    # C-1: publish on the host loopback interface only by default so the control
+    # API is not exposed on all host interfaces. Set WS_BIND=0.0.0.0 to expose
+    # beyond localhost intentionally.
+    ports:
+      - "${WS_BIND:-127.0.0.1}:${WS_PORT:-8765}:8765"  # WebSocket API server (host loopback only)
+
+    # Environment variables
+    environment:
+      # Runtime configuration
+      - NODE_ENV=${NODE_ENV:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+
+      # Display configuration
+      - DISPLAY=:99
+      - SCREEN_RESOLUTION=${SCREEN_RESOLUTION:-1920x1080x24}
+
+      # Electron configuration
+      - ELECTRON_DISABLE_SANDBOX=1
+      - CHROME_DISABLE_SANDBOX=1
+
+      # Tor configuration
+      - USE_SYSTEM_TOR=${USE_SYSTEM_TOR:-true}
+
+      # Node.js optimization
+      - NODE_OPTIONS=--max-old-space-size=${NODE_MAX_MEMORY:-2048}
+
+      # C-1: bind inside the container to all interfaces so Docker's port publish
+      # can reach the server. The host-side publish above is restricted to
+      # 127.0.0.1, so the API is still only reachable from the Docker host's
+      # loopback. Override only if you also open the host publish (WS_BIND).
+      - BASSET_WS_BIND=${BASSET_WS_BIND:-0.0.0.0}
+
+      # Optional: WebSocket authentication
+      # - BASSET_WS_TOKEN=${BASSET_WS_TOKEN}
+
+      # Optional: SSL/TLS
+      # - BASSET_WS_SSL_ENABLED=${BASSET_WS_SSL_ENABLED:-false}
+      # - BASSET_WS_SSL_CERT=/run/secrets/server_cert
+      # - BASSET_WS_SSL_KEY=/run/secrets/server_key
+
+    # Volume mounts for persistent data
+    volumes:
+      # Data volumes
+      - basset-data:/app/data
+      - basset-logs:/app/logs
+      - basset-cache:/app/cache
+
+      # Output volumes
+      - basset-screenshots:/app/screenshots
+      - basset-downloads:/app/downloads
+      - basset-recordings:/app/recordings
+
+      # Optional: Host-mounted directories for development
+      # - ./data:/app/data
+      # - ./logs:/app/logs
+      # - ./screenshots:/app/screenshots
+
+    # Restart policy
+    restart: on-failure:5
+
+    # Resource limits (adjust based on your infrastructure)
+    deploy:
+      resources:
+        limits:
+          cpus: '${CONTAINER_CPU_LIMIT:-2.0}'
+          memory: ${CONTAINER_MEMORY_LIMIT:-2G}
+        reservations:
+          cpus: '${CONTAINER_CPU_RESERVED:-0.5}'
+          memory: ${CONTAINER_MEMORY_RESERVED:-512M}
+
+    # Security configuration
+    cap_drop:
+      - ALL
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - no-new-privileges:true
+
+    # Read-only root filesystem (optional, requires volume mounts for logs/data)
+    # read_only: true
+
+    # Logging configuration
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "10"
+        labels: "service=basset-hound-browser,version=12.7.0"
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "/app/health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Labels for monitoring and organization
+    labels:
+      com.basset.version: "12.7.0"
+      com.basset.component: "browser"
+      com.basset.environment: "${ENVIRONMENT:-production}"
+
+# Volumes
+volumes:
+  basset-data:
+    driver: local
+  basset-logs:
+    driver: local
+  basset-cache:
+    driver: local
+  basset-screenshots:
+    driver: local
+  basset-downloads:
+    driver: local
+  basset-recordings:
+    driver: local
+
+# Networks
+networks:
+  basset-net:
+    name: basset-hound-browser
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1500
+
+# Secrets (optional - for SSL certificates in production)
+# secrets:
+#   server_cert:
+#     file: ./certs/server.crt
+#   server_key:
+#     file: ./certs/server.key

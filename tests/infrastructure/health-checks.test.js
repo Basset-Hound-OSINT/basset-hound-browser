@@ -18,7 +18,7 @@ describe('HealthChecker', () => {
     checker = new HealthChecker({
       checkInterval: 100, // Fast for testing
       memoryThreshold: 0.8,
-      diskThreshold: 0.8,
+      diskThreshold: 0.8
     });
   });
 
@@ -263,7 +263,7 @@ describe('HealthChecker', () => {
     test('should report if system is ready', () => {
       checker.registerComponent('db', {
         status: 'HEALTHY',
-        checker: () => {},
+        checker: () => {}
       });
 
       expect(checker.isReady()).toBe(true);

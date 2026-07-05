@@ -368,7 +368,7 @@ describe('Advanced Optimization Identification & Analysis', () => {
         'OPT-M1', // Screenshot compression (10-15h, 7 ROI)
         'OPT-M4', // DOM cache TTL (3-5h, 5.5 ROI)
         'OPT-19', // Request dedup (15-20h, 6.5 ROI)
-        'OPT-N4'  // Adaptive compression (8-10h, 6 ROI)
+        'OPT-N4' // Adaptive compression (8-10h, 6 ROI)
       ];
 
       assert(quickWins.length >= 5);
@@ -380,7 +380,7 @@ describe('Advanced Optimization Identification & Analysis', () => {
         'OPT-16', // Request batching: +20-30%
         'OPT-15', // Streaming screenshots: +15-20%
         'OPT-N1', // Message batching: +20-30%
-        'OPT-N3'  // Delta compression: +15-25%
+        'OPT-N3' // Delta compression: +15-25%
       ];
 
       assert(majorOpts.length >= 4);
@@ -482,7 +482,7 @@ describe('Advanced Optimization Identification & Analysis', () => {
         'OPT-M1', // Screenshot compression: LOW
         'OPT-M2', // Session cleanup: LOW
         'OPT-M4', // DOM cache TTL: LOW
-        'OPT-N4'  // Adaptive compression: LOW
+        'OPT-N4' // Adaptive compression: LOW
       ];
 
       // 6 low-risk optimizations available for immediate implementation
@@ -494,7 +494,7 @@ describe('Advanced Optimization Identification & Analysis', () => {
         'OPT-15', // Streaming screenshots: MEDIUM (state tracking)
         'OPT-19', // Request dedup: MEDIUM (state tracking)
         'OPT-N2', // Binary protocol: MEDIUM (protocol change)
-        'OPT-N3'  // Delta compression: MEDIUM (state management)
+        'OPT-N3' // Delta compression: MEDIUM (state management)
       ];
 
       // These require additional testing but are feasible

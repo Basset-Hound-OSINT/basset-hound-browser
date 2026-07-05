@@ -9,7 +9,7 @@
 const {
   NetworkForensicsCollector,
   FORENSICS_TYPES,
-  EXPORT_FORMATS,
+  EXPORT_FORMATS
 } = require('../../network-forensics/forensics');
 
 describe('NetworkForensicsCollector', () => {
@@ -19,7 +19,7 @@ describe('NetworkForensicsCollector', () => {
     collector = new NetworkForensicsCollector({
       collectedBy: 'Test Suite',
       enableHashing: true,
-      enableTimeline: true,
+      enableTimeline: true
     });
   });
 
@@ -45,7 +45,7 @@ describe('NetworkForensicsCollector', () => {
       const c = new NetworkForensicsCollector({
         maxDnsQueries: 5000,
         maxCertificates: 500,
-        enableHashing: false,
+        enableHashing: false
       });
       expect(c.options.maxDnsQueries).toBe(5000);
       expect(c.options.maxCertificates).toBe(500);
@@ -138,7 +138,7 @@ describe('NetworkForensicsCollector', () => {
         type: 'A',
         responseTime: 25,
         status: 'resolved',
-        answers: [{ data: '93.184.216.34' }],
+        answers: [{ data: '93.184.216.34' }]
       });
 
       expect(query.id).toBeDefined();
@@ -150,7 +150,7 @@ describe('NetworkForensicsCollector', () => {
 
     test('should capture DNS query with default values', () => {
       const query = collector.captureDnsQuery({
-        hostname: 'test.com',
+        hostname: 'test.com'
       });
 
       expect(query.type).toBe('A');
@@ -243,7 +243,7 @@ describe('NetworkForensicsCollector', () => {
         cipher: 'TLS_AES_128_GCM_SHA256',
         valid: true,
         issuer: 'Let\'s Encrypt',
-        fingerprint: 'AA:BB:CC:DD',
+        fingerprint: 'AA:BB:CC:DD'
       });
 
       expect(cert.id).toBeDefined();
@@ -255,7 +255,7 @@ describe('NetworkForensicsCollector', () => {
 
     test('should capture certificate with default values', () => {
       const cert = collector.captureTlsCertificate({
-        hostname: 'test.com',
+        hostname: 'test.com'
       });
 
       expect(cert.protocol).toBe('TLS 1.3');
@@ -300,13 +300,13 @@ describe('NetworkForensicsCollector', () => {
         protocol: 'TLS 1.3',
         valid: true,
         ocspStapling: true,
-        certificateTransparency: true,
+        certificateTransparency: true
       });
       collector.captureTlsCertificate({
         hostname: 'test.com',
         protocol: 'TLS 1.2',
         valid: false,
-        ocspStapling: false,
+        ocspStapling: false
       });
 
       const analysis = collector.analyzeTlsCertificates();
@@ -344,7 +344,7 @@ describe('NetworkForensicsCollector', () => {
         url: 'wss://example.com/socket',
         protocol: 'chat',
         state: 'open',
-        messageCount: 10,
+        messageCount: 10
       });
 
       expect(ws.id).toBeDefined();
@@ -356,7 +356,7 @@ describe('NetworkForensicsCollector', () => {
 
     test('should generate connection ID if not provided', () => {
       const ws = collector.captureWebSocketConnection({
-        url: 'wss://test.com/ws',
+        url: 'wss://test.com/ws'
       });
 
       expect(ws.id).toMatch(/^ws_/);
@@ -365,12 +365,12 @@ describe('NetworkForensicsCollector', () => {
     test('should update WebSocket connection', () => {
       const ws = collector.captureWebSocketConnection({
         url: 'wss://example.com/socket',
-        state: 'connecting',
+        state: 'connecting'
       });
 
       const updated = collector.updateWebSocketConnection(ws.id, {
         state: 'open',
-        messageCount: 5,
+        messageCount: 5
       });
 
       expect(updated.state).toBe('open');
@@ -416,7 +416,7 @@ describe('NetworkForensicsCollector', () => {
         messageCount: 10,
         bytesSent: 1000,
         bytesReceived: 2000,
-        duration: 5000,
+        duration: 5000
       });
       collector.captureWebSocketConnection({
         url: 'wss://test2.com',
@@ -424,7 +424,7 @@ describe('NetworkForensicsCollector', () => {
         messageCount: 5,
         bytesSent: 500,
         bytesReceived: 1000,
-        duration: 3000,
+        duration: 3000
       });
 
       const analysis = collector.analyzeWebSocketConnections();
@@ -465,7 +465,7 @@ describe('NetworkForensicsCollector', () => {
         method: 'GET',
         statusCode: 200,
         requestHeaders: { 'user-agent': 'Test' },
-        responseHeaders: { 'content-type': 'application/json' },
+        responseHeaders: { 'content-type': 'application/json' }
       });
 
       expect(headers.id).toBeDefined();
@@ -481,8 +481,8 @@ describe('NetworkForensicsCollector', () => {
         responseHeaders: {
           'strict-transport-security': 'max-age=31536000',
           'content-security-policy': 'default-src \'self\'',
-          'x-frame-options': 'DENY',
-        },
+          'x-frame-options': 'DENY'
+        }
       });
 
       expect(headers.securityHeaders['strict-transport-security']).toBe('max-age=31536000');
@@ -521,13 +521,13 @@ describe('NetworkForensicsCollector', () => {
         url: 'https://example.com/1',
         method: 'GET',
         statusCode: 200,
-        responseHeaders: { 'strict-transport-security': 'max-age=31536000' },
+        responseHeaders: { 'strict-transport-security': 'max-age=31536000' }
       });
       collector.captureHttpHeaders({
         url: 'http://example.com/2',
         method: 'POST',
         statusCode: 404,
-        responseHeaders: {},
+        responseHeaders: {}
       });
 
       const analysis = collector.analyzeHttpHeaders();
@@ -566,7 +566,7 @@ describe('NetworkForensicsCollector', () => {
         value: 'abc123',
         domain: 'example.com',
         secure: true,
-        httpOnly: true,
+        httpOnly: true
       });
 
       expect(cookie.id).toBeDefined();
@@ -582,7 +582,7 @@ describe('NetworkForensicsCollector', () => {
         value: '123',
         domain: 'example.com',
         setBy: 'Set-Cookie header',
-        url: 'https://example.com/login',
+        url: 'https://example.com/login'
       });
 
       expect(cookie.provenance.setBy).toBe('Set-Cookie header');
@@ -621,7 +621,7 @@ describe('NetworkForensicsCollector', () => {
         value: 'abc',
         domain: 'example.com',
         setBy: 'JavaScript',
-        url: 'https://example.com/app',
+        url: 'https://example.com/app'
       });
 
       const provenance = collector.getCookieProvenance('example.com', 'session');
@@ -642,7 +642,7 @@ describe('NetworkForensicsCollector', () => {
         domain: 'example.com',
         secure: true,
         httpOnly: true,
-        sameSite: 'Strict',
+        sameSite: 'Strict'
       });
       collector.captureCookie({
         name: 'c2',
@@ -650,7 +650,7 @@ describe('NetworkForensicsCollector', () => {
         domain: 'test.com',
         secure: false,
         httpOnly: false,
-        sameSite: 'None',
+        sameSite: 'None'
       });
 
       const analysis = collector.analyzeCookies();
@@ -689,7 +689,7 @@ describe('NetworkForensicsCollector', () => {
         type: 'timing',
         name: 'domContentLoaded',
         value: 1234,
-        unit: 'ms',
+        unit: 'ms'
       });
 
       expect(metric.id).toBeDefined();
@@ -815,7 +815,7 @@ describe('NetworkForensicsCollector', () => {
       const result = collector.exportForensicReport(EXPORT_FORMATS.JSON, {
         includeDns: true,
         includeCertificates: false,
-        includeWebSocket: false,
+        includeWebSocket: false
       });
 
       const report = JSON.parse(result.data);
@@ -833,7 +833,7 @@ describe('NetworkForensicsCollector', () => {
 
     test('should exclude analysis when requested', () => {
       const result = collector.exportForensicReport(EXPORT_FORMATS.JSON, {
-        includeAnalysis: false,
+        includeAnalysis: false
       });
 
       const report = JSON.parse(result.data);
@@ -976,7 +976,7 @@ describe('NetworkForensicsCollector', () => {
       const originalHash = ws.hash;
 
       const updated = collector.updateWebSocketConnection(ws.id, {
-        messageCount: 10,
+        messageCount: 10
       });
 
       expect(updated.hash).not.toBe(originalHash);

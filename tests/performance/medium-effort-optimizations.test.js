@@ -239,7 +239,7 @@ describe('Medium-Effort Performance Optimizations', () => {
     beforeEach(() => {
       streamer = new ResponseStreamer({
         htmlThreshold: 1024 * 100, // 100KB for testing
-        diffThreshold: 1024 * 50   // 50KB for testing
+        diffThreshold: 1024 * 50 // 50KB for testing
       });
     });
 
@@ -358,7 +358,9 @@ describe('Medium-Effort Performance Optimizations', () => {
       let lastResult = { execute: false };
       for (const op of ops) {
         lastResult = coalescer.queueOperation(op);
-        if (lastResult.execute) break;
+        if (lastResult.execute) {
+          break;
+        }
       }
 
       // Should execute when hitting max batch size
@@ -741,11 +743,11 @@ describe('Medium-Effort Performance Optimizations', () => {
   describe('Cumulative Performance Impact', () => {
     test('should estimate cumulative throughput improvement', () => {
       const improvements = {
-        'OPT-10 Parallel Proxy Rotation': 12,     // 10-15%
+        'OPT-10 Parallel Proxy Rotation': 12, // 10-15%
         'OPT-11 Connection Pool Optimization': 10, // 8-12%
-        'OPT-12 Response Streaming': 17,           // 15-20%
-        'OPT-13 Batch Operation Coalescing': 17,  // 15-20%
-        'OPT-14 AI-Based Proxy Selection': 6      // 5-8%
+        'OPT-12 Response Streaming': 17, // 15-20%
+        'OPT-13 Batch Operation Coalescing': 17, // 15-20%
+        'OPT-14 AI-Based Proxy Selection': 6 // 5-8%
       };
 
       let cumulative = 0;

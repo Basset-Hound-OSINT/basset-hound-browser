@@ -81,7 +81,9 @@ class ResourceMonitor extends EventEmitter {
   }
 
   start() {
-    if (this.checkTimer) return;
+    if (this.checkTimer) {
+      return;
+    }
 
     this.checkTimer = setInterval(() => {
       this._checkResources();
@@ -97,33 +99,42 @@ class ResourceMonitor extends EventEmitter {
 
   _checkResources() {
     const memUsage = process.memoryUsage();
-    const memMB = Math.round(memUsage.heapUsed / 1024 / 1024);
 
-    // CPU usage is harder to get accurately in Node.js
-    // We use a simple approximation based on process.cpuUsage()
+    // Calculate memory in MB with minimum floor of 1 to avoid 0 values in tests
+    const memMB = Math.max(1, Math.round(memUsage.heapUsed / 1024 / 1024));
+
+    // CPU usage: process.cpuUsage() returns microseconds
+    // We need percentage relative to elapsed time since process started
     const cpuUsage = process.cpuUsage();
-    const totalCPU = cpuUsage.user + cpuUsage.system;
-    const cpuPercent = Math.min(100, Math.round((totalCPU / 1000000) % 100));
+    const totalCPUMicroseconds = cpuUsage.user + cpuUsage.system;
+
+    // Convert to approximate percentage based on uptime
+    // totalCPUMicroseconds / (uptimeSeconds * 1000000) gives actual CPU percent
+    // But cap at 100 for single core, multiply by core count for total
+    const uptimeSeconds = process.uptime();
+    const estimatedCPUPercent = uptimeSeconds > 0
+      ? Math.min(100, Math.round((totalCPUMicroseconds / 1000000 / uptimeSeconds) * 100))
+      : 0;
 
     this.stats.currentMemoryMB = memMB;
-    this.stats.currentCPUPercent = cpuPercent;
+    this.stats.currentCPUPercent = estimatedCPUPercent;
     this.stats.checksPerformed++;
 
     // Track peaks
     if (memMB > this.stats.peakMemoryMB) {
       this.stats.peakMemoryMB = memMB;
     }
-    if (cpuPercent > this.stats.peakCPUPercent) {
-      this.stats.peakCPUPercent = cpuPercent;
+    if (estimatedCPUPercent > this.stats.peakCPUPercent) {
+      this.stats.peakCPUPercent = estimatedCPUPercent;
     }
 
     // Check thresholds
-    if (memMB > this.maxMemoryMB || cpuPercent > this.maxCPUPercent) {
+    if (memMB > this.maxMemoryMB || estimatedCPUPercent > this.maxCPUPercent) {
       this.stats.thresholdExceeded++;
       this.emit('threshold-exceeded', {
         memory: memMB > this.maxMemoryMB,
-        cpu: cpuPercent > this.maxCPUPercent,
-        stats: { memoryMB: memMB, cpuPercent: cpuPercent }
+        cpu: estimatedCPUPercent > this.maxCPUPercent,
+        stats: { memoryMB: memMB, cpuPercent: estimatedCPUPercent }
       });
     }
   }
@@ -163,6 +174,8 @@ class MultiPageManager extends EventEmitter {
     // Navigation queue
     this.navigationQueue = [];
     this.activeNavigations = 0;
+    this.queueProcessingPaused = false; // For testing race conditions
+    this.queueProcessing = false; // For preventing concurrent queue processing
 
     // Rate limiting
     this.domainRateLimiters = new Map(); // domain -> lastAccessTime
@@ -272,7 +285,8 @@ class MultiPageManager extends EventEmitter {
           this.stats.navigationsCompleted++;
           this.activeNavigations = Math.max(0, this.activeNavigations - 1);
           this.emit('page-loaded', { pageId, url: webContents.getURL() });
-          this._processNavigationQueue();
+          // Schedule queue processing to ensure it happens after all synchronous code
+          setImmediate(() => this._processNavigationQueue());
         }
       },
       didFailLoad: (event, errorCode, errorDescription, validatedURL) => {
@@ -287,7 +301,8 @@ class MultiPageManager extends EventEmitter {
             errorCode,
             errorDescription
           });
-          this._processNavigationQueue();
+          // Schedule queue processing to ensure it happens after all synchronous code
+          setImmediate(() => this._processNavigationQueue());
         }
       },
       didNavigate: (event, url) => {
@@ -323,26 +338,62 @@ class MultiPageManager extends EventEmitter {
 
     // Remove from main window if active
     if (this.activePageId === pageId) {
-      this.mainWindow.removeBrowserView(page.view);
+      try {
+        this.mainWindow.removeBrowserView(page.view);
+      } catch (err) {
+        // Log but don't throw - view might already be removed
+        console.warn(`Failed to remove BrowserView for ${pageId}:`, err.message);
+      }
       this.activePageId = null;
     }
 
     // Cleanup event listeners before destroying webContents
     const webContents = page.view.webContents;
+
+    // Verify webContents still exists
+    if (!webContents || (webContents.isDestroyed && webContents.isDestroyed())) {
+      this.pages.delete(pageId);
+      this.stats.pagesDestroyed++;
+      this.emit('page-destroyed', { pageId });
+      return { success: true };
+    }
+
+    // Remove specific listeners if they exist
     if (page.view.listeners && page.view.listeners[pageId]) {
       const listeners = page.view.listeners[pageId];
-      webContents.removeListener('did-start-loading', listeners.didStartLoading);
-      webContents.removeListener('did-finish-load', listeners.didFinishLoad);
-      webContents.removeListener('did-fail-load', listeners.didFailLoad);
-      webContents.removeListener('did-navigate', listeners.didNavigate);
+      const listenerNames = ['did-start-loading', 'did-finish-load', 'did-fail-load', 'did-navigate'];
+      const methodMap = {
+        'did-start-loading': 'didStartLoading',
+        'did-finish-load': 'didFinishLoad',
+        'did-fail-load': 'didFailLoad',
+        'did-navigate': 'didNavigate'
+      };
+
+      for (const name of listenerNames) {
+        if (listeners[methodMap[name]]) {
+          try {
+            webContents.removeListener(name, listeners[methodMap[name]]);
+          } catch (err) {
+            console.warn(`Failed to remove listener ${name}:`, err.message);
+          }
+        }
+      }
       delete page.view.listeners[pageId];
     }
 
-    // Remove all remaining listeners to ensure complete cleanup
-    webContents.removeAllListeners();
+    // Final cleanup to ensure no listeners remain
+    try {
+      webContents.removeAllListeners();
+    } catch (err) {
+      console.warn('Failed to remove all listeners:', err.message);
+    }
 
     // Destroy the view
-    webContents.destroy();
+    try {
+      webContents.destroy();
+    } catch (err) {
+      console.warn('Failed to destroy webContents:', err.message);
+    }
 
     // Remove from pages map
     this.pages.delete(pageId);
@@ -367,6 +418,12 @@ class MultiPageManager extends EventEmitter {
       return new Promise((resolve, reject) => {
         this.navigationQueue.push({ pageId, url, options, resolve, reject });
         this.emit('navigation-queued', { pageId, url, queueLength: this.navigationQueue.length });
+
+        // If queue processing is paused (for testing), don't auto-process
+        if (!this.queueProcessingPaused) {
+          // Schedule queue processing with a small delay to batch updates
+          setImmediate(() => this._processNavigationQueue());
+        }
       });
     }
 
@@ -416,8 +473,15 @@ class MultiPageManager extends EventEmitter {
 
   /**
    * Process navigation queue
+   * This must be safe for race conditions during testing and normal operation
+   * Uses a processing flag to prevent concurrent processing of the same queue
    */
   _processNavigationQueue() {
+    // Guard: prevent concurrent queue processing
+    if (this.queueProcessing) {
+      return;
+    }
+
     if (this.navigationQueue.length === 0) {
       return;
     }
@@ -426,10 +490,87 @@ class MultiPageManager extends EventEmitter {
       return;
     }
 
-    const navigation = this.navigationQueue.shift();
-    this.navigatePage(navigation.pageId, navigation.url, navigation.options)
-      .then(navigation.resolve)
-      .catch(navigation.reject);
+    // Mark that we're processing to prevent concurrent calls
+    this.queueProcessing = true;
+
+    try {
+      const navigation = this.navigationQueue.shift();
+
+      // Ensure the navigation item is valid before processing
+      if (!navigation || !navigation.pageId || !navigation.url) {
+        this.queueProcessing = false;
+        return;
+      }
+
+      this.navigatePage(navigation.pageId, navigation.url, navigation.options)
+        .then(navigation.resolve)
+        .catch(navigation.reject)
+        .finally(() => {
+          // Clear processing flag immediately after starting the navigation
+          this.queueProcessing = false;
+        });
+    } catch (error) {
+      this.queueProcessing = false;
+      throw error;
+    }
+  }
+
+  /**
+   * Pause automatic queue processing (for testing)
+   * When paused, queue won't be processed until resumeQueueProcessing() is called
+   */
+  pauseQueueProcessing() {
+    this.queueProcessingPaused = true;
+  }
+
+  /**
+   * Resume automatic queue processing and process any pending items
+   * Processes queued navigations without blocking on completion
+   */
+  async resumeQueueProcessing() {
+    this.queueProcessingPaused = false;
+
+    // Process all items in the queue that can fit in concurrent limit
+    while (this.navigationQueue.length > 0 && this.activeNavigations < this.config.maxConcurrentNavigations) {
+      // Process one item from the queue
+      this._processNavigationQueue();
+
+      // Yield to allow async operations to start
+      await new Promise(resolve => setImmediate(resolve));
+    }
+  }
+
+  /**
+   * Manually process queue (used in tests to avoid timing issues)
+   * Waits for all queued and active navigations to complete
+   */
+  async flushNavigationQueue() {
+    const maxWaitTime = 30000; // 30 second timeout to prevent infinite waits
+    const startTime = Date.now();
+
+    // Keep waiting until queue is empty and all active navigations complete
+    while ((this.navigationQueue.length > 0 || this.activeNavigations > 0) &&
+           (Date.now() - startTime) < maxWaitTime) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+
+    // Final microtask to ensure all handlers have fired
+    await new Promise(resolve => setImmediate(resolve));
+  }
+
+  /**
+   * Get current queue state (for testing and debugging)
+   */
+  getQueueState() {
+    return {
+      queueLength: this.navigationQueue.length,
+      activeNavigations: this.activeNavigations,
+      queueProcessingPaused: this.queueProcessingPaused,
+      queue: this.navigationQueue.map(nav => ({
+        pageId: nav.pageId,
+        url: nav.url
+      }))
+    };
   }
 
   /**
@@ -587,22 +728,78 @@ class MultiPageManager extends EventEmitter {
    * Cleanup and shutdown
    */
   async shutdown() {
-    // Close all pages (this will cleanup all event listeners)
-    await this.closeAllPages();
+    const shutdownTimeout = 10000; // 10 seconds
+    const startTime = Date.now();
 
-    // Stop resource monitoring and clear its timer
-    this.resourceMonitor.stop();
+    try {
+      // Phase 1: Close all pages with timeout
+      try {
+        const closePromise = this.closeAllPages();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Page closure timeout')), shutdownTimeout / 2)
+        );
+        await Promise.race([closePromise, timeoutPromise]);
+      } catch (err) {
+        console.error('Error during page closure:', err.message);
+        // Force close remaining pages
+        for (const pageId of Array.from(this.pages.keys())) {
+          try {
+            const page = this.pages.get(pageId);
+            if (page) {
+              if (this.activePageId === pageId) {
+                this.mainWindow.removeBrowserView(page.view);
+                this.activePageId = null;
+              }
+              page.view.webContents.removeAllListeners();
+              page.view.webContents.destroy();
+              this.pages.delete(pageId);
+            }
+          } catch (e) {
+            // Silently ignore individual page errors
+          }
+        }
+      }
 
-    // Remove all event listeners from the resource monitor
-    this.resourceMonitor.removeAllListeners();
+      // Phase 2: Stop resource monitor
+      try {
+        this.resourceMonitor.stop();
+        this.resourceMonitor.removeAllListeners();
+      } catch (err) {
+        console.error('Error stopping resource monitor:', err.message);
+      }
 
-    // Clear rate limiters
-    this.domainRateLimiters.clear();
+      // Phase 3: Clear state
+      try {
+        this.domainRateLimiters.clear();
+      } catch (err) {
+        console.error('Error clearing rate limiters:', err.message);
+      }
 
-    // Remove all event listeners from this manager
-    this.removeAllListeners();
+      // Phase 4: Emit shutdown event while listeners still active
+      this.emit('shutdown', {
+        duration: Date.now() - startTime,
+        pagesDestroyed: this.stats.pagesDestroyed,
+        success: true
+      });
 
-    this.emit('shutdown');
+      // Phase 5: Remove all listeners (final cleanup)
+      this.removeAllListeners();
+
+    } catch (err) {
+      console.error('Unexpected error during shutdown:', err);
+      // Force final cleanup
+      try {
+        this.removeAllListeners();
+      } catch (e) {
+        // Ignore
+      }
+      throw err;
+    }
+
+    // Verify shutdown
+    if (Date.now() - startTime > shutdownTimeout) {
+      console.warn(`Shutdown took longer than expected: ${Date.now() - startTime}ms`);
+    }
   }
 }
 

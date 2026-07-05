@@ -114,7 +114,7 @@ async function submitToBassetHound(evidencePackage, bastsetUrl, investigationId)
 
 **WebSocket Command:**
 ```javascript
-// Add to websocket/commands/evidence-commands.js
+// Add to websocket/commands/forensic/evidence/evidence-commands.js
 
 async function handleSubmitToBasset(params) {
     const {packageId, bastsetUrl, investigationId} = params;

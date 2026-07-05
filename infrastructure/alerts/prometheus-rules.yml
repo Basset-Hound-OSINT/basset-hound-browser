@@ -1,0 +1,651 @@
+# Basset Hound Browser - Prometheus Alert Rules
+# Version: 1.0
+# Generated: 2026-06-21
+# Purpose: Comprehensive alert rules for production monitoring
+
+groups:
+  - name: basset_hound_critical_alerts
+    interval: 30s
+    rules:
+      # C1: Service Down (3 failed health checks)
+      - alert: ServiceDown
+        expr: |
+          increase(health_check_failures_total[3m]) >= 3
+        for: 1m
+        labels:
+          severity: critical
+          component: core
+          sla: p0
+        annotations:
+          summary: "Basset Hound Browser service is down"
+          description: "WebSocket server not responding to health checks. Failed checks: {{ $value }} in last 3 minutes."
+          runbook_url: "https://docs/runbooks/service-down.md"
+          dashboard_url: "https://grafana/d/basset-hound-health"
+
+      # C2: Error Rate Exceeds 5%
+      - alert: HighErrorRate
+        expr: |
+          (
+            increase(websocket_commands_failed_total[1m]) /
+            (increase(websocket_commands_total[1m]) + 0.0001)
+          ) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          component: websocket
+          sla: p0
+        annotations:
+          summary: "Error rate exceeds 5%"
+          description: |
+            Error rate: {{ printf "%.2f" (mul $value 100) }}%
+            Failed commands: {{ $value | humanize }}
+            Duration: {{ $labels.alertstate }}
+          runbook_url: "https://docs/runbooks/high-error-rate.md"
+          dashboard_url: "https://grafana/d/basset-hound-commands"
+
+      # C3: Success Rate Below 95%
+      - alert: LowSuccessRate
+        expr: |
+          (
+            1 - (
+              increase(websocket_commands_failed_total[2m]) /
+              (increase(websocket_commands_total[2m]) + 0.0001)
+            )
+          ) < 0.95
+        for: 2m
+        labels:
+          severity: critical
+          component: websocket
+          sla: p0
+        annotations:
+          summary: "Success rate below 95%"
+          description: |
+            Current success rate: {{ printf "%.2f" (mul $value 100) }}%
+            Threshold: 95%
+            This indicates broad systemic failures.
+          runbook_url: "https://docs/runbooks/low-success-rate.md"
+
+      # C4: Memory Usage Exceeds 80%
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            process_memory_heap_used_mb /
+            process_memory_heap_total_mb
+          ) > 0.80
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+          sla: p0
+        annotations:
+          summary: "Memory usage exceeds 80%"
+          description: |
+            Heap usage: {{ printf "%.1f" $value }}% ({{ $labels.instance }})
+            Used: {{ $labels.heap_used_mb }}MB / Total: {{ $labels.heap_total_mb }}MB
+            Risk of imminent crash - remediation needed.
+          runbook_url: "https://docs/runbooks/memory-pressure.md"
+          remediation: "auto_gc_and_restart"
+
+      # C5: P99 Latency Extreme Spike
+      - alert: ExtremeLatenySpikeP99
+        expr: |
+          histogram_quantile(0.99, websocket_command_latency_ms) > 2000
+        for: 1m
+        labels:
+          severity: critical
+          component: performance
+          sla: p0
+        annotations:
+          summary: "P99 latency spike (>2000ms)"
+          description: |
+            P99 latency: {{ printf "%.0f" $value }}ms
+            Operations affected: {{ $labels.operation }}
+            This may severely impact critical operations.
+          runbook_url: "https://docs/runbooks/latency-spike.md"
+
+      # C6: File Descriptor Exhaustion
+      - alert: FileDescriptorExhaustion
+        expr: |
+          (
+            process_open_fds /
+            process_max_fds
+          ) > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+          sla: p0
+        annotations:
+          summary: "File descriptor exhaustion (95%+)"
+          description: |
+            Open FDs: {{ $labels.open_fds }} / {{ $labels.max_fds }} ({{ printf "%.1f" (mul $value 100) }}%)
+            Potential connection leak detected.
+          runbook_url: "https://docs/runbooks/fd-exhaustion.md"
+
+  - name: basset_hound_high_alerts
+    interval: 30s
+    rules:
+      # H1: P99 Latency > 1000ms
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99, websocket_command_latency_ms) > 1000
+        for: 2m
+        labels:
+          severity: high
+          component: performance
+          sla: p1
+        annotations:
+          summary: "P99 latency exceeds 1000ms"
+          description: |
+            P99 latency: {{ printf "%.0f" $value }}ms
+            Operation: {{ $labels.operation }}
+            May degrade user experience.
+          runbook_url: "https://docs/runbooks/high-latency.md"
+          dashboard_url: "https://grafana/d/basset-hound-latency"
+
+      # H2: Throughput Drop > 20%
+      - alert: ThroughputDrop
+        expr: |
+          (
+            rate(websocket_messages_processed_total[2m]) /
+            (
+              avg_over_time(rate(websocket_messages_processed_total[2m])[5m:1m]) + 0.0001
+            )
+          ) < 0.80
+        for: 2m
+        labels:
+          severity: high
+          component: throughput
+          sla: p1
+        annotations:
+          summary: "Throughput dropped >20%"
+          description: |
+            Current throughput: {{ printf "%.0f" $value }} msgs/sec
+            5m baseline: {{ $labels.baseline_throughput }} msgs/sec
+            Drop: {{ printf "%.1f" (mul (sub 1 $value) 100) }}%
+          runbook_url: "https://docs/runbooks/throughput-drop.md"
+
+      # H3: CPU Usage > 85%
+      - alert: HighCPUUsage
+        expr: |
+          system_cpu_usage_percent > 85
+        for: 3m
+        labels:
+          severity: high
+          component: system
+          sla: p1
+        annotations:
+          summary: "CPU usage exceeds 85%"
+          description: |
+            CPU usage: {{ printf "%.1f" $value }}%
+            Duration: 3+ minutes
+            May impact responsiveness, consider scaling.
+          runbook_url: "https://docs/runbooks/high-cpu.md"
+
+      # H4: Memory Growth Rate > 6 MB/hour
+      - alert: HighMemoryGrowthRate
+        expr: |
+          (
+            (
+              process_memory_heap_used_mb -
+              avg_over_time(process_memory_heap_used_mb[1h] offset 1h)
+            )
+          ) > 6
+        for: 1h
+        labels:
+          severity: high
+          component: system
+          sla: p1
+        annotations:
+          summary: "Memory growth rate exceeds 6 MB/hour"
+          description: |
+            Growth rate: {{ printf "%.1f" $value }} MB/hour
+            Current heap: {{ $labels.current_mb }}MB
+            Potential memory leak detected.
+          runbook_url: "https://docs/runbooks/memory-leak.md"
+
+      # H5: Component Unresponsive
+      - alert: ComponentUnresponsive
+        expr: |
+          increase(component_health_check_timeout_total[2m]) >= 2
+        for: 1m
+        labels:
+          severity: high
+          component: "{{ $labels.component }}"
+          sla: p1
+        annotations:
+          summary: "Component unresponsive: {{ $labels.component }}"
+          description: |
+            Component: {{ $labels.component }}
+            Failed health checks: {{ $value }}
+            Recommend component restart.
+          runbook_url: "https://docs/runbooks/component-restart.md"
+
+      # H6: Connection Pool Exhaustion
+      - alert: ConnectionPoolExhaustion
+        expr: |
+          (
+            websocket_active_connections /
+            websocket_max_connections_per_instance
+          ) > 0.90
+        for: 1m
+        labels:
+          severity: high
+          component: connections
+          sla: p1
+        annotations:
+          summary: "Connection pool exhaustion (>90%)"
+          description: |
+            Active connections: {{ $labels.active }} / {{ $labels.max }}
+            Usage: {{ printf "%.1f" (mul $value 100) }}%
+            At capacity limits, traffic may be rejected.
+          runbook_url: "https://docs/runbooks/connection-pool.md"
+
+      # H7: Rate Limit: >50 rejections/min from single IP
+      - alert: RateLimitExceeded
+        expr: |
+          (
+            rate(rate_limit_rejections_total{severity="high"}[1m])
+          ) > 50
+        for: 1m
+        labels:
+          severity: high
+          component: security
+          sla: p1
+        annotations:
+          summary: "Rate limit: >50 rejections/min from {{ $labels.ip }}"
+          description: |
+            Source IP: {{ $labels.ip }}
+            Rejections/min: {{ printf "%.0f" $value }}
+            Potential attack or misconfigured client.
+          runbook_url: "https://docs/runbooks/rate-limit-attack.md"
+          dashboard_url: "https://grafana/d/basset-hound-security"
+
+  - name: basset_hound_medium_alerts
+    interval: 1m
+    rules:
+      # M1: GC Pause Time > 100ms
+      - alert: HighGCPauseTime
+        expr: |
+          avg_over_time(gc_pause_duration_ms[10m]) > 100
+        for: 10m
+        labels:
+          severity: medium
+          component: performance
+          sla: p2
+        annotations:
+          summary: "GC pause time exceeds 100ms (10m average)"
+          description: |
+            Average GC pause: {{ printf "%.1f" $value }}ms
+            May cause latency jitter.
+          runbook_url: "https://docs/runbooks/gc-tuning.md"
+
+      # M2: Cache Hit Rate < 10%
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            increase(cache_hits_total[1h]) /
+            (
+              increase(cache_hits_total[1h]) +
+              increase(cache_misses_total[1h]) + 0.0001
+            )
+          ) < 0.10
+        for: 1h
+        labels:
+          severity: medium
+          component: cache
+          sla: p2
+        annotations:
+          summary: "Cache hit rate below 10%"
+          description: |
+            Hit rate: {{ printf "%.2f" (mul $value 100) }}%
+            Cache appears ineffective or misconfigured.
+          runbook_url: "https://docs/runbooks/cache-tuning.md"
+
+      # M3: Evasion Effectiveness Drop > 5%
+      - alert: EvasionEffectivenessDrop
+        expr: |
+          (
+            avg_over_time(evasion_effectiveness_percent[1d]) -
+            avg_over_time(evasion_effectiveness_percent[1d] offset 7d)
+          ) > 5
+        for: 2h
+        labels:
+          severity: medium
+          component: evasion
+          sla: p2
+        annotations:
+          summary: "Evasion effectiveness dropped >5%"
+          description: |
+            Current: {{ printf "%.1f" $value }}%
+            7-day baseline: {{ $labels.baseline }}%
+            Drop: {{ printf "%.1f" (mul $value 100) }}%
+            Investigate detection method changes.
+          runbook_url: "https://docs/runbooks/evasion-update.md"
+
+      # M4: Memory Growth Sustained (2-4 MB/hour normal)
+      - alert: SustainedMemoryGrowth
+        expr: |
+          (
+            (
+              process_memory_heap_used_mb -
+              avg_over_time(process_memory_heap_used_mb[1h] offset 2h)
+            ) / 2
+          ) > 2
+        for: 2h
+        labels:
+          severity: medium
+          component: system
+          sla: p2
+        annotations:
+          summary: "Sustained memory growth (>2 MB/hour)"
+          description: |
+            Growth rate: {{ printf "%.1f" $value }} MB/hour (2h average)
+            Current: {{ $labels.current_mb }}MB
+            Monitor for leak pattern continuation.
+          runbook_url: "https://docs/runbooks/memory-trending.md"
+
+      # M5: Path Validation Failures
+      - alert: PathValidationFailures
+        expr: |
+          (
+            increase(path_validation_failures_total[5m])
+          ) > 0
+        for: 5m
+        labels:
+          severity: medium
+          component: security
+          sla: p2
+        annotations:
+          summary: "Path validation failures detected"
+          description: |
+            Failures in last 5m: {{ $value }}
+            Potential security attack or misconfigured client.
+          runbook_url: "https://docs/runbooks/path-validation.md"
+
+      # M6: Size Limit Consecutive Rejections
+      - alert: ConsecutiveSizeLimitRejections
+        expr: |
+          (
+            increase(size_limit_rejections_total[5m])
+          ) > 10
+        for: 5m
+        labels:
+          severity: medium
+          component: security
+          sla: p2
+        annotations:
+          summary: "Size limit rejections (>10 in 5m)"
+          description: |
+            Rejections in last 5m: {{ $value }}
+            Potential oversized payload attacks.
+          runbook_url: "https://docs/runbooks/size-limits.md"
+
+      # M7: Unusual Feature Usage Pattern
+      - alert: UnusualFeatureUsage
+        expr: |
+          (
+            max(
+              abs(
+                rate(command_usage_total{command=~".+"}[1h]) -
+                avg_over_time(rate(command_usage_total{command=~".+"}[1h])[7d])
+              ) /
+              (avg_over_time(rate(command_usage_total{command=~".+"}[1h])[7d]) + 0.0001)
+            ) by (command)
+          ) > 0.30
+        for: 1h
+        labels:
+          severity: medium
+          component: usage
+          sla: p2
+        annotations:
+          summary: "Unusual command usage pattern: {{ $labels.command }}"
+          description: |
+            Command: {{ $labels.command }}
+            Deviation from baseline: {{ printf "%.0f" (mul $value 100) }}%
+            May indicate bot activity or client misuse.
+          runbook_url: "https://docs/runbooks/usage-analysis.md"
+
+  - name: basset_hound_operational_alerts
+    interval: 5m
+    rules:
+      # O1: Container Restart Detected
+      - alert: ContainerRestartDetected
+        expr: |
+          increase(container_restart_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: medium
+          component: infrastructure
+          sla: p2
+        annotations:
+          summary: "Container restart detected"
+          description: |
+            Container: {{ $labels.container_id }}
+            Restarts in last 5m: {{ $value }}
+            Investigate reason for restart.
+          runbook_url: "https://docs/runbooks/container-restart.md"
+
+      # O2: Disk Space < 20%
+      - alert: LowDiskSpace
+        expr: |
+          (
+            system_disk_available_mb /
+            system_disk_total_mb
+          ) < 0.20
+        for: 5m
+        labels:
+          severity: medium
+          component: infrastructure
+          sla: p2
+        annotations:
+          summary: "Disk space below 20%"
+          description: |
+            Available: {{ $labels.available_mb }}MB / {{ $labels.total_mb }}MB
+            Usage: {{ printf "%.1f" (mul (sub 1 $value) 100) }}%
+            Clean up old logs/cache or expand disk.
+          runbook_url: "https://docs/runbooks/disk-cleanup.md"
+
+      # O3: Update Available
+      - alert: UpdateAvailable
+        expr: |
+          version_available_newer_version_total > 0
+        for: 24h
+        labels:
+          severity: low
+          component: maintenance
+          sla: p3
+        annotations:
+          summary: "Update available: {{ $labels.new_version }}"
+          description: |
+            Current version: {{ $labels.current_version }}
+            Available version: {{ $labels.new_version }}
+            Plan upgrade during maintenance window.
+          runbook_url: "https://docs/runbooks/upgrade.md"
+
+      # O4: Health Check Latency High
+      - alert: HealthCheckLatency
+        expr: |
+          histogram_quantile(0.95, health_check_duration_ms) > 3000
+        for: 5m
+        labels:
+          severity: medium
+          component: health
+          sla: p2
+        annotations:
+          summary: "Health check latency exceeds 3s"
+          description: |
+            P95 health check latency: {{ printf "%.0f" $value }}ms
+            May indicate system under stress.
+          runbook_url: "https://docs/runbooks/health-check.md"
+
+      # O5: Database Connectivity Issues
+      - alert: DatabaseConnectivityIssue
+        expr: |
+          increase(database_connection_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: high
+          component: database
+          sla: p1
+        annotations:
+          summary: "Database connectivity errors"
+          description: |
+            Errors in last 5m: {{ $value }}
+            Check database server status and network.
+          runbook_url: "https://docs/runbooks/database-reconnect.md"
+
+      # O6: Proxy Connection Failures
+      - alert: ProxyConnectionFailure
+        expr: |
+          (
+            increase(proxy_connection_errors_total[5m]) /
+            (increase(proxy_connection_attempts_total[5m]) + 0.0001)
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: high
+          component: proxy
+          sla: p1
+        annotations:
+          summary: "Proxy connection failure rate >10%"
+          description: |
+            Failure rate: {{ printf "%.1f" (mul $value 100) }}%
+            Check proxy configuration and availability.
+          runbook_url: "https://docs/runbooks/proxy-reconnect.md"
+
+  - name: basset_hound_recording_alerts
+    interval: 1m
+    rules:
+      # Recording: Disk space for recordings
+      - alert: RecordingDiskSpaceLow
+        expr: |
+          (
+            system_disk_available_mb /
+            system_disk_total_mb
+          ) < 0.10
+        for: 5m
+        labels:
+          severity: high
+          component: recording
+          sla: p1
+        annotations:
+          summary: "Recording disk space critical (<10%)"
+          description: |
+            Available: {{ $labels.available_mb }}MB
+            Recording may fail soon.
+          runbook_url: "https://docs/runbooks/recording-storage.md"
+
+      # Recording: Encoding queue too large
+      - alert: RecordingEncodingQueueLarge
+        expr: |
+          recording_encoding_queue_length > 100
+        for: 5m
+        labels:
+          severity: medium
+          component: recording
+          sla: p2
+        annotations:
+          summary: "Recording encoding queue backlog"
+          description: |
+            Queue length: {{ $value }} items
+            Encoding may be falling behind.
+          runbook_url: "https://docs/runbooks/recording-queue.md"
+
+  - name: basset_hound_websocket_health
+    interval: 30s
+    rules:
+      # WebSocket: High connection churn
+      - alert: HighConnectionChurn
+        expr: |
+          (
+            rate(websocket_connections_created_total[1m]) +
+            rate(websocket_connections_closed_total[1m])
+          ) > 10
+        for: 2m
+        labels:
+          severity: medium
+          component: websocket
+          sla: p2
+        annotations:
+          summary: "High WebSocket connection churn (>10/sec)"
+          description: |
+            Creation rate: {{ $labels.created_rate }}/sec
+            Close rate: {{ $labels.closed_rate }}/sec
+            May indicate instability or client reconnection loop.
+          runbook_url: "https://docs/runbooks/connection-stability.md"
+
+      # WebSocket: Message drop rate
+      - alert: WebSocketMessageDrops
+        expr: |
+          (
+            increase(websocket_messages_dropped_total[1m]) > 0
+          )
+        for: 1m
+        labels:
+          severity: high
+          component: websocket
+          sla: p1
+        annotations:
+          summary: "WebSocket message drops detected"
+          description: |
+            Messages dropped in last minute: {{ $value }}
+            Potential queue overflow or resource exhaustion.
+          runbook_url: "https://docs/runbooks/websocket-drops.md"
+
+      # WebSocket: Backpressure detected
+      - alert: WebSocketBackpressure
+        expr: |
+          websocket_write_buffer_size_bytes / websocket_write_buffer_max_bytes > 0.80
+        for: 1m
+        labels:
+          severity: high
+          component: websocket
+          sla: p1
+        annotations:
+          summary: "WebSocket backpressure detected (>80%)"
+          description: |
+            Write buffer: {{ $labels.current_bytes }} / {{ $labels.max_bytes }} bytes
+            Clients may experience buffering or disconnections.
+          runbook_url: "https://docs/runbooks/websocket-backpressure.md"
+
+  - name: basset_hound_evasion_quality
+    interval: 5m
+    rules:
+      # Evasion: Canvas fingerprinting effectiveness
+      - alert: CanvasEvasionDegraded
+        expr: |
+          evasion_canvas_success_rate < 0.70
+        for: 1h
+        labels:
+          severity: medium
+          component: evasion
+          sla: p2
+        annotations:
+          summary: "Canvas evasion effectiveness < 70%"
+          description: |
+            Canvas evasion rate: {{ printf "%.1f" (mul $value 100) }}%
+            Target: 80%+
+            Check fingerprinting profile updates.
+          runbook_url: "https://docs/runbooks/evasion-profiles.md"
+
+      # Evasion: WebGL fingerprinting effectiveness
+      - alert: WebGLEvasionDegraded
+        expr: |
+          evasion_webgl_success_rate < 0.85
+        for: 1h
+        labels:
+          severity: medium
+          component: evasion
+          sla: p2
+        annotations:
+          summary: "WebGL evasion effectiveness < 85%"
+          description: |
+            WebGL evasion rate: {{ printf "%.1f" (mul $value 100) }}%
+            Target: 90%+
+            Update WebGL fingerprinting signatures.
+          runbook_url: "https://docs/runbooks/evasion-profiles.md"
+
+# For Alertmanager routing
+# This section defines alert grouping and routing
+# To be configured in alertmanager.yml

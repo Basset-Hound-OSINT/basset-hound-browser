@@ -404,7 +404,9 @@ class TechnologyDetector {
    * @private
    */
   _matchPattern(value, pattern) {
-    if (!value) return false;
+    if (!value) {
+      return false;
+    }
     if (typeof pattern === 'string') {
       return value.toLowerCase().includes(pattern.toLowerCase());
     }

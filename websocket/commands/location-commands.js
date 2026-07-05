@@ -364,7 +364,7 @@ function registerLocationCommands(server, mainWindow) {
 
   // Setup events on first command that creates manager
   const originalSetGeolocation = server.commandHandlers.set_geolocation;
-  server.commandHandlers.set_geolocation = async function(...args) {
+  server.commandHandlers.set_geolocation = async function (...args) {
     const result = await originalSetGeolocation.apply(this, args);
     setupEventForwarding();
     return result;

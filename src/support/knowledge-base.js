@@ -183,7 +183,9 @@ class KnowledgeBase extends EventEmitter {
    * Extract keywords from content
    */
   extractKeywords(content) {
-    if (!content) return [];
+    if (!content) {
+      return [];
+    }
 
     const commonWords = new Set([
       'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
@@ -232,7 +234,9 @@ class KnowledgeBase extends EventEmitter {
    * Estimate read time in minutes
    */
   estimateReadTime(content) {
-    if (!content) return 0;
+    if (!content) {
+      return 0;
+    }
     const wordCount = content.split(/\s+/).length;
     return Math.ceil(wordCount / 200); // Average reading speed: 200 words/minute
   }
@@ -388,7 +392,9 @@ class KnowledgeBase extends EventEmitter {
    */
   async trackSolutionUsage(solutionId, ticketId, resolved = false) {
     const article = this.articles.get(solutionId);
-    if (!article) return;
+    if (!article) {
+      return;
+    }
 
     if (!this.solutions.has(solutionId)) {
       this.solutions.set(solutionId, {
@@ -438,7 +444,9 @@ class KnowledgeBase extends EventEmitter {
    */
   recordFeedback(articleId, helpful) {
     const article = this.articles.get(articleId);
-    if (!article) return;
+    if (!article) {
+      return;
+    }
 
     if (helpful) {
       article.helpfulCount += 1;
@@ -479,11 +487,21 @@ class KnowledgeBase extends EventEmitter {
     }
 
     // Update fields
-    if (updates.title) article.title = updates.title;
-    if (updates.content) article.content = updates.content;
-    if (updates.status) article.status = updates.status;
-    if (updates.tags) article.tags = updates.tags;
-    if (updates.difficulty) article.difficulty = updates.difficulty;
+    if (updates.title) {
+      article.title = updates.title;
+    }
+    if (updates.content) {
+      article.content = updates.content;
+    }
+    if (updates.status) {
+      article.status = updates.status;
+    }
+    if (updates.tags) {
+      article.tags = updates.tags;
+    }
+    if (updates.difficulty) {
+      article.difficulty = updates.difficulty;
+    }
 
     article.updatedAt = new Date().toISOString();
     article.keywords = this.extractKeywords(article.content);
@@ -632,7 +650,9 @@ class KnowledgeBase extends EventEmitter {
    */
   getVersionHistory(articleId) {
     const article = this.articles.get(articleId);
-    if (!article) return null;
+    if (!article) {
+      return null;
+    }
 
     return article.versions;
   }

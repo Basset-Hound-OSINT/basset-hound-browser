@@ -43,7 +43,7 @@ describe('Screenshot Phase 4: Robustness & Error Recovery', () => {
         // Create bright page (values 245-255) with very low variance
         const buffer = Buffer.alloc(1000);
         for (let i = 0; i < 1000; i++) {
-          buffer[i] = 250 + Math.floor(Math.random() * 5);  // Only 5 value range
+          buffer[i] = 250 + Math.floor(Math.random() * 5); // Only 5 value range
         }
         const result = handler.detectBlankPage(buffer);
         // Either detected as blank or as non-blank depending on implementation
@@ -286,7 +286,7 @@ describe('Screenshot Phase 4: Robustness & Error Recovery', () => {
       test('tries multiple recovery strategies', async () => {
         const domCheck = jest.fn()
           .mockResolvedValueOnce(false) // First attempt fails
-          .mockResolvedValueOnce(true);  // Second succeeds
+          .mockResolvedValueOnce(true); // Second succeeds
         const result = await handler.recoverInvalidDOM(domCheck);
         expect(result.success).toBe(true);
         expect(domCheck).toHaveBeenCalled();
@@ -821,7 +821,7 @@ describe('Screenshot Phase 4: Robustness & Error Recovery', () => {
       });
 
       test('tracks multiple recovery types', () => {
-        coordinator.clearLog();  // Start fresh
+        coordinator.clearLog(); // Start fresh
         coordinator.errorRecovery.logRecoveryAction({
           type: 'compression',
           status: 'succeeded'

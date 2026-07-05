@@ -24,28 +24,28 @@ class CompressionSelector {
 
     // Compression level configuration
     this.levels = {
-      noCompression: 0,     // Already compressed
-      speedPriority: 1,     // Large payloads
-      fastBalanced: 3,      // Medium payloads
-      balanced: 6,          // Default
-      maxCompression: 9,    // Small payloads
+      noCompression: 0, // Already compressed
+      speedPriority: 1, // Large payloads
+      fastBalanced: 3, // Medium payloads
+      balanced: 6, // Default
+      maxCompression: 9 // Small payloads
     };
 
     // Size thresholds (bytes)
     this.thresholds = {
-      tiny: 256,            // <256B: analyze entropy only
-      small: 4096,          // <4KB: maximum compression
-      medium: 102400,       // <100KB: balanced
-      large: 1048576,       // >1MB: speed priority
+      tiny: 256, // <256B: analyze entropy only
+      small: 4096, // <4KB: maximum compression
+      medium: 102400, // <100KB: balanced
+      large: 1048576 // >1MB: speed priority
     };
 
     // Entropy thresholds (0-8 bits per byte)
     // High entropy = data is already compressed/random
     this.entropyThresholds = {
-      veryHigh: 7.5,        // Likely compressed (skip compression)
-      high: 7.0,            // Compressed, try deflate
-      medium: 6.0,          // Somewhat random
-      low: 4.0,             // Text-like, compressible
+      veryHigh: 7.5, // Likely compressed (skip compression)
+      high: 7.0, // Compressed, try deflate
+      medium: 6.0, // Somewhat random
+      low: 4.0 // Text-like, compressible
     };
 
     this.stats = {
@@ -54,7 +54,7 @@ class CompressionSelector {
       speedPriorityCount: 0,
       fastBalancedCount: 0,
       balancedCount: 0,
-      maxCompressionCount: 0,
+      maxCompressionCount: 0
     };
   }
 
@@ -120,7 +120,9 @@ class CompressionSelector {
    */
   calculateEntropy(data) {
     const buffer = this._toBuffer(data);
-    if (buffer.length === 0) return 0;
+    if (buffer.length === 0) {
+      return 0;
+    }
 
     // Frequency analysis
     const freq = new Uint32Array(256);
@@ -133,7 +135,9 @@ class CompressionSelector {
     const len = buffer.length;
 
     for (let i = 0; i < 256; i++) {
-      if (freq[i] === 0) continue;
+      if (freq[i] === 0) {
+        continue;
+      }
 
       const p = freq[i] / len;
       entropy -= p * Math.log2(p);
@@ -181,15 +185,15 @@ class CompressionSelector {
         speedPriority: this.stats.speedPriorityCount,
         fastBalanced: this.stats.fastBalancedCount,
         balanced: this.stats.balancedCount,
-        maxCompression: this.stats.maxCompressionCount,
+        maxCompression: this.stats.maxCompressionCount
       },
       percentages: {
         noCompression: ((this.stats.noCompressionCount / this.stats.selections) * 100).toFixed(1) + '%',
         speedPriority: ((this.stats.speedPriorityCount / this.stats.selections) * 100).toFixed(1) + '%',
         fastBalanced: ((this.stats.fastBalancedCount / this.stats.selections) * 100).toFixed(1) + '%',
         balanced: ((this.stats.balancedCount / this.stats.selections) * 100).toFixed(1) + '%',
-        maxCompression: ((this.stats.maxCompressionCount / this.stats.selections) * 100).toFixed(1) + '%',
-      },
+        maxCompression: ((this.stats.maxCompressionCount / this.stats.selections) * 100).toFixed(1) + '%'
+      }
     };
   }
 
@@ -203,7 +207,7 @@ class CompressionSelector {
       speedPriorityCount: 0,
       fastBalancedCount: 0,
       balancedCount: 0,
-      maxCompressionCount: 0,
+      maxCompressionCount: 0
     };
   }
 

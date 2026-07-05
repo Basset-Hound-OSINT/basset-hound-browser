@@ -556,7 +556,7 @@ describe('Technology Detection Engine', () => {
       const react1 = result1.technologies.find(t => t.name === 'React');
       const react2 = result2.technologies.find(t => t.name === 'React');
 
-      expect(!!react1).toBe(!!react2);
+      expect(Boolean(react1)).toBe(Boolean(react2));
     });
   });
 });

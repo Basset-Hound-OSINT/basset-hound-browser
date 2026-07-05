@@ -634,7 +634,9 @@ class LearningPath extends EventEmitter {
   findLessonInPath(path, lessonId) {
     for (const module of path.modules) {
       const lesson = module.lessons.find(l => l.id === lessonId);
-      if (lesson) return lesson;
+      if (lesson) {
+        return lesson;
+      }
     }
     return null;
   }
@@ -656,7 +658,9 @@ class LearningPath extends EventEmitter {
               break;
             }
           }
-          if (!conditionMet) continue;
+          if (!conditionMet) {
+            continue;
+          }
         }
 
         earned.push(milestone);
@@ -708,7 +712,9 @@ class LearningPath extends EventEmitter {
    * Calculate average progress
    */
   calculateAverageProgress() {
-    if (this.userPaths.size === 0) return 0;
+    if (this.userPaths.size === 0) {
+      return 0;
+    }
 
     const totalProgress = Array.from(this.userPaths.values()).reduce((sum, p) => sum + p.progress, 0);
     return Math.round(totalProgress / this.userPaths.size);

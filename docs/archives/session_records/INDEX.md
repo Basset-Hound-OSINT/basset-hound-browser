@@ -7,6 +7,12 @@
 
 ## Quick Navigation by Release
 
+### 2026-07 — MVP Completion & Scope Reset (CURRENT — authoritative)
+- [2026-07-04_MVP-COMPLETION-ORCHESTRATED.md](2026-07-04_MVP-COMPLETION-ORCHESTRATED.md) — Browser dead → **MVP complete** via orchestrated agent teams: boots + drives (smoke:mvp 14/14), 17-tool MCP, security hardened, 78 dead files pruned, docs made honest, RAG deployed. **Current source of truth** (with [docs/planning/PROJECT-STATUS-MATRIX.md](../../planning/PROJECT-STATUS-MATRIX.md)).
+- [2026-07-03_SCOPE-RESET-AND-RESEARCH.md](2026-07-03_SCOPE-RESET-AND-RESEARCH.md) — Scope blacklist (no internal agents/models), Feature 2 removed, Obscura + bot-detection research, honest baseline established.
+
+> ⚠️ Records below (pre-July 2026) use a "vX.Y production complete / 100%" framing the 2026-07-03/04 reality-check found **inflated**. Read them as history, not current status.
+
 ### v12.2.0 Development - Waves 13-14 Complete (June 1, 2026)
 - [2026-06-01_WAVE13-WAVE14-COMPLETION.md](2026-06-01_WAVE13-WAVE14-COMPLETION.md) - Comprehensive Wave 13-14 delivery, 30,000+ lines, 18 security fixes, 99%+ test pass rate
 

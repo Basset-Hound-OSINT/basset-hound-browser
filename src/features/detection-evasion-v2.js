@@ -63,7 +63,9 @@ class DetectionVectorTracker {
   getSuccessRate(vectorId, service) {
     const key = `${vectorId}:${service}`;
     const stats = this.successRates.get(key);
-    if (!stats) return 0;
+    if (!stats) {
+      return 0;
+    }
     return stats.success / stats.total;
   }
 
@@ -667,7 +669,9 @@ class DetectionEvasionV2 extends EventEmitter {
    */
   _triggerAdaptation(session, vectorId, service) {
     const status = session.vectorStatus.get(vectorId);
-    if (!status) return;
+    if (!status) {
+      return;
+    }
 
     status.adaptations++;
     this.tracker.recordFailureMode(vectorId, service, 'detection');

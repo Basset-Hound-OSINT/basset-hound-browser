@@ -96,8 +96,8 @@ describe('PathValidator', () => {
   // ========== Symlink Tests ==========
 
   describe('Symlink Prevention', () => {
-    it('should reject symlinks by default', function() {
-      this.skip();  // Skip if unable to create symlinks
+    it('should reject symlinks by default', function () {
+      this.skip(); // Skip if unable to create symlinks
       const safeDir = path.join(testBaseDir, 'safe');
       fs.mkdirSync(safeDir, { recursive: true });
 
@@ -112,12 +112,12 @@ describe('PathValidator', () => {
         expect(result.valid).toBe(false);
         expect(result.error).toContain('Symbolic');
       } catch (e) {
-        this.skip();  // Symlinks not supported on this system
+        this.skip(); // Symlinks not supported on this system
       }
     });
 
-    it('should allow symlinks when explicitly enabled', function() {
-      this.skip();  // Skip if unable to create symlinks
+    it('should allow symlinks when explicitly enabled', function () {
+      this.skip(); // Skip if unable to create symlinks
       const safeDir = path.join(testBaseDir, 'safe');
       fs.mkdirSync(safeDir, { recursive: true });
 

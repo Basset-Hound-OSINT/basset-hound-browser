@@ -208,66 +208,66 @@ function registerFormCommands(server, mainWindow) {
         let value = null;
 
         switch (field.detectedType) {
-          case FIELD_TYPES.FIRST_NAME:
-            value = profile.firstName || 'John';
-            break;
-          case FIELD_TYPES.LAST_NAME:
-            value = profile.lastName || 'Doe';
-            break;
-          case FIELD_TYPES.FULL_NAME:
-            value = `${profile.firstName || 'John'} ${profile.lastName || 'Doe'}`;
-            break;
-          case FIELD_TYPES.EMAIL:
-            value = profile.email || 'john.doe@example.com';
-            break;
-          case FIELD_TYPES.TEL:
-            value = profile.phone || '555-123-4567';
-            break;
-          case FIELD_TYPES.ADDRESS:
-            value = profile.address || '123 Main St';
-            break;
-          case FIELD_TYPES.CITY:
-            value = profile.city || 'New York';
-            break;
-          case FIELD_TYPES.STATE:
-            value = profile.state || 'NY';
-            break;
-          case FIELD_TYPES.ZIP:
-            value = profile.zip || '10001';
-            break;
-          case FIELD_TYPES.COUNTRY:
-            value = profile.country || 'United States';
-            break;
-          case FIELD_TYPES.PASSWORD:
-            value = profile.password || 'Test123!@#';
-            break;
-          case FIELD_TYPES.DATE_OF_BIRTH:
-            value = profile.dateOfBirth || '1990-01-01';
-            break;
-          case FIELD_TYPES.SELECT:
-            // Pick first non-empty option
-            if (field.options && field.options.length > 0) {
-              const validOptions = field.options.filter(opt => opt.value && opt.value !== '');
-              if (validOptions.length > 0) {
-                value = validOptions[0].value;
-              }
+        case FIELD_TYPES.FIRST_NAME:
+          value = profile.firstName || 'John';
+          break;
+        case FIELD_TYPES.LAST_NAME:
+          value = profile.lastName || 'Doe';
+          break;
+        case FIELD_TYPES.FULL_NAME:
+          value = `${profile.firstName || 'John'} ${profile.lastName || 'Doe'}`;
+          break;
+        case FIELD_TYPES.EMAIL:
+          value = profile.email || 'john.doe@example.com';
+          break;
+        case FIELD_TYPES.TEL:
+          value = profile.phone || '555-123-4567';
+          break;
+        case FIELD_TYPES.ADDRESS:
+          value = profile.address || '123 Main St';
+          break;
+        case FIELD_TYPES.CITY:
+          value = profile.city || 'New York';
+          break;
+        case FIELD_TYPES.STATE:
+          value = profile.state || 'NY';
+          break;
+        case FIELD_TYPES.ZIP:
+          value = profile.zip || '10001';
+          break;
+        case FIELD_TYPES.COUNTRY:
+          value = profile.country || 'United States';
+          break;
+        case FIELD_TYPES.PASSWORD:
+          value = profile.password || 'Test123!@#';
+          break;
+        case FIELD_TYPES.DATE_OF_BIRTH:
+          value = profile.dateOfBirth || '1990-01-01';
+          break;
+        case FIELD_TYPES.SELECT:
+          // Pick first non-empty option
+          if (field.options && field.options.length > 0) {
+            const validOptions = field.options.filter(opt => opt.value && opt.value !== '');
+            if (validOptions.length > 0) {
+              value = validOptions[0].value;
             }
-            break;
-          case FIELD_TYPES.CHECKBOX:
-            value = true;
-            break;
-          case FIELD_TYPES.RADIO:
-            if (field.options && field.options.length > 0) {
-              value = field.options[0].value;
-            }
-            break;
-          default:
-            // Use profile data if available
-            if (field.name && profile[field.name]) {
-              value = profile[field.name];
-            } else if (field.type === 'text') {
-              value = 'Test Value';
-            }
+          }
+          break;
+        case FIELD_TYPES.CHECKBOX:
+          value = true;
+          break;
+        case FIELD_TYPES.RADIO:
+          if (field.options && field.options.length > 0) {
+            value = field.options[0].value;
+          }
+          break;
+        default:
+          // Use profile data if available
+          if (field.name && profile[field.name]) {
+            value = profile[field.name];
+          } else if (field.type === 'text') {
+            value = 'Test Value';
+          }
         }
 
         if (value !== null) {

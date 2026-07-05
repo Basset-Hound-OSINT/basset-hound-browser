@@ -21,7 +21,7 @@ describe('RedisManager', () => {
       name: 'mymaster',
       minConnections: 2,
       maxConnections: 5,
-      sessionTTL: 86400,
+      sessionTTL: 86400
     });
   });
 
@@ -61,7 +61,7 @@ describe('RedisManager', () => {
       // Manually set up pool state as if connected
       manager.connectionPool = [
         { ping: () => Promise.resolve('PONG') },
-        { ping: () => Promise.resolve('PONG') },
+        { ping: () => Promise.resolve('PONG') }
       ];
       manager.isConnected = true;
 
@@ -156,7 +156,7 @@ describe('RedisManager', () => {
       const sessionData = {
         session_id: 'sess_123',
         user_id: 'user_1',
-        client_ip: '192.168.1.1',
+        client_ip: '192.168.1.1'
       };
 
       const result = await manager.createSession(sessionData.session_id, sessionData);
@@ -167,7 +167,7 @@ describe('RedisManager', () => {
       const sessionData = {
         session_id: 'sess_123',
         user_id: 'user_1',
-        client_ip: '192.168.1.1',
+        client_ip: '192.168.1.1'
       };
 
       // Mock Redis get
@@ -188,12 +188,12 @@ describe('RedisManager', () => {
       const originalSession = {
         session_id: 'sess_123',
         user_id: 'user_1',
-        activity_count: 5,
+        activity_count: 5
       };
 
       const updates = {
         activity_count: 6,
-        last_accessed: Date.now(),
+        last_accessed: Date.now()
       };
 
       manager.execute = async (cmd, args) => {
@@ -214,7 +214,7 @@ describe('RedisManager', () => {
     test('should delete a session', async () => {
       const sessionData = {
         session_id: 'sess_123',
-        user_id: 'user_1',
+        user_id: 'user_1'
       };
 
       manager.execute = async (cmd, args) => {
@@ -241,7 +241,7 @@ describe('RedisManager', () => {
         if (cmd === 'get') {
           return JSON.stringify({
             session_id: 'sess_1',
-            user_id: 'user_1',
+            user_id: 'user_1'
           });
         }
         return null;

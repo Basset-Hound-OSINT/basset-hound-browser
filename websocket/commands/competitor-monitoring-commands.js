@@ -163,8 +163,12 @@ function registerCompetitorMonitoringCommands(commandHandlers, monitoringService
       const { status, tag, limit = 100, offset = 0 } = params;
 
       const filter = {};
-      if (status) filter.status = status;
-      if (tag) filter.tag = tag;
+      if (status) {
+        filter.status = status;
+      }
+      if (tag) {
+        filter.tag = tag;
+      }
 
       const monitors = monitoringService.monitorManager.listMonitors(filter);
       const paginated = monitors.slice(offset, offset + limit);

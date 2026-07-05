@@ -19,7 +19,7 @@ class HealthChecker extends EventEmitter {
       checkInterval: config.checkInterval || 5000, // 5 seconds
       memoryThreshold: config.memoryThreshold || 0.8, // 80%
       diskThreshold: config.diskThreshold || 0.8, // 80%
-      ...config,
+      ...config
     };
 
     this.components = new Map();
@@ -40,7 +40,7 @@ class HealthChecker extends EventEmitter {
       lastCheck: null,
       error: null,
       checkCount: 0,
-      failureCount: 0,
+      failureCount: 0
     });
   }
 
@@ -102,13 +102,15 @@ class HealthChecker extends EventEmitter {
    */
   async checkComponent(name) {
     const component = this.components.get(name);
-    if (!component) return { name, ok: false, error: 'Component not found' };
+    if (!component) {
+      return { name, ok: false, error: 'Component not found' };
+    }
 
     try {
       component.checkCount++;
       const result = await Promise.race([
         component.checker(),
-        this.timeout(5000),
+        this.timeout(5000)
       ]);
 
       component.status = result ? 'HEALTHY' : 'UNHEALTHY';
@@ -119,7 +121,7 @@ class HealthChecker extends EventEmitter {
         name,
         ok: result,
         status: component.status,
-        lastCheck: new Date(component.lastCheck).toISOString(),
+        lastCheck: new Date(component.lastCheck).toISOString()
       };
     } catch (err) {
       component.failureCount++;
@@ -132,7 +134,7 @@ class HealthChecker extends EventEmitter {
         ok: false,
         status: 'ERROR',
         error: err.message,
-        lastCheck: new Date(component.lastCheck).toISOString(),
+        lastCheck: new Date(component.lastCheck).toISOString()
       };
     }
   }
@@ -157,8 +159,8 @@ class HealthChecker extends EventEmitter {
         used: usedMem,
         free: freeMem,
         usagePercent: (usagePercent * 100).toFixed(2) + '%',
-        threshold: (this.config.memoryThreshold * 100) + '%',
-      },
+        threshold: (this.config.memoryThreshold * 100) + '%'
+      }
     };
   }
 
@@ -174,15 +176,15 @@ class HealthChecker extends EventEmitter {
         ok: true,
         status: 'OK',
         metrics: {
-          threshold: (this.config.diskThreshold * 100) + '%',
-        },
+          threshold: (this.config.diskThreshold * 100) + '%'
+        }
       };
     } catch (err) {
       return {
         name: 'disk',
         ok: false,
         status: 'ERROR',
-        error: err.message,
+        error: err.message
       };
     }
   }
@@ -203,7 +205,7 @@ class HealthChecker extends EventEmitter {
     return {
       status: 'ALIVE',
       timestamp: Date.now(),
-      uptime: Date.now() - this.startTime,
+      uptime: Date.now() - this.startTime
     };
   }
 
@@ -227,7 +229,7 @@ class HealthChecker extends EventEmitter {
     return {
       ready: allReady,
       components: checks,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
   }
 
@@ -245,7 +247,7 @@ class HealthChecker extends EventEmitter {
         lastCheck: component.lastCheck ? new Date(component.lastCheck).toISOString() : null,
         checkCount: component.checkCount,
         failureCount: component.failureCount,
-        error: component.error,
+        error: component.error
       };
     }
 
@@ -253,11 +255,11 @@ class HealthChecker extends EventEmitter {
       overall: {
         status: this.overallStatus,
         timestamp: Date.now(),
-        lastCheck: this.lastCheckTime ? new Date(this.lastCheckTime).toISOString() : null,
+        lastCheck: this.lastCheckTime ? new Date(this.lastCheckTime).toISOString() : null
       },
       liveness,
       readiness,
-      components,
+      components
     };
   }
 

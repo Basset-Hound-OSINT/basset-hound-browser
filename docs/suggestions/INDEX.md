@@ -1,33 +1,11 @@
-# Suggestions & Feedback Index
+# suggestions - /docs/suggestions/
 
-**Last Updated:** May 11, 2026
-
----
-
-## Overview
-
-This directory contains suggestions, feedback, and enhancement ideas.
-
----
+Documentation related to suggestions.
 
 ## Contents
-
-Suggestions are organized by:
-- Feature requests
-- Performance improvements
-- Documentation improvements
-- Quality of life enhancements
+- Overview and quick navigation
+- File listing and descriptions
+- Key documents and references
 
 ---
-
-## Process
-
-1. Document suggestion with context
-2. Link to related code/docs
-3. Include rationale and benefits
-4. Suggest implementation approach
-
----
-
-**Status:** Current  
-**Last Updated:** May 11, 2026
+**Purpose:** suggestions Documentation | **Last Updated:** 2026-06-22

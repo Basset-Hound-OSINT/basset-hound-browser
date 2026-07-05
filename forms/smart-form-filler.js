@@ -109,9 +109,15 @@ class FormField {
    * Check if this field is likely a honeypot
    */
   isHoneypot() {
-    if (this.detectedType === FIELD_TYPES.HONEYPOT) return true;
-    if (!this.visible) return true;
-    if (this.name && FIELD_DETECTION_PATTERNS[FIELD_TYPES.HONEYPOT].test(this.name)) return true;
+    if (this.detectedType === FIELD_TYPES.HONEYPOT) {
+      return true;
+    }
+    if (!this.visible) {
+      return true;
+    }
+    if (this.name && FIELD_DETECTION_PATTERNS[FIELD_TYPES.HONEYPOT].test(this.name)) {
+      return true;
+    }
     return false;
   }
 
@@ -330,30 +336,72 @@ class SmartFormFiller extends EventEmitter {
    */
   _detectFieldType(field) {
     // Check HTML5 type first
-    if (field.type === 'email') return FIELD_TYPES.EMAIL;
-    if (field.type === 'tel') return FIELD_TYPES.TEL;
-    if (field.type === 'url') return FIELD_TYPES.URL;
-    if (field.type === 'date') return FIELD_TYPES.DATE;
-    if (field.type === 'number') return FIELD_TYPES.NUMBER;
-    if (field.type === 'search') return FIELD_TYPES.SEARCH;
-    if (field.type === 'password') return FIELD_TYPES.PASSWORD;
-    if (field.type === 'select') return FIELD_TYPES.SELECT;
-    if (field.type === 'checkbox') return FIELD_TYPES.CHECKBOX;
-    if (field.type === 'radio') return FIELD_TYPES.RADIO;
-    if (field.type === 'textarea') return FIELD_TYPES.TEXTAREA;
-    if (field.type === 'file') return FIELD_TYPES.FILE;
+    if (field.type === 'email') {
+      return FIELD_TYPES.EMAIL;
+    }
+    if (field.type === 'tel') {
+      return FIELD_TYPES.TEL;
+    }
+    if (field.type === 'url') {
+      return FIELD_TYPES.URL;
+    }
+    if (field.type === 'date') {
+      return FIELD_TYPES.DATE;
+    }
+    if (field.type === 'number') {
+      return FIELD_TYPES.NUMBER;
+    }
+    if (field.type === 'search') {
+      return FIELD_TYPES.SEARCH;
+    }
+    if (field.type === 'password') {
+      return FIELD_TYPES.PASSWORD;
+    }
+    if (field.type === 'select') {
+      return FIELD_TYPES.SELECT;
+    }
+    if (field.type === 'checkbox') {
+      return FIELD_TYPES.CHECKBOX;
+    }
+    if (field.type === 'radio') {
+      return FIELD_TYPES.RADIO;
+    }
+    if (field.type === 'textarea') {
+      return FIELD_TYPES.TEXTAREA;
+    }
+    if (field.type === 'file') {
+      return FIELD_TYPES.FILE;
+    }
 
     // Check autocomplete attribute
     if (field.autocomplete) {
-      if (field.autocomplete.includes('email')) return FIELD_TYPES.EMAIL;
-      if (field.autocomplete.includes('tel')) return FIELD_TYPES.TEL;
-      if (field.autocomplete.includes('given-name')) return FIELD_TYPES.FIRST_NAME;
-      if (field.autocomplete.includes('family-name')) return FIELD_TYPES.LAST_NAME;
-      if (field.autocomplete.includes('name') && !field.autocomplete.includes('-name')) return FIELD_TYPES.FULL_NAME;
-      if (field.autocomplete.includes('address')) return FIELD_TYPES.ADDRESS;
-      if (field.autocomplete.includes('postal-code')) return FIELD_TYPES.ZIP;
-      if (field.autocomplete.includes('country')) return FIELD_TYPES.COUNTRY;
-      if (field.autocomplete.includes('bday')) return FIELD_TYPES.DATE_OF_BIRTH;
+      if (field.autocomplete.includes('email')) {
+        return FIELD_TYPES.EMAIL;
+      }
+      if (field.autocomplete.includes('tel')) {
+        return FIELD_TYPES.TEL;
+      }
+      if (field.autocomplete.includes('given-name')) {
+        return FIELD_TYPES.FIRST_NAME;
+      }
+      if (field.autocomplete.includes('family-name')) {
+        return FIELD_TYPES.LAST_NAME;
+      }
+      if (field.autocomplete.includes('name') && !field.autocomplete.includes('-name')) {
+        return FIELD_TYPES.FULL_NAME;
+      }
+      if (field.autocomplete.includes('address')) {
+        return FIELD_TYPES.ADDRESS;
+      }
+      if (field.autocomplete.includes('postal-code')) {
+        return FIELD_TYPES.ZIP;
+      }
+      if (field.autocomplete.includes('country')) {
+        return FIELD_TYPES.COUNTRY;
+      }
+      if (field.autocomplete.includes('bday')) {
+        return FIELD_TYPES.DATE_OF_BIRTH;
+      }
     }
 
     // Check name, id, placeholder, label against patterns
@@ -457,11 +505,17 @@ class SmartFormFiller extends EventEmitter {
    */
   _findValueForField(field, data) {
     // Try exact name/id match first
-    if (field.name && data[field.name] !== undefined) return data[field.name];
-    if (field.id && data[field.id] !== undefined) return data[field.id];
+    if (field.name && data[field.name] !== undefined) {
+      return data[field.name];
+    }
+    if (field.id && data[field.id] !== undefined) {
+      return data[field.id];
+    }
 
     // Try detected type
-    if (data[field.detectedType] !== undefined) return data[field.detectedType];
+    if (data[field.detectedType] !== undefined) {
+      return data[field.detectedType];
+    }
 
     // Try common aliases
     const aliases = {
@@ -475,7 +529,9 @@ class SmartFormFiller extends EventEmitter {
 
     if (aliases[field.detectedType]) {
       for (const alias of aliases[field.detectedType]) {
-        if (data[alias] !== undefined) return data[alias];
+        if (data[alias] !== undefined) {
+          return data[alias];
+        }
       }
     }
 

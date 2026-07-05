@@ -322,7 +322,7 @@ class MultiTenantIsolationTester {
       const report = {
         timestamp: new Date().toISOString(),
         tenantsMonitored: TENANTS.length,
-        sessionsCreated: tenantSessions.size + 1,  // +1 for the one we deleted earlier
+        sessionsCreated: tenantSessions.size + 1, // +1 for the one we deleted earlier
         monitorsDeployed: 6,
         dataPoints: 3,
         isolationChecks: 18,

@@ -349,7 +349,9 @@ class ChangeDetector {
    * @returns {Array} Detected server software
    */
   parseServerHeader(header) {
-    if (!header) return [];
+    if (!header) {
+      return [];
+    }
 
     const detected = [];
     for (const [tech, patterns] of Object.entries(this.technologySignatures.servers)) {

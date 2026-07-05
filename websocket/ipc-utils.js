@@ -34,7 +34,9 @@ function ipcWithTimeout(webContents, sendChannel, responseChannel, data = null, 
     let resolved = false;
 
     const handler = (event, result) => {
-      if (resolved) return;
+      if (resolved) {
+        return;
+      }
       resolved = true;
       clearTimeout(timeoutId);
       resolve(result);
@@ -43,7 +45,9 @@ function ipcWithTimeout(webContents, sendChannel, responseChannel, data = null, 
     ipcMain.once(responseChannel, handler);
 
     timeoutId = setTimeout(() => {
-      if (resolved) return;
+      if (resolved) {
+        return;
+      }
       resolved = true;
       ipcMain.removeListener(responseChannel, handler);
       reject(new Error(`IPC timeout: No response from '${responseChannel}' within ${timeout}ms`));

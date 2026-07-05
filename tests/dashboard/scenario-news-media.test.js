@@ -169,7 +169,7 @@ class NewsAggregatorDashboard extends EventEmitter {
   }
 }
 
-describe('Dashboard Scenario - News & Media Monitoring', function() {
+describe('Dashboard Scenario - News & Media Monitoring', function () {
   this.timeout(30000);
 
   let dashboard;
@@ -204,12 +204,12 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     }
   });
 
-  describe('Scenario 1: Initial Setup', function() {
-    it('should have 15 news sources monitored', function() {
+  describe('Scenario 1: Initial Setup', () => {
+    it('should have 15 news sources monitored', () => {
       assert.strictEqual(dashboard.monitors.size, 15);
     });
 
-    it('should have diverse source types', function() {
+    it('should have diverse source types', () => {
       const types = new Set();
       for (const [, monitor] of dashboard.monitors) {
         types.add(monitor.sourceType);
@@ -219,8 +219,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 2: Article Detection', function() {
-    it('should detect new articles from sources', function() {
+  describe('Scenario 2: Article Detection', () => {
+    it('should detect new articles from sources', () => {
       const articles = [
         { id: 'art-1', headline: 'AI Breakthrough', topic: 'AI', sentiment: 'positive' },
         { id: 'art-2', headline: 'React Update', topic: 'Framework', sentiment: 'neutral' }
@@ -233,7 +233,7 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
       dashboard.processArticles('TechCrunch', changes);
     });
 
-    it('should not duplicate articles', function() {
+    it('should not duplicate articles', () => {
       const monitor = monitors['TechCrunch'];
       const articles = [
         { id: 'art-1', headline: 'AI Breakthrough', topic: 'AI', sentiment: 'positive' }
@@ -246,7 +246,7 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
       assert.strictEqual(changes2.length, 0, 'Should not duplicate');
     });
 
-    it('should track articles from multiple sources', function() {
+    it('should track articles from multiple sources', () => {
       const articles = [
         { id: 'art-3', headline: 'Cloud Native', topic: 'Cloud', sentiment: 'positive' }
       ];
@@ -260,8 +260,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 3: Topic Clustering', function() {
-    it('should cluster articles by topic', function() {
+  describe('Scenario 3: Topic Clustering', () => {
+    it('should cluster articles by topic', () => {
       // Add multiple AI articles
       const sources = ['TechCrunch', 'ArsTechnica', 'Medium'];
 
@@ -282,7 +282,7 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
       assert(clusters['AI'], 'Should have AI topic cluster');
     });
 
-    it('should provide topic statistics', function() {
+    it('should provide topic statistics', () => {
       const clusters = dashboard.getTopicClusters();
 
       for (const [topic, data] of Object.entries(clusters)) {
@@ -292,8 +292,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 4: Sentiment Analysis', function() {
-    it('should track sentiment of articles', function() {
+  describe('Scenario 4: Sentiment Analysis', () => {
+    it('should track sentiment of articles', () => {
       const articles = [
         { id: 'sent-1', headline: 'Great News', topic: 'News', sentiment: 'positive' },
         { id: 'sent-2', headline: 'Bad Decline', topic: 'News', sentiment: 'negative' },
@@ -312,8 +312,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 5: Trending Topics', function() {
-    it('should identify trending topics', function() {
+  describe('Scenario 5: Trending Topics', () => {
+    it('should identify trending topics', () => {
       // Create article burst for a topic
       const sources = ['Dev.to', 'Medium', 'Hacker News'];
 
@@ -342,8 +342,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 6: Article Timeline', function() {
-    it('should maintain chronological timeline', function() {
+  describe('Scenario 6: Article Timeline', () => {
+    it('should maintain chronological timeline', () => {
       const timeline = dashboard.getArticleTimeline({ limit: 100 });
 
       for (let i = 0; i < timeline.length - 1; i++) {
@@ -351,7 +351,7 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
       }
     });
 
-    it('should filter timeline by topic', function() {
+    it('should filter timeline by topic', () => {
       const aiTimeline = dashboard.getArticleTimeline({ topic: 'AI' });
 
       for (const article of aiTimeline) {
@@ -359,7 +359,7 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
       }
     });
 
-    it('should filter timeline by source', function() {
+    it('should filter timeline by source', () => {
       const tcTimeline = dashboard.getArticleTimeline({ source: 'TechCrunch' });
 
       for (const article of tcTimeline) {
@@ -368,8 +368,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 7: Multi-Source Article Coverage', function() {
-    it('should track same story across multiple sources', function() {
+  describe('Scenario 7: Multi-Source Article Coverage', () => {
+    it('should track same story across multiple sources', () => {
       const storyId = 'breaking-story-1';
       const headline = 'Major Tech Company Announcement';
 
@@ -390,8 +390,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 8: Competitor Announcement Tracking', function() {
-    it('should track competitor announcements', function() {
+  describe('Scenario 8: Competitor Announcement Tracking', () => {
+    it('should track competitor announcements', () => {
       const announcements = [
         { id: 'comp-1', headline: 'Competitor Releases New Product', topic: 'Competitor', sentiment: 'neutral' },
         { id: 'comp-2', headline: 'Rival Raises Funding', topic: 'Competitor', sentiment: 'negative' },
@@ -410,8 +410,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 9: Real-Time Article Feed Performance', function() {
-    it('should process 100 articles from multiple sources efficiently', function() {
+  describe('Scenario 9: Real-Time Article Feed Performance', () => {
+    it('should process 100 articles from multiple sources efficiently', () => {
       const startTime = Date.now();
 
       for (let i = 0; i < 100; i++) {
@@ -435,8 +435,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 10: Dashboard Metrics', function() {
-    it('should provide comprehensive stats', function() {
+  describe('Scenario 10: Dashboard Metrics', () => {
+    it('should provide comprehensive stats', () => {
       const stats = dashboard.getStats();
 
       assert(stats.totalArticles > 0);
@@ -452,8 +452,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 11: Source-Specific Views', function() {
-    it('should provide articles by source', function() {
+  describe('Scenario 11: Source-Specific Views', () => {
+    it('should provide articles by source', () => {
       const tcArticles = dashboard.getArticleTimeline({ source: 'TechCrunch' });
 
       for (const article of tcArticles) {
@@ -461,7 +461,7 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
       }
     });
 
-    it('should show source contribution metrics', function() {
+    it('should show source contribution metrics', () => {
       const sources = Array.from(dashboard.monitors.keys());
       const sourceMetrics = {};
 
@@ -474,8 +474,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 12: Alert Escalation by Sentiment', function() {
-    it('should escalate negative sentiment articles', function() {
+  describe('Scenario 12: Alert Escalation by Sentiment', () => {
+    it('should escalate negative sentiment articles', () => {
       const articles = [
         { id: 'neg-1', headline: 'System Outage', topic: 'Incident', sentiment: 'negative' },
         { id: 'neg-2', headline: 'Security Breach', topic: 'Security', sentiment: 'negative' }
@@ -494,8 +494,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 13: Topic Evolution Over Time', function() {
-    it('should track topic frequency changes', function() {
+  describe('Scenario 13: Topic Evolution Over Time', () => {
+    it('should track topic frequency changes', () => {
       const monitor = monitors['Medium'];
 
       // Simulate articles arriving over time
@@ -516,8 +516,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 14: Integration with Monitoring System', function() {
-    it('should emit article detection events', function(done) {
+  describe('Scenario 14: Integration with Monitoring System', () => {
+    it('should emit article detection events', (done) => {
       let eventFired = false;
 
       dashboard.once('article-detected', () => {
@@ -539,8 +539,8 @@ describe('Dashboard Scenario - News & Media Monitoring', function() {
     });
   });
 
-  describe('Scenario 15: News Monitoring Summary', function() {
-    it('should provide comprehensive news monitoring summary', function() {
+  describe('Scenario 15: News Monitoring Summary', () => {
+    it('should provide comprehensive news monitoring summary', () => {
       const stats = dashboard.getStats();
       const trending = dashboard.getTrendingTopics(5);
       const timeline = dashboard.getArticleTimeline({ limit: 10 });

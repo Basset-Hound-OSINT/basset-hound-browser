@@ -24,11 +24,11 @@ const COOKIE_FLAGS = {
  * Cookie security classifications
  */
 const SECURITY_LEVELS = {
-  CRITICAL: 'critical',      // Session tokens, auth cookies
-  HIGH: 'high',              // User preferences with PII
-  MEDIUM: 'medium',          // Functional cookies
-  LOW: 'low',                // Tracking, analytics
-  NONE: 'none'               // No security concern
+  CRITICAL: 'critical', // Session tokens, auth cookies
+  HIGH: 'high', // User preferences with PII
+  MEDIUM: 'medium', // Functional cookies
+  LOW: 'low', // Tracking, analytics
+  NONE: 'none' // No security concern
 };
 
 /**
@@ -469,9 +469,15 @@ class CookieManager extends EventEmitter {
       analyses.push(analysis);
 
       // Update summary
-      if (cookie.secure) summary.secure++;
-      if (cookie.httpOnly) summary.httpOnly++;
-      if (cookie.sameSite && cookie.sameSite !== 'no_restriction') summary.sameSite++;
+      if (cookie.secure) {
+        summary.secure++;
+      }
+      if (cookie.httpOnly) {
+        summary.httpOnly++;
+      }
+      if (cookie.sameSite && cookie.sameSite !== 'no_restriction') {
+        summary.sameSite++;
+      }
 
       // Count issues by severity
       for (const issue of analysis.issues) {
@@ -516,20 +522,20 @@ class CookieManager extends EventEmitter {
     }
 
     switch (format) {
-      case 'json':
-        return this._exportJSON(cookies, options);
+    case 'json':
+      return this._exportJSON(cookies, options);
 
-      case 'netscape':
-        return this._exportNetscape(cookies);
+    case 'netscape':
+      return this._exportNetscape(cookies);
 
-      case 'csv':
-        return this._exportCSV(cookies);
+    case 'csv':
+      return this._exportCSV(cookies);
 
-      case 'curl':
-        return this._exportCurl(cookies, options);
+    case 'curl':
+      return this._exportCurl(cookies, options);
 
-      default:
-        throw new Error(`Unknown format: ${format}`);
+    default:
+      throw new Error(`Unknown format: ${format}`);
     }
   }
 
@@ -545,20 +551,20 @@ class CookieManager extends EventEmitter {
     let cookies;
 
     switch (format) {
-      case 'json':
-        cookies = typeof data === 'string' ? JSON.parse(data) : data;
-        break;
+    case 'json':
+      cookies = typeof data === 'string' ? JSON.parse(data) : data;
+      break;
 
-      case 'netscape':
-        cookies = this._parseNetscape(data);
-        break;
+    case 'netscape':
+      cookies = this._parseNetscape(data);
+      break;
 
-      case 'csv':
-        cookies = this._parseCSV(data);
-        break;
+    case 'csv':
+      cookies = this._parseCSV(data);
+      break;
 
-      default:
-        throw new Error(`Unknown format: ${format}`);
+    default:
+      throw new Error(`Unknown format: ${format}`);
     }
 
     const jarName = options.jar || this.activeJar;
@@ -727,23 +733,31 @@ class CookieManager extends EventEmitter {
 
     for (const issue of issues) {
       switch (issue.severity) {
-        case 'critical': score -= 30; break;
-        case 'high': score -= 20; break;
-        case 'medium': score -= 10; break;
-        case 'low': score -= 5; break;
+      case 'critical': score -= 30; break;
+      case 'high': score -= 20; break;
+      case 'medium': score -= 10; break;
+      case 'low': score -= 5; break;
       }
     }
 
     // Bonus for security features
-    if (cookie.secure) score += 5;
-    if (cookie.httpOnly) score += 5;
-    if (cookie.sameSite && cookie.sameSite !== 'no_restriction') score += 5;
+    if (cookie.secure) {
+      score += 5;
+    }
+    if (cookie.httpOnly) {
+      score += 5;
+    }
+    if (cookie.sameSite && cookie.sameSite !== 'no_restriction') {
+      score += 5;
+    }
 
     return Math.max(0, Math.min(100, score));
   }
 
   _calculateOverallScore(summary) {
-    if (summary.total === 0) return 100;
+    if (summary.total === 0) {
+      return 100;
+    }
 
     const secureRatio = summary.secure / summary.total;
     const httpOnlyRatio = summary.httpOnly / summary.total;
@@ -752,7 +766,7 @@ class CookieManager extends EventEmitter {
     const issueDeduction =
       (summary.issues.critical || 0) * 5 +
       (summary.issues.high || 0) * 3 +
-      (summary.issues.medium || 0) * 1;
+      Number(summary.issues.medium || 0);
 
     const score =
       (secureRatio * 30) +
@@ -835,10 +849,14 @@ class CookieManager extends EventEmitter {
     const cookies = [];
 
     for (const line of lines) {
-      if (line.startsWith('#') || !line.trim()) continue;
+      if (line.startsWith('#') || !line.trim()) {
+        continue;
+      }
 
       const parts = line.split('\t');
-      if (parts.length !== 7) continue;
+      if (parts.length !== 7) {
+        continue;
+      }
 
       cookies.push({
         domain: parts[0],
@@ -859,10 +877,14 @@ class CookieManager extends EventEmitter {
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
-      if (!line) continue;
+      if (!line) {
+        continue;
+      }
 
       const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-      if (!parts || parts.length < 5) continue;
+      if (!parts || parts.length < 5) {
+        continue;
+      }
 
       const clean = parts.map(p => p.replace(/^"|"$/g, ''));
 

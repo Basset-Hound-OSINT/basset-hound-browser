@@ -71,7 +71,9 @@ const testUtils = {
 
   // Simulate a network request for testing
   simulateRequest(details) {
-    if (!networkState.capturing) return;
+    if (!networkState.capturing) {
+      return;
+    }
 
     const request = {
       id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
@@ -158,7 +160,7 @@ function setupServerHandlers() {
       log = log.filter(r => r.type === params.type);
     }
     if (params.blocked !== undefined) {
-      log = log.filter(r => !!r.blocked === params.blocked);
+      log = log.filter(r => Boolean(r.blocked) === params.blocked);
     }
     if (params.limit) {
       log = log.slice(-params.limit);

@@ -27,7 +27,7 @@ ws.on('open', async () => {
     // TEST 1: Navigation (3 URLs)
     console.log('=== TEST 1: Navigation (3 URLs) ===');
     const urls = ['https://example.com', 'https://httpbin.org', 'https://example.org'];
-    
+
     for (const url of urls) {
       const t = Date.now();
       const result = await sendCommand({ command: 'navigate', params: { url } });
@@ -40,10 +40,10 @@ ws.on('open', async () => {
 
     // TEST 2: Screenshots with debugging
     console.log('=== TEST 2: Screenshots (with debugging) ===');
-    
+
     // Try screenshot_viewport first (doesn't need dimensions)
     console.log('Attempting screenshot_viewport...');
-    let vpResult = await sendCommand({ command: 'screenshot_viewport', params: { format: 'png' } });
+    const vpResult = await sendCommand({ command: 'screenshot_viewport', params: { format: 'png' } });
     if (vpResult.success && vpResult.data) {
       const size = Buffer.from(vpResult.data, 'base64').length;
       console.log(`✓ screenshot_viewport: ${size} bytes`);
@@ -52,10 +52,10 @@ ws.on('open', async () => {
       console.log(`✗ screenshot_viewport failed: ${vpResult.error}`);
       TEST_RESULTS.screenshots.push({ method: 'viewport', status: 'FAIL', error: vpResult.error });
     }
-    
+
     // Try regular screenshot (should fallback)
     console.log('Attempting regular screenshot (with fallback)...');
-    let scResult = await sendCommand({ command: 'screenshot', params: { format: 'png' } });
+    const scResult = await sendCommand({ command: 'screenshot', params: { format: 'png' } });
     if (scResult.success && scResult.data) {
       const size = Buffer.from(scResult.data, 'base64').length;
       console.log(`✓ screenshot: ${size} bytes (method: ${scResult.captureMethod || 'default'})`);
@@ -121,14 +121,14 @@ ws.on('open', async () => {
     console.log('=== TEST 5: Memory Monitoring ===');
     const memBefore = process.memoryUsage().heapUsed / 1024 / 1024;
     TEST_RESULTS.memory.peak = memBefore;
-    
+
     // Wait 5 seconds for memory stabilization
     await new Promise(resolve => setTimeout(resolve, 5000));
-    
+
     const memAfter = process.memoryUsage().heapUsed / 1024 / 1024;
     TEST_RESULTS.memory.final = memAfter;
     const memGrowth = memAfter - startMemory;
-    
+
     console.log(`Baseline: ${startMemory.toFixed(2)}MB`);
     console.log(`Peak: ${TEST_RESULTS.memory.peak.toFixed(2)}MB`);
     console.log(`Final: ${memAfter.toFixed(2)}MB`);
@@ -148,14 +148,14 @@ ws.on('open', async () => {
     const screenshotPass = TEST_RESULTS.screenshots.filter(r => r.status === 'PASS').length;
     const tabPass = TEST_RESULTS.tabs.filter(r => r.status === 'PASS').length;
     const contentPass = TEST_RESULTS.content.filter(r => r.status === 'PASS').length;
-    
+
     console.log(`Navigation: ${navPass}/${TEST_RESULTS.navigation.length}`);
     console.log(`Screenshots: ${screenshotPass}/${TEST_RESULTS.screenshots.length}`);
     console.log(`Tab Management: ${tabPass}/${TEST_RESULTS.tabs.length}`);
     console.log(`Content Extraction: ${contentPass}/${TEST_RESULTS.content.length}`);
     console.log(`Memory: ${TEST_RESULTS.memory.status}`);
-    
-    const totalTests = 
+
+    const totalTests =
       TEST_RESULTS.navigation.length +
       TEST_RESULTS.screenshots.length +
       TEST_RESULTS.tabs.length +
@@ -165,10 +165,10 @@ ws.on('open', async () => {
       screenshotPass +
       tabPass +
       contentPass;
-    
+
     const passRate = ((totalPass / totalTests) * 100).toFixed(1);
     console.log(`\nTotal: ${totalPass}/${totalTests} (${passRate}%)`);
-    
+
     const totalTime = Date.now() - startTime;
     console.log(`Total Time: ${(totalTime / 1000).toFixed(2)}s`);
 

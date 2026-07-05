@@ -115,20 +115,20 @@ class HardwareFingerprintSpoofing {
         { width: 1440, height: 900 }
       ],
       mobile: [
-        { width: 390, height: 844 },   // iPhone 14
-        { width: 393, height: 873 },   // Pixel 6
-        { width: 412, height: 915 },   // Pixel 7
-        { width: 360, height: 740 },   // Android common
-        { width: 375, height: 667 },   // iPhone SE
-        { width: 414, height: 896 },   // iPhone XS Max
-        { width: 360, height: 800 },   // Android medium
-        { width: 480, height: 853 }    // Android larger
+        { width: 390, height: 844 }, // iPhone 14
+        { width: 393, height: 873 }, // Pixel 6
+        { width: 412, height: 915 }, // Pixel 7
+        { width: 360, height: 740 }, // Android common
+        { width: 375, height: 667 }, // iPhone SE
+        { width: 414, height: 896 }, // iPhone XS Max
+        { width: 360, height: 800 }, // Android medium
+        { width: 480, height: 853 } // Android larger
       ],
       tablet: [
-        { width: 820, height: 1180 },  // iPad Air
+        { width: 820, height: 1180 }, // iPad Air
         { width: 1024, height: 1366 }, // iPad Pro 12.9"
-        { width: 768, height: 1024 },  // iPad 10.2"
-        { width: 912, height: 1369 }   // Android tablet
+        { width: 768, height: 1024 }, // iPad 10.2"
+        { width: 912, height: 1369 } // Android tablet
       ]
     };
 
@@ -143,7 +143,9 @@ class HardwareFingerprintSpoofing {
    * @param {Object} profile - Device profile with hardware properties
    */
   initializeFromProfile(profile) {
-    if (!profile) return;
+    if (!profile) {
+      return;
+    }
 
     if (profile.hardwareConcurrency !== undefined) {
       this.validateAndSetValue('hardwareConcurrency', profile.hardwareConcurrency);
@@ -275,7 +277,9 @@ class HardwareFingerprintSpoofing {
   validateValue(property, value) {
     const range = this.ranges[property];
 
-    if (!range) return true; // Property not in ranges, assume valid
+    if (!range) {
+      return true;
+    } // Property not in ranges, assume valid
 
     if (Array.isArray(range)) {
       return range.includes(value);

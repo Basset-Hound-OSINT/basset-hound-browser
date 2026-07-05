@@ -531,7 +531,9 @@ class TechnologyManager {
   getFromCache(key) {
     const cached = this.cache.get(key);
 
-    if (!cached) return null;
+    if (!cached) {
+      return null;
+    }
 
     // Check if cache entry is still valid
     if (Date.now() - cached.timestamp > this.cacheTTL) {

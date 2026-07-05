@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: Basset Hound Browser WebSocket API
+  description: >-
+    Comprehensive API for browser automation, forensic capture, and data extraction.
+
+    **CRITICAL NOTICE:** This is a DEVELOPMENT TOOL. All commands are OPEN and UNRESTRICTED.
+    No authentication or authorization is enforced. This documentation is for authorized
+    developers only.
+
+
+    ## Key Features
+    - 140+ WebSocket commands for browser control and data extraction
+    - Forensic evidence capture and chain of custody management
+    - Network forensics (DNS, TLS, HTTP, WebSocket analysis)
+    - Legal compliance and SWGDE-compliant exports
+    - Advanced evasion frameworks and fingerprinting
+    - Session management and coherence validation
+    - Real-time monitoring and change detection
+
+    ## Protocol
+    - **Type**: WebSocket (JSON messages)
+    - **Default Port**: 8765
+    - **Encryption**: Optional WSS (wss://) for TLS/SSL
+    - **Default Payload Encoding**: UTF-8 JSON
+
+    ## Rate Limits (Per-Minute)
+    - Unauthenticated: 100 req/min
+    - Authenticated: 1000 req/min
+    - Per-Command: 1-100 req/min (command-specific)
+    - Sliding window algorithm with 60s window
+
+    ## Request/Response Size Limits
+    - Global maximum: 100 MB
+    - Screenshots: 100 MB
+    - Extraction: 50 MB
+    - Default: 10 MB
+
+  version: 12.8.0
+  contact:
+    name: Basset Hound Development
+    email: dev@basset-hound.local
+  license:
+    name: Proprietary
+    url: https://basset-hound-browser.local/license
+
+servers:
+  - url: ws://localhost:8765
+    description: Development server (unencrypted)
+  - url: wss://localhost:8765
+    description: Production server (with TLS/SSL)
+  - url: ws://basset-hound-browser:8765
+    description: Docker network (development)
+
+paths:
+  /:
+    get:
+      summary: WebSocket Handshake
+      description: Initiates WebSocket connection
+      operationId: websocket_handshake
+      tags:
+        - Connection
+      responses:
+        '101':
+          description: Switching Protocols - WebSocket connection established
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Connection ID
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "12.8.0"
+
+  /command:
+    post:
+      summary: Execute WebSocket Command
+      description: >-
+        Send JSON-formatted command over WebSocket connection.
+        All commands use the same request/response format.
+      operationId: execute_command
+      tags:
+        - Commands
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandRequest'
+            examples:
+              screenshot:
+                value:
+                  id: "req-1"
+                  command: "screenshot"
+              navigate:
+                value:
+                  id: "req-2"
+                  command: "navigate"
+                  url: "https://example.com"
+              evidence_capture:
+                value:
+                  id: "req-3"
+                  command: "capture_screenshot_evidence"
+                  imageData: "base64encodeddata..."
+                  url: "https://example.com"
+      responses:
+        '200':
+          description: Command executed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                screenshot_response:
+                  value:
+                    id: "req-1"
+                    command: "screenshot"
+                    success: true
+                    data:
+                      imageData: "base64encodeddata..."
+                      mimeType: "image/png"
+                      size: 245678
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitError'
+        '413':
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SizeExceededError'
+
+components:
+  schemas:
+    CommandRequest:
+      type: object
+      required:
+        - id
+        - command
+      properties:
+        id:
+          type: string
+          description: Unique request identifier (must be unique per connection)
+          example: "req-1"
+        command:
+          type: string
+          description: Command name (140+ commands available)
+          example: "navigate"
+        timeout:
+          type: integer
+          description: Request timeout in milliseconds
+          default: 30000
+          minimum: 1000
+          maximum: 300000
+      additionalProperties:
+        description: Command-specific parameters
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: object
+          - type: array
+
+    SuccessResponse:
+      type: object
+      required:
+        - id
+        - command
+        - success
+      properties:
+        id:
+          type: string
+          description: Echoed request ID
+        command:
+          type: string
+          description: Echoed command name
+        success:
+          type: boolean
+          enum: [true]
+        data:
+          type: object
+          description: Command-specific response data
+          additionalProperties: true
+        metadata:
+          type: object
+          description: Response metadata
+          properties:
+            processingTime:
+              type: integer
+              description: Processing time in milliseconds
+            timestamp:
+              type: string
+              format: date-time
+            compression:
+              type: string
+              enum: [none, gzip, brotli]
+              description: Compression method used
+
+    ErrorResponse:
+      type: object
+      required:
+        - id
+        - command
+        - success
+        - error
+        - code
+      properties:
+        id:
+          type: string
+          description: Echoed request ID
+        command:
+          type: string
+          description: Echoed command name
+        success:
+          type: boolean
+          enum: [false]
+        error:
+          type: string
+          description: Human-readable error message
+          example: "Invalid parameter: url is required"
+        code:
+          type: string
+          enum:
+            - INVALID_PARAMS
+            - NOT_FOUND
+            - UNAUTHORIZED
+            - CONFLICT
+            - SIZE_EXCEEDED
+            - TIMEOUT
+            - INTERNAL_ERROR
+            - RATE_LIMITED
+            - BAD_REQUEST
+            - FORBIDDEN
+            - COMMAND_NOT_FOUND
+        details:
+          type: object
+          description: Error details for debugging
+          properties:
+            param:
+              type: string
+              description: Parameter name if applicable
+            issue:
+              type: string
+              description: Specific problem
+            value:
+              type: string
+              description: Actual value received
+        recovery:
+          type: object
+          description: Recovery suggestions
+          properties:
+            suggestion:
+              type: string
+              description: What to try next
+            alternativeCommands:
+              type: array
+              items:
+                type: string
+              description: Alternative commands to try
+
+    RateLimitError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            code:
+              enum: [RATE_LIMITED]
+            data:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: Rate limit (requests per minute)
+                window:
+                  type: string
+                  description: Rate limit window
+                  example: "60000ms"
+                remaining:
+                  type: integer
+                  description: Requests remaining in window
+                resetAt:
+                  type: integer
+                  description: Unix timestamp when limit resets
+                retryAfter:
+                  type: integer
+                  description: Milliseconds to wait before retry
+
+    SizeExceededError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            code:
+              enum: [SIZE_EXCEEDED]
+            details:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: Size limit in bytes
+                received:
+                  type: integer
+                  description: Size received in bytes
+                category:
+                  type: string
+                  description: Request category
+
+    CommandStatus:
+      type: object
+      properties:
+        command:
+          type: string
+        status:
+          type: string
+          enum: [pending, executing, completed, failed]
+        progress:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Progress percentage
+        estimatedCompletion:
+          type: integer
+          description: Estimated milliseconds until completion
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Optional Bearer token authentication
+    queryToken:
+      type: apiKey
+      in: query
+      name: token
+      description: Optional query parameter token
+
+security:
+  - bearerAuth: []
+  - queryToken: []
+
+tags:
+  - name: Connection
+    description: WebSocket connection management
+  - name: Commands
+    description: Core WebSocket commands
+  - name: Evidence Capture
+    description: Forensic evidence capture (8 commands)
+  - name: Network Forensics
+    description: Network traffic analysis (26 commands)
+  - name: Legal Compliance
+    description: Court-admissible exports (6 commands)
+  - name: Evidence Packaging
+    description: Evidence packaging and sealing (19 commands)
+  - name: DOM Snapshots
+    description: DOM extraction and analysis (7 commands)
+  - name: JavaScript Console
+    description: Console output extraction (10 commands)
+  - name: HTML Capture
+    description: HTML and page content capture (6 commands)
+  - name: Export Formats
+    description: Multiple export format support (8 commands)
+  - name: Session Management
+    description: Session control and tracking (19+ commands)
+  - name: Evasion Framework
+    description: Bot detection evasion (55+ commands)
+  - name: Monitoring
+    description: Page monitoring and analytics (60+ commands)
+  - name: Recording
+    description: Session recording and playback (35+ commands)
+
+x-api-info:
+  defaultPort: 8765
+  defaultProtocol: ws
+  supportedProtocols:
+    - ws
+    - wss
+  messageFormat: JSON
+  requestEncoding: UTF-8
+  defaultTimeout: 30000
+  maxTimeout: 300000
+  commandCount: 140
+  categoryCount: 16
+  lastUpdated: "2026-06-21"
+  productionReady: true

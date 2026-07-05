@@ -147,7 +147,7 @@ class MockAggregatorWithErrorHandling extends EventEmitter {
   }
 }
 
-describe('Dashboard Error Handling', function() {
+describe('Dashboard Error Handling', function () {
   this.timeout(30000);
 
   let dashboard;
@@ -160,8 +160,8 @@ describe('Dashboard Error Handling', function() {
     aggregator = new MockAggregatorWithErrorHandling();
   });
 
-  describe('Scenario 1: Network Disconnection Handling', function() {
-    it('should detect network disconnection', function(done) {
+  describe('Scenario 1: Network Disconnection Handling', () => {
+    it('should detect network disconnection', (done) => {
       dashboard.once('error', (error) => {
         assert(error.message.includes('Network'));
         done();
@@ -170,13 +170,13 @@ describe('Dashboard Error Handling', function() {
       dashboard.simulateNetworkDisconnection();
     });
 
-    it('should fail gracefully when disconnected', function() {
+    it('should fail gracefully when disconnected', () => {
       assert.throws(() => {
         dashboard.processChange('monitor-1', {});
       }, 'Network disconnected');
     });
 
-    it('should detect reconnection', function(done) {
+    it('should detect reconnection', (done) => {
       dashboard.simulateNetworkReconnection();
 
       dashboard.once('reconnected', () => {
@@ -185,15 +185,15 @@ describe('Dashboard Error Handling', function() {
       });
     });
 
-    it('should resume operations after reconnection', function() {
+    it('should resume operations after reconnection', () => {
       const result = dashboard.processChange('monitor-1', { type: 'test' });
 
       assert(result.processed);
     });
   });
 
-  describe('Scenario 2: Network Error Recovery', function() {
-    it('should attempt recovery on network error', function(done) {
+  describe('Scenario 2: Network Error Recovery', () => {
+    it('should attempt recovery on network error', (done) => {
       dashboard.simulateNetworkDisconnection();
 
       dashboard.once('recovery-successful', () => {
@@ -205,11 +205,11 @@ describe('Dashboard Error Handling', function() {
       dashboard.handleError(new Error('Network error'));
     });
 
-    it('should track recovery attempts', function() {
+    it('should track recovery attempts', () => {
       assert(dashboard.recoveryAttempts > 0);
     });
 
-    it('should fail after max retries', function(done) {
+    it('should fail after max retries', (done) => {
       dashboard.recoveryAttempts = 0;
       dashboard.connected = false;
 
@@ -231,8 +231,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 3: Monitor Failure Handling', function() {
-    it('should handle monitor check failure', function() {
+  describe('Scenario 3: Monitor Failure Handling', () => {
+    it('should handle monitor check failure', () => {
       monitor.simulateFailure();
 
       assert.throws(() => {
@@ -240,18 +240,18 @@ describe('Dashboard Error Handling', function() {
       });
     });
 
-    it('should track monitor failure count', function() {
+    it('should track monitor failure count', () => {
       assert(monitor.failureCount > 0);
     });
 
-    it('should recover from monitor failure', function() {
+    it('should recover from monitor failure', () => {
       monitor.simulateRecovery();
 
       const result = monitor.check();
       assert.strictEqual(result.status, 'healthy');
     });
 
-    it('should provide monitor status', function() {
+    it('should provide monitor status', () => {
       const status = monitor.getStatus();
 
       assert(status.id);
@@ -260,8 +260,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 4: Aggregator Failure Handling', function() {
-    it('should detect aggregator failure', function() {
+  describe('Scenario 4: Aggregator Failure Handling', () => {
+    it('should detect aggregator failure', () => {
       aggregator.simulateFailure();
 
       assert.throws(() => {
@@ -269,18 +269,18 @@ describe('Dashboard Error Handling', function() {
       });
     });
 
-    it('should track failed aggregations', function() {
+    it('should track failed aggregations', () => {
       assert(aggregator.failedCount > 0);
     });
 
-    it('should recover from aggregator failure', function() {
+    it('should recover from aggregator failure', () => {
       aggregator.simulateRecovery();
 
       const result = aggregator.aggregate({ test: 'data' });
       assert(result);
     });
 
-    it('should provide aggregator stats', function() {
+    it('should provide aggregator stats', () => {
       const stats = aggregator.getStats();
 
       assert(stats.processed >= 0);
@@ -289,8 +289,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 5: Error Logging', function() {
-    it('should log errors', function() {
+  describe('Scenario 5: Error Logging', () => {
+    it('should log errors', () => {
       const error = new Error('Test error');
       dashboard.handleError(error);
 
@@ -298,7 +298,7 @@ describe('Dashboard Error Handling', function() {
       assert(errors.length > 0);
     });
 
-    it('should include error timestamp', function() {
+    it('should include error timestamp', () => {
       const errors = dashboard.getErrors();
 
       for (const error of errors) {
@@ -306,7 +306,7 @@ describe('Dashboard Error Handling', function() {
       }
     });
 
-    it('should preserve error message', function() {
+    it('should preserve error message', () => {
       const testMessage = 'Specific error message';
       dashboard.handleError(new Error(testMessage));
 
@@ -317,8 +317,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 6: Timeout Handling', function() {
-    it('should handle timeout errors', function(done) {
+  describe('Scenario 6: Timeout Handling', () => {
+    it('should handle timeout errors', (done) => {
       const timeout = setTimeout(() => {
         done(new Error('Timeout - operation did not complete'));
       }, 1000);
@@ -331,7 +331,7 @@ describe('Dashboard Error Handling', function() {
       });
     });
 
-    it('should gracefully timeout slow operations', async function() {
+    it('should gracefully timeout slow operations', async () => {
       const slowOp = new Promise(resolve => {
         setTimeout(() => resolve('done'), 100);
       });
@@ -352,8 +352,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 7: Cascading Failures', function() {
-    it('should handle multiple simultaneous failures', function() {
+  describe('Scenario 7: Cascading Failures', () => {
+    it('should handle multiple simultaneous failures', () => {
       const errors = [];
 
       const monitors = [
@@ -377,7 +377,7 @@ describe('Dashboard Error Handling', function() {
       assert.strictEqual(errors.length, 3);
     });
 
-    it('should track cascading failures', function() {
+    it('should track cascading failures', () => {
       const monitors = [
         new MockMonitorWithErrorHandling('c1'),
         new MockMonitorWithErrorHandling('c2'),
@@ -402,8 +402,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 8: Error Recovery Strategies', function() {
-    it('should implement exponential backoff', function(done) {
+  describe('Scenario 8: Error Recovery Strategies', () => {
+    it('should implement exponential backoff', (done) => {
       const times = [];
       let attemptCount = 0;
       const maxAttempts = 3;
@@ -426,13 +426,13 @@ describe('Dashboard Error Handling', function() {
       exponentialBackoff(() => {});
     });
 
-    it('should implement circuit breaker pattern', function() {
+    it('should implement circuit breaker pattern', () => {
       const circuitBreaker = {
         state: 'closed', // closed, open, half-open
         failureThreshold: 3,
         failureCount: 0,
 
-        attempt: function(operation) {
+        attempt: function (operation) {
           if (this.state === 'open') {
             throw new Error('Circuit breaker is open');
           }
@@ -474,8 +474,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 9: Error Context Preservation', function() {
-    it('should preserve error context', function() {
+  describe('Scenario 9: Error Context Preservation', () => {
+    it('should preserve error context', () => {
       const context = {
         monitorId: 'monitor-1',
         operation: 'fetch',
@@ -488,7 +488,7 @@ describe('Dashboard Error Handling', function() {
       assert.deepStrictEqual(error.context, context);
     });
 
-    it('should track error chains', function() {
+    it('should track error chains', () => {
       const originalError = new Error('Original error');
       const wrappedError = new Error('Wrapped error');
       wrappedError.cause = originalError;
@@ -497,8 +497,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 10: Partial Failure Handling', function() {
-    it('should handle partial monitor failures', function() {
+  describe('Scenario 10: Partial Failure Handling', () => {
+    it('should handle partial monitor failures', () => {
       const monitors = [];
 
       for (let i = 0; i < 5; i++) {
@@ -528,8 +528,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 11: Error Message Clarity', function() {
-    it('should provide clear error messages', function() {
+  describe('Scenario 11: Error Message Clarity', () => {
+    it('should provide clear error messages', () => {
       const errors = [
         new Error('Monitor failed: Connection timeout'),
         new Error('Aggregation failed: Invalid data format'),
@@ -543,8 +543,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 12: Health Check Implementation', function() {
-    it('should provide health status', function() {
+  describe('Scenario 12: Health Check Implementation', () => {
+    it('should provide health status', () => {
       const health = {
         dashboard: dashboard.connected,
         monitors: Array.from(dashboard.monitors.values()).map(m => m.isHealthy).every(h => h),
@@ -554,7 +554,7 @@ describe('Dashboard Error Handling', function() {
       assert(typeof health.dashboard === 'boolean');
     });
 
-    it('should support health probes', function() {
+    it('should support health probes', () => {
       const probes = [
         { name: 'connectivity', check: () => dashboard.connected },
         { name: 'aggregator', check: () => aggregator.isHealthy }
@@ -569,8 +569,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 13: Graceful Degradation', function() {
-    it('should degrade gracefully when components fail', function() {
+  describe('Scenario 13: Graceful Degradation', () => {
+    it('should degrade gracefully when components fail', () => {
       aggregator.simulateFailure();
 
       const fallback = {
@@ -588,8 +588,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 14: Error Reporting', function() {
-    it('should compile error report', function() {
+  describe('Scenario 14: Error Reporting', () => {
+    it('should compile error report', () => {
       dashboard.handleError(new Error('Error 1'));
       dashboard.handleError(new Error('Error 2'));
       dashboard.handleError(new Error('Error 3'));
@@ -605,8 +605,8 @@ describe('Dashboard Error Handling', function() {
     });
   });
 
-  describe('Scenario 15: Error Handling Summary', function() {
-    it('should summarize error handling capability', function() {
+  describe('Scenario 15: Error Handling Summary', () => {
+    it('should summarize error handling capability', () => {
       const summary = {
         errorsLogged: dashboard.getErrors().length,
         recoveryAttempts: dashboard.recoveryAttempts,

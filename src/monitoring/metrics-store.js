@@ -100,15 +100,15 @@ class MetricsStore {
     // Select appropriate buffer
     let buffer;
     switch (granularity) {
-      case '5m':
-        buffer = this.fiveMinute;
-        break;
-      case '1h':
-        buffer = this.oneHour;
-        break;
-      case '1m':
-      default:
-        buffer = this.oneMinute;
+    case '5m':
+      buffer = this.fiveMinute;
+      break;
+    case '1h':
+      buffer = this.oneHour;
+      break;
+    case '1m':
+    default:
+      buffer = this.oneMinute;
     }
 
     // Get all snapshots from buffer
@@ -141,15 +141,15 @@ class MetricsStore {
   getLastN(n, granularity = '1m') {
     let buffer;
     switch (granularity) {
-      case '5m':
-        buffer = this.fiveMinute;
-        break;
-      case '1h':
-        buffer = this.oneHour;
-        break;
-      case '1m':
-      default:
-        buffer = this.oneMinute;
+    case '5m':
+      buffer = this.fiveMinute;
+      break;
+    case '1h':
+      buffer = this.oneHour;
+      break;
+    case '1m':
+    default:
+      buffer = this.oneMinute;
     }
 
     return buffer.getLast(n);
@@ -297,7 +297,9 @@ class RingBuffer {
    * @returns {*} Latest item or undefined
    */
   getLatest() {
-    if (this.count === 0) return undefined;
+    if (this.count === 0) {
+      return undefined;
+    }
     const index = (this.head - 1 + this.size) % this.size;
     return this.buffer[index];
   }
@@ -308,7 +310,9 @@ class RingBuffer {
    * @returns {*} Item at index or undefined
    */
   getAt(index) {
-    if (index < 0 || index >= this.count) return undefined;
+    if (index < 0 || index >= this.count) {
+      return undefined;
+    }
     const actualIndex = (this.head - this.count + index + this.size) % this.size;
     return this.buffer[actualIndex];
   }

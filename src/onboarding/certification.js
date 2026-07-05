@@ -544,7 +544,9 @@ class CertificationEngine extends EventEmitter {
    */
   getBadgeUrl(examId) {
     const exam = this.getExam(examId);
-    if (!exam) return null;
+    if (!exam) {
+      return null;
+    }
     return `/badges/${examId}.png`;
   }
 
@@ -617,7 +619,9 @@ class CertificationEngine extends EventEmitter {
    * Calculate average score
    */
   calculateAverageScore(results) {
-    if (results.length === 0) return 0;
+    if (results.length === 0) {
+      return 0;
+    }
     const total = results.reduce((sum, r) => sum + r.score, 0);
     return Math.round(total / results.length);
   }

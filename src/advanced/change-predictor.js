@@ -110,7 +110,9 @@ class ChangePredictor extends EventEmitter {
    * @private
    */
   predictByFrequency(monitorId, history) {
-    if (history.length < 2) return null;
+    if (history.length < 2) {
+      return null;
+    }
 
     // Calculate average interval between changes
     const intervals = [];
@@ -151,7 +153,9 @@ class ChangePredictor extends EventEmitter {
    * @private
    */
   predictByTrend(monitorId, history) {
-    if (history.length < 3) return null;
+    if (history.length < 3) {
+      return null;
+    }
 
     // Use only recent history (last 50 points or less)
     const recent = history.slice(-Math.min(50, Math.max(10, Math.floor(history.length / 2))));
@@ -212,7 +216,9 @@ class ChangePredictor extends EventEmitter {
    * @private
    */
   predictBySeasonal(monitorId, history) {
-    if (history.length < 7) return null;
+    if (history.length < 7) {
+      return null;
+    }
 
     // Group by day of week
     const byDayOfWeek = {};
@@ -234,7 +240,9 @@ class ChangePredictor extends EventEmitter {
       }
     });
 
-    if (maxCount < 2) return null;
+    if (maxCount < 2) {
+      return null;
+    }
 
     // Calculate average time on that day
     const dayChanges = byDayOfWeek[maxDay];
@@ -243,7 +251,7 @@ class ChangePredictor extends EventEmitter {
 
     // Next occurrence of this day
     const now = new Date();
-    let next = new Date(now);
+    const next = new Date(now);
     const dayOffset = (maxDay - now.getDay() + 7) % 7 || 7;
     next.setDate(next.getDate() + dayOffset);
     next.setHours(Math.round(avgHour), 0, 0, 0);
@@ -272,7 +280,9 @@ class ChangePredictor extends EventEmitter {
    * @private
    */
   ensemblePredictions(predictions) {
-    if (predictions.length === 0) return null;
+    if (predictions.length === 0) {
+      return null;
+    }
 
     // Weighted average of predictions
     let totalWeight = 0;
@@ -318,11 +328,15 @@ class ChangePredictor extends EventEmitter {
    */
   getBestPrediction(monitorId) {
     const predictions = this.getPredictions(monitorId);
-    if (predictions.length === 0) return null;
+    if (predictions.length === 0) {
+      return null;
+    }
 
     // Prefer ensemble, then highest confidence
     const ensemble = predictions.find(p => p.method === 'ensemble');
-    if (ensemble) return ensemble;
+    if (ensemble) {
+      return ensemble;
+    }
 
     return predictions.reduce((best, current) =>
       (current.confidence >= best.confidence) ? current : best
@@ -336,7 +350,9 @@ class ChangePredictor extends EventEmitter {
    */
   getTimeUntilNextChange(monitorId) {
     const prediction = this.getBestPrediction(monitorId);
-    if (!prediction) return null;
+    if (!prediction) {
+      return null;
+    }
 
     const now = Date.now();
     const timeUntil = prediction.nextPredicted - now;
@@ -359,10 +375,14 @@ class ChangePredictor extends EventEmitter {
    */
   recordActualChange(monitorId, actualChange) {
     const predictions = this.getPredictions(monitorId);
-    if (predictions.length === 0) return;
+    if (predictions.length === 0) {
+      return;
+    }
 
     const bestPrediction = this.getBestPrediction(monitorId);
-    if (!bestPrediction) return;
+    if (!bestPrediction) {
+      return;
+    }
 
     const actualTime = actualChange.timestamp || Date.now();
     const predictionError = Math.abs(actualTime - bestPrediction.nextPredicted);
@@ -377,7 +397,9 @@ class ChangePredictor extends EventEmitter {
 
     const acc = this.accuracy.get(monitorId);
     acc.total++;
-    if (isCorrect) acc.correct++;
+    if (isCorrect) {
+      acc.correct++;
+    }
     acc.errors.push(predictionError);
     acc.accuracy = acc.correct / acc.total;
 

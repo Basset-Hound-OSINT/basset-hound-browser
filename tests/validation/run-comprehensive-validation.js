@@ -25,44 +25,44 @@ const TEST_SUITES = [
     name: 'End-to-End Journey Testing',
     file: 'e2e-journeys.test.js',
     timeout: 600000, // 10 minutes
-    phase: 1,
+    phase: 1
   },
   {
     name: 'Real-World Scenario Testing',
     file: 'real-world-scenarios.test.js',
     timeout: 600000,
-    phase: 1,
+    phase: 1
   },
   {
     name: 'High-Load Stress Testing',
     file: 'stress-high-load.test.js',
     timeout: 3900000, // 65 minutes (1 hour + buffer)
-    phase: 2,
+    phase: 2
   },
   {
     name: 'Chaos: Component Failure',
     file: 'chaos-component-failure.test.js',
     timeout: 300000, // 5 minutes
-    phase: 3,
+    phase: 3
   },
   {
     name: 'Chaos: Network Conditions',
     file: 'chaos-network.test.js',
     timeout: 300000,
-    phase: 3,
+    phase: 3
   },
   {
     name: 'Performance: End-to-End Latency',
     file: 'performance-e2e.test.js',
     timeout: 300000,
-    phase: 4,
+    phase: 4
   },
   {
     name: 'Integration: Multi-Feature',
     file: 'integration-multi-feature.test.js',
     timeout: 300000,
-    phase: 5,
-  },
+    phase: 5
+  }
 ];
 
 const VALIDATION_RESULTS = {
@@ -74,11 +74,11 @@ const VALIDATION_RESULTS = {
     totalSuites: TEST_SUITES.length,
     passedSuites: 0,
     failedSuites: 0,
-    successRate: 0,
+    successRate: 0
   },
   phases: {},
   issues: [],
-  recommendations: [],
+  recommendations: []
 };
 
 /**
@@ -100,7 +100,7 @@ function runTestSuite(testSuite) {
       const output = execSync(`node "${testPath}"`, {
         timeout: testSuite.timeout,
         encoding: 'utf-8',
-        stdio: 'pipe',
+        stdio: 'pipe'
       });
 
       const elapsed = Date.now() - startTime;
@@ -112,7 +112,7 @@ function runTestSuite(testSuite) {
         phase: testSuite.phase,
         status: passed ? 'PASSED' : 'FAILED',
         duration: elapsed,
-        output: output.substring(0, 5000), // Truncate large outputs
+        output: output.substring(0, 5000) // Truncate large outputs
       };
 
       console.log(result.output);
@@ -136,7 +136,7 @@ function runTestSuite(testSuite) {
           : errorMessage.substring(0, 500),
         output: error.stdout
           ? error.stdout.toString().substring(0, 5000)
-          : errorMessage.substring(0, 5000),
+          : errorMessage.substring(0, 5000)
       };
 
       console.error(`\n[FAILED] ${result.error}\n`);
@@ -313,7 +313,7 @@ async function main() {
         severity: 'HIGH',
         message: `Test suite failed: ${result.name}`,
         suite: result.name,
-        error: result.error,
+        error: result.error
       });
     } else {
       VALIDATION_RESULTS.summary.passedSuites++;

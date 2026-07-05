@@ -45,9 +45,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           deviceType: 'mobile',
           vendor: 'Apple',
           screenWidth: 390,
-          screenHeight: 844,
+          screenHeight: 844
         },
-        tabId: 'test-tab-1',
+        tabId: 'test-tab-1'
       };
 
       const result = await commandHandlers.generate_user_agent(params);
@@ -73,9 +73,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           deviceType: 'mobile',
           vendor: 'Apple',
           screenWidth: 390,
-          screenHeight: 844,
+          screenHeight: 844
         },
-        tabId: 'test-tab-2',
+        tabId: 'test-tab-2'
       };
 
       const result = await commandHandlers.generate_screen_resolution(params);
@@ -92,9 +92,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           deviceType: 'desktop',
           vendor: 'Google',
           screenWidth: 1920,
-          screenHeight: 1080,
+          screenHeight: 1080
         },
-        tabId: 'test-tab-3',
+        tabId: 'test-tab-3'
       };
 
       const result = await commandHandlers.generate_screen_resolution(params);
@@ -111,9 +111,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           deviceType: 'mobile',
           vendor: 'Apple',
           hardwareConcurrency: 6,
-          deviceMemory: 6,
+          deviceMemory: 6
         },
-        tabId: 'test-tab-4',
+        tabId: 'test-tab-4'
       };
 
       const result = await commandHandlers.generate_gpu_specs(params);
@@ -132,9 +132,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           deviceType: 'desktop',
           vendor: 'Google',
           hardwareConcurrency: 16,
-          deviceMemory: 32,
+          deviceMemory: 32
         },
-        tabId: 'test-tab-5',
+        tabId: 'test-tab-5'
       };
 
       const result = await commandHandlers.generate_gpu_specs(params);
@@ -150,9 +150,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
         profile: {
           vendor: 'Apple',
           timezone: 'America/New_York',
-          deviceType: 'mobile',
+          deviceType: 'mobile'
         },
-        tabId: 'test-tab-6',
+        tabId: 'test-tab-6'
       };
 
       const result = await commandHandlers.generate_browser_profile(params);
@@ -176,9 +176,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           screenHeight: 844,
           hardwareConcurrency: 6,
           deviceMemory: 6,
-          timezone: 'America/New_York',
+          timezone: 'America/New_York'
         },
-        tabId: 'test-tab-7',
+        tabId: 'test-tab-7'
       };
 
       const result = await commandHandlers.generate_all_fake_data(params);
@@ -199,9 +199,9 @@ describe('Fake Data Generator WebSocket Commands', () => {
           screenHeight: 844,
           hardwareConcurrency: 6,
           deviceMemory: 6,
-          timezone: 'America/New_York',
+          timezone: 'America/New_York'
         },
-        tabId: 'test-tab-8',
+        tabId: 'test-tab-8'
       };
 
       const result = await commandHandlers.generate_all_fake_data(params);
@@ -226,7 +226,7 @@ describe('Fake Data Generator WebSocket Commands', () => {
         screenHeight: 844,
         hardwareConcurrency: 6,
         deviceMemory: 6,
-        timezone: 'America/New_York',
+        timezone: 'America/New_York'
       };
 
       await commandHandlers.generate_all_fake_data({ profile, tabId });
@@ -259,7 +259,7 @@ describe('Fake Data Generator WebSocket Commands', () => {
         screenHeight: 844,
         hardwareConcurrency: 6,
         deviceMemory: 6,
-        timezone: 'America/New_York',
+        timezone: 'America/New_York'
       };
 
       await commandHandlers.generate_all_fake_data({ profile, tabId });
@@ -291,7 +291,7 @@ describe('Fake Data Generator WebSocket Commands', () => {
         screenHeight: 844,
         hardwareConcurrency: 6,
         deviceMemory: 6,
-        timezone: 'America/New_York',
+        timezone: 'America/New_York'
       };
 
       await commandHandlers.generate_all_fake_data({ profile, tabId });
@@ -316,17 +316,17 @@ describe('Fake Data Generator WebSocket Commands', () => {
         screenHeight: 844,
         hardwareConcurrency: 6,
         deviceMemory: 6,
-        timezone: 'America/New_York',
+        timezone: 'America/New_York'
       };
 
       const tab1Result = await commandHandlers.generate_user_agent({
         profile,
-        tabId: 'tab-iso-1',
+        tabId: 'tab-iso-1'
       });
 
       const tab2Result = await commandHandlers.generate_user_agent({
         profile,
-        tabId: 'tab-iso-2',
+        tabId: 'tab-iso-2'
       });
 
       expect(tab1Result.success).toBe(true);
@@ -344,7 +344,7 @@ describe('Fake Data Generator WebSocket Commands', () => {
         screenHeight: 844,
         hardwareConcurrency: 6,
         deviceMemory: 6,
-        timezone: 'America/New_York',
+        timezone: 'America/New_York'
       };
 
       const tab1 = 'tab-mix-1';
@@ -370,7 +370,7 @@ describe('Fake Data Generator WebSocket Commands', () => {
         'generate_user_agent',
         'generate_screen_resolution',
         'generate_gpu_specs',
-        'generate_browser_profile',
+        'generate_browser_profile'
       ];
 
       for (const cmd of commands) {

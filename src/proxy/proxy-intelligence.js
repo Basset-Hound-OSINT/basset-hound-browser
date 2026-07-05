@@ -167,7 +167,7 @@ class ProxyIntelligence {
     }
 
     // Get candidate proxies based on session preferences
-    let candidates = Array.from(this.proxies.values())
+    const candidates = Array.from(this.proxies.values())
       .filter(p => {
         // Filter by provider type
         if (session.preferredProviderType &&

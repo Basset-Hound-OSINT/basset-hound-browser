@@ -97,13 +97,17 @@ class TechDetector {
     const headerMap = this.normalizeHeaders(headers);
 
     for (const [techId, tech] of Object.entries(this.signatures)) {
-      if (!tech.headers || typeof tech.headers !== 'object') continue;
+      if (!tech.headers || typeof tech.headers !== 'object') {
+        continue;
+      }
 
       for (const [headerName, headerSignature] of Object.entries(tech.headers)) {
         const headerValue = headerMap.get(headerName.toLowerCase()) || '';
 
         // Skip if no value in headers
-        if (!headerValue) continue;
+        if (!headerValue) {
+          continue;
+        }
 
         // Check for match
         let matched = false;
@@ -140,12 +144,16 @@ class TechDetector {
    */
   async detectByFavicon(faviconBuffer) {
     const detections = [];
-    if (!faviconBuffer) return detections;
+    if (!faviconBuffer) {
+      return detections;
+    }
 
     const sha256Hash = crypto.createHash('sha256').update(faviconBuffer).digest('hex');
 
     for (const [techId, tech] of Object.entries(this.signatures)) {
-      if (!tech.favicon) continue;
+      if (!tech.favicon) {
+        continue;
+      }
 
       if (tech.favicon.sha256 === sha256Hash) {
         detections.push({
@@ -170,7 +178,9 @@ class TechDetector {
    */
   async detectBySSL(certificate, tlsDetails = {}) {
     const detections = [];
-    if (!certificate) return detections;
+    if (!certificate) {
+      return detections;
+    }
 
     // Extract issuer, subject, organization
     const issuer = certificate.issuer?.O || '';
@@ -215,7 +225,9 @@ class TechDetector {
     const detections = [];
 
     for (const [techId, tech] of Object.entries(this.signatures)) {
-      if (!tech.js) continue;
+      if (!tech.js) {
+        continue;
+      }
 
       // Check script URLs
       if (tech.js.urls) {
@@ -261,7 +273,9 @@ class TechDetector {
 
     // Check signatures that have HTML patterns
     for (const [techId, tech] of Object.entries(this.signatures)) {
-      if (!tech.html) continue;
+      if (!tech.html) {
+        continue;
+      }
 
       // Meta tag detection
       if (tech.html.metaGenerator && metaGenerator) {
@@ -353,7 +367,9 @@ class TechDetector {
    */
   normalizeHeaders(headers) {
     const map = new Map();
-    if (!headers) return map;
+    if (!headers) {
+      return map;
+    }
     for (const [key, value] of Object.entries(headers)) {
       map.set(key.toLowerCase(), value);
     }
@@ -387,7 +403,9 @@ class TechDetector {
    * Helper: Extract version from value
    */
   extractVersion(value, versionPatterns) {
-    if (!versionPatterns) return null;
+    if (!versionPatterns) {
+      return null;
+    }
 
     for (const pattern of versionPatterns) {
       const regex = new RegExp(pattern);

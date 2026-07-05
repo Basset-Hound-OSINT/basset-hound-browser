@@ -1,0 +1,185 @@
+# ==============================================================================
+# Prometheus Alert Rules
+# ==============================================================================
+# Defines conditions that trigger alerts when thresholds are exceeded.
+# These alerts are sent to Alertmanager for routing and notification.
+# ==============================================================================
+
+groups:
+  - name: rag-bootstrap-alerts
+    interval: 15s
+    rules:
+      # =========================================================================
+      # API Performance Alerts
+      # =========================================================================
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 1.0
+        for: 2m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API latency detected (>1s)"
+          description: "99th percentile latency is {{ $value }}s on {{ $labels.instance }}"
+          action: "Check API logs, database query performance, or LLM service delays"
+
+      - alert: CriticalLatency
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 3.0
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Critical API latency (>3s)"
+          description: "99th percentile latency is {{ $value }}s on {{ $labels.instance }}"
+          action: "IMMEDIATE: Investigate LLM service, scale API replicas, or rollback"
+
+      # =========================================================================
+      # Error Rate Alerts
+      # =========================================================================
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.001
+        for: 3m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High error rate detected (>0.1%)"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          action: "Check application logs for stack traces and exceptions"
+
+      - alert: CriticalErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Critical error rate (>5%)"
+          description: "Error rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          action: "IMMEDIATE: Page on-call, check logs, consider rolling back"
+
+      # =========================================================================
+      # GPU Utilization Alerts
+      # =========================================================================
+      - alert: HighGPUUtilization
+        expr: nvidia_smi_utilization_gpu > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: gpu
+        annotations:
+          summary: "High GPU utilization (>90%)"
+          description: "GPU utilization is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          action: "Monitor queue depth, consider load balancing or additional GPUs"
+
+      - alert: CriticalGPUUtilization
+        expr: nvidia_smi_utilization_gpu > 0.95
+        for: 2m
+        labels:
+          severity: critical
+          component: gpu
+        annotations:
+          summary: "Critical GPU utilization (>95%)"
+          description: "GPU utilization is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          action: "IMMEDIATE: Add GPU resources or throttle incoming requests"
+
+      # =========================================================================
+      # Database Connectivity Alerts
+      # =========================================================================
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: postgres
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL has been unreachable for >1m"
+          action: "IMMEDIATE: Check database container logs and restart if needed"
+
+      - alert: PostgreSQLConnectionLimit
+        expr: pg_stat_activity_count > 90
+        for: 2m
+        labels:
+          severity: warning
+          component: postgres
+        annotations:
+          summary: "PostgreSQL approaching connection limit (90%)"
+          description: "Active connections: {{ $value }} (limit: 100)"
+          action: "Investigate connection leaks in application, consider connection pooling"
+
+      # =========================================================================
+      # Redis Alerts
+      # =========================================================================
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: redis
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been unreachable for >1m"
+          action: "IMMEDIATE: Check Redis container logs and restart if needed"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.85
+        for: 3m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis memory usage critical (>85%)"
+          description: "Memory usage: {{ $value | humanizePercentage }}"
+          action: "Clear expired keys or increase Redis memory limit"
+
+      # =========================================================================
+      # Container & Host Resource Alerts
+      # =========================================================================
+      - alert: ContainerHighCPU
+        expr: (rate(container_cpu_usage_seconds_total[5m])) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "High CPU usage (>80%)"
+          description: "Container {{ $labels.container_name }} CPU: {{ $value | humanizePercentage }}"
+          action: "Scale horizontally or optimize code performance"
+
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.85
+        for: 3m
+        labels:
+          severity: warning
+          component: container
+        annotations:
+          summary: "High memory usage (>85%)"
+          description: "Container {{ $labels.container_name }} memory: {{ $value | humanizePercentage }}"
+          action: "Increase memory limit or optimize memory usage"
+
+      # =========================================================================
+      # Service Health Alerts
+      # =========================================================================
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: general
+        annotations:
+          summary: "Service down: {{ $labels.job }}"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for >2m"
+          action: "Check Docker logs: docker logs <container_name>"
+
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: monitoring
+        annotations:
+          summary: "Prometheus is down"
+          description: "Prometheus monitoring has stopped"
+          action: "IMMEDIATE: Restart Prometheus or check disk space"

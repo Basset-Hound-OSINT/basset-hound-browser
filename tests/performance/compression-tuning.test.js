@@ -33,7 +33,7 @@ describe('CompressionTuning - Performance Optimization #5', () => {
     });
 
     test('should select level 6 for medium payloads', () => {
-      let mediumData = 'x'.repeat(10000);
+      const mediumData = 'x'.repeat(10000);
       const level = selector.selectLevel(mediumData);
 
       expect(level).toBeGreaterThanOrEqual(selector.levels.balanced);
@@ -41,7 +41,7 @@ describe('CompressionTuning - Performance Optimization #5', () => {
     });
 
     test('should select level 3 for large payloads', () => {
-      let largeData = 'x'.repeat(200000);
+      const largeData = 'x'.repeat(200000);
       const level = selector.selectLevel(largeData);
 
       expect(level).toBeLessThanOrEqual(selector.levels.balanced);
@@ -157,7 +157,7 @@ describe('CompressionTuning - Performance Optimization #5', () => {
         'aaaa',
         'abcd',
         '{"key": "value"}',
-        'x'.repeat(1000),
+        'x'.repeat(1000)
       ];
 
       for (const data of testData) {
@@ -217,8 +217,8 @@ describe('CompressionTuning - Performance Optimization #5', () => {
         name: 'test',
         data: {
           nested: 'value',
-          items: Array(100).fill({ id: 1, name: 'test', value: 'data' }),
-        },
+          items: Array(100).fill({ id: 1, name: 'test', value: 'data' })
+        }
       });
       const level = selector.selectLevel(testData);
 
@@ -251,8 +251,8 @@ describe('CompressionTuning - Performance Optimization #5', () => {
         key3: 'value3',
         nested: {
           data: 'test',
-          array: [1, 2, 3, 4, 5],
-        },
+          array: [1, 2, 3, 4, 5]
+        }
       });
 
       // Use selected level
@@ -295,8 +295,8 @@ describe('CompressionTuning - Performance Optimization #5', () => {
         users: [
           { id: 1, name: 'Alice', email: 'alice@test.com' },
           { id: 2, name: 'Bob', email: 'bob@test.com' },
-          { id: 3, name: 'Charlie', email: 'charlie@test.com' },
-        ],
+          { id: 3, name: 'Charlie', email: 'charlie@test.com' }
+        ]
       });
 
       const level = selector.selectLevel(json);

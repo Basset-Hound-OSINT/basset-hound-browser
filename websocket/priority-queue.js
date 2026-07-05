@@ -218,7 +218,9 @@ class PriorityQueue extends EventEmitter {
    */
   completeRequest(requestId, result) {
     const req = this.requests.get(requestId);
-    if (!req) return;
+    if (!req) {
+      return;
+    }
 
     const waitTime = req.startTime - req.request.queuedAt;
     const processingTime = Date.now() - req.startTime;
@@ -259,7 +261,9 @@ class PriorityQueue extends EventEmitter {
    */
   failRequest(requestId, error, retry = true) {
     const req = this.requests.get(requestId);
-    if (!req) return;
+    if (!req) {
+      return;
+    }
 
     // Check if we should retry
     if (retry && req.request.retries < req.request.maxRetries) {
@@ -457,7 +461,9 @@ class PriorityQueue extends EventEmitter {
    */
   boostPriority(requestId) {
     const req = this.requests.get(requestId);
-    if (!req) return;
+    if (!req) {
+      return;
+    }
 
     const current = req.request.priority;
     const priorities = ['critical', 'high', 'normal', 'low'];

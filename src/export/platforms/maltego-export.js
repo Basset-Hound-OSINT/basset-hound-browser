@@ -73,7 +73,9 @@ class MaltegoExport extends PlatformIntegration {
     rows.push('Type,Value,Description,Confidence,Tags');
 
     const addEntity = (type, value, description = '', confidence = 100, tags = '') => {
-      if (!value) return;
+      if (!value) {
+        return;
+      }
 
       entities.push({
         type,
@@ -254,7 +256,7 @@ class MaltegoExport extends PlatformIntegration {
    * @private
    */
   _generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);

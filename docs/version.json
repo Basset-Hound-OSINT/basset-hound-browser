@@ -1,0 +1,27 @@
+{
+  "project": "Basset Hound Browser",
+  "current_version": "12.8.0",
+  "api_version": "12.8.0",
+  "release_date": "2026-06-21",
+  "status": "production",
+  "commands": 164,
+  "documentation": {
+    "canonical_entry": "/docs/API-DOCUMENTATION-SUMMARY.md",
+    "specification": "/docs/openapi.yaml",
+    "changelog": "/docs/API-VERSIONS.md",
+    "quick_start": "/docs/QUICK-START-GUIDE.md",
+    "examples": "/docs/EXAMPLES.md",
+    "integration": "/docs/INTEGRATION-GUIDE.md"
+  },
+  "wiki": {
+    "api_reference": "/docs/wiki/api/",
+    "index": "/docs/wiki/api/INDEX.md",
+    "changelog": "/docs/wiki/api/CHANGELOG.md"
+  },
+  "archive": {
+    "deprecated": "/docs/archive/deprecated/",
+    "count": 43
+  },
+  "last_updated": "2026-06-22T00:00:00Z",
+  "consolidation_status": "85% complete - critical fixes implemented"
+}

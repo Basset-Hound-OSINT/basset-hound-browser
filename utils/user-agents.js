@@ -35,7 +35,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
   ],
 
   // Chrome on macOS
@@ -47,7 +47,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
   ],
 
   // Chrome on Linux
@@ -57,7 +57,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     'Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   ],
 
   // Firefox on Windows
@@ -68,7 +68,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
     'Mozilla/5.0 (Windows NT 11.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
     'Mozilla/5.0 (Windows NT 11.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0'
   ],
 
   // Firefox on macOS
@@ -78,7 +78,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.0; rv:121.0) Gecko/20100101 Firefox/121.0',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.1; rv:120.0) Gecko/20100101 Firefox/120.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13.0; rv:121.0) Gecko/20100101 Firefox/121.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13.0; rv:121.0) Gecko/20100101 Firefox/121.0'
   ],
 
   // Firefox on Linux
@@ -88,7 +88,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (X11; Linux x86_64; rv:122.0) Gecko/20100101 Firefox/122.0',
     'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
     'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
-    'Mozilla/5.0 (X11; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:115.0) Gecko/20100101 Firefox/115.0'
   ],
 
   // Safari on macOS
@@ -99,7 +99,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.15',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15'
   ],
 
   // Edge on Windows
@@ -109,7 +109,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0',
     'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
-    'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0',
+    'Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0'
   ],
 
   // Mobile - Android
@@ -121,7 +121,7 @@ const USER_AGENTS = {
     'Mozilla/5.0 (Linux; Android 13; SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
     'Mozilla/5.0 (Linux; Android 14; Pixel 7 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
     'Mozilla/5.0 (Linux; Android 13; Redmi Note 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
-    'Mozilla/5.0 (Linux; Android 14; OnePlus 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+    'Mozilla/5.0 (Linux; Android 14; OnePlus 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36'
   ],
 
   // Mobile - iOS
@@ -132,8 +132,8 @@ const USER_AGENTS = {
     'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
     'Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
     'Mozilla/5.0 (iPad; CPU OS 17_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120.0.6099.119 Mobile/15E148 Safari/604.1',
-  ],
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120.0.6099.119 Mobile/15E148 Safari/604.1'
+  ]
 };
 
 /**
@@ -276,9 +276,54 @@ class UserAgentManager {
 
     this.currentUserAgent = userAgent;
 
-    // Apply to window if provided
+    // Apply to the SHELL window (the browser chrome). Kept for completeness, but note that
+    // pages do NOT load in the shell — they load in the guest <webview>.
     if (mainWindow && mainWindow.webContents) {
       mainWindow.webContents.setUserAgent(userAgent);
+    }
+
+    // CRITICAL (stealth): apply the UA to the shared default session so the guest <webview>
+    // — which has no `partition`, so it inherits session.defaultSession — presents this UA on
+    // BOTH navigator.userAgent (JS) and the wire. Previously the UA was only set on the shell's
+    // webContents, so the browsed page kept leaking Electron/basset-hound-browser tokens.
+    // Also set app.userAgentFallback so any freshly created WebContents (new tabs) default to it.
+    // Guarded: require('electron') is a no-op string in unit tests (no session) — caught below.
+    try {
+      const electron = require('electron');
+      if (electron && electron.session && electron.session.defaultSession &&
+          typeof electron.session.defaultSession.setUserAgent === 'function') {
+        electron.session.defaultSession.setUserAgent(userAgent);
+      }
+      if (electron && electron.app) {
+        electron.app.userAgentFallback = userAgent;
+      }
+      // Also apply directly to any already-created guest <webview> WebContents. session-level
+      // setUserAgent() only changes the session DEFAULT and does NOT retroactively update a
+      // WebContents created earlier — so a runtime set_user_agent would otherwise never reach an
+      // already-open guest (it would keep the startup UA). Setting it on the guest makes the new
+      // UA take effect on the guest's next navigation, on BOTH navigator.userAgent and the wire.
+      if (electron && electron.webContents && typeof electron.webContents.getAllWebContents === 'function') {
+        for (const wc of electron.webContents.getAllWebContents()) {
+          try {
+            if (wc && typeof wc.getType === 'function' && wc.getType() === 'webview' &&
+                typeof wc.setUserAgent === 'function') {
+              wc.setUserAgent(userAgent);
+            }
+          } catch (_) {
+            // an individual WebContents may already be destroyed — skip it
+          }
+        }
+      }
+    } catch (e) {
+      // Not running under a real Electron session (e.g. unit tests) — guest propagation is a no-op.
+    }
+
+    // Keep the injected fingerprint identity coherent: navigator.platform must match this UA's OS.
+    try {
+      const { setActiveUserAgent } = require('../evasion/fingerprint');
+      setActiveUserAgent(userAgent);
+    } catch (e) {
+      // fingerprint module optional in some contexts — coherence update is best-effort.
     }
 
     console.log(`[UserAgentManager] User agent set: ${userAgent.substring(0, 50)}...`);
@@ -548,25 +593,35 @@ class UserAgentManager {
       isMobile: false
     };
 
-    if (!userAgent) return info;
+    if (!userAgent) {
+      return info;
+    }
 
     // Detect browser
     if (userAgent.includes('Edg/')) {
       info.browser = 'Edge';
       const match = userAgent.match(/Edg\/(\d+\.\d+\.\d+\.\d+)/);
-      if (match) info.browserVersion = match[1];
+      if (match) {
+        info.browserVersion = match[1];
+      }
     } else if (userAgent.includes('Chrome/')) {
       info.browser = 'Chrome';
       const match = userAgent.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/);
-      if (match) info.browserVersion = match[1];
+      if (match) {
+        info.browserVersion = match[1];
+      }
     } else if (userAgent.includes('Firefox/')) {
       info.browser = 'Firefox';
       const match = userAgent.match(/Firefox\/(\d+\.\d+)/);
-      if (match) info.browserVersion = match[1];
+      if (match) {
+        info.browserVersion = match[1];
+      }
     } else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome')) {
       info.browser = 'Safari';
       const match = userAgent.match(/Version\/(\d+\.\d+)/);
-      if (match) info.browserVersion = match[1];
+      if (match) {
+        info.browserVersion = match[1];
+      }
     }
 
     // Detect OS
@@ -579,17 +634,23 @@ class UserAgentManager {
     } else if (userAgent.includes('Mac OS X')) {
       info.os = 'macOS';
       const match = userAgent.match(/Mac OS X (\d+[._]\d+)/);
-      if (match) info.osVersion = match[1].replace('_', '.');
+      if (match) {
+        info.osVersion = match[1].replace('_', '.');
+      }
     } else if (userAgent.includes('Linux')) {
       info.os = 'Linux';
     } else if (userAgent.includes('Android')) {
       info.os = 'Android';
       const match = userAgent.match(/Android (\d+)/);
-      if (match) info.osVersion = match[1];
+      if (match) {
+        info.osVersion = match[1];
+      }
     } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
       info.os = 'iOS';
       const match = userAgent.match(/OS (\d+_\d+)/);
-      if (match) info.osVersion = match[1].replace('_', '.');
+      if (match) {
+        info.osVersion = match[1].replace('_', '.');
+      }
     }
 
     // Detect mobile
@@ -605,7 +666,9 @@ class UserAgentManager {
    * @returns {string|null} - Category key or null if not found
    */
   detectUserAgentCategory(userAgent) {
-    if (!userAgent || typeof userAgent !== 'string') return null;
+    if (!userAgent || typeof userAgent !== 'string') {
+      return null;
+    }
 
     for (const [category, agents] of Object.entries(USER_AGENTS)) {
       if (agents.includes(userAgent)) {

@@ -42,7 +42,7 @@ class NetworkTuning extends EventEmitter {
     this.stats = {
       socketsTuned: 0,
       keepaliveInterval: 0,
-      bytesOptimized: 0,
+      bytesOptimized: 0
     };
   }
 
@@ -145,7 +145,7 @@ class NetworkTuning extends EventEmitter {
       bytesRead: 0,
       backpressureEvents: 0,
       drainEvents: 0,
-      lastActivity: Date.now(),
+      lastActivity: Date.now()
     };
 
     // Monitor for backpressure
@@ -207,7 +207,7 @@ class NetworkTuning extends EventEmitter {
       bytesRead: socket._optimizationMetrics.bytesRead,
       backpressureEvents: socket._optimizationMetrics.backpressureEvents,
       drainEvents: socket._optimizationMetrics.drainEvents,
-      idleTime: Date.now() - socket._optimizationMetrics.lastActivity,
+      idleTime: Date.now() - socket._optimizationMetrics.lastActivity
     };
   }
 
@@ -222,8 +222,8 @@ class NetworkTuning extends EventEmitter {
         tcpKeepalive: this.tcpKeepalive,
         sendBufferSize: this.sendBufferSize,
         recvBufferSize: this.recvBufferSize,
-        optimalChunkSize: this.optimalChunkSize,
-      },
+        optimalChunkSize: this.optimalChunkSize
+      }
     };
   }
 
@@ -234,11 +234,11 @@ class NetworkTuning extends EventEmitter {
     this.stats = {
       socketsTuned: 0,
       keepaliveInterval: 0,
-      bytesOptimized: 0,
+      bytesOptimized: 0
     };
   }
 }
 
 module.exports = {
-  NetworkTuning,
+  NetworkTuning
 };

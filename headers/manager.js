@@ -212,9 +212,15 @@ class HeaderManager {
    * @returns {boolean} - Whether the URL matches
    */
   matchesPattern(url, pattern) {
-    if (!pattern || !url) return false;
-    if (pattern === '*' || pattern === '<all_urls>') return true;
-    if (pattern === url) return true;
+    if (!pattern || !url) {
+      return false;
+    }
+    if (pattern === '*' || pattern === '<all_urls>') {
+      return true;
+    }
+    if (pattern === url) {
+      return true;
+    }
 
     // Convert wildcard pattern to regex
     const regexPattern = pattern
@@ -938,7 +944,9 @@ class HeaderManager {
    * Load profiles from disk
    */
   loadProfilesFromDisk() {
-    if (!this.storagePath) return;
+    if (!this.storagePath) {
+      return;
+    }
 
     const profilesFile = path.join(this.storagePath, 'header-profiles.json');
     try {
@@ -959,7 +967,9 @@ class HeaderManager {
    * Save profiles to disk
    */
   saveProfilesToDisk() {
-    if (!this.storagePath) return;
+    if (!this.storagePath) {
+      return;
+    }
 
     const profilesFile = path.join(this.storagePath, 'header-profiles.json');
     try {

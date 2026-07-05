@@ -95,8 +95,8 @@ class WebSocketServerIntegration {
     this.logger.log('[WebSocketIntegration] Initializing rate limiter...');
 
     this.rateLimiter = new RateLimiter({
-      windowSize: 60000,  // 60 seconds
-      maxRequests: 1000,  // 1000 requests per minute
+      windowSize: 60000, // 60 seconds
+      maxRequests: 1000, // 1000 requests per minute
       perIP: true,
       logger: this.logger
     });
@@ -136,7 +136,7 @@ class WebSocketServerIntegration {
     this.policyEnforcer = new PolicyEnforcer({
       sessionStore,
       policies: {
-        sessionTimeout: 3600000,  // 1 hour
+        sessionTimeout: 3600000, // 1 hour
         maxConcurrentSessions: 10,
         ipWhitelist: [],
         commandBlacklist: []
@@ -172,7 +172,7 @@ class WebSocketServerIntegration {
 
     this.dashboardEngine = new DashboardEngine({
       dbPool,
-      updateInterval: 5000,  // 5 seconds
+      updateInterval: 5000, // 5 seconds
       logger: this.logger
     });
 
@@ -435,15 +435,15 @@ class WebSocketServerIntegration {
    */
   async getStatus() {
     return {
-      wsServer: !!this.wsServer,
-      infrastructure: !!this.infrastructure,
+      wsServer: Boolean(this.wsServer),
+      infrastructure: Boolean(this.infrastructure),
       components: {
-        rateLimiter: !!this.rateLimiter,
-        auditLogger: !!this.auditLogger,
-        policyEnforcer: !!this.policyEnforcer,
-        requestSigner: !!this.requestSigner,
-        dashboardEngine: !!this.dashboardEngine,
-        alertManager: !!this.alertManager
+        rateLimiter: Boolean(this.rateLimiter),
+        auditLogger: Boolean(this.auditLogger),
+        policyEnforcer: Boolean(this.policyEnforcer),
+        requestSigner: Boolean(this.requestSigner),
+        dashboardEngine: Boolean(this.dashboardEngine),
+        alertManager: Boolean(this.alertManager)
       }
     };
   }

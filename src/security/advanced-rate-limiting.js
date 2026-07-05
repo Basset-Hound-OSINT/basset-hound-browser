@@ -20,24 +20,24 @@ class AdvancedRateLimiter {
     // Token bucket algorithm
     tokenBucket: {
       enabled: true,
-      capacity: 100,           // Burst capacity
-      refillRate: 10,          // Tokens per second
-      refillInterval: 1000     // Milliseconds
+      capacity: 100, // Burst capacity
+      refillRate: 10, // Tokens per second
+      refillInterval: 1000 // Milliseconds
     },
 
     // Sliding window algorithm
     slidingWindow: {
       enabled: true,
-      windowSize: 60000,       // 60 seconds
-      maxRequests: 100         // Max requests per window
+      windowSize: 60000, // 60 seconds
+      maxRequests: 100 // Max requests per window
     },
 
     // Per-identity limits
     perIdentity: {
       enabled: true,
-      ipLimit: 100,            // Per IP address
-      userLimit: 200,          // Per authenticated user
-      apiKeyLimit: 500         // Per API key
+      ipLimit: 100, // Per IP address
+      userLimit: 200, // Per authenticated user
+      apiKeyLimit: 500 // Per API key
     },
 
     // Per-endpoint limits
@@ -59,7 +59,7 @@ class AdvancedRateLimiter {
     },
 
     // Cleanup
-    cleanupInterval: 300000   // 5 minutes
+    cleanupInterval: 300000 // 5 minutes
   };
 
   /**
@@ -71,10 +71,10 @@ class AdvancedRateLimiter {
     this.deepMergeConfig(this.config, config);
 
     // State tracking
-    this.tokenBuckets = new Map();           // clientId -> { tokens, lastRefill }
-    this.slidingWindows = new Map();         // clientId -> { requests: [], ... }
-    this.endpointTracking = new Map();       // clientId + endpoint -> { requests: [], ... }
-    this.identityTracking = new Map();       // ip/user -> { requests: [], ... }
+    this.tokenBuckets = new Map(); // clientId -> { tokens, lastRefill }
+    this.slidingWindows = new Map(); // clientId -> { requests: [], ... }
+    this.endpointTracking = new Map(); // clientId + endpoint -> { requests: [], ... }
+    this.identityTracking = new Map(); // ip/user -> { requests: [], ... }
 
     // Cleanup timer
     this.startCleanup();
@@ -86,7 +86,9 @@ class AdvancedRateLimiter {
   deepMergeConfig(target, source) {
     for (const key in source) {
       if (typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!(key in target)) target[key] = {};
+        if (!(key in target)) {
+          target[key] = {};
+        }
         this.deepMergeConfig(target[key], source[key]);
       } else {
         target[key] = source[key];
@@ -100,7 +102,9 @@ class AdvancedRateLimiter {
    * @returns {boolean} True if should bypass
    */
   shouldBypass(identity) {
-    if (!this.config.adminBypass.enabled) return false;
+    if (!this.config.adminBypass.enabled) {
+      return false;
+    }
 
     // Check IP bypass list
     if (this.config.adminBypass.bypassIPs.includes(identity.ip)) {
@@ -385,28 +389,36 @@ class AdvancedRateLimiter {
     if (this.config.tokenBucket.enabled) {
       const tbCheck = this.checkTokenBucket(clientId);
       limits.tokenBucket = tbCheck;
-      if (!tbCheck.allowed) blocks.push('token_bucket');
+      if (!tbCheck.allowed) {
+        blocks.push('token_bucket');
+      }
     }
 
     // Sliding window check
     if (this.config.slidingWindow.enabled) {
       const swCheck = this.checkSlidingWindow(clientId);
       limits.slidingWindow = swCheck;
-      if (!swCheck.allowed) blocks.push('sliding_window');
+      if (!swCheck.allowed) {
+        blocks.push('sliding_window');
+      }
     }
 
     // Per-endpoint check
     if (endpoint && this.config.perEndpoint.enabled) {
       const epCheck = this.checkPerEndpoint(clientId, endpoint);
       limits.perEndpoint = epCheck;
-      if (!epCheck.allowed) blocks.push('per_endpoint');
+      if (!epCheck.allowed) {
+        blocks.push('per_endpoint');
+      }
     }
 
     // Per-identity check
     if (identity && this.config.perIdentity.enabled) {
       const idCheck = this.checkPerIdentity(identity);
       limits.perIdentity = idCheck;
-      if (!idCheck.allowed) blocks.push('per_identity');
+      if (!idCheck.allowed) {
+        blocks.push('per_identity');
+      }
     }
 
     return {
@@ -460,7 +472,9 @@ class AdvancedRateLimiter {
    * Start periodic cleanup of stale entries
    */
   startCleanup() {
-    if (this.cleanupTimer) clearInterval(this.cleanupTimer);
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+    }
 
     this.cleanupTimer = setInterval(() => {
       const now = Date.now();

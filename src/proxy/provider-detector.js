@@ -481,10 +481,18 @@ class ProviderDetector {
    * Calculate risk level from score
    */
   calculateRiskLevel(score) {
-    if (score <= 2) return 'very-low';
-    if (score <= 4) return 'low';
-    if (score <= 6) return 'medium';
-    if (score <= 8) return 'high';
+    if (score <= 2) {
+      return 'very-low';
+    }
+    if (score <= 4) {
+      return 'low';
+    }
+    if (score <= 6) {
+      return 'medium';
+    }
+    if (score <= 8) {
+      return 'high';
+    }
     return 'critical';
   }
 

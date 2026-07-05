@@ -102,7 +102,7 @@ log_info "=== Preparing for Rollback ==="
 # Stop current production container
 log_info "Stopping current production container..."
 if docker ps | grep -q "$CONTAINER_NAME"; then
-    docker-compose -f "$PROJECT_ROOT/docker-compose.production.yml" down 2>&1 | tee -a "$ROLLBACK_LOG" || true
+    docker-compose -f "$PROJECT_ROOT/config/docker/docker-compose.production.yml" down 2>&1 | tee -a "$ROLLBACK_LOG" || true
     log_success "Current container stopped"
 else
     log_warn "Container not running"

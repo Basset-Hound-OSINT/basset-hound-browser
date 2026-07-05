@@ -547,7 +547,7 @@ describe('ActionSerializer', () => {
 
       const script = ActionSerializer.toPythonSelenium(actions);
 
-      expect(script).toContain("scrollIntoView");
+      expect(script).toContain('scrollIntoView');
     });
 
     test('should convert wait duration action', () => {
@@ -997,7 +997,7 @@ describe('ActionSerializer', () => {
     });
 
     test('should escape newlines in strings', () => {
-      const actions = [Action.type('#input', "line1\nline2")];
+      const actions = [Action.type('#input', 'line1\nline2')];
 
       const python = ActionSerializer.toPythonSelenium(actions);
       expect(python).toContain('\\n');

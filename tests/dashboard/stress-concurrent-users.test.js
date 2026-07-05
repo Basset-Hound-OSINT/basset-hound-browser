@@ -174,7 +174,7 @@ class MockWebSocketServer extends EventEmitter {
 }
 
 // Test Suite
-describe('Dashboard Stress Tests - Concurrent Users', function() {
+describe('Dashboard Stress Tests - Concurrent Users', function () {
   this.timeout(120000);
 
   let server;
@@ -187,8 +187,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 1: 10 Concurrent Users Connection', function() {
-    it('should handle 10 concurrent WebSocket connections', async function() {
+  describe('Scenario 1: 10 Concurrent Users Connection', () => {
+    it('should handle 10 concurrent WebSocket connections', async () => {
       const promises = [];
 
       for (let i = 0; i < 10; i++) {
@@ -205,7 +205,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       assert(elapsed < 500, `Connection time should be <500ms, was ${elapsed}ms`);
     });
 
-    it('should establish subscriptions for 10 clients', function() {
+    it('should establish subscriptions for 10 clients', () => {
       for (const client of clients) {
         client.subscribe({ filters: { monitorId: null } });
       }
@@ -214,7 +214,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 2: 50 Concurrent Users Stress', function() {
+  describe('Scenario 2: 50 Concurrent Users Stress', () => {
     before(() => {
       // Clear previous clients
       for (const client of clients) {
@@ -223,7 +223,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       clients = [];
     });
 
-    it('should handle 50 concurrent users connecting', async function() {
+    it('should handle 50 concurrent users connecting', async () => {
       const promises = [];
 
       for (let i = 0; i < 50; i++) {
@@ -242,7 +242,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       assert(elapsed < 2000, `Connection time for 50 clients should be <2000ms, was ${elapsed}ms`);
     });
 
-    it('should maintain low message latency with 50 concurrent users', function() {
+    it('should maintain low message latency with 50 concurrent users', () => {
       const iterations = 100;
       const startTime = Date.now();
 
@@ -268,7 +268,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       assert(elapsed < 2000, `Broadcast should complete in <2000ms, was ${elapsed}ms`);
     });
 
-    it('should deliver all messages to 50 concurrent clients', function() {
+    it('should deliver all messages to 50 concurrent clients', () => {
       const messagesSent = 100;
       for (const client of clients) {
         const stats = client.getStats();
@@ -278,8 +278,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 3: 100 Concurrent Users', function() {
-    before(async function() {
+  describe('Scenario 3: 100 Concurrent Users', () => {
+    before(async () => {
       // Clear previous clients
       for (const client of clients) {
         client.close();
@@ -299,12 +299,12 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       await Promise.all(promises);
     });
 
-    it('should handle 100 concurrent users', function() {
+    it('should handle 100 concurrent users', () => {
       assert.strictEqual(clients.length, 100, 'Should have 100 clients');
       assert.strictEqual(server.stats.totalSubscribers, 100, 'Should have 100 subscribers');
     });
 
-    it('should broadcast 50 messages to 100 users within 1 second', function() {
+    it('should broadcast 50 messages to 100 users within 1 second', () => {
       const messageCount = 50;
       const startTime = Date.now();
 
@@ -328,7 +328,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       assert(elapsed < 1000, `Broadcasting to 100 users should be <1000ms, was ${elapsed}ms`);
     });
 
-    it('should handle queue size efficiently', function() {
+    it('should handle queue size efficiently', () => {
       const queueStats = server.getQueueStats();
 
       assert(queueStats.droppedMessages === 0, 'Should not drop messages');
@@ -336,8 +336,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 4: Rapid Message Bursts', function() {
-    it('should handle rapid message bursts with 50 users', async function() {
+  describe('Scenario 4: Rapid Message Bursts', () => {
+    it('should handle rapid message bursts with 50 users', async () => {
       // Reset clients for this scenario
       for (const client of clients) {
         client.close();
@@ -378,15 +378,15 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       assert(elapsed < 3000, `Burst of 500 messages should be <3000ms, was ${elapsed}ms`);
     });
 
-    it('should not accumulate excessive queue buildup', function() {
+    it('should not accumulate excessive queue buildup', () => {
       const queueStats = server.getQueueStats();
       assert(queueStats.queueSize < queueStats.totalMessages * 0.1,
         'Queue should not accumulate significantly');
     });
   });
 
-  describe('Scenario 5: User Disconnection Handling', function() {
-    it('should handle graceful disconnections', function() {
+  describe('Scenario 5: User Disconnection Handling', () => {
+    it('should handle graceful disconnections', () => {
       const initialSubscribers = server.stats.totalSubscribers;
 
       // Disconnect 25% of users
@@ -401,7 +401,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
         'Should update subscriber count on disconnect');
     });
 
-    it('should continue broadcasting to remaining users', function() {
+    it('should continue broadcasting to remaining users', () => {
       const remainingClients = clients.filter(c => c.connected);
 
       server.broadcastMessage({
@@ -417,8 +417,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 6: Selective Broadcasting', function() {
-    it('should broadcast filtered messages by category', function() {
+  describe('Scenario 6: Selective Broadcasting', () => {
+    it('should broadcast filtered messages by category', () => {
       for (const client of clients) {
         client.messageQueue = [];
         client.receivedMessages = [];
@@ -436,7 +436,7 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
       assert(clients[0].receivedMessages.length > 0, 'Should receive broadcasted message');
     });
 
-    it('should handle multiple message types simultaneously', function() {
+    it('should handle multiple message types simultaneously', () => {
       const startTime = Date.now();
 
       const messageTypes = ['change-added', 'alert-added', 'monitor-status', 'metric-update'];
@@ -454,8 +454,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 7: Memory Usage with Concurrent Users', function() {
-    it('should maintain stable memory with 50 users', function() {
+  describe('Scenario 7: Memory Usage with Concurrent Users', () => {
+    it('should maintain stable memory with 50 users', () => {
       const measurements = [];
 
       for (let iteration = 0; iteration < 3; iteration++) {
@@ -482,8 +482,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 8: Concurrent User Filtering', function() {
-    it('should apply different filters for different users', function() {
+  describe('Scenario 8: Concurrent User Filtering', () => {
+    it('should apply different filters for different users', () => {
       // Reset with fresh clients
       for (const client of clients) {
         client.close();
@@ -506,9 +506,11 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 9: User Reconnection', function() {
-    it('should handle user reconnection gracefully', async function() {
-      if (clients.length === 0) return;
+  describe('Scenario 9: User Reconnection', () => {
+    it('should handle user reconnection gracefully', async () => {
+      if (clients.length === 0) {
+        return;
+      }
 
       const client = clients[0];
       const initialCount = client.receivedMessages.length;
@@ -531,8 +533,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 10: Load Balancing Simulation', function() {
-    it('should distribute load evenly across users', function() {
+  describe('Scenario 10: Load Balancing Simulation', () => {
+    it('should distribute load evenly across users', () => {
       const messageCounts = clients.map(c => c.receivedMessages.length);
       const avgMessages = messageCounts.reduce((a, b) => a + b, 0) / messageCounts.length;
 
@@ -544,8 +546,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 11: CPU Usage Under Load', function() {
-    it('should manage CPU efficiently with concurrent load', function() {
+  describe('Scenario 11: CPU Usage Under Load', () => {
+    it('should manage CPU efficiently with concurrent load', () => {
       const startCpuUsage = process.cpuUsage();
       const messageCount = 200;
 
@@ -569,9 +571,11 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 12: WebSocket Ping/Pong Performance', function() {
-    it('should maintain connection health with ping/pong', async function() {
-      if (clients.length === 0) return;
+  describe('Scenario 12: WebSocket Ping/Pong Performance', () => {
+    it('should maintain connection health with ping/pong', async () => {
+      if (clients.length === 0) {
+        return;
+      }
 
       const client = clients[0];
       const pingTimes = [];
@@ -588,8 +592,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 13: Message Ordering with Concurrent Users', function() {
-    it('should maintain message ordering for each client', function() {
+  describe('Scenario 13: Message Ordering with Concurrent Users', () => {
+    it('should maintain message ordering for each client', () => {
       for (const client of clients) {
         const messages = client.receivedMessages;
         let lastSequence = -1;
@@ -605,8 +609,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 14: High Frequency Updates', function() {
-    it('should handle 1000 updates per second to 50 users', function() {
+  describe('Scenario 14: High Frequency Updates', () => {
+    it('should handle 1000 updates per second to 50 users', () => {
       const startTime = Date.now();
       const updateCount = 1000;
 
@@ -629,8 +633,8 @@ describe('Dashboard Stress Tests - Concurrent Users', function() {
     });
   });
 
-  describe('Scenario 15: Concurrent Users Performance Summary', function() {
-    it('should provide performance summary', function() {
+  describe('Scenario 15: Concurrent Users Performance Summary', () => {
+    it('should provide performance summary', () => {
       const clientStats = clients.slice(0, 5).map(c => c.getStats());
       const queueStats = server.getQueueStats();
 

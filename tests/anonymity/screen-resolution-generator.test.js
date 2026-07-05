@@ -56,7 +56,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -71,7 +71,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -88,7 +88,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -102,7 +102,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Google',
         screenWidth: 412,
-        screenHeight: 915,
+        screenHeight: 915
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -116,7 +116,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -164,7 +164,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       for (let i = 0; i < 10; i++) {
@@ -178,7 +178,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -190,7 +190,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -204,7 +204,7 @@ describe('ScreenResolutionGenerator', () => {
       const validResolutions = [
         { width: 390, height: 844, dpi: 2.0 },
         { width: 1920, height: 1080, dpi: 1.0 },
-        { width: 2560, height: 1440, dpi: 2.0 },
+        { width: 2560, height: 1440, dpi: 2.0 }
       ];
 
       validResolutions.forEach(res => {
@@ -218,7 +218,7 @@ describe('ScreenResolutionGenerator', () => {
         { width: 1920, height: 0, dpi: 1.0 }, // Height 0
         { width: 1920, height: 1080, dpi: 0.5 }, // Invalid DPI
         { width: 100, height: 100, dpi: 1.0 }, // Too small
-        { width: 10000, height: 10000, dpi: 1.0 }, // Too large
+        { width: 10000, height: 10000, dpi: 1.0 } // Too large
       ];
 
       invalidResolutions.forEach(res => {
@@ -234,7 +234,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       generator.initializeFromProfile(profile);
@@ -253,7 +253,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       generator.initializeFromProfile(profile);
@@ -271,7 +271,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         screenWidth: 390,
-        screenHeight: 844,
+        screenHeight: 844
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -283,7 +283,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -298,7 +298,7 @@ describe('ScreenResolutionGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         screenWidth: 1920,
-        screenHeight: 1080,
+        screenHeight: 1080
       };
 
       const resolution = generator.initializeFromProfile(profile);
@@ -322,7 +322,7 @@ describe('ScreenResolutionGenerator', () => {
       const deviceTypes = [
         { deviceType: 'mobile', vendor: 'Apple' },
         { deviceType: 'tablet', vendor: 'Apple' },
-        { deviceType: 'desktop', vendor: 'Google' },
+        { deviceType: 'desktop', vendor: 'Google' }
       ];
 
       deviceTypes.forEach(profile => {

@@ -262,7 +262,9 @@ class MemoryEfficientStructures {
       },
 
       pop() {
-        if (count === 0) return undefined;
+        if (count === 0) {
+          return undefined;
+        }
 
         const item = buffer[head];
         head = (head + 1) % capacity;
@@ -302,7 +304,9 @@ class MemoryEfficientStructures {
 
     return {
       set(index, value) {
-        if (index >= maxSize) throw new Error('Index out of bounds');
+        if (index >= maxSize) {
+          throw new Error('Index out of bounds');
+        }
 
         const byteIndex = Math.floor(index / 8);
         const bitIndex = index % 8;
@@ -315,7 +319,9 @@ class MemoryEfficientStructures {
       },
 
       get(index) {
-        if (index >= maxSize) throw new Error('Index out of bounds');
+        if (index >= maxSize) {
+          throw new Error('Index out of bounds');
+        }
 
         const byteIndex = Math.floor(index / 8);
         const bitIndex = index % 8;

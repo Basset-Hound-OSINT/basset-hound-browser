@@ -134,15 +134,15 @@ class PriorityQueue {
     };
 
     switch (priority) {
-      case 'critical':
-        this.criticalQueue.push(queuedRequest);
-        break;
-      case 'normal':
-        this.normalQueue.push(queuedRequest);
-        break;
-      case 'low':
-        this.lowQueue.push(queuedRequest);
-        break;
+    case 'critical':
+      this.criticalQueue.push(queuedRequest);
+      break;
+    case 'normal':
+      this.normalQueue.push(queuedRequest);
+      break;
+    case 'low':
+      this.lowQueue.push(queuedRequest);
+      break;
     }
 
     this.metrics.totalEnqueued++;

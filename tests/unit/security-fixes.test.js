@@ -12,25 +12,25 @@ describe('Security Fixes Verification', () => {
       // This test verifies the validateSocksPort function exists
       // The function is defined in websocket/server.js
       // We test by checking that the validation logic is in place
-      expect(true).toBe(true);  // Placeholder - validates syntax is correct
+      expect(true).toBe(true); // Placeholder - validates syntax is correct
     });
 
     test('should reject invalid port numbers < 1', () => {
       // Test that ports < 1 are rejected
       // Expected: throws error with "must be between 1-65535"
-      expect(true).toBe(true);  // Placeholder
+      expect(true).toBe(true); // Placeholder
     });
 
     test('should reject invalid port numbers > 65535', () => {
       // Test that ports > 65535 are rejected
       // Expected: throws error with "must be between 1-65535"
-      expect(true).toBe(true);  // Placeholder
+      expect(true).toBe(true); // Placeholder
     });
 
     test('should reject non-numeric port strings', () => {
       // Test that non-numeric strings like "abc" are rejected
       // Expected: throws error with "must be a number"
-      expect(true).toBe(true);  // Placeholder
+      expect(true).toBe(true); // Placeholder
     });
 
     test('should accept valid port range (1-65535)', () => {
@@ -44,18 +44,18 @@ describe('Security Fixes Verification', () => {
     test('should have timeout parameter in execSync call', () => {
       // The fix adds timeout: 5000 to execSync in websocket/server.js line 1545
       // This test verifies the timeout is in place
-      expect(true).toBe(true);  // Placeholder - validates syntax is correct
+      expect(true).toBe(true); // Placeholder - validates syntax is correct
     });
 
     test('should handle ETIMEDOUT errors gracefully', () => {
       // When openssl times out, should catch and log error
       // Should not crash the process
-      expect(true).toBe(true);  // Placeholder
+      expect(true).toBe(true); // Placeholder
     });
 
     test('should handle missing openssl gracefully', () => {
       // When openssl is not found (ENOENT), should catch and log warning
-      expect(true).toBe(true);  // Placeholder
+      expect(true).toBe(true); // Placeholder
     });
   });
 

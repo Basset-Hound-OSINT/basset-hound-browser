@@ -24,8 +24,8 @@ const RESULTS_DIR = path.join(__dirname, '..', 'results', 'stress');
 // Parse command line arguments
 function parseArgs() {
   const args = {
-    duration: 30,      // minutes
-    interval: 30,      // seconds
+    duration: 30, // minutes
+    interval: 30, // seconds
     verbose: false,
     headless: false
   };
@@ -68,9 +68,9 @@ class MemoryMonitor {
 
     // Thresholds for leak detection
     this.thresholds = {
-      heapGrowthPerHourMB: 50,      // Max acceptable growth per hour
+      heapGrowthPerHourMB: 50, // Max acceptable growth per hour
       connectionStabilityPercent: 10, // Max variance in connection count
-      eventListenerGrowthRate: 0.05   // Max growth rate per minute
+      eventListenerGrowthRate: 0.05 // Max growth rate per minute
     };
   }
 
@@ -465,7 +465,9 @@ class MemoryMonitor {
    * Detect garbage collection patterns
    */
   detectGCPattern(heaps) {
-    if (heaps.length < 5) return null;
+    if (heaps.length < 5) {
+      return null;
+    }
 
     const diffs = [];
     for (let i = 1; i < heaps.length; i++) {
@@ -581,7 +583,9 @@ class MemoryMonitor {
    * Calculate variance of array
    */
   calculateVariance(arr) {
-    if (arr.length === 0) return 0;
+    if (arr.length === 0) {
+      return 0;
+    }
     const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
     const squaredDiffs = arr.map(val => Math.pow(val - avg, 2));
     return squaredDiffs.reduce((a, b) => a + b, 0) / arr.length;

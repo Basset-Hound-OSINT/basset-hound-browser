@@ -1,0 +1,323 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# RAG Bootstrap - Docker Compose Configuration
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# SECURITY MODEL: Single Port Exposure
+# ─────────────────────────────────────
+# This configuration exposes ONLY ONE PORT to the host machine (default: 10000).
+# All other services (postgres, redis, api) communicate internally via Docker
+# network and are NOT accessible from the host. This eliminates "port whack-a-mole"
+# and provides a secure, minimal attack surface.
+#
+# DATA DIRECTORY PATTERN
+# ──────────────────────
+# All runtime data is stored in the ./data/ directory:
+#   data/docker/postgres/  - PostgreSQL database files
+#   data/docker/redis/     - Redis persistence
+#   data/cache/            - Embedding caches
+#   data/logs/             - Application logs
+#   data/exports/          - Generated exports
+#
+# The data/ directory is excluded from git (.gitignore) and auto-created
+# by the init service on first startup.
+#
+# PORT SCHEME (base-10000)
+# ────────────────────────
+# All published host ports derive from RAG_PORT_BASE=10000 (deploy.sh computes
+# RAG_<svc>_PORT = base + offset and writes them into .env; compose fallbacks
+# match the table). Web is base+0 (10000); the monitoring stack occupies
+# 10010-10016 (see docker-compose.monitoring.yml). Band 10000-10019 is reserved
+# for this stack; downstream apps should take +20 and up.
+#
+# MEMORY CAPS (fleet-resource hardening, 2026-07-04)
+# ───────────────────────────────────────────────────
+# Hosts running many template-derived stacks were driven to 439MB free RAM by
+# unbounded containers. Every service now carries deploy.resources.limits.memory
+# (honored by `docker compose` v2 without swarm), env-overridable:
+#   api       RAG_API_MEM_LIMIT       (default 512m)
+#   postgres  RAG_PG_MEM_LIMIT        (default 1g)
+#   redis     RAG_REDIS_MEM_LIMIT     (default 256m)  + --maxmemory
+#             RAG_REDIS_MAXMEMORY     (default 192mb, allkeys-lru)
+#   frontend  RAG_FRONTEND_MEM_LIMIT  (default 128m)
+# Stack total with defaults: ~1.9GB hard ceiling. `deploy.sh doctor` checks
+# host MemAvailable against this sum.
+#
+# To customize for your project:
+# 1. Change RAG_NETWORK_NAME in .env (e.g., "myproject-rag")
+# 2. Change RAG_PORT in .env (e.g., "10020" for localhost:10020)
+# 3. Configure ingestion directories in config.yaml
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+services:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Init Service - Creates data directories on first startup
+  # ────────────────────────────────────────────────────────────────────────────
+  init:
+    image: busybox:latest
+    # container_name intentionally OMITTED. Docker Compose auto-names containers
+    # <COMPOSE_PROJECT_NAME>-<service>-N. A HARDCODED container_name is GLOBAL and
+    # collides the instant a second RAG instance (or any stack that reused the old
+    # "rag-bootstrap-*" names) exists on the same host. Set a unique
+    # COMPOSE_PROJECT_NAME in .env per instance instead (see .env.example).
+    command: |
+      sh -c '
+        echo "Creating data directories..."
+        mkdir -p /data/docker/postgres
+        mkdir -p /data/docker/redis
+        mkdir -p /data/cache/embeddings
+        mkdir -p /data/logs
+        mkdir -p /data/exports
+        mkdir -p /data/registry
+        mkdir -p /data/docs
+        mkdir -p /data/docs/archive
+        chmod -R 777 /data
+        echo "Data directories initialized."
+      '
+    volumes:
+      - ./data:/data
+    restart: "no"
+    # One-shot mkdir/chmod job — tiny fixed cap, no knob needed.
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+  # ────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL with pgvector - Vector Storage + Metadata
+  # ────────────────────────────────────────────────────────────────────────────
+  # NO PORTS EXPOSED - Internal network access only
+  # Data stored in: ./data/docker/postgres/
+  postgres:
+    image: pgvector/pgvector:pg16
+    # container_name auto: <COMPOSE_PROJECT_NAME>-postgres-N (see init note)
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_DB: ragdb
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD: ragpass
+    volumes:
+      - ./data/docker/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raguser -d ragdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: ${RAG_PG_MEM_LIMIT:-1g}
+    # IMPORTANT: No "ports:" section - postgres:5432 is NOT exposed to host
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Redis - Embedding Cache
+  # ────────────────────────────────────────────────────────────────────────────
+  # NO PORTS EXPOSED - Internal network access only
+  # Data stored in: ./data/docker/redis/
+  redis:
+    image: redis:7-alpine
+    # container_name auto: <COMPOSE_PROJECT_NAME>-redis-N (see init note)
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    # Bounded cache (fleet-resource hardening): unbounded redis containers were
+    # measured at 80-245MB each across template-derived stacks on one host.
+    # maxmemory keeps the DATASET bounded (LRU eviction — this is a cache);
+    # the container mem limit below is the hard OS-level backstop.
+    command:
+      [
+        "redis-server",
+        "--maxmemory", "${RAG_REDIS_MAXMEMORY:-192mb}",
+        "--maxmemory-policy", "allkeys-lru",
+      ]
+    volumes:
+      - ./data/docker/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: ${RAG_REDIS_MEM_LIMIT:-256m}
+    # IMPORTANT: No "ports:" section - redis:6379 is NOT exposed to host
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # FastAPI Backend - RAG API with Auto-Ingest Watcher
+  # ────────────────────────────────────────────────────────────────────────────
+  # NO PORTS EXPOSED - Accessed via nginx reverse proxy only
+  # Optional auto-ingest watcher (OFF by default) monitors /data/docs when
+  # WATCHER_ENABLED=true; explicit ingest is the primary flow.
+  api:
+    build:
+      context: ./app
+    # container_name auto: <COMPOSE_PROJECT_NAME>-api-N (see init note)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ragdb
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD: ragpass
+      REDIS_URL: redis://redis:6379/0
+      # Embedding defaults — canonical triple: nomic-embed-text / 768 / ollama.
+      # These fallbacks apply on bare `docker compose up` with no generated .env
+      # and MUST stay in sync with .env.example, config/config.yaml, and
+      # app/config.py. (The old sentence-transformers/384 fallback was broken:
+      # that package is not installed in the image — Ollama is the only default.)
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-nomic-embed-text}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-768}
+      EMBEDDING_BACKEND: ${EMBEDDING_BACKEND:-ollama}
+      CHUNK_SIZE: ${CHUNK_SIZE:-512}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-50}
+      # Ollama endpoint — EXTERNAL host Ollama (no ollama container in compose).
+      # HARD PREREQUISITE: Ollama reachable at OLLAMA_BASE_URL with the embedding
+      # model pulled (`ollama pull nomic-embed-text`); `./deploy.sh doctor`
+      # preflights both. Three supported modes:
+      #   local  (default): host Ollama on port 11434, reached via
+      #          host.docker.internal (extra_hosts host-gateway below). Ollama
+      #          must listen on an interface reachable from the Docker bridge
+      #          (OLLAMA_HOST=0.0.0.0), OR use bridge mode.
+      #   remote: set OLLAMA_BASE_URL=http://<gpu-host>:11434 in .env to point
+      #          straight at a remote Ollama server.
+      #   bridge: rootless TCP forwarder (systemd --user unit shipped by
+      #          deploy.sh) relays host-gateway traffic to a loopback-only or
+      #          SSH-forwarded Ollama; keep the default URL.
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      LLM_MODEL: ${LLM_MODEL:-llama3.2:3b}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.3}
+      LLM_TIMEOUT: ${LLM_TIMEOUT:-300}
+      RAG_TOP_K: ${RAG_TOP_K:-5}
+      RAG_MIN_SIMILARITY: ${RAG_MIN_SIMILARITY:-0.7}
+      PROJECT_NAME: ${PROJECT_NAME:-rag-bootstrap}
+      # Auto-Ingest Watcher Configuration — DEFAULT OFF (opt-in).
+      # Fleet lesson (2026-07-04): each stack's watcher consumes one inotify
+      # instance; 5+ template-derived stacks exhausted the per-user
+      # fs.inotify.max_user_instances cap (128) and wedged a stack at startup.
+      # Explicit ingest is the primary flow; set WATCHER_ENABLED=true in .env
+      # only on single-instance hosts. Keep in sync with app/config.py and
+      # .env.example.
+      WATCHER_ENABLED: ${WATCHER_ENABLED:-false}
+      WATCHER_WATCH_DIR: ${WATCHER_WATCH_DIR:-/data/docs}
+      WATCHER_POLL_INTERVAL: ${WATCHER_POLL_INTERVAL:-5}
+      WATCHER_MAX_RETRIES: ${WATCHER_MAX_RETRIES:-3}
+      WATCHER_RETRY_DELAY: ${WATCHER_RETRY_DELAY:-2}
+      # Post-ingest archiving is OPT-IN (app/watcher.py reads this from the
+      # CONTAINER env): off (default — never touch source files) | copy (copy
+      # into archive/ after ingest) | move (legacy relocate).
+      WATCHER_ARCHIVE_MODE: ${WATCHER_ARCHIVE_MODE:-off}
+      # Same-path docs root + ingest-root guard (app/main.py reads BOTH from
+      # the CONTAINER env). DOCS_PATH should match the same-path :ro mount
+      # below so stored citation filepaths stay host-openable; when set,
+      # /api/ingest/directory refuses paths outside it unless
+      # RAG_INGEST_ROOT_GUARD=off. DEFAULT-ON: DOCS_PATH falls back to the
+      # same ${PWD}/data/docs root as the :ro mount below, so the guard is
+      # ACTIVE out of the box (run compose from the repo root, as deploy.sh
+      # does). Override DOCS_PATH in .env to point at your real docs root, or
+      # set RAG_INGEST_ROOT_GUARD=off to allow arbitrary container paths.
+      DOCS_PATH: ${DOCS_PATH:-${PWD}/data/docs}
+      RAG_INGEST_ROOT_GUARD: ${RAG_INGEST_ROOT_GUARD:-on}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Watch directory for auto-ingest (mount from host or external volume)
+      - ${RAG_DOCS_VOLUME:-./data/docs}:/data/docs
+      # Same-path READ-ONLY docs mount (host-openable citations) — DEFAULT-ON.
+      # The container sees the docs root at the SAME absolute path as the host,
+      # so filepaths stored at ingest time (and returned in search citations)
+      # open directly on the host. DOCS_PATH defaults to <cwd>/data/docs — the
+      # same directory as the default RAG_DOCS_VOLUME — via ${PWD} (run compose
+      # from the repo root, as deploy.sh does). Reversible via env:
+      #   - set DOCS_PATH to your real docs root (keep it equal to
+      #     RAG_DOCS_VOLUME when you point that elsewhere), or
+      #   - to opt out, point DOCS_PATH at any empty absolute directory
+      #     (e.g. DOCS_PATH=$PWD/data/exports). Mount is :ro — never a write path.
+      - ${DOCS_PATH:-${PWD}/data/docs}:${DOCS_PATH:-${PWD}/data/docs}:ro
+      # Optional: Cache volumes for performance
+      - ${RAG_CACHE_VOLUME:-./data/cache}:/data/cache
+      # Optional: Logs volume for debugging
+      - ${RAG_LOGS_VOLUME:-./data/logs}:/data/logs
+    networks:
+      - rag-net
+    restart: unless-stopped
+    # Memory cap (fleet-resource hardening; see MEMORY CAPS header note)
+    deploy:
+      resources:
+        limits:
+          memory: ${RAG_API_MEM_LIMIT:-512m}
+    # IMPORTANT: No "ports:" section - api:8000 is NOT exposed to host
+    # NOTE: Auto-ingest watcher is DISABLED by default (WATCHER_ENABLED=false)
+    # Enable with WATCHER_ENABLED=true in .env (single-instance hosts only)
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Nginx Frontend - Web UI + Reverse Proxy
+  # ────────────────────────────────────────────────────────────────────────────
+  # ONLY PORT EXPOSED - Single entry point for all services
+  frontend:
+    build:
+      context: ./frontend
+    # container_name auto: <COMPOSE_PROJECT_NAME>-frontend-N (see init note)
+    ports:
+      # Bind to localhost ONLY for security (not 0.0.0.0)
+      # Format: "127.0.0.1:HOST_PORT:CONTAINER_PORT"
+      # Change RAG_PORT in .env to customize (default: 10000 = RAG_PORT_BASE+0;
+      # see the PORT SCHEME table in the header / .env.example)
+      - "127.0.0.1:${RAG_PORT:-10000}:80"
+    depends_on:
+      - api
+    networks:
+      - rag-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: ${RAG_FRONTEND_MEM_LIMIT:-128m}
+    # This service proxies /api/* requests to api:8000 internally
+    # Access at: http://localhost:${RAG_PORT}
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Volume Configuration (Bind Mounts)
+# ══════════════════════════════════════════════════════════════════════════════
+# All data is stored in ./data/ directory using bind mounts (not named volumes).
+# This provides:
+#   - Visible, inspectable data on filesystem
+#   - Easy backup and migration
+#   - Git-ignored via .gitignore
+#   - Clean separation of code and data
+#
+# Directory structure:
+#   data/
+#   ├── docker/
+#   │   ├── postgres/     # PostgreSQL database files
+#   │   └── redis/        # Redis persistence (AOF)
+#   ├── cache/
+#   │   └── embeddings/   # Embedding cache files
+#   ├── logs/             # Application logs
+#   ├── exports/          # Generated exports
+#   └── registry/         # Metadata registries
+#
+# No named volumes are used - all bind mounts are defined inline in services.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Docker Network Configuration
+# ══════════════════════════════════════════════════════════════════════════════
+# All services communicate via this isolated Docker bridge network.
+# Customize the network name via RAG_NETWORK_NAME in .env (default: rag-bootstrap)
+# This allows multiple RAG instances to run simultaneously without conflicts.
+networks:
+  rag-net:
+    name: ${RAG_NETWORK_NAME:-rag-bootstrap}
+    driver: bridge

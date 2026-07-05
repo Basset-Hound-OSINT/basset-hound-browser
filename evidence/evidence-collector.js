@@ -32,7 +32,7 @@ const EVIDENCE_TYPES = {
   CONSOLE_LOG: 'console_log',
   COOKIES: 'cookies',
   LOCAL_STORAGE: 'local_storage',
-  METADATA: 'metadata',
+  METADATA: 'metadata'
 };
 
 /**
@@ -42,7 +42,7 @@ const ARCHIVE_FORMATS = {
   MHTML: 'mhtml',
   HTML: 'html',
   WARC: 'warc',
-  PDF: 'pdf',
+  PDF: 'pdf'
 };
 
 /**
@@ -69,7 +69,7 @@ class Evidence {
       action: 'created',
       timestamp: this.capturedAt,
       actor: this.capturedBy,
-      hash: this.contentHash,
+      hash: this.contentHash
     }];
   }
 
@@ -98,7 +98,7 @@ class Evidence {
       timestamp: new Date().toISOString(),
       actor,
       notes,
-      previousHash: this.contentHash,
+      previousHash: this.contentHash
     });
   }
 
@@ -115,7 +115,7 @@ class Evidence {
       hashAlgorithm: this.hashAlgorithm,
       metadata: this.metadata,
       custodyChainLength: this.custodyChain.length,
-      integrityValid: this.verifyIntegrity(),
+      integrityValid: this.verifyIntegrity()
     };
   }
 
@@ -132,7 +132,7 @@ class Evidence {
       capturedBy: this.capturedBy,
       contentHash: this.contentHash,
       hashAlgorithm: this.hashAlgorithm,
-      custodyChain: this.custodyChain,
+      custodyChain: this.custodyChain
     };
   }
 }
@@ -166,7 +166,7 @@ class EvidenceCollector extends EventEmitter {
       fullPage: metadata.fullPage || false,
       annotations: metadata.annotations || [],
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -188,7 +188,7 @@ class EvidenceCollector extends EventEmitter {
       format,
       contentLength: content.length,
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -208,7 +208,7 @@ class EvidenceCollector extends EventEmitter {
       entryCount: harData.log?.entries?.length || 0,
       duration: metadata.duration,
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -227,7 +227,7 @@ class EvidenceCollector extends EventEmitter {
       url: metadata.url,
       nodeCount: metadata.nodeCount,
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -246,7 +246,7 @@ class EvidenceCollector extends EventEmitter {
       url: metadata.url,
       logCount: logs.length,
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -265,7 +265,7 @@ class EvidenceCollector extends EventEmitter {
       url: metadata.url,
       cookieCount: cookies.length,
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -284,7 +284,7 @@ class EvidenceCollector extends EventEmitter {
       url: metadata.url,
       keyCount: Object.keys(storageData).length,
       capturedBy: metadata.capturedBy || 'system',
-      ...metadata,
+      ...metadata
     });
 
     this.emit('evidenceCaptured', evidence.getSummary());
@@ -307,25 +307,25 @@ class EvidenceCollector extends EventEmitter {
     // Screenshot
     if (captureOptions.screenshot !== false) {
       const screenshotData = await captureFunction('screenshot', {
-        fullPage: captureOptions.fullPage || false,
+        fullPage: captureOptions.fullPage || false
       });
       captured.push(this.captureScreenshot(screenshotData, {
         url,
         title,
         capturedBy,
-        fullPage: captureOptions.fullPage,
+        fullPage: captureOptions.fullPage
       }));
     }
 
     // Page archive
     if (captureOptions.archive !== false) {
       const archiveData = await captureFunction('archive', {
-        format: captureOptions.archiveFormat || this.defaultFormat,
+        format: captureOptions.archiveFormat || this.defaultFormat
       });
       captured.push(this.capturePageArchive(archiveData, captureOptions.archiveFormat || this.defaultFormat, {
         url,
         title,
-        capturedBy,
+        capturedBy
       }));
     }
 
@@ -335,7 +335,7 @@ class EvidenceCollector extends EventEmitter {
       captured.push(this.captureDOMSnapshot(domData, {
         url,
         title,
-        capturedBy,
+        capturedBy
       }));
     }
 
@@ -344,7 +344,7 @@ class EvidenceCollector extends EventEmitter {
       const cookieData = await captureFunction('cookies');
       captured.push(this.captureCookies(cookieData, {
         url,
-        capturedBy,
+        capturedBy
       }));
     }
 
@@ -353,7 +353,7 @@ class EvidenceCollector extends EventEmitter {
       const storageData = await captureFunction('localStorage');
       captured.push(this.captureLocalStorage(storageData, {
         url,
-        capturedBy,
+        capturedBy
       }));
     }
 
@@ -362,7 +362,7 @@ class EvidenceCollector extends EventEmitter {
       const logData = await captureFunction('consoleLogs');
       captured.push(this.captureConsoleLogs(logData, {
         url,
-        capturedBy,
+        capturedBy
       }));
     }
 
@@ -374,5 +374,5 @@ module.exports = {
   Evidence,
   EvidenceCollector,
   EVIDENCE_TYPES,
-  ARCHIVE_FORMATS,
+  ARCHIVE_FORMATS
 };

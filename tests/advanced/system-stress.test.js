@@ -152,7 +152,9 @@ class CampaignManager extends EventEmitter {
     }
 
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign) throw new Error('Campaign not found');
+    if (!campaign) {
+      throw new Error('Campaign not found');
+    }
 
     const monitor = {
       id: monitorId,
@@ -194,8 +196,12 @@ class CampaignManager extends EventEmitter {
 
     const campaign = this.campaigns.get(campaignId);
     const monitor = this.monitors.get(monitorId);
-    if (campaign) campaign.changes++;
-    if (monitor) monitor.changes++;
+    if (campaign) {
+      campaign.changes++;
+    }
+    if (monitor) {
+      monitor.changes++;
+    }
 
     return change;
   }
@@ -223,8 +229,12 @@ class CampaignManager extends EventEmitter {
 
     const campaign = this.campaigns.get(campaignId);
     const monitor = this.monitors.get(monitorId);
-    if (campaign) campaign.alerts++;
-    if (monitor) monitor.alerts++;
+    if (campaign) {
+      campaign.alerts++;
+    }
+    if (monitor) {
+      monitor.alerts++;
+    }
 
     return alert;
   }

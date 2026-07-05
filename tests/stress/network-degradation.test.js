@@ -122,7 +122,9 @@ class NetworkDegradationTest {
     const testStartTime = performance.now();
 
     for (const scenario of this.scenarios) {
-      if (!scenario.enabled) continue;
+      if (!scenario.enabled) {
+        continue;
+      }
 
       console.log(`\n>>> Scenario: ${scenario.name}`);
       console.log(`    Latency: ${scenario.latency}ms`);

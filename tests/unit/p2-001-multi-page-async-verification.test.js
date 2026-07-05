@@ -214,7 +214,7 @@ describe('P2-001: Multi-Page Manager Async Verification', () => {
   describe('Resource Threshold Async Pattern', () => {
     test('should track resource threshold hits with await promise', async () => {
       // Pattern used in "should track resource threshold hits"
-      let stats = { resourceThresholdHits: 0 };
+      const stats = { resourceThresholdHits: 0 };
 
       await new Promise(resolve => setTimeout(resolve, 50));
       stats.resourceThresholdHits = 1;

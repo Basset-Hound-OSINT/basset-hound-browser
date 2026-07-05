@@ -21,10 +21,9 @@ class SchemaValidator {
    */
   constructor(options = {}) {
     this.ajv = new Ajv({
-      removeAdditional: false,  // Keep additional properties for error reporting
+      removeAdditional: false, // Keep additional properties for error reporting
       useDefaults: true,
-      coerceTypes: false,  // Strict type checking
-      keywords: ['description', 'example'],
+      coerceTypes: false, // Strict type checking
       ...options
     });
 
@@ -391,7 +390,7 @@ class SchemaValidator {
       execute_javascript: {
         type: 'object',
         properties: {
-          code: { type: 'string', maxLength: 1048576 },  // 1MB limit
+          code: { type: 'string', maxLength: 1048576 }, // 1MB limit
           timeout: { type: 'integer', minimum: 100, maximum: 600000, default: 30000 },
           awaitPromise: { type: 'boolean', default: true },
           sandbox: { type: 'boolean', default: true },

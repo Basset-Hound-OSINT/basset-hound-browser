@@ -195,7 +195,9 @@ class DeepAnalysisProfiler {
       const end = process.hrtime.bigint();
 
       singleDispatch.push(Number(end - start) / 1e6); // Convert to ms
-      if ((i + 1) % 5 === 0) process.stdout.write('.');
+      if ((i + 1) % 5 === 0) {
+        process.stdout.write('.');
+      }
     }
     console.log();
 

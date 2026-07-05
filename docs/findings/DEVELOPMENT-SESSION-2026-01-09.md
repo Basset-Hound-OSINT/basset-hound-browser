@@ -149,7 +149,7 @@ This development session focused on two major objectives:
 
 **Planned Files:**
 1. `network-forensics/forensics.js` (~1,200 lines)
-2. `websocket/commands/network-forensics-commands.js` (~600 lines)
+2. `websocket/commands/forensic/network/network-forensics-commands.js` (~600 lines)
 3. `tests/unit/network-forensics.test.js` (~900 lines)
 4. `docs/findings/PHASE-19-IMPLEMENTATION-2026-01-09.md`
 
@@ -263,7 +263,7 @@ This development session focused on two major objectives:
 - `forms/smart-form-filler.js` (650 lines)
 - `websocket/commands/form-commands.js` (450 lines)
 - `network-forensics/forensics.js` (1,200 lines, in progress)
-- `websocket/commands/network-forensics-commands.js` (600 lines, in progress)
+- `websocket/commands/forensic/network/network-forensics-commands.js` (600 lines, in progress)
 - `recording/interaction-recorder.js` (800 lines, in progress)
 - `websocket/commands/recording-commands.js` (500 lines, in progress)
 - Enhanced `screenshots/manager.js` (+400 lines, in progress)

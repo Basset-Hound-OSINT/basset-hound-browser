@@ -90,9 +90,15 @@ class MockDeviceFingerprintingV2 {
 
   validateProfile(profile) {
     const errors = [];
-    if (!profile.userAgent) errors.push('Missing userAgent');
-    if (!profile.category) errors.push('Missing category');
-    if (typeof profile.evasionScore !== 'number') errors.push('Invalid evasionScore');
+    if (!profile.userAgent) {
+      errors.push('Missing userAgent');
+    }
+    if (!profile.category) {
+      errors.push('Missing category');
+    }
+    if (typeof profile.evasionScore !== 'number') {
+      errors.push('Invalid evasionScore');
+    }
 
     if (errors.length > 0) {
       this.validationErrors.push({ profile: profile.id, errors, timestamp: Date.now() });
@@ -105,7 +111,9 @@ class MockDeviceFingerprintingV2 {
     const matching = Array.from(this.profiles.values())
       .filter(p => p.category === category);
 
-    if (matching.length === 0) return null;
+    if (matching.length === 0) {
+      return null;
+    }
 
     const profile = matching[Math.floor(Math.random() * matching.length)];
     this.usageHistory.push({
@@ -407,7 +415,7 @@ describe('Wave 13: Features + Security Integration Tests', () => {
 
     test('profile validation is audited on failure', () => {
       const invalidProfile = {
-        name: 'Invalid Profile',
+        name: 'Invalid Profile'
         // Missing required fields
       };
 

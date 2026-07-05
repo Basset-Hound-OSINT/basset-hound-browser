@@ -359,8 +359,12 @@ class ServiceMeshController extends EventEmitter {
    * Check if request matches selector
    */
   _matchesSelector(selector, context) {
-    if (!selector) return true;
-    if (!context.labels) return false;
+    if (!selector) {
+      return true;
+    }
+    if (!context.labels) {
+      return false;
+    }
 
     return Object.entries(selector).every(([key, value]) =>
       context.labels[key] === value
@@ -375,14 +379,18 @@ class ServiceMeshController extends EventEmitter {
       const fromMatch = rule.from.some(from =>
         this._matchesPrincipal(from.source, context)
       );
-      if (!fromMatch) return false;
+      if (!fromMatch) {
+        return false;
+      }
     }
 
     if (rule.to) {
       const toMatch = rule.to.some(to =>
         this._matchesOperation(to.operation, request)
       );
-      if (!toMatch) return false;
+      if (!toMatch) {
+        return false;
+      }
     }
 
     return true;
@@ -416,7 +424,9 @@ class ServiceMeshController extends EventEmitter {
    * Match path pattern
    */
   _matchesPath(pattern, path) {
-    if (pattern === '*') return true;
+    if (pattern === '*') {
+      return true;
+    }
     if (pattern.endsWith('*')) {
       return path.startsWith(pattern.slice(0, -1));
     }

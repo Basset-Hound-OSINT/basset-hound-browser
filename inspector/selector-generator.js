@@ -97,7 +97,9 @@ class SelectorGenerator {
    * @returns {string} CSS selector
    */
   generateId(id) {
-    if (!id) return null;
+    if (!id) {
+      return null;
+    }
     // Escape special characters in ID
     const escapedId = this.escapeCssSelector(id);
     return `#${escapedId}`;
@@ -110,7 +112,9 @@ class SelectorGenerator {
    * @returns {string} CSS selector
    */
   generateClass(classes, tagName = '') {
-    if (!classes || classes.length === 0) return null;
+    if (!classes || classes.length === 0) {
+      return null;
+    }
 
     // Filter out common utility classes that are likely not unique
     const significantClasses = classes.filter(cls => {
@@ -147,7 +151,9 @@ class SelectorGenerator {
    * @returns {string} XPath selector
    */
   generateXPath(path) {
-    if (!path || path.length === 0) return null;
+    if (!path || path.length === 0) {
+      return null;
+    }
 
     const xpathParts = path.map(node => {
       let part = node.tagName.toLowerCase();
@@ -178,7 +184,9 @@ class SelectorGenerator {
    * @returns {string} Unique CSS selector
    */
   generateUnique(elementInfo) {
-    if (!elementInfo) return null;
+    if (!elementInfo) {
+      return null;
+    }
 
     const parts = [];
 
@@ -236,7 +244,9 @@ class SelectorGenerator {
    * @returns {string} CSS selector with nth-child
    */
   generateNthChild(path) {
-    if (!path || path.length === 0) return null;
+    if (!path || path.length === 0) {
+      return null;
+    }
 
     const parts = path.map(node => {
       let part = node.tagName.toLowerCase();
@@ -255,7 +265,9 @@ class SelectorGenerator {
    * @returns {string} CSS selector with attributes
    */
   generateAttributes(elementInfo) {
-    if (!elementInfo || !elementInfo.attributes) return null;
+    if (!elementInfo || !elementInfo.attributes) {
+      return null;
+    }
 
     const tag = elementInfo.tagName ? elementInfo.tagName.toLowerCase() : '*';
     const attrs = elementInfo.attributes;
@@ -293,7 +305,9 @@ class SelectorGenerator {
     // 4. Attribute selector
     // 5. Full unique selector
 
-    if (selectors.id) return selectors.id;
+    if (selectors.id) {
+      return selectors.id;
+    }
 
     if (selectors.attributes) {
       // Prefer data-* attributes
@@ -357,7 +371,9 @@ class SelectorGenerator {
    * @returns {string} Escaped string
    */
   escapeCssSelector(str) {
-    if (!str) return '';
+    if (!str) {
+      return '';
+    }
     return str.replace(/([!"#$%&'()*+,./:;<=>?@[\\\]^`{|}~])/g, '\\$1');
   }
 
@@ -367,7 +383,9 @@ class SelectorGenerator {
    * @returns {string} Escaped string
    */
   escapeCssAttributeValue(str) {
-    if (!str) return '';
+    if (!str) {
+      return '';
+    }
     return str.replace(/["\\]/g, '\\$&');
   }
 
@@ -377,7 +395,9 @@ class SelectorGenerator {
    * @returns {string} Compact selector description
    */
   generateCompact(elementInfo) {
-    if (!elementInfo) return 'null';
+    if (!elementInfo) {
+      return 'null';
+    }
 
     const parts = [];
     parts.push(elementInfo.tagName ? elementInfo.tagName.toLowerCase() : '?');

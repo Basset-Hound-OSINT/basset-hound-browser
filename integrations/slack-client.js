@@ -466,7 +466,7 @@ class SlackClient {
       const tracker = this.rateLimitTrackers[webhookId];
       return {
         webhookId,
-        registered: !!this.webhookUrls[webhookId],
+        registered: Boolean(this.webhookUrls[webhookId]),
         messagesSentThisWindow: tracker?.messageCount || 0,
         lastMessageTime: tracker?.lastMessageTime || null,
         queuedMessages: this.messageQueue.filter(m => m.webhookId === webhookId).length

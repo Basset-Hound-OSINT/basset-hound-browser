@@ -219,7 +219,7 @@ class MockAlertEnabledDashboard extends EventEmitter {
 }
 
 // Test Suite
-describe('Dashboard Integration - Alert System', function() {
+describe('Dashboard Integration - Alert System', function () {
   this.timeout(30000);
 
   let dispatcher;
@@ -243,8 +243,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 1: Single Alert Creation and Display', function() {
-    it('should create an alert', function() {
+  describe('Scenario 1: Single Alert Creation and Display', () => {
+    it('should create an alert', () => {
       const alert = dispatcher.createAlert('monitor-1', {
         severity: 'high',
         type: 'price_drop',
@@ -255,14 +255,14 @@ describe('Dashboard Integration - Alert System', function() {
       assert.strictEqual(alert.monitorId, 'monitor-1');
     });
 
-    it('should display alert in dashboard', function() {
+    it('should display alert in dashboard', () => {
       const alerts = dashboard.getAlerts();
 
       assert(alerts.length > 0, 'Should have alerts');
       assert.strictEqual(alerts[0].severity, 'high');
     });
 
-    it('should track alert in manager', function() {
+    it('should track alert in manager', () => {
       const stats = alertManager.getStats();
 
       assert(stats.total > 0, 'Should have total alerts');
@@ -270,8 +270,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 2: Multiple Alerts from Different Monitors', function() {
-    it('should create alerts from 5 different monitors', function() {
+  describe('Scenario 2: Multiple Alerts from Different Monitors', () => {
+    it('should create alerts from 5 different monitors', () => {
       for (let i = 1; i <= 5; i++) {
         dispatcher.createAlert(`monitor-${i}`, {
           severity: i % 2 === 0 ? 'high' : 'medium',
@@ -282,21 +282,21 @@ describe('Dashboard Integration - Alert System', function() {
       assert(dispatcher.alerts.size >= 5, 'Should have 5+ alerts');
     });
 
-    it('should display all alerts in dashboard', function() {
+    it('should display all alerts in dashboard', () => {
       const alerts = dashboard.getAlerts();
 
       assert(alerts.length >= 5, 'Should display all alerts');
     });
 
-    it('should track alerts by monitor', function() {
+    it('should track alerts by monitor', () => {
       const monitor1Alerts = dispatcher.getAlertsByMonitor('monitor-1');
 
       assert(monitor1Alerts.length > 0, 'Should have alerts for monitor-1');
     });
   });
 
-  describe('Scenario 3: Alert Severity Handling', function() {
-    it('should categorize alerts by severity', function() {
+  describe('Scenario 3: Alert Severity Handling', () => {
+    it('should categorize alerts by severity', () => {
       // Create alerts with different severities
       const severities = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -315,7 +315,7 @@ describe('Dashboard Integration - Alert System', function() {
       }
     });
 
-    it('should prioritize critical alerts', function() {
+    it('should prioritize critical alerts', () => {
       const alerts = dashboard.getAlerts();
       const criticalAlerts = alerts.filter(a => a.severity === 'critical');
 
@@ -323,8 +323,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 4: Alert Dismissal Flow', function() {
-    it('should dismiss an alert', function() {
+  describe('Scenario 4: Alert Dismissal Flow', () => {
+    it('should dismiss an alert', () => {
       const alert = dispatcher.createAlert('monitor-test', {
         severity: 'medium',
         message: 'Test dismissal'
@@ -336,7 +336,7 @@ describe('Dashboard Integration - Alert System', function() {
       assert(dismissed.dismissed, 'Alert should be marked dismissed');
     });
 
-    it('should remove dismissed alert from dashboard', function() {
+    it('should remove dismissed alert from dashboard', () => {
       const beforeCount = dashboard.getAlerts().length;
 
       // Get first non-dismissed alert and dismiss it
@@ -353,15 +353,15 @@ describe('Dashboard Integration - Alert System', function() {
       assert(afterCount <= beforeCount, 'Should remove alert from display');
     });
 
-    it('should track dismissal in manager', function() {
+    it('should track dismissal in manager', () => {
       const stats = alertManager.getStats();
 
       assert(stats.dismissed > 0, 'Should have dismissed alerts');
     });
   });
 
-  describe('Scenario 5: Alert Acknowledgment', function() {
-    it('should acknowledge an alert', function() {
+  describe('Scenario 5: Alert Acknowledgment', () => {
+    it('should acknowledge an alert', () => {
       const alert = dispatcher.createAlert('monitor-ack', {
         severity: 'high',
         message: 'Acknowledgment test'
@@ -373,21 +373,21 @@ describe('Dashboard Integration - Alert System', function() {
       assert(acked.acknowledged, 'Alert should be acknowledged');
     });
 
-    it('should track acknowledged alerts', function() {
+    it('should track acknowledged alerts', () => {
       const stats = alertManager.getStats();
 
       assert(stats.acknowledged > 0, 'Should have acknowledged alerts');
     });
   });
 
-  describe('Scenario 6: Unread Alert Tracking', function() {
-    it('should track unread alerts', function() {
+  describe('Scenario 6: Unread Alert Tracking', () => {
+    it('should track unread alerts', () => {
       const unread = dispatcher.getUnreadAlerts();
 
       assert(unread.length > 0, 'Should have unread alerts');
     });
 
-    it('should mark alert as read', function() {
+    it('should mark alert as read', () => {
       const unread = dispatcher.getUnreadAlerts();
       if (unread.length > 0) {
         dispatcher.markAlertAsRead(unread[0].id);
@@ -397,7 +397,7 @@ describe('Dashboard Integration - Alert System', function() {
       }
     });
 
-    it('should update unread count after marking as read', function() {
+    it('should update unread count after marking as read', () => {
       const stats = alertManager.getStats();
       const currentUnread = stats.unread;
 
@@ -412,14 +412,14 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 7: Alert Timeline', function() {
-    it('should maintain alert event timeline', function() {
+  describe('Scenario 7: Alert Timeline', () => {
+    it('should maintain alert event timeline', () => {
       const timeline = dashboard.getAlertTimeline();
 
       assert(timeline.length > 0, 'Should have alert timeline entries');
     });
 
-    it('should show display and removal in timeline', function() {
+    it('should show display and removal in timeline', () => {
       const timeline = dashboard.getAlertTimeline();
 
       const hasDisplay = timeline.some(e => e.type === 'alert-displayed');
@@ -430,8 +430,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 8: Multi-Channel Alert Creation', function() {
-    it('should create alerts from multiple channels', function() {
+  describe('Scenario 8: Multi-Channel Alert Creation', () => {
+    it('should create alerts from multiple channels', () => {
       // Simulate alerts from different sources
       const sources = ['monitoring', 'slack', 'webhook'];
 
@@ -448,8 +448,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 9: Alert Batch Operations', function() {
-    it('should handle batch dismiss', function() {
+  describe('Scenario 9: Alert Batch Operations', () => {
+    it('should handle batch dismiss', () => {
       const beforeCount = dispatcher.alerts.size;
 
       // Dismiss 5 alerts
@@ -470,7 +470,7 @@ describe('Dashboard Integration - Alert System', function() {
       }
     });
 
-    it('should handle batch acknowledge', function() {
+    it('should handle batch acknowledge', () => {
       const alerts = Array.from(dispatcher.alerts.values());
 
       for (let i = 0; i < Math.min(3, alerts.length); i++) {
@@ -484,15 +484,15 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 10: Alert Filtering', function() {
-    it('should filter alerts by severity', function() {
+  describe('Scenario 10: Alert Filtering', () => {
+    it('should filter alerts by severity', () => {
       const alertsArray = Array.from(dispatcher.alerts.values());
       const highSeverity = alertsArray.filter(a => a.severity === 'high');
 
       assert(highSeverity.length > 0, 'Should have high severity alerts');
     });
 
-    it('should filter alerts by status', function() {
+    it('should filter alerts by status', () => {
       const alertsArray = Array.from(dispatcher.alerts.values());
       const unread = alertsArray.filter(a => !a.read && !a.dismissed);
 
@@ -500,8 +500,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 11: Alert Lifecycle', function() {
-    it('should complete full alert lifecycle', function() {
+  describe('Scenario 11: Alert Lifecycle', () => {
+    it('should complete full alert lifecycle', () => {
       // 1. Create
       const alert = dispatcher.createAlert('monitor-lifecycle', {
         severity: 'medium',
@@ -534,8 +534,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 12: Alert Persistence in Dashboard', function() {
-    it('should persist alerts during display', function() {
+  describe('Scenario 12: Alert Persistence in Dashboard', () => {
+    it('should persist alerts during display', () => {
       const count1 = dashboard.getAlerts().length;
 
       // Don't dismiss any alerts
@@ -545,8 +545,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 13: Alert Notification Cascading', function() {
-    it('should cascade through dispatcher -> manager -> dashboard', function(done) {
+  describe('Scenario 13: Alert Notification Cascading', () => {
+    it('should cascade through dispatcher -> manager -> dashboard', (done) => {
       let cascadeCount = 0;
 
       const trackCascade = () => cascadeCount++;
@@ -573,8 +573,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 14: Alert Performance', function() {
-    it('should create 1000 alerts efficiently', function() {
+  describe('Scenario 14: Alert Performance', () => {
+    it('should create 1000 alerts efficiently', () => {
       const startTime = Date.now();
 
       for (let i = 0; i < 1000; i++) {
@@ -594,7 +594,7 @@ describe('Dashboard Integration - Alert System', function() {
       assert(alertsPerSecond > 100, 'Should create >100 alerts/sec');
     });
 
-    it('should dismiss 100 alerts efficiently', function() {
+    it('should dismiss 100 alerts efficiently', () => {
       const alerts = Array.from(dispatcher.alerts.values()).slice(0, 100);
       const startTime = Date.now();
 
@@ -611,8 +611,8 @@ describe('Dashboard Integration - Alert System', function() {
     });
   });
 
-  describe('Scenario 15: Alert System Integration Summary', function() {
-    it('should provide integration summary', function() {
+  describe('Scenario 15: Alert System Integration Summary', () => {
+    it('should provide integration summary', () => {
       const stats = alertManager.getStats();
       const dashboardAlerts = dashboard.getAlerts();
 

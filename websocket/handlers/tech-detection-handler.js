@@ -24,58 +24,58 @@ class TechDetectionHandler {
       let result;
 
       switch (command) {
-        case 'detect_technologies':
-          result = await this.detectTechnologies(params);
-          break;
+      case 'detect_technologies':
+        result = await this.detectTechnologies(params);
+        break;
 
-        case 'detect_batch':
-          result = await this.detectBatch(params);
-          break;
+      case 'detect_batch':
+        result = await this.detectBatch(params);
+        break;
 
-        case 'get_detection_cache':
-          result = this.getDetectionCache();
-          break;
+      case 'get_detection_cache':
+        result = this.getDetectionCache();
+        break;
 
-        case 'get_cached_result':
-          result = this.getCachedResult(params);
-          break;
+      case 'get_cached_result':
+        result = this.getCachedResult(params);
+        break;
 
-        case 'clear_cache':
-          result = this.clearCache();
-          break;
+      case 'clear_cache':
+        result = this.clearCache();
+        break;
 
-        case 'clear_cache_entry':
-          result = this.clearCacheEntry(params);
-          break;
+      case 'clear_cache_entry':
+        result = this.clearCacheEntry(params);
+        break;
 
-        case 'get_detection_history':
-          result = this.getDetectionHistory(params);
-          break;
+      case 'get_detection_history':
+        result = this.getDetectionHistory(params);
+        break;
 
-        case 'get_tech_stats':
-          result = this.getTechStats(params);
-          break;
+      case 'get_tech_stats':
+        result = this.getTechStats(params);
+        break;
 
-        case 'filter_detections':
-          result = this.filterDetections(params);
-          break;
+      case 'filter_detections':
+        result = this.filterDetections(params);
+        break;
 
-        case 'get_detector_status':
-          result = this.getDetectorStatus();
-          break;
+      case 'get_detector_status':
+        result = this.getDetectorStatus();
+        break;
 
-        case 'load_signatures':
-          result = await this.loadSignatures(params);
-          break;
+      case 'load_signatures':
+        result = await this.loadSignatures(params);
+        break;
 
-        default:
-          return {
-            success: false,
-            error: `Unknown command: ${command}`,
-            command,
-            timestamp: new Date().toISOString(),
-            duration: Date.now() - startTime
-          };
+      default:
+        return {
+          success: false,
+          error: `Unknown command: ${command}`,
+          command,
+          timestamp: new Date().toISOString(),
+          duration: Date.now() - startTime
+        };
       }
 
       return {

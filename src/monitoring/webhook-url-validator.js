@@ -279,17 +279,31 @@ class WebhookURLValidator {
     const ipv4Pattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
     const match = hostname.match(ipv4Pattern);
 
-    if (!match) return false;
+    if (!match) {
+      return false;
+    }
 
     const [, oct1, oct2, oct3, oct4] = match.map(Number);
 
     // Check ranges
-    if (oct1 === 127) return true; // 127.0.0.0/8
-    if (oct1 === 10) return true; // 10.0.0.0/8
-    if (oct1 === 172 && oct2 >= 16 && oct2 <= 31) return true; // 172.16.0.0/12
-    if (oct1 === 192 && oct2 === 168) return true; // 192.168.0.0/16
-    if (oct1 === 169 && oct2 === 254) return true; // 169.254.0.0/16 (link-local)
-    if (oct1 === 0) return true; // 0.0.0.0/8
+    if (oct1 === 127) {
+      return true;
+    } // 127.0.0.0/8
+    if (oct1 === 10) {
+      return true;
+    } // 10.0.0.0/8
+    if (oct1 === 172 && oct2 >= 16 && oct2 <= 31) {
+      return true;
+    } // 172.16.0.0/12
+    if (oct1 === 192 && oct2 === 168) {
+      return true;
+    } // 192.168.0.0/16
+    if (oct1 === 169 && oct2 === 254) {
+      return true;
+    } // 169.254.0.0/16 (link-local)
+    if (oct1 === 0) {
+      return true;
+    } // 0.0.0.0/8
 
     return false;
   }
@@ -386,7 +400,9 @@ class WebhookURLValidator {
    * @private
    */
   _extractDomain(hostname) {
-    if (!hostname) return null;
+    if (!hostname) {
+      return null;
+    }
 
     // If it's an IP, return as-is
     if (/^\d/.test(hostname)) {

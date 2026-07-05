@@ -282,7 +282,9 @@ class SpikeTest {
   }
 
   printPhaseStats() {
-    if (this.results.phases.length === 0) return;
+    if (this.results.phases.length === 0) {
+      return;
+    }
 
     const lastPhase = this.results.phases[this.results.phases.length - 1];
     console.log(`Phase Results: ${lastPhase.phase}`);

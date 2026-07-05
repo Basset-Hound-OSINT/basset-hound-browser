@@ -887,7 +887,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getScriptHistory: (options) => ipcRenderer.invoke('get-script-history', options),
 
   // Navigation completion notification
-  emitNavigationComplete: (navigationData) => ipcRenderer.send('navigation-complete', navigationData),
+  emitNavigationComplete: (navigationData) => ipcRenderer.send('navigation-complete', navigationData)
 });
 
 // Bot evasion injections - override navigator.webdriver and other telltales
@@ -962,7 +962,7 @@ contextBridge.exposeInMainWorld('evasionHelpers', {
         console.log('Basset Hound evasion script loaded');
       })();
     `;
-  },
+  }
 });
 
 // DOM manipulation helpers exposed to renderer
@@ -997,5 +997,5 @@ contextBridge.exposeInMainWorld('domHelpers', {
     if (element && event && handler) {
       element.addEventListener(event, handler);
     }
-  },
+  }
 });

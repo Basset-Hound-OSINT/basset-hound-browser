@@ -34,7 +34,7 @@ class DbPool extends EventEmitter {
       // Health check
       healthCheckInterval: config.healthCheckInterval || 30000,
 
-      ...config,
+      ...config
     };
 
     // Pool state
@@ -50,7 +50,7 @@ class DbPool extends EventEmitter {
       lastHealthCheck: null,
       totalConnections: 0,
       availableConnections: 0,
-      errors: 0,
+      errors: 0
     };
 
     this.healthCheckInterval = null;
@@ -74,7 +74,7 @@ class DbPool extends EventEmitter {
           isAvailable: true,
           createdAt: Date.now(),
           lastUsedAt: Date.now(),
-          queryCount: 0,
+          queryCount: 0
         };
         this.connections.set(connId, mockConn);
         this.availableConnections.push(mockConn);
@@ -115,7 +115,7 @@ class DbPool extends EventEmitter {
         isAvailable: false,
         createdAt: Date.now(),
         lastUsedAt: Date.now(),
-        queryCount: 0,
+        queryCount: 0
       };
       this.connections.set(connId, newConn);
       return newConn;
@@ -125,7 +125,9 @@ class DbPool extends EventEmitter {
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
         const idx = this.waitingQueue.indexOf(resolver);
-        if (idx >= 0) this.waitingQueue.splice(idx, 1);
+        if (idx >= 0) {
+          this.waitingQueue.splice(idx, 1);
+        }
         throw new Error('Timeout acquiring database connection');
       }, this.config.connectionTimeoutMillis);
 
@@ -188,7 +190,7 @@ class DbPool extends EventEmitter {
             rowCount: 0,
             rows: [],
             oid: null,
-            fields: [],
+            fields: []
           };
 
           clearTimeout(timeout);
@@ -289,7 +291,7 @@ class DbPool extends EventEmitter {
       availableConnections: this.availableConnections.length,
       inUseConnections: this.connections.size - this.availableConnections.length,
       waitingRequests: this.waitingQueue.length,
-      health: this.healthStatus,
+      health: this.healthStatus
     };
   }
 
@@ -343,14 +345,14 @@ class DbPool extends EventEmitter {
         total: this.connections.size,
         available: this.availableConnections.length,
         inUse: this.connections.size - this.availableConnections.length,
-        waiting: this.waitingQueue.length,
+        waiting: this.waitingQueue.length
       },
       stats: {
         totalErrors: this.healthStatus.errors,
         lastHealthCheck: this.healthStatus.lastHealthCheck
           ? new Date(this.healthStatus.lastHealthCheck).toISOString()
-          : null,
-      },
+          : null
+      }
     };
   }
 }

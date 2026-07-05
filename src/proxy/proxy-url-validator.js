@@ -282,7 +282,9 @@ class ProxyURLValidator {
     const ipv4Pattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
     const match = ip.match(ipv4Pattern);
 
-    if (!match) return false;
+    if (!match) {
+      return false;
+    }
 
     const [, oct1, oct2, oct3, oct4] = match.map(Number);
     return (

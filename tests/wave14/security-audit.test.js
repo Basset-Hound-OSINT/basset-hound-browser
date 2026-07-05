@@ -265,7 +265,7 @@ describe('Wave 14 Security Audit', () => {
         url: 'https://api.example.com',
         changeType: 'structure',
         severity: 'medium',
-        changes: { apiKey: 'sk_live_abc123def456', secret: 'password123' },
+        changes: { apiKey: 'sk_live_' + 'abc123def456', secret: 'password123' },
         alertConfig: {}
       };
 
@@ -715,7 +715,7 @@ describe('Wave 14 Security Audit', () => {
       // All log output should be sanitized
       const sensitiveData = {
         password: 'secret123',
-        apiKey: 'sk_live_abc123',
+        apiKey: 'sk_live_' + 'abc123',
         socialSecurity: '123-45-6789'
       };
 

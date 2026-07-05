@@ -62,12 +62,12 @@ function generateCommand(size = 'small') {
     params = {
       command: 'navigate',
       url: 'https://example.com/test?q=param',
-      headers: { 'X-Custom': 'value' },
+      headers: { 'X-Custom': 'value' }
     };
   } else {
     params = {
       html: 'x'.repeat(5000),
-      metadata: { large: 'payload'.repeat(100) },
+      metadata: { large: 'payload'.repeat(100) }
     };
   }
 
@@ -255,7 +255,7 @@ test('Phase3Registry: register optimizer', () => {
     () => ({
       optimize() {
         return 'result';
-      },
+      }
     }),
     { enabled: true }
   );

@@ -88,7 +88,9 @@ class MISPExport extends PlatformIntegration {
     const attributes = [];
 
     const addAttribute = (type, value, comment = '', toIds = true) => {
-      if (!value) return;
+      if (!value) {
+        return;
+      }
 
       attributes.push({
         type,

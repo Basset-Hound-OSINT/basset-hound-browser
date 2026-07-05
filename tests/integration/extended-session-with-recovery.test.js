@@ -22,7 +22,7 @@ const TEST_CONFIG = {
   checkpointInterval: 5000, // 5 seconds
   maxRetries: 3,
   backoffMs: 500,
-  results_dir: path.join(__dirname, '..', 'results'),
+  results_dir: path.join(__dirname, '..', 'results')
 };
 
 // Ensure results directory exists
@@ -35,7 +35,7 @@ const testResults = {
   passed: 0,
   failed: 0,
   total: 0,
-  errors: [],
+  errors: []
 };
 
 /**
@@ -46,8 +46,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -61,7 +64,7 @@ class OperationSimulator {
       botDetection: 0.03, // 3%
       connectionLoss: 0.02, // 2%
       authFailure: 0.01, // 1%
-      timeout: 0.02, // 2%
+      timeout: 0.02 // 2%
     };
   }
 
@@ -76,14 +79,14 @@ class OperationSimulator {
         success: false,
         error: this.getErrorForType(failureType),
         errorType: failureType,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       };
     }
 
     return {
       success: true,
       data: { result: 'operation completed' },
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
   }
 
@@ -102,7 +105,7 @@ class OperationSimulator {
       botDetection: new Error('403 Forbidden - Bot Detected'),
       connectionLoss: new Error('Connection reset by peer'),
       authFailure: new Error('401 Unauthorized'),
-      timeout: new Error('Request timeout'),
+      timeout: new Error('Request timeout')
     };
     return errors[type] || new Error('Unknown error');
   }
@@ -122,7 +125,7 @@ class CheckpointManager {
       id: crypto.randomBytes(16).toString('hex'),
       timestamp: new Date().toISOString(),
       sessionState: JSON.parse(JSON.stringify(sessionData)),
-      operationCount: sessionData.operationCount || 0,
+      operationCount: sessionData.operationCount || 0
     };
 
     this.checkpoints.push(checkpoint);
@@ -148,7 +151,7 @@ class CheckpointManager {
     return this.checkpoints.map(c => ({
       id: c.id,
       timestamp: c.timestamp,
-      operationCount: c.operationCount,
+      operationCount: c.operationCount
     }));
   }
 }
@@ -169,7 +172,7 @@ class FailureRecoveryManager {
       timestamp: new Date().toISOString(),
       attempts: 0,
       maxRetries: TEST_CONFIG.maxRetries,
-      nextRetry: null,
+      nextRetry: null
     };
 
     this.retryQueue.push(recovery);
@@ -225,7 +228,7 @@ describe('Extended Session with Failure Recovery', () => {
         failures: [],
         recoveries: [],
         checkpoints: [],
-        auditTrail: [],
+        auditTrail: []
       };
 
       assert(sessionData.id);
@@ -249,7 +252,7 @@ describe('Extended Session with Failure Recovery', () => {
       sessionData.auditTrail.push({
         timestamp: new Date().toISOString(),
         event: 'session_started',
-        checkpointId: checkpointManager.currentCheckpoint.id,
+        checkpointId: checkpointManager.currentCheckpoint.id
       });
 
       assert.strictEqual(sessionData.auditTrail.length, 1);
@@ -262,7 +265,7 @@ describe('Extended Session with Failure Recovery', () => {
         successful: 0,
         failed: 0,
         retried: 0,
-        recovered: 0,
+        recovered: 0
       };
 
       assert(sessionData.operationTracking);
@@ -275,7 +278,7 @@ describe('Extended Session with Failure Recovery', () => {
         botDetection: { strategy: 'user_agent_rotation', attempts: 3 },
         connectionLoss: { strategy: 'retry_with_backoff', maxRetries: 5 },
         authFailure: { strategy: 'refresh_credentials', attempts: 2 },
-        timeout: { strategy: 'increase_timeout', factor: 1.5 },
+        timeout: { strategy: 'increase_timeout', factor: 1.5 }
       };
 
       assert(sessionData.failureStrategies.rateLimit);
@@ -287,7 +290,7 @@ describe('Extended Session with Failure Recovery', () => {
         cpuUsage: 0,
         memoryUsage: 0,
         connectionCount: 0,
-        openRequests: 0,
+        openRequests: 0
       };
 
       assert(sessionData.healthMetrics);
@@ -299,7 +302,7 @@ describe('Extended Session with Failure Recovery', () => {
         checkDataIntegrity: true,
         verifyChecksums: true,
         validateSequence: true,
-        detectCorruption: true,
+        detectCorruption: true
       };
 
       assert(sessionData.validationRules.checkDataIntegrity === true);
@@ -375,7 +378,7 @@ describe('Extended Session with Failure Recovery', () => {
         totalOperations: sessionData.operationCount,
         successRate: (sessionData.operationTracking.successful / sessionData.operationCount) * 100,
         failureRate: (sessionData.operationTracking.failed / sessionData.operationCount) * 100,
-        totalTime: Date.now() - sessionData.startTime,
+        totalTime: Date.now() - sessionData.startTime
       };
 
       assert(sessionData.operationMetadata.totalOperations > 0);
@@ -437,7 +440,7 @@ describe('Extended Session with Failure Recovery', () => {
       for (let i = 0; i < 3; i++) {
         saves.push({
           timestamp: new Date().toISOString(),
-          operationCount: sessionData.operationCount,
+          operationCount: sessionData.operationCount
         });
       }
 
@@ -450,7 +453,7 @@ describe('Extended Session with Failure Recovery', () => {
       const distribution = {
         successful: sessionData.operationTracking.successful,
         failed: sessionData.operationTracking.failed,
-        retried: sessionData.operationTracking.retried,
+        retried: sessionData.operationTracking.retried
       };
 
       sessionData.operationDistribution = distribution;
@@ -467,7 +470,7 @@ describe('Extended Session with Failure Recovery', () => {
       sessionData.latencies = {
         min: Math.min(...latencies),
         max: Math.max(...latencies),
-        avg: latencies.reduce((a, b) => a + b, 0) / latencies.length,
+        avg: latencies.reduce((a, b) => a + b, 0) / latencies.length
       };
 
       logResult('Operation latencies measured', true);
@@ -598,13 +601,13 @@ describe('Extended Session with Failure Recovery', () => {
       const userAgents = [
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-        'Mozilla/5.0 (X11; Linux x86_64)',
+        'Mozilla/5.0 (X11; Linux x86_64)'
       ];
 
       sessionData.userAgentRotation = {
         currentAgent: userAgents[Math.floor(Math.random() * userAgents.length)],
         availableAgents: userAgents,
-        rotationCount: 0,
+        rotationCount: 0
       };
 
       assert(sessionData.userAgentRotation.currentAgent);
@@ -615,7 +618,7 @@ describe('Extended Session with Failure Recovery', () => {
       sessionData.credentialRefresh = {
         lastRefresh: new Date().toISOString(),
         refreshCount: 0,
-        maxRefreshes: 5,
+        maxRefreshes: 5
       };
 
       assert(sessionData.credentialRefresh.lastRefresh);
@@ -639,7 +642,7 @@ describe('Extended Session with Failure Recovery', () => {
           timestamp: failure.timestamp,
           failureType: failure.error,
           attempts: failure.attempts,
-          status: failure.attempts > 0 ? 'recovered' : 'unrecovered',
+          status: failure.attempts > 0 ? 'recovered' : 'unrecovered'
         });
       }
 
@@ -701,7 +704,7 @@ describe('Extended Session with Failure Recovery', () => {
       const overhead = {
         storagePerCheckpoint: 1024 * (Math.random() * 100 + 50), // 50-150KB
         timeToCreate: Math.random() * 100, // ms
-        timeToRestore: Math.random() * 50, // ms
+        timeToRestore: Math.random() * 50 // ms
       };
 
       sessionData.checkpointOverhead = overhead;
@@ -715,7 +718,7 @@ describe('Extended Session with Failure Recovery', () => {
         incrementalCheckpoints.push({
           id: `inc-${i}`,
           deltaOnly: true,
-          changes: Math.floor(Math.random() * 100),
+          changes: Math.floor(Math.random() * 100)
         });
       }
 
@@ -752,7 +755,7 @@ describe('Extended Session with Failure Recovery', () => {
       sessionData.checkpointEfficiency = {
         totalCheckpoints: checkpoints.length,
         avgOperationsPerCheckpoint,
-        checkpointInterval: TEST_CONFIG.checkpointInterval,
+        checkpointInterval: TEST_CONFIG.checkpointInterval
       };
 
       logResult('Checkpoint efficiency calculated', true);
@@ -780,7 +783,7 @@ describe('Extended Session with Failure Recovery', () => {
         failedOperations: sessionData.operationTracking.failed,
         recoveredOperations: sessionData.operationTracking.recovered,
         duration: sessionData.duration,
-        successRate: (sessionData.operationTracking.successful / sessionData.operationCount) * 100,
+        successRate: (sessionData.operationTracking.successful / sessionData.operationCount) * 100
       };
 
       assert(sessionData.summary.totalOperations > 0);
@@ -791,8 +794,12 @@ describe('Extended Session with Failure Recovery', () => {
       let integrityErrors = 0;
 
       for (const operation of sessionData.operations) {
-        if (!operation.timestamp) integrityErrors++;
-        if (!('success' in operation)) integrityErrors++;
+        if (!operation.timestamp) {
+          integrityErrors++;
+        }
+        if (!('success' in operation)) {
+          integrityErrors++;
+        }
       }
 
       assert(integrityErrors === 0);

@@ -30,19 +30,19 @@ const PRIORITY = {
  */
 const ADAPTIVE_INTERVALS = {
   // Static intervals by priority
-  CRITICAL: 5000,     // 5 seconds
-  HIGH: 15000,        // 15 seconds
-  NORMAL: 60000,      // 1 minute
-  LOW: 300000,        // 5 minutes
-  IDLE: 600000,       // 10 minutes
+  CRITICAL: 5000, // 5 seconds
+  HIGH: 15000, // 15 seconds
+  NORMAL: 60000, // 1 minute
+  LOW: 300000, // 5 minutes
+  IDLE: 600000, // 10 minutes
 
   // Adaptive multipliers based on change frequency
   CHANGE_FREQUENCY: {
-    VERY_HIGH: 1.0,   // Check at base interval
-    HIGH: 1.5,        // Check 66% as often
-    MEDIUM: 2.0,      // Check 50% as often
-    LOW: 3.0,         // Check 33% as often
-    VERY_LOW: 5.0     // Check 20% as often
+    VERY_HIGH: 1.0, // Check at base interval
+    HIGH: 1.5, // Check 66% as often
+    MEDIUM: 2.0, // Check 50% as often
+    LOW: 3.0, // Check 33% as often
+    VERY_LOW: 5.0 // Check 20% as often
   }
 };
 
@@ -50,10 +50,10 @@ const ADAPTIVE_INTERVALS = {
  * Scheduling strategies
  */
 const SCHEDULE_STRATEGY = {
-  IMMEDIATE: 'immediate',       // Check ASAP
-  SPREAD: 'spread',             // Distribute checks across time window
-  ADAPTIVE: 'adaptive',          // Adapt based on change frequency
-  PRIORITY: 'priority'           // Priority queue
+  IMMEDIATE: 'immediate', // Check ASAP
+  SPREAD: 'spread', // Distribute checks across time window
+  ADAPTIVE: 'adaptive', // Adapt based on change frequency
+  PRIORITY: 'priority' // Priority queue
 };
 
 /**
@@ -409,7 +409,7 @@ class MonitorScheduler extends EventEmitter {
    */
   getStatus() {
     return {
-      running: !!this.scheduleLoop,
+      running: Boolean(this.scheduleLoop),
       totalMonitors: this.monitors.size,
       activeChecks: this.activeChecks.size,
       monitorDetails: Array.from(this.monitors.values()).map(m => ({

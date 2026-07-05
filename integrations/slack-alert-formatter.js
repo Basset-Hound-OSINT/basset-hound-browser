@@ -627,23 +627,23 @@ class SlackAlertFormatter {
     const alertTypeNormalized = (alertType || type || 'generic').toLowerCase();
 
     switch (alertTypeNormalized) {
-      case 'competitor_change':
-      case 'competitor':
-        return this.formatCompetitorChange(alert);
+    case 'competitor_change':
+    case 'competitor':
+      return this.formatCompetitorChange(alert);
 
-      case 'technology_update':
-      case 'technology':
-        return this.formatTechnologyUpdate(alert);
+    case 'technology_update':
+    case 'technology':
+      return this.formatTechnologyUpdate(alert);
 
-      case 'error':
-        return this.formatErrorAlert(alert);
+    case 'error':
+      return this.formatErrorAlert(alert);
 
-      case 'campaign_update':
-      case 'campaign':
-        return this.formatCampaignUpdate(alert);
+    case 'campaign_update':
+    case 'campaign':
+      return this.formatCampaignUpdate(alert);
 
-      default:
-        return this.formatGenericAlert(alert);
+    default:
+      return this.formatGenericAlert(alert);
     }
   }
 

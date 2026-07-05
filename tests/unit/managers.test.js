@@ -136,9 +136,9 @@ describe('BaseManager', () => {
 
     it('should fail custom validation', async () => {
       const manager = new TestManager('TestManager');
-      manager.customData = null;  // Force validation failure
+      manager.customData = null; // Force validation failure
       await manager.initialize();
-      manager.customData = null;  // Clear after init
+      manager.customData = null; // Clear after init
       const result = await manager.validate();
 
       expect(result.valid).toBe(false);
@@ -398,11 +398,11 @@ describe('ManagerRegistry', () => {
       registry.register('manager2', manager2);
 
       const initOrder = [];
-      manager1.initialize = async function() {
+      manager1.initialize = async function () {
         initOrder.push('manager1');
         return await BaseManager.prototype.initialize.call(this);
       };
-      manager2.initialize = async function() {
+      manager2.initialize = async function () {
         initOrder.push('manager2');
         return await BaseManager.prototype.initialize.call(this);
       };

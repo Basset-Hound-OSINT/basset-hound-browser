@@ -1,6 +1,10 @@
 // Basset Hound Browser - Renderer Process
 // Handles navigation, UI updates, tab management, and communication with main process
 
+// Import shared, unit-tested GUI logic (renderer/gui-logic.js; tests/unit/gui-logic.test.js).
+// Registers globalThis.GuiLogic for reuse; safe no-op if unavailable.
+import('./gui-logic.js').catch(() => {});
+
 document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const tabsContainer = document.getElementById('tabs-container');
@@ -22,23 +26,60 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentUrlDisplay = document.getElementById('current-url');
 
   // State
-  let tabs = new Map(); // Map of tabId -> { element, webview, data }
+  const tabs = new Map(); // Map of tabId -> { element, webview, data }
   let activeTabId = null;
   let isLoading = false;
   let evasionScript = '';
 
   // Initialize
   async function init() {
-    // Get evasion script from main process
-    if (window.evasionHelpers) {
+    // Prefer the coherent evasion script from the main process: it derives navigator.platform
+    // from the SAME clean Chrome UA applied to session.defaultSession, so the injected identity
+    // (platform / plugins / window.chrome) stays consistent with the UA the page and the wire
+    // show. Fall back to the preload's built-in script only if that IPC path is unavailable.
+    try {
+      if (window.electronAPI && typeof window.electronAPI.getEvasionScript === 'function') {
+        evasionScript = await window.electronAPI.getEvasionScript();
+      }
+    } catch (e) {
+      // fall through to the preload fallback below
+    }
+    if (!evasionScript && window.evasionHelpers) {
       evasionScript = window.evasionHelpers.getWebviewEvasionScript();
     }
+
+    // Build the shared context handed to the extracted renderer modules (ctx-passing
+    // pattern; the whole renderer is one DOMContentLoaded closure, so cooperating scripts
+    // receive DOM refs + live-state getters + shared helpers instead of capturing the
+    // closure). See renderer/renderer-ipc.js, renderer-screenshots.js, renderer-downloads.js.
+    // Reassigned scalars (activeTabId) are read live via a getter so modules see current state.
+    const ctx = {
+      api: window.electronAPI,
+      tabs,
+      createTab,
+      switchToTab,
+      updateTab,
+      getActiveWebview,
+      getActiveTabId: () => activeTabId,
+      resolveNavigationUrl,
+      showLoading,
+      escapeHtml,
+      urlInput,
+      sessionName
+    };
 
     // Setup event listeners
     setupNavigationListeners();
     setupTabListeners();
-    setupIPCListeners();
-    setupDownloadListeners();
+    if (globalThis.RendererIPC && typeof globalThis.RendererIPC.setup === 'function') {
+      globalThis.RendererIPC.setup(ctx);
+    }
+    if (globalThis.RendererScreenshots && typeof globalThis.RendererScreenshots.setup === 'function') {
+      globalThis.RendererScreenshots.setup(ctx);
+    }
+    if (globalThis.RendererDownloads && typeof globalThis.RendererDownloads.setup === 'function') {
+      globalThis.RendererDownloads.setup(ctx);
+    }
 
     // Start WebSocket status polling
     pollWebSocketStatus();
@@ -111,7 +152,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchToTab(tabId) {
-    if (activeTabId === tabId) return;
+    if (activeTabId === tabId) {
+      return;
+    }
 
     // Deactivate current tab
     if (activeTabId && tabs.has(activeTabId)) {
@@ -144,7 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function closeTab(tabId) {
-    if (!tabs.has(tabId)) return;
+    if (!tabs.has(tabId)) {
+      return;
+    }
 
     const tab = tabs.get(tabId);
 
@@ -171,7 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateTab(tabId, updates) {
-    if (!tabs.has(tabId)) return;
+    if (!tabs.has(tabId)) {
+      return;
+    }
 
     const tab = tabs.get(tabId);
     Object.assign(tab.data, updates);
@@ -194,10 +241,16 @@ document.addEventListener('DOMContentLoaded', () => {
           loading.className = 'tab-loading';
           tab.element.insertBefore(loading, tab.element.firstChild);
         }
-        if (faviconEl) faviconEl.style.display = 'none';
+        if (faviconEl) {
+          faviconEl.style.display = 'none';
+        }
       } else {
-        if (loadingEl) loadingEl.remove();
-        if (faviconEl) faviconEl.style.display = '';
+        if (loadingEl) {
+          loadingEl.remove();
+        }
+        if (faviconEl) {
+          faviconEl.style.display = '';
+        }
       }
     }
 
@@ -220,18 +273,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // Navigation Functions
   // ==========================================
 
-  function navigateTo(url) {
-    const webview = getActiveWebview();
-    if (!webview) return;
-
-    // Add protocol if missing
-    if (url && !url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('about:')) {
+  // Resolve a user/API-supplied navigation target into a concrete URL.
+  // URLs that already carry an explicit scheme we support directly
+  // (http/https/about/data/file/blob/view-source) are passed through unchanged —
+  // notably `data:` URLs used for deterministic capture/testing. Bare hostnames get
+  // https://, and free text becomes a Google search.
+  function resolveNavigationUrl(url) {
+    if (!url) {
+      return url;
+    }
+    if (!url.startsWith('http://') && !url.startsWith('https://') &&
+        !url.startsWith('about:') && !url.startsWith('data:') &&
+        !url.startsWith('file:') && !url.startsWith('blob:') &&
+        !url.startsWith('view-source:')) {
       if (url.includes('.') && !url.includes(' ')) {
         url = 'https://' + url;
       } else {
         url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
       }
     }
+    return url;
+  }
+
+  function navigateTo(url) {
+    const webview = getActiveWebview();
+    if (!webview) {
+      return;
+    }
+
+    url = resolveNavigationUrl(url);
 
     if (url) {
       showLoading(true);
@@ -343,19 +413,27 @@ document.addEventListener('DOMContentLoaded', () => {
           btnNewTab.click();
         } else if (e.key === 'w') {
           e.preventDefault();
-          if (activeTabId) closeTab(activeTabId);
+          if (activeTabId) {
+            closeTab(activeTabId);
+          }
         } else if (e.key === 'Tab' && e.shiftKey) {
           e.preventDefault();
-          if (window.electronAPI) window.electronAPI.previousTab();
+          if (window.electronAPI) {
+            window.electronAPI.previousTab();
+          }
         } else if (e.key === 'Tab') {
           e.preventDefault();
-          if (window.electronAPI) window.electronAPI.nextTab();
+          if (window.electronAPI) {
+            window.electronAPI.nextTab();
+          }
         } else if (e.key >= '1' && e.key <= '9') {
           e.preventDefault();
           const tabIndex = parseInt(e.key);
           const tabIds = Array.from(tabs.keys());
           if (e.key === '9') {
-            if (tabIds.length > 0) switchToTab(tabIds[tabIds.length - 1]);
+            if (tabIds.length > 0) {
+              switchToTab(tabIds[tabIds.length - 1]);
+            }
           } else if (tabIndex <= tabIds.length) {
             switchToTab(tabIds[tabIndex - 1]);
           }
@@ -397,15 +475,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.electronAPI) {
         window.electronAPI.addToHistory({ url: e.url, title: '' });
         window.electronAPI.updateTab(tabId, { url: e.url });
-
-        // Emit navigation-complete event to notify WebSocket server
-        const navigationData = {
-          tabId,
-          url: e.url,
-          timestamp: Date.now()
-        };
-        window.electronAPI.emitNavigationComplete(navigationData);
       }
+      // NOTE: navigation-complete is intentionally NOT emitted here. It used to fire on
+      // every did-navigate (including background/startup loads), which let a WebSocket
+      // `navigate` command resolve on a stale, unrelated navigation. Completion is now
+      // emitted only by the dedicated onNavigateWebview handler, tied to the specific
+      // load it initiated (see onNavigateWebview in renderer/renderer-ipc.js).
     });
 
     webview.addEventListener('did-navigate-in-page', (e) => {
@@ -462,897 +537,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inject evasion script into webview
   async function injectEvasionScript(webview) {
-    if (evasionScript && webview) {
+    if (!webview) {
+      return;
+    }
+    // Re-fetch the coherent script from main per injection so a runtime `set_user_agent`
+    // keeps navigator.platform coherent with the new UA. Main memoizes it per active UA, so
+    // the per-session fingerprint stays stable and this call is cheap. Fall back to the cached
+    // script (from init) if the IPC path is momentarily unavailable.
+    let script = evasionScript;
+    try {
+      if (window.electronAPI && typeof window.electronAPI.getEvasionScript === 'function') {
+        const fresh = await window.electronAPI.getEvasionScript();
+        if (fresh) {
+          script = fresh;
+        }
+      }
+    } catch (e) {
+      // use the cached script
+    }
+    if (script) {
       try {
-        await webview.executeJavaScript(evasionScript);
+        await webview.executeJavaScript(script);
         console.log('Evasion script injected successfully');
       } catch (error) {
         console.error('Failed to inject evasion script:', error);
       }
     }
-  }
-
-  // ==========================================
-  // Setup IPC Listeners from main process
-  // ==========================================
-
-  function setupIPCListeners() {
-    const api = window.electronAPI;
-    if (!api) {
-      console.error('electronAPI not available');
-      return;
-    }
-
-    // Tab events from main process
-    api.onTabCreated((tab) => {
-      createTab(tab);
-    });
-
-    api.onTabClosed((data) => {
-      const { closedTabId, activeTabId: newActiveTabId } = data;
-      if (tabs.has(closedTabId)) {
-        const tab = tabs.get(closedTabId);
-        tab.element.remove();
-        tab.webview.remove();
-        tabs.delete(closedTabId);
-      }
-      if (newActiveTabId && tabs.has(newActiveTabId)) {
-        switchToTab(newActiveTabId);
-      }
-    });
-
-    api.onTabSwitched((data) => {
-      const { tabId } = data;
-      if (tabId !== activeTabId && tabs.has(tabId)) {
-        switchToTab(tabId);
-      }
-    });
-
-    api.onTabUpdated((data) => {
-      const { tabId, updates } = data;
-      updateTab(tabId, updates);
-    });
-
-    api.onTabNavigate((data) => {
-      const { tabId, url } = data;
-      if (tabs.has(tabId)) {
-        const tab = tabs.get(tabId);
-        tab.webview.src = url;
-      }
-    });
-
-    api.onTabReload((data) => {
-      const { tabId } = data;
-      if (tabs.has(tabId)) {
-        const tab = tabs.get(tabId);
-        tab.webview.reload();
-      }
-    });
-
-    // Session events
-    api.onSessionChanged((data) => {
-      sessionName.textContent = data.sessionId;
-    });
-
-    // Navigate command (for WebSocket)
-    api.onNavigateWebview((url) => {
-      navigateTo(url);
-    });
-
-    // Get webview URL
-    api.onGetWebviewUrl(() => {
-      const webview = getActiveWebview();
-      api.sendWebviewUrlResponse(webview ? webview.getURL() : 'about:blank');
-    });
-
-    // Execute script in webview
-    api.onExecuteInWebview(async (script) => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendExecuteResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        const result = await webview.executeJavaScript(script);
-        api.sendExecuteResponse({ success: true, result });
-      } catch (error) {
-        api.sendExecuteResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Get page content
-    api.onGetPageContent(async () => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendPageContentResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        const result = await webview.executeJavaScript(`
-          ({
-            html: document.documentElement.outerHTML,
-            text: document.body.innerText,
-            title: document.title,
-            url: window.location.href
-          })
-        `);
-        api.sendPageContentResponse({
-          success: true,
-          content: result.html,
-          html: result.html,
-          text: result.text,
-          title: result.title,
-          url: result.url
-        });
-      } catch (error) {
-        api.sendPageContentResponse({ success: false, error: error.message });
-      }
-    });
-
-    // P2-004: Wait for Cloudflare challenge to complete
-    api.onWaitForCloudflare(async (options) => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendCloudflareResolvedResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-
-      const timeout = (options && options.timeout) || 10000;
-      const startTime = Date.now();
-      let lastHtml = '';
-      let resolved = false;
-
-      try {
-        // Poll for Cloudflare challenge to complete
-        while (Date.now() - startTime < timeout && !resolved) {
-          try {
-            const result = await webview.executeJavaScript(`
-              ({
-                html: document.documentElement.outerHTML,
-                text: document.body.innerText,
-                title: document.title,
-                url: window.location.href
-              })
-            `);
-
-            const htmlLower = result.html.toLowerCase();
-
-            // Check if Cloudflare challenge markers are gone
-            const cfMarkers = ['just a moment', 'checking your browser', 'challenge page', '__cf_chl', 'jsfiddle_loader'];
-            let hasChallengeMarkers = false;
-
-            for (const marker of cfMarkers) {
-              if (htmlLower.includes(marker)) {
-                hasChallengeMarkers = true;
-                break;
-              }
-            }
-
-            // If no challenge markers and content changed, challenge is complete
-            if (!hasChallengeMarkers && result.html !== lastHtml && result.html.length > 500) {
-              resolved = true;
-              api.sendCloudflareResolvedResponse({
-                success: true,
-                content: result.html,
-                html: result.html,
-                text: result.text,
-                title: result.title,
-                url: result.url
-              });
-              return;
-            }
-
-            lastHtml = result.html;
-
-            // Wait before next check
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-          } catch (checkError) {
-            // Ignore check errors and retry
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-
-        // Timeout reached, return whatever we have
-        try {
-          const finalResult = await webview.executeJavaScript(`
-            ({
-              html: document.documentElement.outerHTML,
-              text: document.body.innerText,
-              title: document.title,
-              url: window.location.href
-            })
-          `);
-          api.sendCloudflareResolvedResponse({
-            success: true,
-            content: finalResult.html,
-            html: finalResult.html,
-            text: finalResult.text,
-            title: finalResult.title,
-            url: finalResult.url,
-            timeout: true
-          });
-        } catch (finalError) {
-          api.sendCloudflareResolvedResponse({
-            success: false,
-            error: `Cloudflare wait timeout: ${finalError.message}`
-          });
-        }
-
-      } catch (error) {
-        api.sendCloudflareResolvedResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Capture screenshot (basic viewport)
-    api.onCaptureScreenshot(async () => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendScreenshotResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        // Ensure webview has valid dimensions before capturing
-        const bounds = webview.getBoundingClientRect();
-        if (bounds.width === 0 || bounds.height === 0) {
-          api.sendScreenshotResponse({
-            success: false,
-            error: 'Webview has zero dimensions - cannot capture screenshot'
-          });
-          return;
-        }
-
-        const image = await webview.capturePage();
-
-        // Check if the captured image is empty (common in headless mode)
-        if (image.isEmpty()) {
-          // In headless/offscreen mode, webview.capturePage() may return empty image
-          // Try to capture page content as a fallback using executeJavaScript
-          try {
-            const screenshotData = await webview.executeJavaScript(`
-              (function() {
-                return new Promise((resolve, reject) => {
-                  try {
-                    // Create a canvas with the page dimensions
-                    const scrollWidth = Math.max(
-                      document.documentElement.scrollWidth,
-                      document.body.scrollWidth
-                    );
-                    const scrollHeight = Math.max(
-                      document.documentElement.scrollHeight,
-                      document.body.scrollHeight
-                    );
-                    const viewportWidth = window.innerWidth;
-                    const viewportHeight = window.innerHeight;
-
-                    // Use html2canvas-like approach or return error for main process fallback
-                    resolve({
-                      needsMainProcessCapture: true,
-                      viewport: { width: viewportWidth, height: viewportHeight },
-                      scroll: { width: scrollWidth, height: scrollHeight }
-                    });
-                  } catch (e) {
-                    reject(e);
-                  }
-                });
-              })()
-            `);
-
-            // Signal to main process that it should capture via its own webContents
-            api.sendScreenshotResponse({
-              success: false,
-              error: 'Webview capturePage returned empty image in headless mode - use screenshot_viewport command instead',
-              needsMainProcessCapture: true,
-              dimensions: screenshotData
-            });
-          } catch (jsError) {
-            api.sendScreenshotResponse({
-              success: false,
-              error: 'Screenshot capture failed in headless mode: webview.capturePage() returned empty image'
-            });
-          }
-          return;
-        }
-
-        const dataUrl = image.toDataURL();
-
-        // Verify we got actual image data, not just the header
-        // A minimal valid PNG data URL is about 100+ chars, empty would be ~22 chars
-        if (dataUrl.length < 100) {
-          api.sendScreenshotResponse({
-            success: false,
-            error: 'Screenshot capture returned minimal data - possible headless rendering issue'
-          });
-          return;
-        }
-
-        api.sendScreenshotResponse({ success: true, data: dataUrl });
-      } catch (error) {
-        api.sendScreenshotResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Click element
-    api.onClickElement(async (selector) => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendClickResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        const safeSelector = JSON.stringify(selector);
-        const result = await webview.executeJavaScript(`
-          (function() {
-            const element = document.querySelector(${safeSelector});
-            if (element) {
-              element.click();
-              return { success: true };
-            }
-            return { success: false, error: 'Element not found' };
-          })()
-        `);
-        api.sendClickResponse(result);
-      } catch (error) {
-        api.sendClickResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Fill field
-    api.onFillField(async ({ selector, value }) => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendFillResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        const safeSelector = JSON.stringify(selector);
-        const safeValue = JSON.stringify(value);
-        const result = await webview.executeJavaScript(`
-          (function() {
-            const element = document.querySelector(${safeSelector});
-            if (element) {
-              element.value = ${safeValue};
-              element.dispatchEvent(new Event('input', { bubbles: true }));
-              element.dispatchEvent(new Event('change', { bubbles: true }));
-              return { success: true };
-            }
-            return { success: false, error: 'Element not found' };
-          })()
-        `);
-        api.sendFillResponse(result);
-      } catch (error) {
-        api.sendFillResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Get page state
-    api.onGetPageState(async () => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendPageStateResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        const state = await webview.executeJavaScript(`
-          (function() {
-            const forms = Array.from(document.forms).map((form, index) => ({
-              index,
-              id: form.id,
-              name: form.name,
-              action: form.action,
-              method: form.method,
-              fields: Array.from(form.elements).map(el => ({
-                type: el.type,
-                name: el.name,
-                id: el.id,
-                value: el.type !== 'password' ? el.value : '***',
-                placeholder: el.placeholder
-              }))
-            }));
-
-            const links = Array.from(document.querySelectorAll('a[href]')).slice(0, 100).map(a => ({
-              href: a.href,
-              text: a.innerText.trim().substring(0, 100),
-              title: a.title
-            }));
-
-            const buttons = Array.from(document.querySelectorAll('button, input[type="submit"], input[type="button"]')).map(btn => ({
-              type: btn.type,
-              text: btn.innerText || btn.value,
-              id: btn.id,
-              name: btn.name,
-              disabled: btn.disabled
-            }));
-
-            const inputs = Array.from(document.querySelectorAll('input, textarea, select')).map(el => ({
-              type: el.type || el.tagName.toLowerCase(),
-              name: el.name,
-              id: el.id,
-              placeholder: el.placeholder,
-              value: el.type !== 'password' ? el.value : '***'
-            }));
-
-            return {
-              url: window.location.href,
-              title: document.title,
-              forms,
-              links,
-              buttons,
-              inputs
-            };
-          })()
-        `);
-        api.sendPageStateResponse({ success: true, state });
-      } catch (error) {
-        api.sendPageStateResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Wait for element
-    api.onWaitForElement(async ({ selector, timeout = 10000 }) => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendWaitResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        const safeSelector = JSON.stringify(selector);
-        const safeTimeout = Number.isFinite(timeout) ? timeout : 10000;
-        const result = await webview.executeJavaScript(`
-          new Promise((resolve) => {
-            const startTime = Date.now();
-            const check = () => {
-              const element = document.querySelector(${safeSelector});
-              if (element) {
-                resolve({ success: true, found: true });
-              } else if (Date.now() - startTime > ${safeTimeout}) {
-                resolve({ success: false, error: 'Timeout waiting for element' });
-              } else {
-                requestAnimationFrame(check);
-              }
-            };
-            check();
-          })
-        `);
-        api.sendWaitResponse(result);
-      } catch (error) {
-        api.sendWaitResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Scroll
-    api.onScroll(async ({ x, y, selector }) => {
-      const webview = getActiveWebview();
-      if (!webview) {
-        api.sendScrollResponse({ success: false, error: 'No active webview' });
-        return;
-      }
-      try {
-        let result;
-        if (selector) {
-          const safeSelector = JSON.stringify(selector);
-          result = await webview.executeJavaScript(`
-            (function() {
-              const element = document.querySelector(${safeSelector});
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return { success: true };
-              }
-              return { success: false, error: 'Element not found' };
-            })()
-          `);
-        } else {
-          const safeX = Number.isFinite(x) ? x : 0;
-          const safeY = Number.isFinite(y) ? y : 0;
-          result = await webview.executeJavaScript(`
-            (function() {
-              window.scrollTo({ top: ${safeY}, left: ${safeX}, behavior: 'smooth' });
-              return { success: true };
-            })()
-          `);
-        }
-        api.sendScrollResponse(result);
-      } catch (error) {
-        api.sendScrollResponse({ success: false, error: error.message });
-      }
-    });
-
-    // Enhanced screenshot - viewport with options
-    api.onScreenshotViewport(async (data) => {
-      const { requestId, format = 'png', quality = 1.0 } = data;
-      const webview = getActiveWebview();
-
-      if (!webview) {
-        api.sendScreenshotViewportResponse({
-          requestId,
-          success: false,
-          error: 'No active webview'
-        });
-        return;
-      }
-
-      try {
-        // Ensure webview has valid dimensions
-        const bounds = webview.getBoundingClientRect();
-        if (bounds.width === 0 || bounds.height === 0) {
-          api.sendScreenshotViewportResponse({
-            requestId,
-            success: false,
-            error: 'Webview has zero dimensions - cannot capture screenshot'
-          });
-          return;
-        }
-
-        const image = await webview.capturePage();
-
-        // Check if the captured image is empty (common in headless mode)
-        if (image.isEmpty()) {
-          api.sendScreenshotViewportResponse({
-            requestId,
-            success: false,
-            error: 'Webview capturePage returned empty image - likely headless mode issue',
-            needsMainProcessCapture: true
-          });
-          return;
-        }
-
-        // Get data URL in requested format
-        let dataUrl;
-        if (format === 'jpeg' || format === 'jpg') {
-          dataUrl = image.toDataURL({ scaleFactor: 1.0 });
-          // For JPEG we need to re-encode via canvas if quality matters
-          // For now, just use PNG
-          dataUrl = image.toDataURL();
-        } else {
-          dataUrl = image.toDataURL();
-        }
-
-        // Verify we got actual data
-        if (dataUrl.length < 100) {
-          api.sendScreenshotViewportResponse({
-            requestId,
-            success: false,
-            error: 'Screenshot capture returned minimal data'
-          });
-          return;
-        }
-
-        api.sendScreenshotViewportResponse({
-          requestId,
-          success: true,
-          data: dataUrl,
-          format: 'png',
-          width: image.getSize().width,
-          height: image.getSize().height
-        });
-      } catch (error) {
-        api.sendScreenshotViewportResponse({
-          requestId,
-          success: false,
-          error: error.message
-        });
-      }
-    });
-
-    // Enhanced screenshot - full page (scroll and stitch)
-    api.onScreenshotFullPage(async (data) => {
-      const { requestId, format = 'png', quality = 1.0, scrollDelay = 100, maxHeight = 32000 } = data;
-      const webview = getActiveWebview();
-
-      if (!webview) {
-        api.sendScreenshotFullPageResponse({
-          requestId,
-          success: false,
-          error: 'No active webview'
-        });
-        return;
-      }
-
-      try {
-        // Get page dimensions
-        const dimensions = await webview.executeJavaScript(`
-          ({
-            scrollHeight: Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
-            scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
-            viewportHeight: window.innerHeight,
-            viewportWidth: window.innerWidth,
-            currentScrollY: window.scrollY
-          })
-        `);
-
-        // For now, just capture viewport in headless mode
-        // Full page stitching requires more complex implementation
-        const image = await webview.capturePage();
-
-        if (image.isEmpty()) {
-          api.sendScreenshotFullPageResponse({
-            requestId,
-            success: false,
-            error: 'Screenshot capture returned empty image in headless mode',
-            needsMainProcessCapture: true
-          });
-          return;
-        }
-
-        const dataUrl = image.toDataURL();
-
-        api.sendScreenshotFullPageResponse({
-          requestId,
-          success: true,
-          data: dataUrl,
-          format: 'png',
-          width: image.getSize().width,
-          height: image.getSize().height,
-          pageHeight: dimensions.scrollHeight,
-          pageWidth: dimensions.scrollWidth,
-          note: 'Captured viewport only - full page stitching not available in headless mode'
-        });
-      } catch (error) {
-        api.sendScreenshotFullPageResponse({
-          requestId,
-          success: false,
-          error: error.message
-        });
-      }
-    });
-
-    // Enhanced screenshot - element
-    api.onScreenshotElement(async (data) => {
-      const { requestId, selector, format = 'png', quality = 1.0, padding = 0 } = data;
-      const webview = getActiveWebview();
-
-      if (!webview) {
-        api.sendScreenshotElementResponse({
-          requestId,
-          success: false,
-          error: 'No active webview'
-        });
-        return;
-      }
-
-      if (!selector) {
-        api.sendScreenshotElementResponse({
-          requestId,
-          success: false,
-          error: 'Selector is required'
-        });
-        return;
-      }
-
-      try {
-        // Get element bounds
-        const safeSelector = JSON.stringify(selector);
-        const elementBounds = await webview.executeJavaScript(`
-          (function() {
-            const element = document.querySelector(${safeSelector});
-            if (!element) {
-              return null;
-            }
-            const rect = element.getBoundingClientRect();
-            return {
-              x: rect.x,
-              y: rect.y,
-              width: rect.width,
-              height: rect.height
-            };
-          })()
-        `);
-
-        if (!elementBounds) {
-          api.sendScreenshotElementResponse({
-            requestId,
-            success: false,
-            error: 'Element not found: ' + selector
-          });
-          return;
-        }
-
-        // Capture the page and crop to element bounds
-        const image = await webview.capturePage({
-          x: Math.max(0, Math.floor(elementBounds.x - padding)),
-          y: Math.max(0, Math.floor(elementBounds.y - padding)),
-          width: Math.ceil(elementBounds.width + padding * 2),
-          height: Math.ceil(elementBounds.height + padding * 2)
-        });
-
-        if (image.isEmpty()) {
-          api.sendScreenshotElementResponse({
-            requestId,
-            success: false,
-            error: 'Screenshot capture returned empty image',
-            needsMainProcessCapture: true
-          });
-          return;
-        }
-
-        const dataUrl = image.toDataURL();
-
-        api.sendScreenshotElementResponse({
-          requestId,
-          success: true,
-          data: dataUrl,
-          format: 'png',
-          width: image.getSize().width,
-          height: image.getSize().height,
-          elementBounds
-        });
-      } catch (error) {
-        api.sendScreenshotElementResponse({
-          requestId,
-          success: false,
-          error: error.message
-        });
-      }
-    });
-
-    // Enhanced screenshot - area (specific coordinates)
-    api.onScreenshotArea(async (data) => {
-      const { requestId, area, format = 'png', quality = 1.0 } = data;
-      const webview = getActiveWebview();
-
-      if (!webview) {
-        api.sendScreenshotAreaResponse({
-          requestId,
-          success: false,
-          error: 'No active webview'
-        });
-        return;
-      }
-
-      if (!area || typeof area.x !== 'number' || typeof area.y !== 'number' ||
-          typeof area.width !== 'number' || typeof area.height !== 'number') {
-        api.sendScreenshotAreaResponse({
-          requestId,
-          success: false,
-          error: 'Invalid area coordinates. Required: x, y, width, height'
-        });
-        return;
-      }
-
-      try {
-        const image = await webview.capturePage({
-          x: Math.max(0, Math.floor(area.x)),
-          y: Math.max(0, Math.floor(area.y)),
-          width: Math.ceil(area.width),
-          height: Math.ceil(area.height)
-        });
-
-        if (image.isEmpty()) {
-          api.sendScreenshotAreaResponse({
-            requestId,
-            success: false,
-            error: 'Screenshot capture returned empty image',
-            needsMainProcessCapture: true
-          });
-          return;
-        }
-
-        const dataUrl = image.toDataURL();
-
-        api.sendScreenshotAreaResponse({
-          requestId,
-          success: true,
-          data: dataUrl,
-          format: 'png',
-          width: image.getSize().width,
-          height: image.getSize().height
-        });
-      } catch (error) {
-        api.sendScreenshotAreaResponse({
-          requestId,
-          success: false,
-          error: error.message
-        });
-      }
-    });
-  }
-
-  // ==========================================
-  // Download Management
-  // ==========================================
-
-  // Download state tracking
-  let activeDownloads = new Map();
-
-  function setupDownloadListeners() {
-    const api = window.electronAPI;
-    if (!api) return;
-
-    // Download event listeners
-    api.onDownloadStarted((download) => {
-      activeDownloads.set(download.id, download);
-      updateDownloadIndicator();
-      showDownloadNotification('Download Started', download.filename, 'info');
-    });
-
-    api.onDownloadProgress((download) => {
-      activeDownloads.set(download.id, download);
-      updateDownloadIndicator();
-    });
-
-    api.onDownloadCompleted((download) => {
-      activeDownloads.delete(download.id);
-      updateDownloadIndicator();
-      showDownloadNotification('Download Completed', download.filename, 'success');
-    });
-
-    api.onDownloadFailed((download) => {
-      activeDownloads.delete(download.id);
-      updateDownloadIndicator();
-      showDownloadNotification('Download Failed', download.filename + ': ' + (download.error || 'Unknown error'), 'error');
-    });
-
-    api.onDownloadCancelled((download) => {
-      activeDownloads.delete(download.id);
-      updateDownloadIndicator();
-      showDownloadNotification('Download Cancelled', download.filename, 'info');
-    });
-  }
-
-  function updateDownloadIndicator() {
-    const indicator = document.getElementById('download-indicator');
-    const statusText = document.getElementById('download-status-text');
-    const progressFill = document.getElementById('download-progress-fill');
-
-    if (!indicator || !statusText || !progressFill) return;
-
-    const count = activeDownloads.size;
-
-    if (count === 0) {
-      indicator.style.display = 'none';
-      return;
-    }
-
-    indicator.style.display = 'flex';
-
-    // Calculate total progress
-    let totalProgress = 0;
-    let activeCount = 0;
-
-    activeDownloads.forEach((download) => {
-      if (download.progress !== undefined) {
-        totalProgress += download.progress;
-        activeCount++;
-      }
-    });
-
-    const avgProgress = activeCount > 0 ? Math.round(totalProgress / activeCount) : 0;
-
-    statusText.textContent = count === 1
-      ? `Downloading: ${avgProgress}%`
-      : `${count} downloads: ${avgProgress}%`;
-
-    progressFill.style.width = avgProgress + '%';
-  }
-
-  function showDownloadNotification(title, message, type = 'info') {
-    // Remove existing notification if any
-    const existingNotification = document.querySelector('.download-notification');
-    if (existingNotification) {
-      existingNotification.remove();
-    }
-
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `download-notification ${type}`;
-    notification.innerHTML = `
-      <div class="download-notification-title">${escapeHtml(title)}</div>
-      <div class="download-notification-filename">${escapeHtml(message)}</div>
-    `;
-
-    document.body.appendChild(notification);
-
-    // Auto-remove after 4 seconds
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.style.animation = 'slideIn 0.3s ease reverse';
-        setTimeout(() => {
-          if (notification.parentNode) {
-            notification.remove();
-          }
-        }, 300);
-      }
-    }, 4000);
   }
 
   // ==========================================

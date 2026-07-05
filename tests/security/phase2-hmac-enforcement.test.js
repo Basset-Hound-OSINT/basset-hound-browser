@@ -74,7 +74,7 @@ describe('Security Phase 2: HMAC Enforcement', () => {
     });
 
     test('HMAC_SECRET must be at least 32 bytes', () => {
-      process.env.HMAC_SECRET = 'short';  // Too short
+      process.env.HMAC_SECRET = 'short'; // Too short
 
       const validateSecret = () => {
         const secret = process.env.HMAC_SECRET;
@@ -110,7 +110,7 @@ describe('Security Phase 2: HMAC Enforcement', () => {
       const validateDevelopment = () => {
         // Should NOT throw in development
         if (process.env.NODE_ENV === 'development') {
-          return true;  // OK without HMAC_SECRET
+          return true; // OK without HMAC_SECRET
         }
       };
 
@@ -123,7 +123,7 @@ describe('Security Phase 2: HMAC Enforcement', () => {
 
       const validateTest = () => {
         if (process.env.NODE_ENV === 'test') {
-          return true;  // OK without HMAC_SECRET
+          return true; // OK without HMAC_SECRET
         }
       };
 
@@ -166,7 +166,7 @@ describe('Security Phase 2: HMAC Enforcement', () => {
       const options = { hmacEnabled: false };
       const shouldForcedEnable = () => {
         if (process.env.NODE_ENV === 'production') {
-          return true;  // Force enabled
+          return true; // Force enabled
         }
         return options.hmacEnabled !== false;
       };
@@ -195,7 +195,7 @@ describe('Security Phase 2: HMAC Enforcement', () => {
 
       const getHmacStatus = () => {
         return {
-          hmacEnabled: true,  // Default even in dev
+          hmacEnabled: true, // Default even in dev
           environment: process.env.NODE_ENV
         };
       };
@@ -321,7 +321,7 @@ describe('Security Phase 2: HMAC Enforcement', () => {
       const getStartupLog = () => {
         return {
           environment: process.env.NODE_ENV,
-          hmacEnabled: !!process.env.HMAC_SECRET,
+          hmacEnabled: Boolean(process.env.HMAC_SECRET),
           message: 'HMAC enforced for message authentication'
         };
       };

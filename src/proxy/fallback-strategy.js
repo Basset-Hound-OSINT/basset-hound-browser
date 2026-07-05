@@ -196,7 +196,7 @@ class FallbackStrategy {
    * Find optimal fallback considering multiple factors
    */
   findOptimalFallback(failedProxyId) {
-    let candidates = [];
+    const candidates = [];
 
     // Collect all proxies except failed one
     for (const [region, proxies] of this.regionProxyMap) {

@@ -168,13 +168,13 @@ describe('P1-001: Docker Container Integration', () => {
     // This would require actual Docker build which takes time
     // Marked as skipped for now - can be run manually
     expect(true).toBe(true);
-  }, 60000);  // 60 second timeout
+  }, 60000); // 60 second timeout
 
   /**
    * Test environment variable passthrough
    */
   test('should accept DISPLAY environment variable', () => {
-    expect(process.env.DISPLAY || '').toBeTruthy();  // Mock or actual
+    expect(process.env.DISPLAY || '').toBeTruthy(); // Mock or actual
   });
 });
 
@@ -206,7 +206,9 @@ describe('P1-001: HeadlessManager Unit Tests', () => {
     expect(result.hasDisplay).toBe(false);
 
     // Restore
-    if (originalDisplay) process.env.DISPLAY = originalDisplay;
+    if (originalDisplay) {
+      process.env.DISPLAY = originalDisplay;
+    }
   });
 
   test('should identify Docker environment', () => {

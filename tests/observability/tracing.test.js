@@ -268,18 +268,22 @@ describe('DistributedTracer', () => {
 
   describe('Trace Sampling', () => {
     test('should respect sampling rate', () => {
-      const sampler = new (require('../../src/observability/tracer').Sampler || function() {
+      const sampler = new (require('../../src/observability/tracer').Sampler || function () {
         this.samplingRate = 0.0;
-        this.shouldSample = function() { return Math.random() < this.samplingRate; };
+        this.shouldSample = function () {
+          return Math.random() < this.samplingRate;
+        };
       })(0.0);
 
       expect(sampler.shouldSample()).toBe(false);
     });
 
     test('should sample all traces with rate 1.0', () => {
-      const sampler = new (require('../../src/observability/tracer').Sampler || function() {
+      const sampler = new (require('../../src/observability/tracer').Sampler || function () {
         this.samplingRate = 1.0;
-        this.shouldSample = function() { return true; };
+        this.shouldSample = function () {
+          return true;
+        };
       })(1.0);
 
       expect(sampler.shouldSample()).toBe(true);

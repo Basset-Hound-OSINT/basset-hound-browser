@@ -260,7 +260,9 @@ class PlatformIntegration {
    * @protected
    */
   extractHeaders(networkData) {
-    if (!networkData || !networkData.headers) return {};
+    if (!networkData || !networkData.headers) {
+      return {};
+    }
 
     const headers = {};
     if (networkData.headers.response) {
@@ -279,7 +281,9 @@ class PlatformIntegration {
 
     // Remove password fields
     ['password', 'token', 'secret', 'apiKey', 'apiSecret'].forEach(field => {
-      if (sanitized[field]) delete sanitized[field];
+      if (sanitized[field]) {
+        delete sanitized[field];
+      }
     });
 
     return sanitized;
@@ -290,7 +294,9 @@ class PlatformIntegration {
    * @protected
    */
   formatConfidence(confidence) {
-    if (typeof confidence !== 'number') return 100;
+    if (typeof confidence !== 'number') {
+      return 100;
+    }
     return Math.round(Math.min(100, Math.max(0, confidence * 100)));
   }
 

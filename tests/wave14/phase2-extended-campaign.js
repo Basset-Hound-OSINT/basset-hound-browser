@@ -28,23 +28,23 @@ const TEST_CONFIG = {
 
   // Single session campaign
   longSession: {
-    duration: 28800,      // 8 hours in seconds
+    duration: 28800, // 8 hours in seconds
     operationCount: 500,
-    operationInterval: 57.6  // 500 ops over 8 hours
+    operationInterval: 57.6 // 500 ops over 8 hours
   },
 
   // Parallel campaigns
   parallelCampaigns: {
     count: 10,
-    durationPerCampaign: 1800,  // 30 minutes
+    durationPerCampaign: 1800, // 30 minutes
     operationsPerCampaign: 50,
-    operationInterval: 36  // 50 ops over 30 mins
+    operationInterval: 36 // 50 ops over 30 mins
   },
 
   // Stress test
   stressTest: {
     maxConcurrent: 500,
-    duration: 600,  // 10 minutes
+    duration: 600, // 10 minutes
     commandsPerSecond: 100
   },
 
@@ -165,7 +165,7 @@ class ExtendedCampaignTest {
 
             // Detect memory growth
             const memDiff = mem.heapUsed - lastMemory.heapUsed;
-            if (memDiff > 50 * 1024 * 1024) {  // 50MB threshold
+            if (memDiff > 50 * 1024 * 1024) { // 50MB threshold
               metrics.memorySnapshots[metrics.memorySnapshots.length - 1].warning = 'Large memory jump';
             }
             lastMemory = mem;
@@ -220,7 +220,7 @@ class ExtendedCampaignTest {
         snapshots: metrics.memorySnapshots
       },
       assessment: {
-        memoryStable: Math.abs(memoryGrowth * (3600 / (duration / 1000))) < 2 * 1024 * 1024,  // < 2MB/hour
+        memoryStable: Math.abs(memoryGrowth * (3600 / (duration / 1000))) < 2 * 1024 * 1024, // < 2MB/hour
         gcWorking: metrics.memorySnapshots.some(s => s.warning),
         gcMessage: 'Monitor garbage collection patterns'
       }
@@ -286,7 +286,9 @@ class ExtendedCampaignTest {
           const sendTime = performance.now();
 
           ws.send(JSON.stringify(command), (error) => {
-            if (error) metrics.operationsFailed++;
+            if (error) {
+              metrics.operationsFailed++;
+            }
           });
 
           ws.once('message', () => {
@@ -411,7 +413,9 @@ class ExtendedCampaignTest {
           const sendTime = performance.now();
 
           ws.send(JSON.stringify(command), (error) => {
-            if (error) connectionMetric.failed = true;
+            if (error) {
+              connectionMetric.failed = true;
+            }
           });
 
           ws.once('message', () => {
@@ -462,7 +466,9 @@ class ExtendedCampaignTest {
   }
 
   percentile(sortedArray, p) {
-    if (sortedArray.length === 0) return 0;
+    if (sortedArray.length === 0) {
+      return 0;
+    }
     const index = Math.ceil(sortedArray.length * p) - 1;
     return sortedArray[Math.max(0, index)];
   }

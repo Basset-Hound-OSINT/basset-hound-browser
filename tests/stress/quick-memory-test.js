@@ -30,7 +30,9 @@ class QuickMemoryTest {
       this.ws.on('message', (data) => {
         try {
           const msg = JSON.parse(data.toString());
-          if (msg.type === 'status' || msg.type === 'heartbeat') return;
+          if (msg.type === 'status' || msg.type === 'heartbeat') {
+            return;
+          }
           const pending = this.pendingRequests.get(msg.id);
           if (pending) {
             this.pendingRequests.delete(msg.id);
@@ -80,7 +82,9 @@ class QuickMemoryTest {
   async getMemoryStats() {
     try {
       const result = await this.send('get_memory_stats', {}, 5000);
-      if (!result.success) return null;
+      if (!result.success) {
+        return null;
+      }
 
       const stats = result.stats || result.usage || {};
       const current = stats.current || stats;

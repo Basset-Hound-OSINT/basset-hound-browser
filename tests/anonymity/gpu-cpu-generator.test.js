@@ -51,7 +51,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         hardwareConcurrency: 6,
-        deviceMemory: 6,
+        deviceMemory: 6
       };
 
       const specs = generator.initializeFromProfile(profile);
@@ -65,7 +65,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Google',
         hardwareConcurrency: 8,
-        deviceMemory: 12,
+        deviceMemory: 12
       };
 
       const specs = generator.initializeFromProfile(profile);
@@ -146,8 +146,12 @@ describe('GPUCPUGenerator', () => {
 
       keys.forEach(key => {
         const spec = generator.getSpecsByKey(key);
-        if (spec.cpu.includes('Intel')) hasIntel = true;
-        if (spec.cpu.includes('Apple')) hasApple = true;
+        if (spec.cpu.includes('Intel')) {
+          hasIntel = true;
+        }
+        if (spec.cpu.includes('Apple')) {
+          hasApple = true;
+        }
       });
 
       expect(hasIntel).toBe(true);
@@ -162,7 +166,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         hardwareConcurrency: 6,
-        deviceMemory: 6,
+        deviceMemory: 6
       };
 
       const specs = generator.initializeFromProfile(profile);
@@ -175,7 +179,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Google',
         hardwareConcurrency: 8,
-        deviceMemory: 12,
+        deviceMemory: 12
       };
 
       const specs = generator.initializeFromProfile(profile);
@@ -188,7 +192,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Google',
         hardwareConcurrency: 16,
-        deviceMemory: 32,
+        deviceMemory: 32
       };
 
       const specs = generator.initializeFromProfile(profile);
@@ -251,7 +255,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         hardwareConcurrency: 6,
-        deviceMemory: 6,
+        deviceMemory: 6
       };
 
       const specs = generator.initializeFromProfile(profile);
@@ -262,7 +266,7 @@ describe('GPUCPUGenerator', () => {
       const invalidSpecs = [
         { cpu: '', cpuCores: 8, gpu: 'NVIDIA RTX 4080', gpuCores: 5888, memory: 16, vendor: 'NVIDIA' }, // Empty CPU
         { cpu: 'Intel i7', cpuCores: 0, gpu: 'NVIDIA RTX 4080', gpuCores: 5888, memory: 16, vendor: 'NVIDIA' }, // 0 cores
-        { cpu: 'Intel i7', cpuCores: 8, gpu: 'NVIDIA RTX 4080', gpuCores: 5888, memory: 999, vendor: 'NVIDIA' }, // Unrealistic memory
+        { cpu: 'Intel i7', cpuCores: 8, gpu: 'NVIDIA RTX 4080', gpuCores: 5888, memory: 999, vendor: 'NVIDIA' } // Unrealistic memory
       ];
 
       invalidSpecs.forEach(spec => {
@@ -278,7 +282,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         hardwareConcurrency: 6,
-        deviceMemory: 6,
+        deviceMemory: 6
       };
 
       generator.initializeFromProfile(profile);
@@ -297,7 +301,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         hardwareConcurrency: 6,
-        deviceMemory: 6,
+        deviceMemory: 6
       };
 
       generator.initializeFromProfile(profile);
@@ -315,7 +319,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'mobile',
         vendor: 'Apple',
         hardwareConcurrency: 6,
-        deviceMemory: 6,
+        deviceMemory: 6
       };
 
       const key = generator.selectSpecKey(profile);
@@ -327,7 +331,7 @@ describe('GPUCPUGenerator', () => {
         deviceType: 'desktop',
         vendor: 'Apple',
         hardwareConcurrency: 12,
-        deviceMemory: 36,
+        deviceMemory: 36
       };
 
       const key = generator.selectSpecKey(profile);

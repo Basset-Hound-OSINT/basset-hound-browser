@@ -1,0 +1,412 @@
+
+> basset-hound-browser@12.0.0 test
+> jest --testPathPattern=(gateway|mesh-controller|tracing|metrics-logging)
+
+FAIL tests/observability/metrics-logging.test.js
+  MetricsAggregator
+    Counter Metrics
+      ✓ should register a counter (4 ms)
+      ✓ should increment counter
+      ✓ should track counter with labels (1 ms)
+    Gauge Metrics
+      ✓ should register a gauge
+      ✓ should set gauge value (1 ms)
+      ✓ should increment gauge
+      ✓ should decrement gauge (1 ms)
+    Histogram Metrics
+      ✓ should register a histogram
+      ✓ should observe histogram values (1 ms)
+      ✓ should update bucket counts
+    Summary Metrics
+      ✓ should register a summary (1 ms)
+      ✓ should observe summary values
+    Prometheus Export
+      ✓ should export metrics in Prometheus format (1 ms)
+      ✓ should include histogram buckets
+    Time-Series Data
+      ✓ should record time-series values
+      ✓ should get time-series data
+      ✓ should enforce retention period (1 ms)
+    Aggregation
+      ✕ should aggregate metrics over time window
+      ✕ should calculate percentiles
+    Service Metrics
+      ✓ should get metrics for a service
+    SLO Compliance
+      ✓ should check SLO compliance (1 ms)
+      ✓ should detect SLO violation
+    Export Formats
+      ✓ should export metrics as JSON
+      ✓ should support multiple export formats (1 ms)
+    Statistics
+      ✓ should get metrics statistics
+    Cleanup
+      ✓ should reset metrics (1 ms)
+  LogAggregator
+    Logger Creation
+      ✓ should create logger for service (1 ms)
+    Logging
+      ✕ should log debug message (2 ms)
+      ✓ should log info message
+      ✓ should log warn message (1 ms)
+      ✓ should log error message
+      ✓ should log fatal message
+      ✓ should include metadata with logs (1 ms)
+      ✓ should include trace ID in logs
+    Log Filtering
+      ✓ should respect log level (1 ms)
+    Log Search
+      ✓ should search logs by service
+      ✓ should search logs by level (1 ms)
+      ✓ should search logs by message
+      ✓ should search logs by trace ID (1 ms)
+      ✓ should search logs by request ID
+    Service Logs
+      ✓ should get service logs (1 ms)
+      ✓ should get service logs with limit
+    Statistics
+      ✓ should get logging statistics (1 ms)
+      ✓ should get error logs (1 ms)
+      ✓ should get recent logs (1 ms)
+    Export Formats
+      ✓ should export logs as JSON
+      ✓ should export logs as CSV (1 ms)
+    Log Level Management
+      ✓ should set log level
+      ✓ should throw error for invalid log level (7 ms)
+    Events
+      ✓ should emit log event
+      ✓ should emit level-specific events
+    Cleanup
+      ✓ should clear all logs (1 ms)
+
+  ● MetricsAggregator › Aggregation › should aggregate metrics over time window
+
+    TypeError: Cannot read properties of null (reading 'count')
+
+      218 |       const agg = metrics.aggregateMetrics('requests', 60000);
+      219 |
+    > 220 |       expect(agg.count).toBe(3);
+          |                  ^
+      221 |       expect(agg.sum).toBe(6);
+      222 |       expect(agg.avg).toBe(2);
+      223 |     });
+
+      at Object.count (tests/observability/metrics-logging.test.js:220:18)
+
+  ● MetricsAggregator › Aggregation › should calculate percentiles
+
+    TypeError: Cannot read properties of null (reading 'percentile95')
+
+      232 |       const agg = metrics.aggregateMetrics('latency');
+      233 |
+    > 234 |       expect(agg.percentile95).toBeDefined();
+          |                  ^
+      235 |       expect(agg.percentile99).toBeDefined();
+      236 |     });
+      237 |   });
+
+      at Object.percentile95 (tests/observability/metrics-logging.test.js:234:18)
+
+  ● LogAggregator › Logging › should log debug message
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+      355 |       serviceLogger.debug('Debug message', { detail: 'test' });
+      356 |
+    > 357 |       expect(logger.logs.length).toBe(1);
+          |                                  ^
+      358 |       expect(logger.logs[0].level).toBe('debug');
+      359 |       expect(logger.logs[0].message).toBe('Debug message');
+      360 |     });
+
+      at Object.toBe (tests/observability/metrics-logging.test.js:357:34)
+
+FAIL tests/api/gateway.test.js
+  APIGateway
+    Service Registration
+      ✓ should register a service (4 ms)
+      ✓ should require service name and config (36 ms)
+      ✓ should initialize circuit breaker (1 ms)
+      ✓ should track service statistics
+    Route Registration
+      ✓ should register a route with handler (1 ms)
+      ✓ should register multiple methods for same path
+      ✓ should register route with service
+      ✓ should register custom transformer (1 ms)
+      ✓ should support path patterns
+    Request Handling
+      ✓ should handle GET request (1 ms)
+      ✓ should return 404 for unregistered route
+      ✓ should generate correlation ID (1 ms)
+      ✓ should use incoming correlation ID
+      ✓ should execute middleware (1 ms)
+      ✓ should block request if middleware returns false
+    Caching
+      ✓ should cache GET responses (1 ms)
+      ✓ should not cache POST requests (1 ms)
+      ✓ should clear cache
+    Rate Limiting
+      ✓ should allow requests within limit (1 ms)
+      ✓ should reject requests exceeding limit
+    Response Transformation
+      ✓ should transform response
+    Metrics
+      ✕ should record request metrics (2 ms)
+      ✓ should get stats
+      ✓ should reset metrics (1 ms)
+    Path Matching
+      ✓ should match exact paths
+      ✓ should match path patterns (1 ms)
+      ✓ should match wildcard patterns
+    Error Handling
+      ✓ should handle handler errors (1 ms)
+    Events
+      ✓ should emit service registered event
+      ✓ should emit route registered event
+      ✓ should emit cache hit event (1 ms)
+
+  ● APIGateway › Metrics › should record request metrics
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      368 |
+      369 |       expect(gateway.requestMetrics.total).toBe(1);
+    > 370 |       expect(gateway.requestMetrics.average_latency).toBeGreaterThan(0);
+          |                                                      ^
+      371 |     });
+      372 |
+      373 |     test('should get stats', async () => {
+
+      at Object.toBeGreaterThan (tests/api/gateway.test.js:370:54)
+
+FAIL tests/mesh/mesh-controller.test.js (60.318 s)
+  ServiceMeshController
+    Virtual Services
+      ✓ should create a virtual service (6 ms)
+      ✓ should configure routing for virtual service (1 ms)
+      ✓ should throw error for unknown virtual service (27 ms)
+    Destination Rules
+      ✓ should create a destination rule (3 ms)
+      ✓ should include connection pool configuration
+      ✓ should include outlier detection configuration (1 ms)
+    Circuit Breaker
+      ✓ should configure circuit breaker
+      ✓ should check circuit breaker status
+      ✕ should open circuit breaker after failures (2 ms)
+    Peer Authentication (mTLS)
+      ✓ should setup peer authentication
+      ✓ should support PERMISSIVE mTLS mode
+      ✓ should support DISABLE mTLS mode (1 ms)
+    Authorization Policies
+      ✓ should create authorization policy
+      ✓ should check authorization
+      ✓ should deny unauthorized requests
+    Traffic Mirroring
+      ✓ should setup traffic mirroring
+      ✓ should track mirror statistics
+    Request Routing
+      ✓ should route request successfully (1 ms)
+      ✓ should record latency metrics
+      ✓ should apply request mutations (1 ms)
+      ✓ should apply response mutations
+    Retry Policies
+      ✓ should get retry policy for service
+      ✓ should use default retry policy
+    Path Matching
+      ✓ should match exact path
+      ✓ should match wildcard path
+      ✓ should match prefix path
+      ✓ should not match different paths
+    Selector Matching
+      ✓ should match selector
+      ✓ should not match different selector
+      ✓ should match no selector
+    Mesh Status
+      ✓ should get mesh status
+      ✕ should include circuit breaker states
+    Events
+      ✓ should emit virtualService created event
+      ✓ should emit destinationRule created event
+      ✓ should emit peerAuthentication created event (1 ms)
+      ✓ should emit authorizationPolicy created event
+      ✕ should emit circuitBreaker opened event (60001 ms)
+      ✓ should emit trafficMirror created event (1 ms)
+
+  ● ServiceMeshController › Circuit Breaker › should open circuit breaker after failures
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: true
+
+      118 |       controller._openCircuitBreaker('test-service');
+      119 |       const result = controller._checkCircuitBreaker('test-service');
+    > 120 |       expect(result.allowed).toBe(false);
+          |                              ^
+      121 |     });
+      122 |   });
+      123 |
+
+      at Object.toBe (tests/mesh/mesh-controller.test.js:120:30)
+
+  ● ServiceMeshController › Mesh Status › should include circuit breaker states
+
+    Destination rule test-service not found
+
+      149 |     const rule = this.destinationRules.get(destinationRuleName);
+      150 |     if (!rule) {
+    > 151 |       throw new Error(`Destination rule ${destinationRuleName} not found`);
+          |             ^
+      152 |     }
+      153 |
+      154 |     const circuitBreaker = {
+
+      at ServiceMeshController.configureCircuitBreaker (src/mesh/mesh-controller.js:151:13)
+      at Object.configureCircuitBreaker (tests/mesh/mesh-controller.test.js:368:18)
+
+  ● ServiceMeshController › Events › should emit circuitBreaker opened event
+
+    thrown: "Exceeded timeout of 60000 ms for a test while waiting for `done()` to be called.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      411 |     });
+      412 |
+    > 413 |     test('should emit circuitBreaker opened event', (done) => {
+          |     ^
+      414 |       controller.on('circuitBreaker:opened', (data) => {
+      415 |         expect(data.service).toBe('test-service');
+      416 |         done();
+
+      at test (tests/mesh/mesh-controller.test.js:413:5)
+      at describe (tests/mesh/mesh-controller.test.js:376:3)
+      at Object.describe (tests/mesh/mesh-controller.test.js:8:1)
+
+FAIL tests/observability/tracing.test.js (60.349 s)
+  DistributedTracer
+    Trace Management
+      ✓ should start a new trace (4 ms)
+      ✓ should use provided trace ID (1 ms)
+      ✓ should initialize trace with correct properties (1 ms)
+      ✓ should get trace
+      ✓ should emit trace started event (1 ms)
+    Span Management
+      ✓ should start a span within a trace (1 ms)
+      ✓ should throw error for unknown trace (21 ms)
+      ✓ should create parent-child span relationship (1 ms)
+      ✕ should end a span (1 ms)
+      ✓ should set span status and code
+      ✓ should emit span started event
+      ✕ should emit span ended event
+    Span Tags and Logs
+      ✓ should add tag to span
+      ✓ should add log to span (1 ms)
+      ✓ should add event to span
+    Context Propagation
+      ✓ should inject trace context in W3C format (1 ms)
+      ✓ should inject trace context in B3 format
+      ✓ should extract W3C trace context (1 ms)
+      ✓ should extract B3 trace context
+      ✓ should create child context (1 ms)
+    Trace Completion
+      ✓ should complete trace when all spans end
+      ✕ should calculate trace duration (1 ms)
+    Trace Sampling
+      ✓ should respect sampling rate (1 ms)
+      ✓ should sample all traces with rate 1.0
+    Export and Formatting
+      ✓ should format W3C traceparent (1 ms)
+      ✓ should parse W3C traceparent
+      ✓ should export to Jaeger format (1 ms)
+      ✓ should export to Datadog format
+    Statistics
+      ✓ should get tracer statistics (1 ms)
+      ✓ should track active spans
+    Periodic Export
+      ✓ should start periodic export (1 ms)
+      ✓ should stop periodic export
+    Error Handling
+      ✓ should throw error for unknown span (1 ms)
+      ✕ should emit export error event (60001 ms)
+
+  ● DistributedTracer › Span Management › should end a span
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+       96 |
+       97 |       expect(ended.status).toBe('completed');
+    >  98 |       expect(ended.duration).toBeGreaterThan(0);
+          |                              ^
+       99 |       expect(tracer.activeSpans.has(spanId)).toBe(false);
+      100 |     });
+      101 |
+
+      at Object.toBeGreaterThan (tests/observability/tracing.test.js:98:30)
+
+  ● DistributedTracer › Span Management › should emit span ended event
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      131 |       tracer.on('span:ended', (data) => {
+      132 |         expect(data.spanId).toBe(spanId);
+    > 133 |         expect(data.duration).toBeGreaterThan(0);
+          |                               ^
+      134 |         done();
+      135 |       });
+      136 |
+
+      at DistributedTracer.toBeGreaterThan (tests/observability/tracing.test.js:133:31)
+      at DistributedTracer.emit [as endSpan] (src/observability/tracer.js:145:10)
+      at Object.endSpan (tests/observability/tracing.test.js:137:14)
+
+  ● DistributedTracer › Trace Completion › should calculate trace duration
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      263 |
+      264 |       const trace = tracer.traces.get(traceId);
+    > 265 |       expect(trace.duration).toBeGreaterThan(0);
+          |                              ^
+      266 |     });
+      267 |   });
+      268 |
+
+      at Object.toBeGreaterThan (tests/observability/tracing.test.js:265:30)
+
+  ● DistributedTracer › Error Handling › should emit export error event
+
+    thrown: "Exceeded timeout of 60000 ms for a test while waiting for `done()` to be called.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      389 |     });
+      390 |
+    > 391 |     test('should emit export error event', (done) => {
+          |     ^
+      392 |       tracer.options.jaegerEndpoint = 'http://invalid:1000';
+      393 |
+      394 |       tracer.on('export:error', (data) => {
+
+      at test (tests/observability/tracing.test.js:391:5)
+      at describe (tests/observability/tracing.test.js:384:3)
+      at Object.describe (tests/observability/tracing.test.js:8:1)
+
+Test Suites: 4 failed, 4 total
+Tests:       11 failed, 144 passed, 155 total
+Snapshots:   0 total
+Time:        60.533 s, estimated 61 s
+Ran all test suites matching /(gateway|mesh-controller|tracing|metrics-logging)/i.

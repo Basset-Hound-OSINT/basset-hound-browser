@@ -6,14 +6,16 @@ const { HMACSignerMessage } = require('../../src/security/hmac-signer');
 
 describe('HMACSignerMessage', () => {
   let signer;
-  const testKey = 'a'.repeat(64);  // 32 bytes
+  const testKey = 'a'.repeat(64); // 32 bytes
 
   beforeEach(() => {
     signer = new HMACSignerMessage(testKey);
   });
 
   afterEach(() => {
-    if (signer) signer.destroy();
+    if (signer) {
+      signer.destroy();
+    }
   });
 
   // ========== Initialization Tests ==========
@@ -49,7 +51,7 @@ describe('HMACSignerMessage', () => {
     it('should sign a message', () => {
       const signature = signer.signMessage('test message');
       expect(typeof signature).toBe('string');
-      expect(signature.length).toBe(64);  // SHA-256 hex = 64 chars
+      expect(signature.length).toBe(64); // SHA-256 hex = 64 chars
     });
 
     it('should produce consistent signatures', () => {
@@ -113,7 +115,7 @@ describe('HMACSignerMessage', () => {
     it('should reject invalid signature', () => {
       const payload = { command: 'test' };
       const envelope = signer.createAuthenticatedMessage(payload);
-      envelope.signature = 'badsignature'.repeat(6);  // Invalid hex
+      envelope.signature = 'badsignature'.repeat(6); // Invalid hex
 
       const result = signer.verifyMessage(envelope);
       expect(result.valid).toBe(false);
@@ -289,7 +291,7 @@ describe('HMACSignerMessage', () => {
     it('should generate random secret key', () => {
       const key = HMACSignerMessage.generateSecretKey();
       expect(typeof key).toBe('string');
-      expect(key.length).toBe(64);  // 32 bytes as hex
+      expect(key.length).toBe(64); // 32 bytes as hex
     });
 
     it('should create signer with generated key', () => {

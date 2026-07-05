@@ -58,8 +58,8 @@ class IncidentDetector {
   constructor(config = {}) {
     this.config = {
       // Thresholds
-      bruteForceThreshold: config.bruteForceThreshold || 5,        // Failed attempts
-      bruteForceWindow: config.bruteForceWindow || 300000,         // 5 minutes
+      bruteForceThreshold: config.bruteForceThreshold || 5, // Failed attempts
+      bruteForceWindow: config.bruteForceWindow || 300000, // 5 minutes
       suspiciousAccessThreshold: config.suspiciousAccessThreshold || 10,
       suspiciousAccessWindow: config.suspiciousAccessWindow || 3600000, // 1 hour
       resourceExhaustionThreshold: config.resourceExhaustionThreshold || 0.9,
@@ -76,10 +76,10 @@ class IncidentDetector {
     this.incidents = [];
 
     // Tracking dictionaries
-    this.loginAttempts = new Map();      // ip -> { attempts, lastTime }
+    this.loginAttempts = new Map(); // ip -> { attempts, lastTime }
     this.dataAccessPatterns = new Map(); // userId -> { accesses, timestamps }
-    this.resourceUsage = new Map();      // clientId -> { usage, timestamp }
-    this.blockList = new Set();          // Blocked IPs/users
+    this.resourceUsage = new Map(); // clientId -> { usage, timestamp }
+    this.blockList = new Set(); // Blocked IPs/users
   }
 
   /**
@@ -260,7 +260,7 @@ class IncidentDetector {
     // Check if escalation is unauthorized
     const allowedEscalations = {
       'user': ['admin'],
-      'admin': []  // Admins cannot escalate
+      'admin': [] // Admins cannot escalate
     };
 
     const allowed = allowedEscalations[attempt.fromRole] || [];

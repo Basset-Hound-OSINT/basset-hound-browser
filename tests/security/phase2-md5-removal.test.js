@@ -27,7 +27,7 @@ describe('Security Phase 2: MD5 Removal', () => {
       const originalCreateHash = crypto.createHash;
       const hashCalls = [];
 
-      crypto.createHash = function(algorithm) {
+      crypto.createHash = function (algorithm) {
         hashCalls.push(algorithm);
         return originalCreateHash.call(this, algorithm);
       };
@@ -51,7 +51,7 @@ describe('Security Phase 2: MD5 Removal', () => {
           name: 'Test Technology',
           category: 'Test',
           favicon: {
-            sha256: 'abc123def456'  // Only SHA256
+            sha256: 'abc123def456' // Only SHA256
           }
         }
       };
@@ -78,7 +78,7 @@ describe('Security Phase 2: MD5 Removal', () => {
       const hash2 = crypto.createHash('sha256').update(data).digest('hex');
 
       expect(hash1).toBe(hash2);
-      expect(hash1).toMatch(/^[a-f0-9]{64}$/);  // 256-bit hex
+      expect(hash1).toMatch(/^[a-f0-9]{64}$/); // 256-bit hex
     });
 
     test('SHA256 produces 64 hex character output', () => {
@@ -111,7 +111,7 @@ describe('Security Phase 2: MD5 Removal', () => {
           name: 'Test Tech',
           category: 'Test',
           favicon: {
-            sha256: testSha256  // Only SHA256, no md5 field
+            sha256: testSha256 // Only SHA256, no md5 field
           }
         }
       };
@@ -176,7 +176,7 @@ describe('Security Phase 2: MD5 Removal', () => {
     });
 
     test('SHA256 is faster than MD5 in Node', (done) => {
-      const testData = Buffer.alloc(1024 * 1024);  // 1MB
+      const testData = Buffer.alloc(1024 * 1024); // 1MB
 
       const start1 = process.hrtime.bigint();
       for (let i = 0; i < 100; i++) {
@@ -187,7 +187,7 @@ describe('Security Phase 2: MD5 Removal', () => {
       const sha256Time = Number(end1 - start1);
 
       // SHA256 should complete in reasonable time
-      expect(sha256Time).toBeLessThan(1000000000);  // Less than 1 second
+      expect(sha256Time).toBeLessThan(1000000000); // Less than 1 second
 
       done();
     });

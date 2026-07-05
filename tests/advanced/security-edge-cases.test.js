@@ -53,7 +53,9 @@ function test(name, fn) {
  * HTML escape function
  */
 function escapeHtml(text) {
-  if (!text) return '';
+  if (!text) {
+    return '';
+  }
   return text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -66,7 +68,9 @@ function escapeHtml(text) {
  * Input sanitizer for SQL
  */
 function sanitizeSql(input) {
-  if (!input) return '';
+  if (!input) {
+    return '';
+  }
   return input
     .replace(/'/g, "''")
     .replace(/"/g, '""')
@@ -77,7 +81,9 @@ function sanitizeSql(input) {
  * Input sanitizer for shell commands
  */
 function sanitizeCommand(input) {
-  if (!input) return '';
+  if (!input) {
+    return '';
+  }
   return input
     .replace(/[;&|`$(){}[\]<>]/g, '')
     .replace(/\n/g, ' ');
@@ -154,7 +160,9 @@ test('Detect script tag injection', () => {
 
   let detected = 0;
   for (const attempt of xssAttempts) {
-    if (detectXssPatterns(attempt)) detected++;
+    if (detectXssPatterns(attempt)) {
+      detected++;
+    }
   }
 
   assert.strictEqual(detected, xssAttempts.length, 'Should detect all XSS attempts');
@@ -171,7 +179,9 @@ test('Detect event handler injection', () => {
 
   let detected = 0;
   for (const handler of eventHandlers) {
-    if (detectXssPatterns(handler)) detected++;
+    if (detectXssPatterns(handler)) {
+      detected++;
+    }
   }
 
   assert(detected > 0, 'Should detect event handlers');
@@ -187,7 +197,9 @@ test('Detect javascript protocol injection', () => {
 
   let detected = 0;
   for (const protocol of jsProtocols) {
-    if (detectXssPatterns(protocol)) detected++;
+    if (detectXssPatterns(protocol)) {
+      detected++;
+    }
   }
 
   assert(detected > 0, 'Should detect JS protocols');
@@ -229,13 +241,15 @@ test('Detect SQL injection patterns', () => {
   const sqlAttempts = [
     "'; DROP TABLE users; --",
     "1' OR '1'='1",
-    "1 UNION SELECT * FROM users --",
-    "1; DELETE FROM monitors --"
+    '1 UNION SELECT * FROM users --',
+    '1; DELETE FROM monitors --'
   ];
 
   let detected = 0;
   for (const attempt of sqlAttempts) {
-    if (detectSqlInjection(attempt)) detected++;
+    if (detectSqlInjection(attempt)) {
+      detected++;
+    }
   }
 
   assert(detected > 0, 'Should detect SQL injection');
@@ -284,7 +298,9 @@ test('Detect command injection patterns', () => {
 
   let detected = 0;
   for (const attempt of cmdAttempts) {
-    if (detectCommandInjection(attempt)) detected++;
+    if (detectCommandInjection(attempt)) {
+      detected++;
+    }
   }
 
   assert(detected > 0, 'Should detect command injection');

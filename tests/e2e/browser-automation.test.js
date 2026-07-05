@@ -32,7 +32,9 @@ describeE2E('E2E Browser Automation', () => {
     // This simulates the browser responding to commands
     testServer.registerHandler('navigate', async (params) => {
       const { url } = params;
-      if (!url) return { success: false, error: 'URL is required' };
+      if (!url) {
+        return { success: false, error: 'URL is required' };
+      }
       return { success: true, url };
     });
 
@@ -54,7 +56,9 @@ describeE2E('E2E Browser Automation', () => {
 
     testServer.registerHandler('click', async (params) => {
       const { selector } = params;
-      if (!selector) return { success: false, error: 'Selector is required' };
+      if (!selector) {
+        return { success: false, error: 'Selector is required' };
+      }
       return { success: true, selector };
     });
 
@@ -68,7 +72,9 @@ describeE2E('E2E Browser Automation', () => {
 
     testServer.registerHandler('wait_for_element', async (params) => {
       const { selector, timeout } = params;
-      if (!selector) return { success: false, error: 'Selector is required' };
+      if (!selector) {
+        return { success: false, error: 'Selector is required' };
+      }
       // Mock behavior: non-existent elements fail
       if (selector.includes('non-existent')) {
         return { success: false, error: 'Element not found', found: false };
@@ -86,7 +92,9 @@ describeE2E('E2E Browser Automation', () => {
 
     testServer.registerHandler('execute_script', async (params) => {
       const { script } = params;
-      if (!script) return { success: false, error: 'Script is required' };
+      if (!script) {
+        return { success: false, error: 'Script is required' };
+      }
       return { success: true, result: null };
     });
 
@@ -447,13 +455,17 @@ describe('E2E Bot Detection Evasion', () => {
       // Register command handlers
       testServer.registerHandler('navigate', async (params) => {
         const { url } = params;
-        if (!url) return { success: false, error: 'URL is required' };
+        if (!url) {
+          return { success: false, error: 'URL is required' };
+        }
         return { success: true, url };
       });
 
       testServer.registerHandler('execute_script', async (params) => {
         const { script } = params;
-        if (!script) return { success: false, error: 'Script is required' };
+        if (!script) {
+          return { success: false, error: 'Script is required' };
+        }
         return { success: true, result: null };
       });
 
@@ -475,7 +487,9 @@ describe('E2E Bot Detection Evasion', () => {
     });
 
     afterEach(() => {
-      if (client) client.disconnect();
+      if (client) {
+        client.disconnect();
+      }
     });
 
     test('should pass navigator.webdriver check', async () => {

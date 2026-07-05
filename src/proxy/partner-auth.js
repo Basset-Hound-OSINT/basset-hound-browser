@@ -26,7 +26,7 @@ class PartnerAuth {
 
     this.config = {
       tokenCacheTTL: options.tokenCacheTTL || 15 * 60 * 1000, // 15 minutes
-      rateLimitWindow: options.rateLimitWindow || 60 * 1000,    // 1 minute
+      rateLimitWindow: options.rateLimitWindow || 60 * 1000, // 1 minute
       maxAttemptsPerWindow: options.maxAttemptsPerWindow || 100,
       credentialRotationInterval: options.credentialRotationInterval || 3600000, // 1 hour
       webhookVerifyTimeout: options.webhookVerifyTimeout || 5000

@@ -155,11 +155,11 @@ describe('TOTPGenerator - RFC 6238 Compliance', () => {
 
     test('should reject malformed token', () => {
       const totp = new TOTPGenerator(RFC_TEST_SECRET);
-      expect(totp.validate('12345')).toBe(false);   // Too short
+      expect(totp.validate('12345')).toBe(false); // Too short
       expect(totp.validate('1234567')).toBe(false); // Too long
-      expect(totp.validate('abc123')).toBe(false);  // Non-numeric
-      expect(totp.validate('')).toBe(false);        // Empty
-      expect(totp.validate(null)).toBe(false);      // Null
+      expect(totp.validate('abc123')).toBe(false); // Non-numeric
+      expect(totp.validate('')).toBe(false); // Empty
+      expect(totp.validate(null)).toBe(false); // Null
     });
 
     test('should validate token with drift tolerance (±1 window)', () => {

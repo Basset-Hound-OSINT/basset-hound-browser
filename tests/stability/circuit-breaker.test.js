@@ -101,7 +101,9 @@ describe('CircuitBreaker', () => {
 
       // Fallback should be called
       const result = await breaker.execute(
-        () => { throw new Error('Should not reach'); },
+        () => {
+          throw new Error('Should not reach');
+        },
         () => 'fallback result'
       );
 

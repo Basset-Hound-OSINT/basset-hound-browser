@@ -213,9 +213,15 @@ class MockPriorityQueue {
   }
 
   dequeue() {
-    if (this.queues.critical.length) return this.queues.critical.shift();
-    if (this.queues.normal.length) return this.queues.normal.shift();
-    if (this.queues.low.length) return this.queues.low.shift();
+    if (this.queues.critical.length) {
+      return this.queues.critical.shift();
+    }
+    if (this.queues.normal.length) {
+      return this.queues.normal.shift();
+    }
+    if (this.queues.low.length) {
+      return this.queues.low.shift();
+    }
     return null;
   }
 

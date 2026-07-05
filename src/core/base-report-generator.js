@@ -31,7 +31,7 @@ class BaseReportGenerator extends EventEmitter {
 
     // Configuration
     this.config = {
-      reportDir: options.reportDir || path.join(os.homedir(), '.basset-hound', 'reports'),
+      reportDir: options.reportDir || path.join(os.homedir(), 'tmp', '.basset-hound', 'reports'),
       includeMetadata: options.includeMetadata !== false,
       includeTimestamp: options.includeTimestamp !== false,
       autoSave: options.autoSave !== false,

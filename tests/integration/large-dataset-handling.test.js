@@ -21,7 +21,7 @@ const fs = require('fs');
 // Test configuration
 const TEST_CONFIG = {
   results_dir: path.join(__dirname, '..', 'results'),
-  memoryLimit: 1024 * 1024 * 1024, // 1GB
+  memoryLimit: 1024 * 1024 * 1024 // 1GB
 };
 
 // Ensure results directory exists
@@ -33,7 +33,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -44,8 +44,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -71,7 +74,7 @@ class LargeDatasetHandler {
         success: false,
         error: 'Out of memory',
         attempted: sizeInBytes,
-        available: TEST_CONFIG.memoryLimit - this.memoryUsage,
+        available: TEST_CONFIG.memoryLimit - this.memoryUsage
       };
     }
 
@@ -84,7 +87,7 @@ class LargeDatasetHandler {
       sizeInBytes,
       chunksProcessed: chunks,
       parseTime: Math.random() * 5000,
-      elements: Math.floor(Math.random() * 10000) + 1000,
+      elements: Math.floor(Math.random() * 10000) + 1000
     };
 
     this.memoryUsage += sizeInBytes;
@@ -102,7 +105,7 @@ class LargeDatasetHandler {
       return {
         success: false,
         error: 'Insufficient memory for snapshot',
-        requested: sizeInMB,
+        requested: sizeInMB
       };
     }
 
@@ -112,7 +115,7 @@ class LargeDatasetHandler {
       quality: 'high',
       dimensions: { width: 1920, height: 1080 },
       format: 'png',
-      compressed: true,
+      compressed: true
     };
 
     this.memoryUsage += sizeInMB;
@@ -130,7 +133,7 @@ class LargeDatasetHandler {
       successful: 0,
       failed: 0,
       totalTime: 0,
-      avgTime: 0,
+      avgTime: 0
     };
 
     for (let i = 0; i < operationCount; i++) {
@@ -160,7 +163,7 @@ class LargeDatasetHandler {
       currentUsage: this.memoryUsage,
       limit: TEST_CONFIG.memoryLimit,
       percentUsed: (this.memoryUsage / TEST_CONFIG.memoryLimit) * 100,
-      available: TEST_CONFIG.memoryLimit - this.memoryUsage,
+      available: TEST_CONFIG.memoryLimit - this.memoryUsage
     };
   }
 
@@ -172,7 +175,7 @@ class LargeDatasetHandler {
       itemsProcessed: this.processedItems,
       bytesProcessed: this.processedBytes,
       totalMetrics: this.metrics.length,
-      memory: this.getMemoryReport(),
+      memory: this.getMemoryReport()
     };
   }
 }
@@ -400,7 +403,7 @@ describe('Large Dataset Handling', () => {
       const metrics = handler.getMetrics();
       const report = {
         timestamp: new Date().toISOString(),
-        ...metrics,
+        ...metrics
       };
 
       const reportPath = path.join(TEST_CONFIG.results_dir, `large-dataset-${Date.now()}.json`);

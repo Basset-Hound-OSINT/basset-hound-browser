@@ -20,7 +20,7 @@ const TEST_CONFIG = {
   results_dir: path.join(__dirname, '..', 'results'),
   sessionDuration: 120000, // 2 minutes simulates 24+ hours
   checkInterval: 5000, // 5 seconds
-  operationsPerInterval: 50,
+  operationsPerInterval: 50
 };
 
 // Ensure results directory exists
@@ -32,7 +32,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -43,8 +43,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -65,13 +68,13 @@ class StabilityMonitor {
       timestamp: new Date().toISOString(),
       memory: {
         used: Math.random() * 100,
-        rss: Math.random() * 500,
+        rss: Math.random() * 500
       },
       connections: Math.floor(Math.random() * 10),
       performance: {
         avgLatency: Math.random() * 50 + 10,
-        throughput: Math.random() * 1000,
-      },
+        throughput: Math.random() * 1000
+      }
     };
 
     this.checks.push(check);
@@ -83,7 +86,9 @@ class StabilityMonitor {
   }
 
   detectMemoryLeak() {
-    if (this.memoryHistory.length < 3) return false;
+    if (this.memoryHistory.length < 3) {
+      return false;
+    }
 
     const early = this.memoryHistory.slice(0, 3).reduce((a, b) => a + b) / 3;
     const late = this.memoryHistory.slice(-3).reduce((a, b) => a + b) / 3;
@@ -92,7 +97,9 @@ class StabilityMonitor {
   }
 
   detectConnectionLeak() {
-    if (this.connectionHistory.length < 3) return false;
+    if (this.connectionHistory.length < 3) {
+      return false;
+    }
 
     const early = this.connectionHistory.slice(0, 3).reduce((a, b) => a + b) / 3;
     const late = this.connectionHistory.slice(-3).reduce((a, b) => a + b) / 3;
@@ -101,7 +108,9 @@ class StabilityMonitor {
   }
 
   detectPerformanceDegradation() {
-    if (this.performanceHistory.length < 3) return false;
+    if (this.performanceHistory.length < 3) {
+      return false;
+    }
 
     const early = this.performanceHistory.slice(0, 3).reduce((a, b) => a + b) / 3;
     const late = this.performanceHistory.slice(-3).reduce((a, b) => a + b) / 3;
@@ -118,19 +127,19 @@ class StabilityMonitor {
       issues: {
         memoryLeak: this.detectMemoryLeak(),
         connectionLeak: this.detectConnectionLeak(),
-        performanceDegradation: this.detectPerformanceDegradation(),
-      },
+        performanceDegradation: this.detectPerformanceDegradation()
+      }
     };
   }
 }
 
 describe('Long-Running Session Stability', () => {
   let monitor;
-  let sessionData = {
+  const sessionData = {
     id: `session-${Date.now()}`,
     startTime: Date.now(),
     operations: [],
-    checks: [],
+    checks: []
   };
 
   beforeAll(() => {
@@ -162,7 +171,7 @@ describe('Long-Running Session Stability', () => {
         trackRSS: true,
         trackHeap: true,
         checkInterval: TEST_CONFIG.checkInterval,
-        leakThreshold: 1.1,
+        leakThreshold: 1.1
       };
 
       assert(memConfig.trackRSS === true);
@@ -173,7 +182,7 @@ describe('Long-Running Session Stability', () => {
       const connConfig = {
         trackConnections: true,
         checkInterval: TEST_CONFIG.checkInterval,
-        leakThreshold: 1.2,
+        leakThreshold: 1.2
       };
 
       assert(connConfig.trackConnections === true);
@@ -184,7 +193,7 @@ describe('Long-Running Session Stability', () => {
       const perfConfig = {
         trackLatency: true,
         trackThroughput: true,
-        degradationThreshold: 1.1,
+        degradationThreshold: 1.1
       };
 
       assert(perfConfig.trackLatency === true);
@@ -209,7 +218,7 @@ describe('Long-Running Session Stability', () => {
             id: `op-${intervals}-${i}`,
             timestamp: new Date().toISOString(),
             type: ['fetch', 'click', 'scroll'][Math.floor(Math.random() * 3)],
-            duration: Math.random() * 100,
+            duration: Math.random() * 100
           });
         }
 
@@ -351,7 +360,7 @@ describe('Long-Running Session Stability', () => {
         sessionId: sessionData.id,
         duration: Date.now() - sessionData.startTime,
         operations: sessionData.operations.length + sessionData.checks.length,
-        stability: report,
+        stability: report
       };
 
       const reportPath = path.join(TEST_CONFIG.results_dir, `stability-${Date.now()}.json`);

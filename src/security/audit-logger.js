@@ -18,7 +18,7 @@ class AuditLogger {
    * @param {object} options Configuration options
    */
   constructor(options = {}) {
-    this.logDir = options.logDir || path.join(process.env.HOME || '/tmp', '.basset-hound', 'audit');
+    this.logDir = options.logDir || path.join(process.env.HOME || '/tmp', 'tmp', '.basset-hound', 'audit');
     this.maxLogSize = options.maxLogSize || 100 * 1024 * 1024; // 100MB
     this.enableEncryption = options.enableEncryption || false;
     this.enableCompression = options.enableCompression !== false;
@@ -384,7 +384,9 @@ class AuditLogger {
    * @private
    */
   hashIpAddress(ip) {
-    if (!ip) return null;
+    if (!ip) {
+      return null;
+    }
     return crypto.createHash('sha256').update(String(ip)).digest('hex').substring(0, 16);
   }
 
@@ -395,13 +397,17 @@ class AuditLogger {
   loadLastHash() {
     const logPath = path.join(this.logDir, 'audit.log');
 
-    if (!fs.existsSync(logPath)) return null;
+    if (!fs.existsSync(logPath)) {
+      return null;
+    }
 
     try {
       const content = fs.readFileSync(logPath, 'utf-8');
       const lines = content.trim().split('\n').filter(l => l.length > 0);
 
-      if (lines.length === 0) return null;
+      if (lines.length === 0) {
+        return null;
+      }
 
       const lastEntry = JSON.parse(lines[lines.length - 1]);
       return lastEntry.entryHash;

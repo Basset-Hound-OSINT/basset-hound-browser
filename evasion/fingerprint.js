@@ -14,7 +14,7 @@ const VIEWPORT_SIZES = [
   { width: 1280, height: 800 },
   { width: 1680, height: 1050 },
   { width: 1920, height: 1200 },
-  { width: 2560, height: 1440 },
+  { width: 2560, height: 1440 }
 ];
 
 // Realistic user agents
@@ -24,7 +24,18 @@ const USER_AGENTS = [
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0'
+];
+
+// Chrome/Chromium-only user agents. Used as the DEFAULT browsing identity because the rest
+// of the evasion spoof (window.chrome, the Chrome plugin list, WebGL ANGLE renderers) all
+// describe a Chromium browser — a Firefox/Safari UA would be incoherent with them. Every OS
+// family is represented so getPlatformForUserAgent() can derive a matching navigator.platform.
+const CHROME_USER_AGENTS = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 ];
 
 // Platform strings
@@ -35,7 +46,7 @@ const LANGUAGES = [
   ['en-US', 'en'],
   ['en-GB', 'en'],
   ['en-US', 'en', 'es'],
-  ['en-US'],
+  ['en-US']
 ];
 
 // Timezone offsets (in minutes)
@@ -46,7 +57,7 @@ const TIMEZONES = [
   { offset: -300, name: 'America/New_York' },
   { offset: 0, name: 'Europe/London' },
   { offset: 60, name: 'Europe/Paris' },
-  { offset: 120, name: 'Europe/Helsinki' },
+  { offset: 120, name: 'Europe/Helsinki' }
 ];
 
 // Screen configurations
@@ -55,7 +66,7 @@ const SCREEN_CONFIGS = [
   { width: 1366, height: 768, availWidth: 1366, availHeight: 728, colorDepth: 24 },
   { width: 1536, height: 864, availWidth: 1536, availHeight: 824, colorDepth: 24 },
   { width: 2560, height: 1440, availWidth: 2560, availHeight: 1400, colorDepth: 30 },
-  { width: 1440, height: 900, availWidth: 1440, availHeight: 860, colorDepth: 24 },
+  { width: 1440, height: 900, availWidth: 1440, availHeight: 860, colorDepth: 24 }
 ];
 
 // WebGL renderer strings
@@ -64,13 +75,13 @@ const WEBGL_RENDERERS = [
   'ANGLE (NVIDIA GeForce RTX 3070 Direct3D11 vs_5_0 ps_5_0)',
   'ANGLE (AMD Radeon RX 580 Direct3D11 vs_5_0 ps_5_0)',
   'ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)',
-  'ANGLE (Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0)',
+  'ANGLE (Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0)'
 ];
 
 const WEBGL_VENDORS = [
   'Google Inc. (NVIDIA)',
   'Google Inc. (AMD)',
-  'Google Inc. (Intel)',
+  'Google Inc. (Intel)'
 ];
 
 /**
@@ -81,7 +92,7 @@ function getRandomViewport() {
   // Add slight randomization
   return {
     width: viewport.width + Math.floor(Math.random() * 20) - 10,
-    height: viewport.height + Math.floor(Math.random() * 20) - 10,
+    height: viewport.height + Math.floor(Math.random() * 20) - 10
   };
 }
 
@@ -90,6 +101,61 @@ function getRandomViewport() {
  */
 function getRealisticUserAgent() {
   return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+}
+
+/**
+ * Get a realistic Chrome/Chromium user agent (coherent with the window.chrome + plugin spoof).
+ * Preferred for the default browsing identity so navigator.userAgent, the wire UA, window.chrome
+ * and the plugin list all describe the same Chromium browser.
+ */
+function getRealisticChromeUserAgent() {
+  return CHROME_USER_AGENTS[Math.floor(Math.random() * CHROME_USER_AGENTS.length)];
+}
+
+/**
+ * Derive the navigator.platform value that is coherent with a given user-agent's OS.
+ * A real browser's navigator.platform always matches the OS advertised in its UA string;
+ * a mismatch (e.g. platform "Win32" alongside a "X11; Linux x86_64" UA — the exact leak the
+ * privacy verification flagged) is itself a bot-detection signal.
+ * @param {string} ua - user agent string
+ * @returns {string} coherent navigator.platform value
+ */
+function getPlatformForUserAgent(ua) {
+  if (!ua || typeof ua !== 'string') {
+    return 'Win32';
+  }
+  if (/Windows/.test(ua)) return 'Win32';
+  if (/Macintosh|Mac OS X/.test(ua)) return 'MacIntel';
+  if (/Android/.test(ua)) return 'Linux armv8l';
+  if (/iPhone/.test(ua)) return 'iPhone';
+  if (/iPad/.test(ua)) return 'iPad';
+  if (/Linux/.test(ua)) return 'Linux x86_64';
+  return 'Win32';
+}
+
+// The single active browsing identity. Set once at startup (and updated by set_user_agent) so
+// the injected evasion script's navigator.platform stays coherent with the UA that
+// navigator.userAgent and the wire actually present. The generated script is memoized so the
+// per-session fingerprint is stable and only regenerates when the UA (hence platform) changes.
+let activeUserAgent = null;
+let cachedEvasionScript = null;
+
+/**
+ * Record the active browsing UA so getEvasionScript() derives a coherent navigator.platform.
+ * @param {string} ua - user agent applied to session.defaultSession (the guest webview)
+ */
+function setActiveUserAgent(ua) {
+  if (ua && typeof ua === 'string' && ua !== activeUserAgent) {
+    activeUserAgent = ua;
+    cachedEvasionScript = null; // invalidate: platform must be re-derived from the new UA
+  }
+}
+
+/**
+ * @returns {string|null} the active browsing user agent, or null if none set yet
+ */
+function getActiveUserAgent() {
+  return activeUserAgent;
 }
 
 /**
@@ -103,7 +169,16 @@ function getCanvasNoise() {
  * Generate evasion script to be injected into pages
  */
 function getEvasionScript() {
-  const platform = PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)];
+  // Return the memoized script while the active UA is unchanged: keeps the per-session
+  // fingerprint stable and the per-injection IPC cheap.
+  if (cachedEvasionScript && activeUserAgent) {
+    return cachedEvasionScript;
+  }
+  // COHERENCE: derive navigator.platform from the active UA's OS so platform and UA agree.
+  // Falls back to a random platform only when no UA has been set (backward compatible).
+  const platform = activeUserAgent
+    ? getPlatformForUserAgent(activeUserAgent)
+    : PLATFORMS[Math.floor(Math.random() * PLATFORMS.length)];
   const languages = LANGUAGES[Math.floor(Math.random() * LANGUAGES.length)];
   const timezone = TIMEZONES[Math.floor(Math.random() * TIMEZONES.length)];
   const screen = SCREEN_CONFIGS[Math.floor(Math.random() * SCREEN_CONFIGS.length)];
@@ -111,7 +186,7 @@ function getEvasionScript() {
   const webglVendor = WEBGL_VENDORS[Math.floor(Math.random() * WEBGL_VENDORS.length)];
   const canvasNoise = getCanvasNoise();
 
-  return `
+  const script = `
     (function() {
       'use strict';
 
@@ -394,6 +469,11 @@ function getEvasionScript() {
       console.log('[Basset Hound] Fingerprint evasion loaded');
     })();
   `;
+
+  if (activeUserAgent) {
+    cachedEvasionScript = script;
+  }
+  return script;
 }
 
 /**
@@ -408,7 +488,7 @@ function getFingerprintConfig() {
     timezone: TIMEZONES[Math.floor(Math.random() * TIMEZONES.length)],
     screen: SCREEN_CONFIGS[Math.floor(Math.random() * SCREEN_CONFIGS.length)],
     webglRenderer: WEBGL_RENDERERS[Math.floor(Math.random() * WEBGL_RENDERERS.length)],
-    webglVendor: WEBGL_VENDORS[Math.floor(Math.random() * WEBGL_VENDORS.length)],
+    webglVendor: WEBGL_VENDORS[Math.floor(Math.random() * WEBGL_VENDORS.length)]
   };
 }
 
@@ -900,6 +980,10 @@ function getFullLocationSpoofScript(config = {}) {
 module.exports = {
   getRandomViewport,
   getRealisticUserAgent,
+  getRealisticChromeUserAgent,
+  getPlatformForUserAgent,
+  setActiveUserAgent,
+  getActiveUserAgent,
   getEvasionScript,
   getEvasionScriptWithConfig,
   getFingerprintConfig,
@@ -908,10 +992,11 @@ module.exports = {
   getFullLocationSpoofScript,
   VIEWPORT_SIZES,
   USER_AGENTS,
+  CHROME_USER_AGENTS,
   PLATFORMS,
   LANGUAGES,
   TIMEZONES,
   SCREEN_CONFIGS,
   WEBGL_RENDERERS,
-  WEBGL_VENDORS,
+  WEBGL_VENDORS
 };

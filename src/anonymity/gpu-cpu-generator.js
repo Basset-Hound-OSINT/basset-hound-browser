@@ -24,7 +24,7 @@ class GPUCPUGenerator {
         gpu: 'Apple A17 Pro GPU',
         gpuCores: 6,
         memory: 8,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       'iPhone-15': {
         cpu: 'Apple A16 Bionic',
@@ -32,7 +32,7 @@ class GPUCPUGenerator {
         gpu: 'Apple A16 Bionic GPU',
         gpuCores: 5,
         memory: 6,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       'iPhone-14-Pro': {
         cpu: 'Apple A16 Bionic',
@@ -40,7 +40,7 @@ class GPUCPUGenerator {
         gpu: 'Apple A16 Bionic GPU',
         gpuCores: 5,
         memory: 6,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       // Samsung Galaxy CPUs and GPUs
       'Galaxy-S24': {
@@ -49,7 +49,7 @@ class GPUCPUGenerator {
         gpu: 'Adreno 8',
         gpuCores: 10,
         memory: 12,
-        vendor: 'Qualcomm',
+        vendor: 'Qualcomm'
       },
       'Galaxy-S23': {
         cpu: 'Snapdragon 8 Gen 2',
@@ -57,7 +57,7 @@ class GPUCPUGenerator {
         gpu: 'Adreno 8',
         gpuCores: 10,
         memory: 8,
-        vendor: 'Qualcomm',
+        vendor: 'Qualcomm'
       },
       'Galaxy-S21': {
         cpu: 'Snapdragon 888',
@@ -65,7 +65,7 @@ class GPUCPUGenerator {
         gpu: 'Adreno 660',
         gpuCores: 8,
         memory: 8,
-        vendor: 'Qualcomm',
+        vendor: 'Qualcomm'
       },
       // Google Pixel CPUs and GPUs
       'Pixel-8-Pro': {
@@ -74,7 +74,7 @@ class GPUCPUGenerator {
         gpu: 'Mali-G715 MP7',
         gpuCores: 7,
         memory: 12,
-        vendor: 'Google',
+        vendor: 'Google'
       },
       'Pixel-8': {
         cpu: 'Google Tensor G3',
@@ -82,7 +82,7 @@ class GPUCPUGenerator {
         gpu: 'Mali-G715 MP7',
         gpuCores: 7,
         memory: 8,
-        vendor: 'Google',
+        vendor: 'Google'
       },
       'Pixel-7': {
         cpu: 'Google Tensor',
@@ -90,7 +90,7 @@ class GPUCPUGenerator {
         gpu: 'Mali-G510',
         gpuCores: 5,
         memory: 8,
-        vendor: 'Google',
+        vendor: 'Google'
       },
       // MacBook Pros (M-series)
       'MacBook-Pro-16-M3-Max': {
@@ -99,7 +99,7 @@ class GPUCPUGenerator {
         gpu: 'Apple M3 Max GPU',
         gpuCores: 36,
         memory: 36,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       'MacBook-Pro-16-M3': {
         cpu: 'Apple M3',
@@ -107,7 +107,7 @@ class GPUCPUGenerator {
         gpu: 'Apple M3 GPU',
         gpuCores: 10,
         memory: 16,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       'MacBook-Pro-14-M3': {
         cpu: 'Apple M3',
@@ -115,7 +115,7 @@ class GPUCPUGenerator {
         gpu: 'Apple M3 GPU',
         gpuCores: 10,
         memory: 16,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       'MacBook-Air-M2': {
         cpu: 'Apple M2',
@@ -123,7 +123,7 @@ class GPUCPUGenerator {
         gpu: 'Apple M2 GPU',
         gpuCores: 10,
         memory: 16,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       // iPad specifications
       'iPad-Pro-12.9': {
@@ -132,7 +132,7 @@ class GPUCPUGenerator {
         gpu: 'Apple M2 GPU',
         gpuCores: 10,
         memory: 16,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       'iPad-Air': {
         cpu: 'Apple M1',
@@ -140,7 +140,7 @@ class GPUCPUGenerator {
         gpu: 'Apple M1 GPU',
         gpuCores: 8,
         memory: 8,
-        vendor: 'Apple',
+        vendor: 'Apple'
       },
       // Windows desktops
       'Windows-Desktop-Gaming': {
@@ -149,7 +149,7 @@ class GPUCPUGenerator {
         gpu: 'NVIDIA RTX 4080',
         gpuCores: 10240,
         memory: 24,
-        vendor: 'NVIDIA',
+        vendor: 'NVIDIA'
       },
       'Windows-Desktop-High-End': {
         cpu: 'Intel Core i7-13700',
@@ -157,7 +157,7 @@ class GPUCPUGenerator {
         gpu: 'NVIDIA RTX 4070',
         gpuCores: 5888,
         memory: 16,
-        vendor: 'NVIDIA',
+        vendor: 'NVIDIA'
       },
       'Windows-Desktop-Standard': {
         cpu: 'Intel Core i5-13600K',
@@ -165,7 +165,7 @@ class GPUCPUGenerator {
         gpu: 'Intel Arc A770',
         gpuCores: 32,
         memory: 16,
-        vendor: 'Intel',
+        vendor: 'Intel'
       },
       'Windows-Desktop-Budget': {
         cpu: 'Intel Core i5-10400',
@@ -173,7 +173,7 @@ class GPUCPUGenerator {
         gpu: 'NVIDIA GTX 1660',
         gpuCores: 1408,
         memory: 8,
-        vendor: 'NVIDIA',
+        vendor: 'NVIDIA'
       },
       // Windows laptops
       'Windows-Laptop-Premium': {
@@ -182,7 +182,7 @@ class GPUCPUGenerator {
         gpu: 'NVIDIA RTX 4060',
         gpuCores: 3072,
         memory: 16,
-        vendor: 'NVIDIA',
+        vendor: 'NVIDIA'
       },
       'Windows-Laptop-Standard': {
         cpu: 'Intel Core i5-1340P',
@@ -190,7 +190,7 @@ class GPUCPUGenerator {
         gpu: 'Intel Iris Xe',
         gpuCores: 80,
         memory: 16,
-        vendor: 'Intel',
+        vendor: 'Intel'
       },
       // Linux desktops
       'Linux-Desktop': {
@@ -199,7 +199,7 @@ class GPUCPUGenerator {
         gpu: 'NVIDIA RTX 4070',
         gpuCores: 5888,
         memory: 32,
-        vendor: 'NVIDIA',
+        vendor: 'NVIDIA'
       },
       // Android tablets
       'Galaxy-Tab-S9': {
@@ -208,8 +208,8 @@ class GPUCPUGenerator {
         gpu: 'Adreno 8',
         gpuCores: 10,
         memory: 8,
-        vendor: 'Qualcomm',
-      },
+        vendor: 'Qualcomm'
+      }
     };
   }
 
@@ -293,7 +293,7 @@ class GPUCPUGenerator {
    */
   generateGenericSpecs(deviceType, vendor, deviceMemory) {
     const specs = {
-      memory: deviceMemory || 8,
+      memory: deviceMemory || 8
     };
 
     if (deviceType === 'mobile') {
@@ -343,16 +343,28 @@ class GPUCPUGenerator {
     const { cpu, cpuCores, gpu, gpuCores, memory, vendor } = specs;
 
     // Check cores are reasonable
-    if (cpuCores < 1 || cpuCores > 32) return false;
-    if (gpuCores < 1 || gpuCores > 20480) return false;
+    if (cpuCores < 1 || cpuCores > 32) {
+      return false;
+    }
+    if (gpuCores < 1 || gpuCores > 20480) {
+      return false;
+    }
 
     // Check memory is realistic (not 999GB)
-    if (memory < 2 || memory > 192) return false;
+    if (memory < 2 || memory > 192) {
+      return false;
+    }
 
     // Check strings exist and aren't empty
-    if (!cpu || typeof cpu !== 'string' || cpu.length === 0) return false;
-    if (!gpu || typeof gpu !== 'string' || gpu.length === 0) return false;
-    if (!vendor || typeof vendor !== 'string' || vendor.length === 0) return false;
+    if (!cpu || typeof cpu !== 'string' || cpu.length === 0) {
+      return false;
+    }
+    if (!gpu || typeof gpu !== 'string' || gpu.length === 0) {
+      return false;
+    }
+    if (!vendor || typeof vendor !== 'string' || vendor.length === 0) {
+      return false;
+    }
 
     return true;
   }

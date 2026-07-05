@@ -84,7 +84,9 @@ class NetworkSocketOptimizer extends EventEmitter {
       if (!err) {
         this.emit('send', { bytes: buffer.length });
       }
-      if (callback) callback(err);
+      if (callback) {
+        callback(err);
+      }
     });
   }
 
@@ -147,7 +149,9 @@ class ScatterGatherIO extends EventEmitter {
       this.flushTimer = null;
     }
 
-    if (this.buffers.length === 0) return;
+    if (this.buffers.length === 0) {
+      return;
+    }
 
     const combined = Buffer.concat(this.buffers);
     this.emit('flush', {
@@ -181,10 +185,10 @@ class ScatterGatherIO extends EventEmitter {
 class NetworkBufferPool {
   constructor(options = {}) {
     this.poolSizes = {
-      tiny: { size: 1024, count: 100 },        // 1KB
-      small: { size: 4096, count: 50 },        // 4KB
-      medium: { size: 65536, count: 20 },      // 64KB
-      large: { size: 1048576, count: 10 }      // 1MB
+      tiny: { size: 1024, count: 100 }, // 1KB
+      small: { size: 4096, count: 50 }, // 4KB
+      medium: { size: 65536, count: 20 }, // 64KB
+      large: { size: 1048576, count: 10 } // 1MB
     };
 
     this.pools = {};

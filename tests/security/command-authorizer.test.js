@@ -181,8 +181,8 @@ describe('CommandAuthorizer', () => {
 
     it('should filter audit log by allowed status', () => {
       authorizer.setClientLevel('client', 1);
-      authorizer.canExecute('client', 'navigate');  // allowed
-      authorizer.canExecute('client', 'execute_javascript');  // not allowed
+      authorizer.canExecute('client', 'navigate'); // allowed
+      authorizer.canExecute('client', 'execute_javascript'); // not allowed
 
       const failedLog = authorizer.getAuditLog({ allowed: false });
       expect(failedLog.every(e => !e.allowed)).toBe(true);

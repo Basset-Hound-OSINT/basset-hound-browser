@@ -1,8 +1,9 @@
 # Documentation Structure & Organization Guide
 
-**Last Updated:** June 14, 2026  
-**Version:** 1.0  
+**Last Updated:** July 3, 2026  
+**Version:** 1.1  
 **Purpose:** Define and enforce consistent documentation organization across all projects
+**Key Addition:** RAG system integration + research/obscura directory structure
 
 ---
 
@@ -90,11 +91,23 @@ docs/
 │   └── [other archives]
 │
 ├── research/                     # Research documents
+│   ├── obscura/                  # Obscura reverse-engineering findings
+│   │   ├── README.md
+│   │   ├── OBSCURA-EVALUATION.md
+│   │   └── [topic-specific findings]
 │   ├── evasion-canvas-webgl/
 │   ├── session-coherence-analysis/
 │   ├── detection-systems/
 │   ├── fingerprinting-deep-dives/
 │   └── [research topics]
+│
+├── rag-app/                      # LOCAL RAG System (Doc Indexing)
+│   ├── README-BASSET-HOUND.md   # Setup instructions
+│   ├── deploy.sh                 # Start/stop RAG stack
+│   ├── docker-compose.yml
+│   ├── config/
+│   │   └── config.yaml           # Configured for docs/ indexing
+│   └── .gitignore                # Ignores data/ folder
 │
 ├── runbooks/                     # Operational runbooks
 │   ├── RUNBOOK-DEPLOY.md
@@ -274,6 +287,22 @@ INFRASTRUCTURE-SUMMARY.md
 - **Examples:** Deployment sessions, complex feature implementations
 - **Format:** Markdown with timestamps and progression
 
+### `docs/research/` (Including `docs/research/obscura/`)
+- **Purpose:** Deep technical research and reverse-engineering findings
+- **Audience:** Technical team, architects, future investigators
+- **Examples:** Obscura evaluation, architectural analysis, detection vector studies
+- **Format:** Markdown with frontmatter (title, date, researcher, status, category)
+- **RAG Integration:** Auto-indexed by RAG system at http://localhost:8100
+
+### `docs/rag-app/`
+- **Purpose:** Local RAG system for documentation indexing
+- **Audience:** Developers, agents needing documentation context
+- **How to Start:** `cd docs/rag-app && ./deploy.sh start --build`
+- **Web UI:** http://localhost:8100
+- **API Endpoints:** `/api/search`, `/api/rag` (hybrid + semantic retrieval)
+- **Indexed Folders:** `/docs/` (all subdirectories scanned recursively)
+- **File Types:** .md, .txt, .json, .yaml, .pdf, .log
+
 ---
 
 ## Migration Checklist
@@ -307,13 +336,92 @@ When moving to this structure:
 
 ---
 
+## Agent Workflow: Using RAG + Writing Findings
+
+### Step 1: Query Documentation with RAG
+When agents need to understand existing architecture/findings:
+
+```bash
+# Start RAG if not running
+cd docs/rag-app && ./deploy.sh start --build
+
+# Query via REST API
+curl -X POST http://localhost:8100/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Obscura WebGL evasion", "mode": "hybrid", "top_k": 5}'
+```
+
+### Step 2: Research & Document Findings
+When documenting new research:
+
+1. **Create file:** `docs/research/[topic]/[finding-name].md`
+2. **Add frontmatter:**
+   ```markdown
+   ---
+   title: "Your Research Title"
+   date: 2026-07-03
+   researcher: "Agent Name"
+   status: "Complete|In Progress|Pending Review"
+   category: "Technical Analysis|Integration|Deployment"
+   ---
+   ```
+3. **Cross-reference:** Use `[[filename]]` links to related docs
+4. **Auto-indexed:** RAG system picks up new docs automatically (rescan on deploy)
+
+### Step 3: Link from Core Files
+Update `ROADMAP.md`, `SCOPE.md`, or `TODO.md` with links to new research:
+
+```markdown
+- **Obscura Evaluation:** See [research/obscura/OBSCURA-EVALUATION.md](./research/obscura/OBSCURA-EVALUATION.md)
+```
+
+## Special: Obscura Research Directory
+
+**Location:** `docs/research/obscura/`  
+**Purpose:** Comprehensive Obscura reverse-engineering and comparison analysis  
+**RAG Indexed:** Yes (auto-scanned when RAG starts)
+
+### Adding Obscura Findings:
+```
+docs/research/obscura/
+├── README.md                              # Research guidelines
+├── OBSCURA-EVALUATION.md                  # Strategic evaluation
+├── architecture-deep-dive.md              # Technical analysis
+├── performance-comparison.md              # Benchmarking
+├── evasion-vector-analysis.md             # Detection evasion
+├── integration-feasibility.md             # Hybrid approach analysis
+└── [topic-specific-findings].md
+```
+
+**Key Rule:** All Obscura findings stay here, NOT in `/docs/wiki/`. Use RAG to query them as context for future research.
+
+## Preventing Documentation Clutter
+
+### ❌ AVOID
+- Creating files in root directory (exception: README.md, config files only)
+- Adding to `/docs/wiki/` (deprecated, migrate to `/docs/research/`)
+- Creating multiple TODO files (use single `docs/TODO.md`)
+- Dumping content without organization
+
+### ✅ DO
+- Use `/docs/research/[topic]/` for investigation findings
+- Keep `/docs/ROADMAP.md`, `/docs/SCOPE.md` lean with links
+- Use RAG system to query old findings instead of re-reading
+- Archive old session records to `/docs/archives/session_records/`
+
+---
+
 ## Related Documents
 
 - **[AGENT-DOCUMENTATION-STANDARDS.md](./AGENT-DOCUMENTATION-STANDARDS.md)** - Standards for agent handoffs
 - **[ROOT-NAVIGATION.md](../ROOT-NAVIGATION.md)** - Main project navigation
 - **[ROADMAP.md](./ROADMAP.md)** - Project roadmap
+- **[rag-app/README-BASSET-HOUND.md](./rag-app/README-BASSET-HOUND.md)** - RAG system setup
+- **[research/obscura/README.md](./research/obscura/README.md)** - Obscura research guidelines
 
 ---
 
-**Last Reviewed:** June 14, 2026  
+**Last Reviewed:** July 3, 2026  
 **Status:** ✅ Active - All documentation must follow this structure
+**RAG Integration:** ✅ Enabled - Auto-indexes docs/ folder recursively
+**Research Discipline:** ✅ Enforced - Findings go to research/[topic]/, not wiki/

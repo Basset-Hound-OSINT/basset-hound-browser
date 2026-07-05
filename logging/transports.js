@@ -26,7 +26,9 @@ class BaseTransport extends EventEmitter {
    * @returns {boolean}
    */
   shouldLog(level) {
-    if (!this.enabled) return false;
+    if (!this.enabled) {
+      return false;
+    }
 
     const levels = { error: 0, warn: 1, info: 2, debug: 3, trace: 4 };
     return levels[level] <= levels[this.level];
@@ -84,7 +86,9 @@ class ConsoleTransport extends BaseTransport {
    * @param {Object} entry - Log entry
    */
   write(entry) {
-    if (!this.shouldLog(entry.level)) return;
+    if (!this.shouldLog(entry.level)) {
+      return;
+    }
 
     const output = this.format(entry);
 
@@ -173,7 +177,9 @@ class FileTransport extends BaseTransport {
    * @param {Object} entry - Log entry
    */
   write(entry) {
-    if (!this.shouldLog(entry.level)) return;
+    if (!this.shouldLog(entry.level)) {
+      return;
+    }
     if (this.rotationInProgress) {
       this.writeQueue.push(entry);
       return;
@@ -210,7 +216,9 @@ class FileTransport extends BaseTransport {
    * @private
    */
   _rotate() {
-    if (this.rotationInProgress) return;
+    if (this.rotationInProgress) {
+      return;
+    }
     this.rotationInProgress = true;
 
     // Close current stream
@@ -338,8 +346,12 @@ class WebSocketTransport extends BaseTransport {
    * @param {Object} entry - Log entry
    */
   write(entry) {
-    if (!this.shouldLog(entry.level)) return;
-    if (!this.wsServer) return;
+    if (!this.shouldLog(entry.level)) {
+      return;
+    }
+    if (!this.wsServer) {
+      return;
+    }
 
     this.buffer.push(entry);
 
@@ -352,8 +364,12 @@ class WebSocketTransport extends BaseTransport {
    * Flush buffered logs to clients
    */
   flush() {
-    if (this.buffer.length === 0) return;
-    if (!this.wsServer) return;
+    if (this.buffer.length === 0) {
+      return;
+    }
+    if (!this.wsServer) {
+      return;
+    }
 
     const logs = this.buffer.map(entry => {
       try {
@@ -382,7 +398,9 @@ class WebSocketTransport extends BaseTransport {
    * @param {Object} entry - Log entry
    */
   sendImmediate(entry) {
-    if (!this.wsServer) return;
+    if (!this.wsServer) {
+      return;
+    }
 
     try {
       const log = JSON.parse(this.format(entry));
@@ -424,7 +442,9 @@ class MemoryTransport extends BaseTransport {
    * @param {Object} entry - Log entry
    */
   write(entry) {
-    if (!this.shouldLog(entry.level)) return;
+    if (!this.shouldLog(entry.level)) {
+      return;
+    }
 
     this.entries.push(entry);
 
@@ -482,17 +502,17 @@ class MemoryTransport extends BaseTransport {
  */
 function createTransport(type, options = {}) {
   switch (type.toLowerCase()) {
-    case 'console':
-      return new ConsoleTransport(options);
-    case 'file':
-      return new FileTransport(options);
-    case 'websocket':
-    case 'ws':
-      return new WebSocketTransport(options);
-    case 'memory':
-      return new MemoryTransport(options);
-    default:
-      throw new Error(`Unknown transport type: ${type}`);
+  case 'console':
+    return new ConsoleTransport(options);
+  case 'file':
+    return new FileTransport(options);
+  case 'websocket':
+  case 'ws':
+    return new WebSocketTransport(options);
+  case 'memory':
+    return new MemoryTransport(options);
+  default:
+    throw new Error(`Unknown transport type: ${type}`);
   }
 }
 

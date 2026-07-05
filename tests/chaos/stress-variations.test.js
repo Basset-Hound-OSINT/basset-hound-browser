@@ -139,7 +139,7 @@ class StressVariationsTester {
   }
 }
 
-describe('Stress Variations Tests', function() {
+describe('Stress Variations Tests', function () {
   this.timeout(TIMEOUT);
   let tester;
 
@@ -346,7 +346,9 @@ describe('Stress Variations Tests', function() {
           try {
             const payload = tester.generateLargePayload(size);
             const response = await tester.sendCommand('navigate', { url: 'https://example.com', data: payload });
-            if (response !== null) successCount++;
+            if (response !== null) {
+              successCount++;
+            }
           } catch (err) {
             // Expected for large sizes
           }
@@ -579,7 +581,9 @@ describe('Stress Variations Tests', function() {
         while (Date.now() - startTime < duration) {
           try {
             const response = await tester.sendCommand('ping', {}).catch(() => null);
-            if (response !== null) successCount++;
+            if (response !== null) {
+              successCount++;
+            }
             count++;
           } catch (err) {
             count++;

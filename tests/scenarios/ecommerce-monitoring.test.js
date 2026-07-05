@@ -241,7 +241,9 @@ class EcommerceMonitor {
   detectPriceChanges(oldSnapshot, newSnapshot) {
     const changes = [];
 
-    if (!oldSnapshot || !newSnapshot) return changes;
+    if (!oldSnapshot || !newSnapshot) {
+      return changes;
+    }
 
     const oldMap = new Map(oldSnapshot.products.map((p, i) => [i, p]));
     const newMap = new Map(newSnapshot.products.map((p, i) => [i, p]));
@@ -262,7 +264,9 @@ class EcommerceMonitor {
   }
 
   detectNewProducts(oldSnapshot, newSnapshot) {
-    if (!oldSnapshot || !newSnapshot) return [];
+    if (!oldSnapshot || !newSnapshot) {
+      return [];
+    }
 
     const oldTitles = new Set(oldSnapshot.products.map(p => p.title));
     const newProducts = newSnapshot.products.filter(p => !oldTitles.has(p.title));
@@ -277,7 +281,9 @@ class EcommerceMonitor {
   detectInventoryChanges(oldSnapshot, newSnapshot) {
     const changes = [];
 
-    if (!oldSnapshot || !newSnapshot) return changes;
+    if (!oldSnapshot || !newSnapshot) {
+      return changes;
+    }
 
     const oldCount = oldSnapshot.productCount;
     const newCount = newSnapshot.productCount;
@@ -344,11 +350,11 @@ class EcommerceMonitor {
       timestamp: new Date().toISOString(),
       productCount: 5,
       products: [
-        { title: 'Product A', price: '$89.99' },  // Price drop
-        { title: 'Product B', price: '$49.99' },  // No change
+        { title: 'Product A', price: '$89.99' }, // Price drop
+        { title: 'Product B', price: '$49.99' }, // No change
         { title: 'Product C', price: '$199.99' }, // No change
-        { title: 'Product D', price: '$24.99' },  // Price drop
-        { title: 'Product E', price: '$149.99' }  // No change
+        { title: 'Product D', price: '$24.99' }, // Price drop
+        { title: 'Product E', price: '$149.99' } // No change
       ]
     };
 
@@ -380,8 +386,8 @@ class EcommerceMonitor {
       productCount: 7,
       products: [
         ...mockNewSnapshot.products,
-        { title: 'Product F', price: '$79.99' },  // New
-        { title: 'Product G', price: '$89.99' }   // New
+        { title: 'Product F', price: '$79.99' }, // New
+        { title: 'Product G', price: '$89.99' } // New
       ]
     };
 

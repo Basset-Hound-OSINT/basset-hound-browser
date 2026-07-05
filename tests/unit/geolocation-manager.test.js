@@ -53,9 +53,15 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject invalid latitude', () => {
-        expect(() => { manager.latitude = 91; }).toThrow();
-        expect(() => { manager.latitude = -91; }).toThrow();
-        expect(() => { manager.latitude = 'abc'; }).toThrow();
+        expect(() => {
+          manager.latitude = 91;
+        }).toThrow();
+        expect(() => {
+          manager.latitude = -91;
+        }).toThrow();
+        expect(() => {
+          manager.latitude = 'abc';
+        }).toThrow();
       });
     });
 
@@ -74,9 +80,15 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject invalid longitude', () => {
-        expect(() => { manager.longitude = 181; }).toThrow();
-        expect(() => { manager.longitude = -181; }).toThrow();
-        expect(() => { manager.longitude = 'abc'; }).toThrow();
+        expect(() => {
+          manager.longitude = 181;
+        }).toThrow();
+        expect(() => {
+          manager.longitude = -181;
+        }).toThrow();
+        expect(() => {
+          manager.longitude = 'abc';
+        }).toThrow();
       });
     });
 
@@ -87,8 +99,12 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject non-positive accuracy', () => {
-        expect(() => { manager.accuracy = 0; }).toThrow();
-        expect(() => { manager.accuracy = -10; }).toThrow();
+        expect(() => {
+          manager.accuracy = 0;
+        }).toThrow();
+        expect(() => {
+          manager.accuracy = -10;
+        }).toThrow();
       });
     });
 
@@ -102,7 +118,9 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject invalid values', () => {
-        expect(() => { manager.altitude = 'high'; }).toThrow();
+        expect(() => {
+          manager.altitude = 'high';
+        }).toThrow();
       });
     });
 
@@ -116,8 +134,12 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject non-positive values', () => {
-        expect(() => { manager.altitudeAccuracy = 0; }).toThrow();
-        expect(() => { manager.altitudeAccuracy = -5; }).toThrow();
+        expect(() => {
+          manager.altitudeAccuracy = 0;
+        }).toThrow();
+        expect(() => {
+          manager.altitudeAccuracy = -5;
+        }).toThrow();
       });
     });
 
@@ -134,8 +156,12 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject invalid heading', () => {
-        expect(() => { manager.heading = 360; }).toThrow();
-        expect(() => { manager.heading = -1; }).toThrow();
+        expect(() => {
+          manager.heading = 360;
+        }).toThrow();
+        expect(() => {
+          manager.heading = -1;
+        }).toThrow();
       });
     });
 
@@ -152,7 +178,9 @@ describe('GeolocationManager', () => {
       });
 
       test('should reject negative speed', () => {
-        expect(() => { manager.speed = -10; }).toThrow();
+        expect(() => {
+          manager.speed = -10;
+        }).toThrow();
       });
     });
   });
@@ -374,8 +402,8 @@ describe('GeolocationManager', () => {
     test('should calculate distance between two points', () => {
       // New York to Los Angeles (~3940 km)
       const distance = GeolocationManager.calculateDistance(
-        40.7128, -74.0060,  // NYC
-        34.0522, -118.2437  // LA
+        40.7128, -74.0060, // NYC
+        34.0522, -118.2437 // LA
       );
 
       expect(distance).toBeGreaterThan(3900000); // meters

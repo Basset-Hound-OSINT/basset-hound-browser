@@ -1,0 +1,321 @@
+================================================================================
+FORENSIC CAPTURE & EXPORT FEATURES - REQUIREMENTS SUMMARY
+Basset Hound Browser v12.7.0+
+================================================================================
+
+PROJECT OVERVIEW
+================================================================================
+
+This requirements analysis defines forensic capture and export capabilities for
+the Basset Hound Browser project. The browser currently provides 164 WebSocket
+commands; this specification adds 8 new command families for comprehensive
+forensic-grade data capture and export.
+
+DELIVERABLES CREATED
+================================================================================
+
+1. FORENSIC-CAPTURE-EXPORT-REQUIREMENTS.md (34 KB)
+   - Complete requirements specification in markdown format
+   - 8 parts covering all aspects of forensic capture and export
+   - 10 detailed functional requirements with acceptance criteria
+   - 10 non-functional requirements covering performance, security, compatibility
+   - API contract specification with command definitions
+   - Data export specification with directory structure
+   - Client library specifications (Python and JavaScript)
+   - Risk assessment and success metrics
+
+2. FORENSIC-REQUIREMENTS-STRUCTURED.json (19 KB)
+   - Machine-readable requirements in JSON format
+   - 10 functional requirements with full acceptance criteria
+   - 10 non-functional requirements organized by category
+   - API contract with 8+ key commands
+   - Export specification with formats and directory structure
+   - Complete data model for integration
+
+KEY REQUIREMENTS SUMMARY
+================================================================================
+
+FUNCTIONAL REQUIREMENTS (10 Total)
+-----------------------------------
+
+FR-FC-001: Full Page HTML Extraction
+  - Capture rendered HTML in raw, prettified, minified formats
+  - Include all DOM elements, Shadow DOM, iframes
+  - Provide metrics (element count, size, tag types)
+
+FR-FC-002: DOM Structure Snapshot
+  - Hierarchical DOM tree with computed styles
+  - Element visibility state and bounding boxes
+  - XPath for element location
+  - Form field metadata
+
+FR-FC-003: Complete JavaScript Code Extraction
+  - Inline scripts, external scripts, dynamic scripts
+  - Script execution order and dependencies
+  - Bundler detection (webpack, rollup, parcel)
+  - Source maps and minification detection
+
+FR-FC-004: JavaScript Execution Context
+  - Window object state and global variables
+  - Loaded libraries (jQuery, React, Angular, etc.)
+  - Console logs, event listeners, timers
+  - localStorage, sessionStorage, IndexedDB contents
+
+FR-FC-005: Complete CSS Extraction
+  - Inline styles, external stylesheets, @imports
+  - CSS variables (custom properties)
+  - Font imports and media queries
+  - CSS-in-JS framework detection
+
+FR-FC-006: Network Request/Response Capture
+  - HTTP/HTTPS requests and responses (HAR format)
+  - Headers, bodies, timing information
+  - DNS, connect, SSL/TLS, wait, download timings
+  - TLS certificate information
+  - Redirect chains and blocked requests
+
+FR-FC-007: TLS Certificate Extraction
+  - Server certificate and full chain
+  - Subject, issuer, validity dates
+  - Public key, serial number, extensions
+  - Cipher suite and protocol version
+
+FR-FC-008: Multi-Format Export
+  - JSON, CSV, XML, HTML formats
+  - ZIP and TAR.GZ compression
+  - SHA-256 integrity hashes
+  - File manifest with metadata
+
+FR-FC-009: Batch Operations
+  - Multiple URL processing
+  - Parallel and sequential execution modes
+  - Progress tracking and callbacks
+  - Partial failure handling
+
+FR-FC-010: Encrypted Export
+  - AES-256-GCM encryption
+  - Password-based key derivation (PBKDF2)
+  - Direct key provision option
+  - Selective field encryption
+
+NON-FUNCTIONAL REQUIREMENTS
+----------------------------
+
+Performance:
+  - HTML capture: <2 seconds per page
+  - DOM snapshot: <1.5 seconds
+  - JavaScript extraction: <1 second
+  - CSS extraction: <1 second
+  - Network capture: <2 seconds
+  - Batch: 10 URLs in <45 seconds (parallel)
+  - Memory: <500MB for 1000-element pages
+
+Security:
+  - AES-256-GCM encryption for exports
+  - SHA-256 hashing for all files
+  - PBKDF2 key derivation
+  - Audit logging of all operations
+  - Secure sensitive data handling
+
+Accuracy & Fidelity:
+  - 100% of DOM elements captured
+  - Character-for-character accuracy
+  - No content alteration
+  - Full data integrity verification
+
+Compatibility:
+  - Works with all 164 existing commands
+  - Compatible with evasion features
+  - Compatible with Tor/proxy integration
+  - Compatible with all 7 fingerprint profiles
+  - HAR format compatibility with standard tools
+
+Usability:
+  - Python client library
+  - JavaScript/Node.js client library
+  - Complete API reference
+  - 5-minute quick start
+  - Integration guide
+
+API CONTRACT SPECIFICATION
+================================================================================
+
+Protocol: WebSocket (default port 8765)
+Message Format: JSON
+
+Command Families (8 total):
+  1. HTML Capture (2 commands)
+  2. JavaScript Capture (2 commands)
+  3. CSS Capture (2 commands)
+  4. Network Capture (3 commands)
+  5. Export (3 commands)
+  6. Batch (3 commands)
+  7. Encryption (2 commands)
+  8. Verification (3 commands)
+
+Key Commands:
+  - capture_html: Capture complete rendered HTML
+  - capture_dom_snapshot: Capture DOM structure with metadata
+  - capture_scripts: Extract all JavaScript code
+  - capture_stylesheets: Extract all CSS styling
+  - capture_network_traffic: Capture HTTP/HTTPS traffic (HAR)
+  - export_forensic_data: Export in JSON/CSV/XML/HTML
+  - batch_capture_forensic: Process multiple URLs
+  - export_forensic_encrypted: Export with AES-256 encryption
+
+EXPORT SPECIFICATION
+================================================================================
+
+Directory Structure:
+  forensic-capture-2026-06-20-143000/
+  ├── html/ (raw, prettified, minified)
+  ├── dom/ (DOM snapshot JSON)
+  ├── scripts/ (inline, external, analysis)
+  ├── stylesheets/ (inline, external, variables)
+  ├── network/ (HAR archive, certificates)
+  ├── screenshots/ (viewport, fullpage)
+  ├── metadata.json
+  ├── manifest.json
+  ├── INTEGRITY_HASHES.txt
+  └── README.md
+
+Supported Formats:
+  - JSON (complete data structure)
+  - CSV (flattened records)
+  - XML (schema-validated)
+  - HTML (interactive viewing)
+  - HAR (HTTP Archive)
+  - ZIP (compression)
+  - TAR.GZ (compression)
+
+Integrity Features:
+  - SHA-256 hashing for all files
+  - File manifest with inventory
+  - ISO8601 timestamp verification
+  - Optional AES-256-GCM encryption
+  - Complete chain of custody documentation
+
+CLIENT LIBRARIES
+================================================================================
+
+Python Client (basset_hound_client)
+  from basset_hound_client import BrowserClient, ForensicCapture
+
+  client = BrowserClient('ws://localhost:8765')
+  capture = ForensicCapture(client)
+
+  html_result = capture.html(url='https://example.com')
+  batch = capture.batch_urls(urls=[...], types=['html', 'scripts'])
+
+JavaScript/Node.js Client (basset-hound-client)
+  const BrowserClient = require('basset-hound-client');
+
+  const client = new BrowserClient('ws://localhost:8765');
+
+  const html = await client.forensic.html({url: 'https://example.com'});
+  const batch = await client.forensic.batchCapture({urls: [...], ...});
+
+IMPLEMENTATION GUIDANCE
+================================================================================
+
+Phase 1: Core Capture Commands (Weeks 1-2)
+  - Implement capture_html and capture_dom_snapshot
+  - Add capture_scripts and capture_stylesheets
+  - Write unit tests for each command
+
+Phase 2: Network & Export (Weeks 3-4)
+  - Implement capture_network_traffic and TLS extraction
+  - Add export_forensic_data with multiple formats
+  - Implement integrity hashing and manifest generation
+
+Phase 3: Advanced Features (Weeks 5-6)
+  - Batch operation support
+  - Encryption support (AES-256-GCM)
+  - Progress tracking and callbacks
+
+Phase 4: Client Libraries (Week 7)
+  - Python client library
+  - JavaScript/Node.js client library
+  - Example scripts and documentation
+
+Phase 5: Testing & Documentation (Week 8)
+  - Comprehensive test suite (95%+ coverage)
+  - API reference documentation
+  - Integration guide and best practices
+  - Troubleshooting guide
+
+ACCEPTANCE CRITERIA FOR COMPLETION
+================================================================================
+
+Requirements Phase Complete When:
+  ✓ All 10 functional requirements documented with acceptance criteria
+  ✓ All 10 non-functional requirements defined with metrics
+  ✓ API contract fully specified with 24+ commands
+  ✓ Export specification including directory structure
+  ✓ Client library specifications provided
+  ✓ Risk assessment completed
+  ✓ Success metrics defined
+
+Development Phase Success Criteria:
+  ✓ All 24+ commands operational and tested
+  ✓ Performance targets met (<5 sec per page)
+  ✓ Zero data loss across 1000+ test captures
+  ✓ 95%+ test coverage
+  ✓ Client libraries available in Python and JavaScript
+  ✓ Complete documentation
+  ✓ No regressions in existing functionality
+  ✓ Security review passed
+
+RELATED DOCUMENTATION
+================================================================================
+
+Main Requirements Documents:
+  - /FORENSIC-CAPTURE-EXPORT-REQUIREMENTS.md (this project)
+  - /FORENSIC-REQUIREMENTS-STRUCTURED.json (this project)
+
+Project Documentation:
+  - /docs/API-REFERENCE.md - Current 164 WebSocket commands
+  - /docs/SCOPE.md - Project scope and architectural boundaries
+  - /docs/FORENSIC-EVIDENCE-EXPORT-GUIDE-2026-05-31.md - Current export guide
+  - /evidence/evidence-collector.js - Existing evidence collection code
+  - /extraction/manager.js - Existing extraction manager
+  - /src/features/forensic-chain.js - Forensic chain implementation
+
+INTEGRATION POINTS
+================================================================================
+
+Consumer Applications:
+  - palletai agents (primary integration target)
+  - External automation scripts
+  - SIEM/ELK systems via platform integration commands
+  - Custom forensic analysis tools
+
+Compatibility:
+  - 164 existing WebSocket commands remain unchanged
+  - New commands use identical message format
+  - Backward compatible with all existing clients
+  - Integrates with Tor/proxy management
+  - Works with all fingerprint profiles
+
+CONTACT & NEXT STEPS
+================================================================================
+
+Requirements Status: COMPLETE
+
+Next Phase: Development Planning
+  1. Review requirements documents
+  2. Identify architecture changes needed
+  3. Plan implementation phases (8 weeks estimated)
+  4. Create development tickets from functional requirements
+  5. Assign development and testing resources
+
+Questions or Feedback:
+  - Review requirements in FORENSIC-CAPTURE-EXPORT-REQUIREMENTS.md
+  - Check structured JSON for integration
+  - Reference acceptance criteria for testing
+
+================================================================================
+Generated: June 20, 2026
+Status: Requirements Analysis Complete
+Version: 1.0
+================================================================================

@@ -149,14 +149,20 @@ class TechnologyDetectionEngine {
     // Check each technology
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'header') return;
+        if (rule.type !== 'header') {
+          return;
+        }
 
         const headerValue = normalizedHeaders[rule.pattern.toLowerCase()];
-        if (!headerValue) return;
+        if (!headerValue) {
+          return;
+        }
 
         // OPT-1: Use regex cache instead of creating new RegExp
         const regex = this.regexCache.get(rule.value, 'i');
-        if (!regex.test(headerValue)) return;
+        if (!regex.test(headerValue)) {
+          return;
+        }
 
         if (!detections[techName]) {
           detections[techName] = {
@@ -195,7 +201,9 @@ class TechnologyDetectionEngine {
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'meta') return;
+        if (rule.type !== 'meta') {
+          return;
+        }
 
         // Find meta tags with matching name/property and value
         const metaRegex = new RegExp(
@@ -250,7 +258,9 @@ class TechnologyDetectionEngine {
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'html') return;
+        if (rule.type !== 'html') {
+          return;
+        }
 
         // Match pattern anywhere in HTML
         // OPT-1: Use regex cache for pattern compilation
@@ -258,7 +268,9 @@ class TechnologyDetectionEngine {
           ? this.regexCache.get(rule.pattern, 'i')
           : rule.pattern;
 
-        if (!pattern.test(html)) return;
+        if (!pattern.test(html)) {
+          return;
+        }
 
         if (!detections[techName]) {
           detections[techName] = {
@@ -296,14 +308,18 @@ class TechnologyDetectionEngine {
 
       Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
         signature.detection.forEach(rule => {
-          if (rule.type !== 'script') return;
+          if (rule.type !== 'script') {
+            return;
+          }
 
           // OPT-1: Use regex cache
           const pattern = typeof rule.pattern === 'string'
             ? this.regexCache.get(rule.pattern, 'i')
             : rule.pattern;
 
-          if (!pattern.test(src)) return;
+          if (!pattern.test(src)) {
+            return;
+          }
 
           if (!detections[techName]) {
             detections[techName] = {
@@ -343,10 +359,14 @@ class TechnologyDetectionEngine {
 
     Object.entries(TECH_SIGNATURES).forEach(([techName, signature]) => {
       signature.detection.forEach(rule => {
-        if (rule.type !== 'endpoint') return;
+        if (rule.type !== 'endpoint') {
+          return;
+        }
 
         // Check if endpoint appears anywhere in HTML (scripts, links, etc.)
-        if (!html.includes(rule.pattern)) return;
+        if (!html.includes(rule.pattern)) {
+          return;
+        }
 
         if (!detections[techName]) {
           detections[techName] = {

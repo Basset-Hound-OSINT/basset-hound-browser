@@ -16,7 +16,7 @@ CURRENT_VERSION="12.7.0"
 ROLLBACK_VERSION="12.5.0"
 CONTAINER_NAME="basset-hound-browser-prod"
 IMAGE_NAME="basset-hound-browser"
-DOCKER_COMPOSE_FILE="docker-compose.production.yml"
+DOCKER_COMPOSE_FILE="config/docker/docker-compose.production.yml"
 PORT=8765
 
 # Rollback options

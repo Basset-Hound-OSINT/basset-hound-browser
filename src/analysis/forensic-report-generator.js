@@ -10,7 +10,7 @@ const crypto = require('crypto');
 class ForensicReportGenerator {
   constructor() {
     this.reports = [];
-    this.reportDir = path.join(require('os').homedir(), '.basset-hound', 'reports');
+    this.reportDir = path.join(require('os').homedir(), 'tmp', '.basset-hound', 'reports');
     this.ensureDirectory();
   }
 
@@ -594,7 +594,9 @@ class ForensicReportGenerator {
    */
   exportReport(reportId) {
     const report = this.getReport(reportId);
-    if (!report) throw new Error(`Report ${reportId} not found`);
+    if (!report) {
+      throw new Error(`Report ${reportId} not found`);
+    }
 
     return {
       success: true,

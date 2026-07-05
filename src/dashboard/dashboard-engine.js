@@ -363,7 +363,9 @@ class DashboardEngine extends EventEmitter {
 
     for (const monitorId of monitorIds) {
       const monitor = this.monitors.get(monitorId);
-      if (!monitor) continue;
+      if (!monitor) {
+        continue;
+      }
 
       const changes = (this.changes.get(monitorId) || [])
         .filter(c => c.dashboardTimestamp >= startTime)
@@ -472,7 +474,7 @@ class DashboardEngine extends EventEmitter {
     const changeMetric = this.metrics.get(METRIC_TYPES.CHANGE_COUNT);
     const previousValue = changeMetric.history[changeMetric.history.length - 1]?.value || 0;
     changeMetric.trend = this.stats.totalChanges > previousValue ? 'increasing' :
-                         this.stats.totalChanges < previousValue ? 'decreasing' : 'stable';
+      this.stats.totalChanges < previousValue ? 'decreasing' : 'stable';
     changeMetric.history.push({
       value: this.stats.totalChanges,
       timestamp: Date.now()
@@ -548,18 +550,18 @@ class DashboardEngine extends EventEmitter {
    */
   renderView(view) {
     switch (view.type) {
-      case VIEW_TYPES.OVERVIEW:
-        return this.renderOverview(view);
-      case VIEW_TYPES.TIMELINE:
-        return this.renderTimeline(view);
-      case VIEW_TYPES.COMPARISON:
-        return this.renderComparison(view);
-      case VIEW_TYPES.METRICS:
-        return this.renderMetrics(view);
-      case VIEW_TYPES.ALERTS:
-        return this.renderAlerts(view);
-      default:
-        return {};
+    case VIEW_TYPES.OVERVIEW:
+      return this.renderOverview(view);
+    case VIEW_TYPES.TIMELINE:
+      return this.renderTimeline(view);
+    case VIEW_TYPES.COMPARISON:
+      return this.renderComparison(view);
+    case VIEW_TYPES.METRICS:
+      return this.renderMetrics(view);
+    case VIEW_TYPES.ALERTS:
+      return this.renderAlerts(view);
+    default:
+      return {};
     }
   }
 
@@ -702,7 +704,9 @@ class DashboardEngine extends EventEmitter {
    * @returns {void}
    */
   startAutoAggregation() {
-    if (this.aggregationTimer) return;
+    if (this.aggregationTimer) {
+      return;
+    }
 
     this.aggregationTimer = setInterval(() => {
       this.aggregate();

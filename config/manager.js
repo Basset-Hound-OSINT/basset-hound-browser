@@ -119,7 +119,9 @@ class ConfigManager extends EventEmitter {
       const line = lines[i];
 
       // Skip empty lines and comments
-      if (!line.trim() || line.trim().startsWith('#')) continue;
+      if (!line.trim() || line.trim().startsWith('#')) {
+        continue;
+      }
 
       // Calculate indentation
       const indent = line.search(/\S/);
@@ -142,7 +144,9 @@ class ConfigManager extends EventEmitter {
 
       // Handle key-value pairs
       const colonIndex = trimmed.indexOf(':');
-      if (colonIndex === -1) continue;
+      if (colonIndex === -1) {
+        continue;
+      }
 
       const key = trimmed.substring(0, colonIndex).trim();
       const rawValue = trimmed.substring(colonIndex + 1).trim();
@@ -364,13 +368,17 @@ class ConfigManager extends EventEmitter {
    */
   deepMerge(target, ...sources) {
     for (const source of sources) {
-      if (!source || typeof source !== 'object') continue;
+      if (!source || typeof source !== 'object') {
+        continue;
+      }
 
       for (const key of Object.keys(source)) {
         const sourceValue = source[key];
         const targetValue = target[key];
 
-        if (sourceValue === undefined) continue;
+        if (sourceValue === undefined) {
+          continue;
+        }
 
         if (Array.isArray(sourceValue)) {
           // Replace arrays entirely

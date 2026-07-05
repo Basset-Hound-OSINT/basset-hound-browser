@@ -120,7 +120,9 @@ class AlertDispatcher extends EventEmitter {
     if (alertConfig.enableEmail && alertConfig.emailAddresses?.length > 0) {
       try {
         results.email = await this.sendEmailAlert(alertMessage, alertConfig.emailAddresses);
-        if (results.email.success) anySucceeded = true;
+        if (results.email.success) {
+          anySucceeded = true;
+        }
       } catch (error) {
         results.email = { success: false, error: error.message };
       }
@@ -129,7 +131,9 @@ class AlertDispatcher extends EventEmitter {
     if (alertConfig.enableWebhook && alertConfig.webhookUrl) {
       try {
         results.webhook = await this.sendWebhookAlert(alertMessage, alertConfig.webhookUrl);
-        if (results.webhook.success) anySucceeded = true;
+        if (results.webhook.success) {
+          anySucceeded = true;
+        }
       } catch (error) {
         results.webhook = { success: false, error: error.message };
       }
@@ -138,7 +142,9 @@ class AlertDispatcher extends EventEmitter {
     if (alertConfig.enableSlack && alertConfig.slackWebhookUrl) {
       try {
         results.slack = await this.sendSlackAlert(alertMessage, alertConfig.slackWebhookUrl);
-        if (results.slack.success) anySucceeded = true;
+        if (results.slack.success) {
+          anySucceeded = true;
+        }
       } catch (error) {
         results.slack = { success: false, error: error.message };
       }
@@ -147,7 +153,9 @@ class AlertDispatcher extends EventEmitter {
     if (alertConfig.enableTeams && alertConfig.teamsWebhookUrl) {
       try {
         results.teams = await this.sendTeamsAlert(alertMessage, alertConfig.teamsWebhookUrl);
-        if (results.teams.success) anySucceeded = true;
+        if (results.teams.success) {
+          anySucceeded = true;
+        }
       } catch (error) {
         results.teams = { success: false, error: error.message };
       }

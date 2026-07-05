@@ -28,7 +28,7 @@ const crypto = require('crypto');
 class ManifestEntry {
   constructor(evidenceId, type, metadata = {}) {
     this.id = evidenceId;
-    this.type = type;  // screenshot, archive, har, dom, etc.
+    this.type = type; // screenshot, archive, har, dom, etc.
     this.capturedAt = metadata.capturedAt || new Date().toISOString();
     this.metadata = metadata;
 
@@ -36,7 +36,7 @@ class ManifestEntry {
     this.hashes = {
       md5: null,
       sha1: null,
-      sha256: null,
+      sha256: null
     };
 
     this.size = metadata.size || 0;
@@ -59,7 +59,7 @@ class ManifestEntry {
       size: this.size,
       url: this.url,
       hashes: this.hashes,
-      metadata: this.metadata,
+      metadata: this.metadata
     };
   }
 }
@@ -73,7 +73,7 @@ class ForensicManifest {
   constructor(manifestId, options = {}) {
     this.id = manifestId;
     this.createdAt = new Date().toISOString();
-    this.entries = [];  // Array of ManifestEntry
+    this.entries = []; // Array of ManifestEntry
 
     // Manifest-level metadata
     this.metadata = {
@@ -97,7 +97,7 @@ class ForensicManifest {
       timestampAuthority: 'RFC 3161 Compatible',
 
       // Additional metadata
-      ...(options.metadata || {}),
+      ...(options.metadata || {})
     };
 
     // Manifest-level integrity
@@ -109,7 +109,7 @@ class ForensicManifest {
       action: 'created',
       timestamp: this.createdAt,
       actor: this.metadata.actor,
-      notes: `Forensic manifest created for session ${this.metadata.captureSession}`,
+      notes: `Forensic manifest created for session ${this.metadata.captureSession}`
     }];
   }
 
@@ -194,10 +194,10 @@ class ForensicManifest {
       url: this.metadata.url,
       timespan: {
         start: this.metadata.startTime,
-        end: this.metadata.endTime || 'ongoing',
+        end: this.metadata.endTime || 'ongoing'
       },
       actor: this.metadata.actor,
-      compliance: this.metadata.complianceStandards,
+      compliance: this.metadata.complianceStandards
     };
   }
 
@@ -217,10 +217,10 @@ class ForensicManifest {
         manifestHash: this.manifestHash,
         manifestHashAlgorithm: this.manifestHashAlgorithm,
         totalEntries: this.entries.length,
-        totalSize: this.entries.reduce((sum, e) => sum + e.size, 0),
+        totalSize: this.entries.reduce((sum, e) => sum + e.size, 0)
       },
       custodyChain: this.custodyChain,
-      complianceStatement: this._generateComplianceStatement(),
+      complianceStatement: this._generateComplianceStatement()
     };
   }
 
@@ -239,7 +239,7 @@ class ForensicManifest {
         integrity: 'Multi-algorithm hashing ensures integrity',
         documentation: 'Complete chain of custody maintained',
         traceability: 'All actions logged with timestamps and actors',
-        authenticity: 'Evidence source and handling verified throughout lifecycle',
+        authenticity: 'Evidence source and handling verified throughout lifecycle'
       },
       requirements: {
         hashAlgorithms: ['MD5 (legacy)', 'SHA-1 (standard)', 'SHA-256 (modern)'],
@@ -250,14 +250,14 @@ class ForensicManifest {
           'Chain of custody log',
           'Integrity hashes',
           'Metadata preservation',
-          'Multi-format exports (JSON, XML, court-ready)',
-        ],
+          'Multi-format exports (JSON, XML, court-ready)'
+        ]
       },
       compliance: {
         standard: 'ISO/IEC 27037:2012',
         status: verification.valid ? 'COMPLIANT' : 'COMPLIANCE_ISSUES',
         hashAlgorithmsVerified: verification.entriesVerified,
-        totalEntries: verification.entriesTotal,
+        totalEntries: verification.entriesTotal
       },
       statement: `This forensic manifest and associated evidence have been
 prepared in accordance with ISO/IEC 27037:2012 principles for the
@@ -269,7 +269,7 @@ documenting all actions, actors, and timestamps throughout the evidence
 handling process. The manifest structure adheres to industry forensic
 standards and includes comprehensive metadata for court proceedings.
 RFC 3161 timestamping integration is supported for long-term evidence
-validity preservation.`,
+validity preservation.`
     };
   }
 
@@ -283,7 +283,7 @@ validity preservation.`,
       valid: true,
       issues: [],
       entriesVerified: 0,
-      entriesTotal: this.entries.length,
+      entriesTotal: this.entries.length
     };
 
     // Verify manifest hash
@@ -341,7 +341,7 @@ validity preservation.`,
       action,
       timestamp: new Date().toISOString(),
       actor,
-      notes,
+      notes
     });
   }
 
@@ -360,18 +360,18 @@ validity preservation.`,
       policyId: options.policyId || '1.2.840.113549.1.9.16.3.3',
       messageImprint: {
         hashAlgorithm: 'sha256',
-        hashedMessage: this.manifestHash,
+        hashedMessage: this.manifestHash
       },
       serialNumber: require('crypto').randomBytes(16).toString('hex'),
       genTime: new Date().toISOString(),
       accuracy: {
         seconds: 1,
-        millis: 0,
+        millis: 0
       },
       nonce: require('crypto').randomBytes(8).toString('hex'),
       // TODO: In production, add actual TSA signature
       // signature: base64_tsa_signature,
-      tsa: options.authority || 'freetsa.org',
+      tsa: options.authority || 'freetsa.org'
     };
 
     // Record timestamp in custody chain
@@ -394,7 +394,7 @@ validity preservation.`,
       ready: true,
       requirements: [],
       hash: this.manifestHash,
-      hashAlgorithm: this.manifestHashAlgorithm,
+      hashAlgorithm: this.manifestHashAlgorithm
     };
 
     if (!this.manifestHash) {
@@ -428,7 +428,7 @@ validity preservation.`,
       timestamp: entry.capturedAt,
       type: entry.type,
       url: entry.url,
-      evidenceId: entry.id,
+      evidenceId: entry.id
     }));
 
     return events.sort((a, b) =>
@@ -534,5 +534,5 @@ validity preservation.`,
 
 module.exports = {
   ForensicManifest,
-  ManifestEntry,
+  ManifestEntry
 };

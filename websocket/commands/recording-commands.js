@@ -247,36 +247,36 @@ function registerRecordingCommands(commandHandlers) {
       let result;
 
       switch (format) {
-        case 'selenium':
-          result = recorder.exportAsSelenium({
-            includeHeader: params.includeHeader,
-            includeSetup: params.includeSetup,
-            includeWaits: params.includeWaits
-          });
-          break;
+      case 'selenium':
+        result = recorder.exportAsSelenium({
+          includeHeader: params.includeHeader,
+          includeSetup: params.includeSetup,
+          includeWaits: params.includeWaits
+        });
+        break;
 
-        case 'puppeteer':
-          result = recorder.exportAsPuppeteer({
-            includeHeader: params.includeHeader,
-            includeSetup: params.includeSetup,
-            includeWaits: params.includeWaits
-          });
-          break;
+      case 'puppeteer':
+        result = recorder.exportAsPuppeteer({
+          includeHeader: params.includeHeader,
+          includeSetup: params.includeSetup,
+          includeWaits: params.includeWaits
+        });
+        break;
 
-        case 'playwright':
-          result = recorder.exportAsPlaywright({
-            includeHeader: params.includeHeader,
-            includeSetup: params.includeSetup,
-            includeWaits: params.includeWaits
-          });
-          break;
+      case 'playwright':
+        result = recorder.exportAsPlaywright({
+          includeHeader: params.includeHeader,
+          includeSetup: params.includeSetup,
+          includeWaits: params.includeWaits
+        });
+        break;
 
-        case 'json':
-        default:
-          result = recorder.exportAsJSON({
-            pretty: params.pretty
-          });
-          break;
+      case 'json':
+      default:
+        result = recorder.exportAsJSON({
+          pretty: params.pretty
+        });
+        break;
       }
 
       return {
@@ -520,20 +520,20 @@ function registerRecordingCommands(commandHandlers) {
       const recorder = getInteractionRecorder();
 
       switch (params.eventType) {
-        case 'keydown':
-          recorder.recordKeyDown(params);
-          break;
-        case 'keyup':
-          recorder.recordKeyUp(params);
-          break;
-        case 'input':
-          recorder.recordInput(params);
-          break;
-        default:
-          return {
-            success: false,
-            error: `Unknown keyboard event type: ${params.eventType}`
-          };
+      case 'keydown':
+        recorder.recordKeyDown(params);
+        break;
+      case 'keyup':
+        recorder.recordKeyUp(params);
+        break;
+      case 'input':
+        recorder.recordInput(params);
+        break;
+      default:
+        return {
+          success: false,
+          error: `Unknown keyboard event type: ${params.eventType}`
+        };
       }
 
       return {
@@ -603,26 +603,26 @@ function registerRecordingCommands(commandHandlers) {
       const recorder = getInteractionRecorder();
 
       switch (params.interactionType) {
-        case 'focus':
-          recorder.recordFocus(params);
-          break;
-        case 'blur':
-          recorder.recordBlur(params);
-          break;
-        case 'hover':
-          recorder.recordHover(params);
-          break;
-        case 'select':
-          recorder.recordSelect(params);
-          break;
-        case 'change':
-          recorder.recordChange(params);
-          break;
-        default:
-          return {
-            success: false,
-            error: `Unknown interaction type: ${params.interactionType}`
-          };
+      case 'focus':
+        recorder.recordFocus(params);
+        break;
+      case 'blur':
+        recorder.recordBlur(params);
+        break;
+      case 'hover':
+        recorder.recordHover(params);
+        break;
+      case 'select':
+        recorder.recordSelect(params);
+        break;
+      case 'change':
+        recorder.recordChange(params);
+        break;
+      default:
+        return {
+          success: false,
+          error: `Unknown interaction type: ${params.interactionType}`
+        };
       }
 
       return {

@@ -13,7 +13,7 @@ const WebSocket = require('ws');
 const { WebSocketServer } = require('../..'); // Adjust path as needed
 
 describe('P2-003: WebSocket Port Conflict Detection', () => {
-  let occupiedPort = 8773;
+  const occupiedPort = 8773;
   let portBlockingServer = null;
   let wsServer = null;
 
@@ -65,9 +65,15 @@ describe('P2-003: WebSocket Port Conflict Detection', () => {
 
     // Create and start server
     class MockLogger {
-      info(msg) { console.log(`[INFO] ${msg}`); }
-      warn(msg) { console.log(`[WARN] ${msg}`); }
-      error(msg) { console.log(`[ERROR] ${msg}`); }
+      info(msg) {
+        console.log(`[INFO] ${msg}`);
+      }
+      warn(msg) {
+        console.log(`[WARN] ${msg}`);
+      }
+      error(msg) {
+        console.log(`[ERROR] ${msg}`);
+      }
       debug(msg) { }
     }
 
@@ -196,14 +202,20 @@ describe('P2-003: WebSocket Port Conflict Detection', () => {
     portBlockingServer = await blockPort(requestedPort);
 
     // Ensure next port is available
-    let nextPortAvailable = await isPortAvailable(nextAvailablePort);
+    const nextPortAvailable = await isPortAvailable(nextAvailablePort);
     expect(nextPortAvailable).toBe(true);
 
     // Create server
     class MockLogger {
-      info(msg) { console.log(`[INFO] ${msg}`); }
-      warn(msg) { console.log(`[WARN] ${msg}`); }
-      error(msg) { console.log(`[ERROR] ${msg}`); }
+      info(msg) {
+        console.log(`[INFO] ${msg}`);
+      }
+      warn(msg) {
+        console.log(`[WARN] ${msg}`);
+      }
+      error(msg) {
+        console.log(`[ERROR] ${msg}`);
+      }
       debug(msg) { }
     }
 
@@ -299,9 +311,15 @@ describe('P2-003: WebSocket Port Conflict Detection', () => {
     portBlockingServer = await blockPort(requestedPort);
 
     class MockLogger {
-      info(msg) { logs.push({ level: 'info', msg }); }
-      warn(msg) { logs.push({ level: 'warn', msg }); }
-      error(msg) { logs.push({ level: 'error', msg }); }
+      info(msg) {
+        logs.push({ level: 'info', msg });
+      }
+      warn(msg) {
+        logs.push({ level: 'warn', msg });
+      }
+      error(msg) {
+        logs.push({ level: 'error', msg });
+      }
       debug(msg) { }
     }
 
@@ -547,7 +565,9 @@ describe('P2-003: WebSocket Port Conflict Detection', () => {
       async _ensurePortAvailability() {
         const initialPort = this.port;
         const isAvailable = await this._isPortAvailable(initialPort);
-        if (isAvailable) return initialPort;
+        if (isAvailable) {
+          return initialPort;
+        }
         return await this._findAvailablePort(initialPort + 1, 10);
       },
 
@@ -590,9 +610,15 @@ describe('P2-003: WebSocket Port Conflict Detection', () => {
     const logs = [];
 
     class MockLogger {
-      info(msg) { logs.push(msg); }
-      warn(msg) { logs.push(msg); }
-      error(msg) { logs.push(msg); }
+      info(msg) {
+        logs.push(msg);
+      }
+      warn(msg) {
+        logs.push(msg);
+      }
+      error(msg) {
+        logs.push(msg);
+      }
       debug(msg) { }
     }
 

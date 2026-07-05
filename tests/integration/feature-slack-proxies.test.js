@@ -523,8 +523,8 @@ describe('Wave 15 - Slack + Proxy Intelligence Integration Tests', () => {
       ];
 
       await slackIntegration.sendAlertWithProxyData(alerts[0], 'partner-residential-a'); // 0.02 * 2
-      await slackIntegration.sendAlertWithProxyData(alerts[1], 'partner-rotating-c');      // 0.01 * 1
-      await slackIntegration.sendAlertWithProxyData(alerts[2], 'partner-datacenter-b');    // 0.005 * 3
+      await slackIntegration.sendAlertWithProxyData(alerts[1], 'partner-rotating-c'); // 0.01 * 1
+      await slackIntegration.sendAlertWithProxyData(alerts[2], 'partner-datacenter-b'); // 0.005 * 3
 
       const stats = slackIntegration.getEnrichmentStats();
 

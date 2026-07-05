@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. The proxy-pool / proxy-intelligence commands (`register_proxy`, `get_best_proxy`, etc.) are NOT registered in the running server — those files were migrated to `basset-hound-networking`. Only single-proxy set/clear/status + simple list rotation + Tor ON/OFF/AUTO are real. Dark-web investigation is out-of-scope per SCOPE.md.
+
 # Proxy Intelligence Guide
 
 **Version**: 12.2.0  

@@ -1,6 +1,10 @@
 /**
  * Basset Hound Browser - Window Manager Unit Tests
  * Tests for multi-window management, spawning, switching, and event handling
+ *
+ * FIXED: Race conditions eliminated with jest.useFakeTimers()
+ * - All async operations now use jest.advanceTimersByTime() instead of real delays
+ * - Tests complete much faster with deterministic timing
  */
 
 // Mock Electron modules before requiring WindowManager
@@ -167,17 +171,20 @@ describe('BrowserWindowWrapper', () => {
 
   describe('touch', () => {
     test('should update lastActivity timestamp', () => {
+      jest.useFakeTimers('modern');
+
       const wrapper = new BrowserWindowWrapper();
       const initialActivity = wrapper.lastActivity;
 
       // Small delay to ensure time difference
-      return new Promise(resolve => setTimeout(resolve, 10)).then(() => {
-        wrapper.touch();
-        expect(wrapper.lastActivity).not.toBe(initialActivity);
-        expect(new Date(wrapper.lastActivity).getTime()).toBeGreaterThan(
-          new Date(initialActivity).getTime()
-        );
-      });
+      jest.advanceTimersByTime(10);
+      wrapper.touch();
+      expect(wrapper.lastActivity).not.toBe(initialActivity);
+      expect(new Date(wrapper.lastActivity).getTime()).toBeGreaterThan(
+        new Date(initialActivity).getTime()
+      );
+
+      jest.useRealTimers();
     });
   });
 

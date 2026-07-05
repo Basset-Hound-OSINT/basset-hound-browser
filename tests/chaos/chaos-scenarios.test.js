@@ -161,7 +161,7 @@ class ChaosEngineerTester {
   }
 }
 
-describe('Chaos Engineering Tests', function() {
+describe('Chaos Engineering Tests', function () {
   this.timeout(TIMEOUT);
   let tester;
 
@@ -194,7 +194,9 @@ describe('Chaos Engineering Tests', function() {
           try {
             tester.injectRandomFailure();
             const response = await tester.sendCommand('ping', {});
-            if (response.error === undefined) successCount++;
+            if (response.error === undefined) {
+              successCount++;
+            }
           } catch (err) {
             failureCount++;
           }
@@ -236,7 +238,9 @@ describe('Chaos Engineering Tests', function() {
           try {
             const shortTimeout = 100 + Math.random() * 1000; // Random timeout
             const response = await tester.sendCommand('ping', {});
-            if (response !== null) successCount++;
+            if (response !== null) {
+              successCount++;
+            }
           } catch (err) {
             if (err.message.includes('Timeout')) {
               timeoutCount++;
@@ -263,7 +267,9 @@ describe('Chaos Engineering Tests', function() {
               droppedMessages++;
             } else {
               const response = await tester.sendCommand('ping', {});
-              if (response !== null) successMessages++;
+              if (response !== null) {
+                successMessages++;
+              }
             }
           } catch (err) {
             // Expected for drops
@@ -439,7 +445,9 @@ describe('Chaos Engineering Tests', function() {
             chainLength = i;
           } catch (err) {
             lastError = err;
-            if (i > 5) break; // Stop after deep chain
+            if (i > 5) {
+              break;
+            } // Stop after deep chain
           }
         }
 
@@ -469,7 +477,9 @@ describe('Chaos Engineering Tests', function() {
               throw new Error('Injected failure');
             }
             const response = await tester.sendCommand('ping', {});
-            if (response.error === undefined) recoveryCount++;
+            if (response.error === undefined) {
+              recoveryCount++;
+            }
           } catch (err) {
             failureCount++;
           }
@@ -495,7 +505,7 @@ describe('Chaos Engineering Tests', function() {
         // Verify exponential growth
         let isExponential = true;
         for (let i = 1; i < backoffs.length; i++) {
-          if (backoffs[i] <= backoffs[i-1]) {
+          if (backoffs[i] <= backoffs[i - 1]) {
             isExponential = false;
           }
         }
@@ -656,7 +666,9 @@ describe('Chaos Engineering Tests', function() {
         for (let i = 0; i < totalRequests; i++) {
           try {
             const response = await tester.sendCommand('ping', {}).catch(() => null);
-            if (response !== null) availableRequests++;
+            if (response !== null) {
+              availableRequests++;
+            }
           } catch (err) {
             // Expected during failures
           }

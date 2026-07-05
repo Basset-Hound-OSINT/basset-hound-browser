@@ -284,7 +284,9 @@ class NewsMonitor {
   }
 
   detectNewStories(oldSnapshot, newSnapshot) {
-    if (!oldSnapshot || !newSnapshot) return [];
+    if (!oldSnapshot || !newSnapshot) {
+      return [];
+    }
 
     const oldTitles = new Set(oldSnapshot.headlines.map(h => h.title));
     const newStories = newSnapshot.headlines.filter(h => !oldTitles.has(h.title));
@@ -298,7 +300,9 @@ class NewsMonitor {
   }
 
   detectHeadlineChanges(oldSnapshot, newSnapshot) {
-    if (!oldSnapshot || !newSnapshot) return [];
+    if (!oldSnapshot || !newSnapshot) {
+      return [];
+    }
 
     const changes = [];
 
@@ -350,7 +354,9 @@ class NewsMonitor {
   }
 
   analyzeEditorialShifts(oldSnapshot, newSnapshot) {
-    if (!oldSnapshot || !newSnapshot) return [];
+    if (!oldSnapshot || !newSnapshot) {
+      return [];
+    }
 
     const shifts = [];
 

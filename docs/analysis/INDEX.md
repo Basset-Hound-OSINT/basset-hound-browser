@@ -1,36 +1,11 @@
-# Analysis Documentation Index
+# analysis - /docs/analysis/
 
-**Last Updated:** May 11, 2026
+Documentation related to analysis.
 
----
-
-## Overview
-
-This directory contains analysis documentation and technical analysis.
-
----
-
-## Analysis Documents
-
-### Technology Detection Analysis
-- Server-side technology identification
-- Framework detection
-- Signature databases
-- Detection accuracy
-
-### Performance Analysis
-See `/tests/results/` for:
-- Load test analysis
-- Performance profiling
-- Bottleneck identification
-- Optimization impact
-
-### Security Analysis
-- Threat modeling
-- Vulnerability assessment
-- Security testing results
+## Contents
+- Overview and quick navigation
+- File listing and descriptions
+- Key documents and references
 
 ---
-
-**Status:** Current  
-**Last Updated:** May 11, 2026
+**Purpose:** analysis Documentation | **Last Updated:** 2026-06-22

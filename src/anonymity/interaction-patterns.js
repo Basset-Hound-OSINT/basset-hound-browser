@@ -46,7 +46,7 @@ class InteractionPatterns {
 
       scrollSteps.push({
         position: Math.round(position),
-        timestamp,
+        timestamp
       });
     }
 
@@ -86,7 +86,7 @@ class InteractionPatterns {
       hoverPoints.push({
         x: Math.round(x),
         y: Math.round(y),
-        timestamp,
+        timestamp
       });
     }
 
@@ -103,7 +103,9 @@ class InteractionPatterns {
     // Sort by natural reading order: top-to-bottom, left-to-right
     const sortedElements = elements.sort((a, b) => {
       const yDiff = a.y - b.y;
-      if (Math.abs(yDiff) > 50) return yDiff; // Different rows
+      if (Math.abs(yDiff) > 50) {
+        return yDiff;
+      } // Different rows
       return a.x - b.x; // Same row, sort by x
     });
 
@@ -118,7 +120,7 @@ class InteractionPatterns {
       sequence.push({
         element,
         timestamp: cumulativeTime,
-        action: 'hover',
+        action: 'hover'
       });
 
       // Add click action
@@ -126,7 +128,7 @@ class InteractionPatterns {
       sequence.push({
         element,
         timestamp: cumulativeTime,
-        action: 'click',
+        action: 'click'
       });
 
       // Add pause between clicks (except last)
@@ -157,7 +159,7 @@ class InteractionPatterns {
       actions.push({
         type: 'focus',
         field,
-        timestamp: cumulativeTime,
+        timestamp: cumulativeTime
       });
 
       // Mental prep before typing
@@ -171,7 +173,7 @@ class InteractionPatterns {
         field,
         value: field.value,
         duration: typeTime,
-        timestamp: cumulativeTime,
+        timestamp: cumulativeTime
       });
 
       cumulativeTime += typeTime;
@@ -189,7 +191,7 @@ class InteractionPatterns {
 
     actions.push({
       type: 'submit',
-      timestamp: cumulativeTime,
+      timestamp: cumulativeTime
     });
 
     return actions;
@@ -225,9 +227,13 @@ class InteractionPatterns {
    */
   shouldUseCopyPaste(value) {
     // Long passwords (>30 chars) might be copy-pasted
-    if (value.length > 30) return Math.random() < 0.3; // 30% chance
+    if (value.length > 30) {
+      return Math.random() < 0.3;
+    } // 30% chance
     // Very short passwords always typed
-    if (value.length <= 8) return false;
+    if (value.length <= 8) {
+      return false;
+    }
     // Normal passwords: very rarely copy-pasted
     return Math.random() < 0.05; // 5% chance
   }
@@ -250,7 +256,7 @@ class InteractionPatterns {
       action: 'pause',
       reason: 'reading-initial',
       duration: readTime,
-      timestamp: cumulativeTime,
+      timestamp: cumulativeTime
     });
 
     cumulativeTime += readTime;
@@ -269,7 +275,7 @@ class InteractionPatterns {
         action: 'scroll',
         distance: Math.round(maxScroll),
         duration: scrollDuration,
-        timestamp: cumulativeTime,
+        timestamp: cumulativeTime
       });
 
       cumulativeTime += scrollDuration;
@@ -281,7 +287,7 @@ class InteractionPatterns {
         action: 'pause',
         reason: 'reading-content',
         duration: readTime,
-        timestamp: cumulativeTime,
+        timestamp: cumulativeTime
       });
 
       cumulativeTime += readTime;
@@ -293,7 +299,7 @@ class InteractionPatterns {
           action: 'scroll',
           distance: -scrollBackDistance,
           duration: 200,
-          timestamp: cumulativeTime,
+          timestamp: cumulativeTime
         });
 
         cumulativeTime += 200;
@@ -304,7 +310,7 @@ class InteractionPatterns {
           action: 'pause',
           reason: 're-reading',
           duration: 500 + Math.random() * 1000,
-          timestamp: cumulativeTime,
+          timestamp: cumulativeTime
         });
 
         cumulativeTime += 500 + Math.random() * 1000;
@@ -329,7 +335,7 @@ class InteractionPatterns {
     focusActions.push({
       field: fieldSelectors[0],
       action: 'click',
-      timestamp: cumulativeTime,
+      timestamp: cumulativeTime
     });
 
     // Subsequent fields: sometimes tabbed, sometimes clicked
@@ -343,7 +349,7 @@ class InteractionPatterns {
       focusActions.push({
         field: fieldSelectors[i],
         action,
-        timestamp: cumulativeTime,
+        timestamp: cumulativeTime
       });
     }
 
@@ -357,7 +363,7 @@ class InteractionPatterns {
   recordInteraction(interaction) {
     this.interactionHistory.push({
       ...interaction,
-      timestamp: interaction.timestamp || Date.now(),
+      timestamp: interaction.timestamp || Date.now()
     });
 
     // Keep history size manageable (last 1000 interactions)
@@ -396,8 +402,8 @@ class InteractionPatterns {
         'natural-click-sequence',
         'form-filling',
         'scroll-exploration',
-        'focus-patterns',
-      ],
+        'focus-patterns'
+      ]
     };
   }
 }

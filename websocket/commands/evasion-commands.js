@@ -18,7 +18,7 @@ const {
   CANVAS_NOISE_CONFIGS,
   WEBGL_NOISE_CONFIGS,
   AUDIO_NOISE_CONFIGS,
-  FONT_EVASION_CONFIGS,
+  FONT_EVASION_CONFIGS
 } = require('../../evasion/fingerprint-profile');
 
 const {
@@ -26,15 +26,15 @@ const {
   MouseMovementAI,
   TypingAI,
   HoneypotDetector,
-  RateLimitAdapter,
+  RateLimitAdapter
 } = require('../../evasion/behavioral-ai');
 
 /**
  * Module instances (initialized when commands are registered)
  */
 let fingerprintManager = null;
-let behavioralProfiles = new Map();
-let rateLimitAdapters = new Map();
+const behavioralProfiles = new Map();
+const rateLimitAdapters = new Map();
 
 /**
  * Initialize fingerprint manager
@@ -105,19 +105,19 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         canvasNoiseLevel: params.canvasNoiseLevel,
         webglNoiseLevel: params.webglNoiseLevel,
         audioNoiseLevel: params.audioNoiseLevel,
-        fontEvasionLevel: params.fontEvasionLevel,
+        fontEvasionLevel: params.fontEvasionLevel
       });
 
       return {
         success: true,
         profileId: id,
         profile: profile.getConfig(),
-        validation: profile.validate(),
+        validation: profile.validate()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -141,12 +141,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         success: true,
         profileId: id,
         profile: profile.getConfig(),
-        region: params.region || 'US',
+        region: params.region || 'US'
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -164,7 +164,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${params.profileId} not found`,
+          error: `Profile ${params.profileId} not found`
         };
       }
 
@@ -172,12 +172,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         success: true,
         profileId: params.profileId,
         profile: profile.getConfig(),
-        validation: profile.validate(),
+        validation: profile.validate()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -193,12 +193,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       return {
         success: true,
         profiles,
-        count: profiles.length,
+        count: profiles.length
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -216,12 +216,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       return {
         success: true,
         profileId: params.profileId,
-        profile: profile.getConfig(),
+        profile: profile.getConfig()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -238,7 +238,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         return {
           success: true,
           active: false,
-          profile: null,
+          profile: null
         };
       }
 
@@ -246,12 +246,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         success: true,
         active: true,
         profileId: fingerprintManager.activeProfileId,
-        profile: profile.getConfig(),
+        profile: profile.getConfig()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -269,7 +269,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -277,7 +277,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -293,12 +293,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         profileId,
         applied: true,
         platformType: profile.platformType,
-        timezone: profile.timezone,
+        timezone: profile.timezone
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -315,12 +315,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       const deleted = fingerprintManager.deleteProfile(params.profileId);
       return {
         success: deleted,
-        profileId: params.profileId,
+        profileId: params.profileId
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -336,7 +336,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       platforms: Object.keys(PLATFORM_CONFIGS),
       timezones: Object.keys(TIMEZONE_CONFIGS),
       tiers: ['low', 'medium', 'high', 'workstation'],
-      evasionLevels: ['disabled', 'subtle', 'moderate', 'aggressive'],
+      evasionLevels: ['disabled', 'subtle', 'moderate', 'aggressive']
     };
   };
 
@@ -363,7 +363,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -371,7 +371,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -385,7 +385,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (params.customConfig) {
         profile.canvasNoiseConfig = {
           ...profile.canvasNoiseConfig,
-          ...params.customConfig,
+          ...params.customConfig
         };
       }
 
@@ -394,14 +394,14 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         profileId,
         canvasNoise: {
           level: profile.canvasNoiseLevel,
-          config: profile.canvasNoiseConfig,
+          config: profile.canvasNoiseConfig
         },
-        availableLevels: Object.keys(CANVAS_NOISE_CONFIGS),
+        availableLevels: Object.keys(CANVAS_NOISE_CONFIGS)
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -426,7 +426,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -434,7 +434,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -448,7 +448,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (params.customConfig) {
         profile.webglNoiseConfig = {
           ...profile.webglNoiseConfig,
-          ...params.customConfig,
+          ...params.customConfig
         };
       }
 
@@ -457,14 +457,14 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         profileId,
         webglNoise: {
           level: profile.webglNoiseLevel,
-          config: profile.webglNoiseConfig,
+          config: profile.webglNoiseConfig
         },
-        availableLevels: Object.keys(WEBGL_NOISE_CONFIGS),
+        availableLevels: Object.keys(WEBGL_NOISE_CONFIGS)
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -488,7 +488,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -496,7 +496,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -510,7 +510,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (params.customConfig) {
         profile.audioNoiseConfig = {
           ...profile.audioNoiseConfig,
-          ...params.customConfig,
+          ...params.customConfig
         };
       }
 
@@ -519,14 +519,14 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         profileId,
         audioNoise: {
           level: profile.audioNoiseLevel,
-          config: profile.audioNoiseConfig,
+          config: profile.audioNoiseConfig
         },
-        availableLevels: Object.keys(AUDIO_NOISE_CONFIGS),
+        availableLevels: Object.keys(AUDIO_NOISE_CONFIGS)
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -550,7 +550,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -558,7 +558,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -574,7 +574,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (params.customConfig) {
         profile.fontEvasionConfig = {
           ...profile.fontEvasionConfig,
-          ...params.customConfig,
+          ...params.customConfig
         };
         // Regenerate fonts with new configuration
         profile.fonts = profile._generateFonts();
@@ -587,14 +587,14 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
           level: profile.fontEvasionLevel,
           config: profile.fontEvasionConfig,
           fontCount: profile.fonts.length,
-          fonts: profile.fonts,
+          fonts: profile.fonts
         },
-        availableLevels: Object.keys(FONT_EVASION_CONFIGS),
+        availableLevels: Object.keys(FONT_EVASION_CONFIGS)
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -612,7 +612,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -620,7 +620,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -630,33 +630,33 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         evasion: {
           canvas: {
             level: profile.canvasNoiseLevel,
-            config: profile.canvasNoiseConfig,
+            config: profile.canvasNoiseConfig
           },
           webgl: {
             level: profile.webglNoiseLevel,
-            config: profile.webglNoiseConfig,
+            config: profile.webglNoiseConfig
           },
           audio: {
             level: profile.audioNoiseLevel,
-            config: profile.audioNoiseConfig,
+            config: profile.audioNoiseConfig
           },
           fonts: {
             level: profile.fontEvasionLevel,
             config: profile.fontEvasionConfig,
-            fontCount: profile.fonts.length,
-          },
+            fontCount: profile.fonts.length
+          }
         },
         availableLevels: {
           canvas: Object.keys(CANVAS_NOISE_CONFIGS),
           webgl: Object.keys(WEBGL_NOISE_CONFIGS),
           audio: Object.keys(AUDIO_NOISE_CONFIGS),
-          fonts: Object.keys(FONT_EVASION_CONFIGS),
-        },
+          fonts: Object.keys(FONT_EVASION_CONFIGS)
+        }
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -679,7 +679,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profileId) {
         return {
           success: false,
-          error: 'No profile specified and no active profile',
+          error: 'No profile specified and no active profile'
         };
       }
 
@@ -687,7 +687,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!profile) {
         return {
           success: false,
-          error: `Profile ${profileId} not found`,
+          error: `Profile ${profileId} not found`
         };
       }
 
@@ -729,13 +729,13 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
           canvas: profile.canvasNoiseLevel,
           webgl: profile.webglNoiseLevel,
           audio: profile.audioNoiseLevel,
-          fonts: profile.fontEvasionLevel,
-        },
+          fonts: profile.fontEvasionLevel
+        }
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -761,7 +761,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         seed: params.seed,
         speedMultiplier: params.speedMultiplier,
         accuracyLevel: params.accuracyLevel,
-        fatigueRate: params.fatigueRate,
+        fatigueRate: params.fatigueRate
       });
 
       behavioralProfiles.set(sessionId, profile);
@@ -769,12 +769,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       return {
         success: true,
         sessionId,
-        profile: profile.getConfig(),
+        profile: profile.getConfig()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -806,12 +806,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         duration: path.duration,
         pointCount: path.points.length,
         fittsTime: path.fittsTime,
-        distance: path.distance,
+        distance: path.distance
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -839,12 +839,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         success: true,
         events,
         eventCount: events.length,
-        totalDuration: events.length > 0 ? events[events.length - 1].t : 0,
+        totalDuration: events.length > 0 ? events[events.length - 1].t : 0
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -871,12 +871,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         eventCount: events.length,
         totalDuration: events.length > 0 ? events[events.length - 1].t : 0,
         effectiveWPM: wpm.toFixed(1),
-        characterCount: params.text.length,
+        characterCount: params.text.length
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -893,7 +893,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       if (!behavioralProfiles.has(params.sessionId)) {
         return {
           success: false,
-          error: `No behavioral profile for session ${params.sessionId}`,
+          error: `No behavioral profile for session ${params.sessionId}`
         };
       }
 
@@ -903,12 +903,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         sessionId: params.sessionId,
         profile: profile.getConfig(),
         fatigueFactor: profile.getFatigueFactor(),
-        actionCount: profile.actionCount,
+        actionCount: profile.actionCount
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -926,19 +926,19 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
           sessionId,
           typingWPM: profile.typingWPM,
           fatigueFactor: profile.getFatigueFactor(),
-          actionCount: profile.actionCount,
+          actionCount: profile.actionCount
         });
       }
 
       return {
         success: true,
         sessions,
-        count: sessions.length,
+        count: sessions.length
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -959,12 +959,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       const result = HoneypotDetector.isHoneypot(params.element);
       return {
         success: true,
-        ...result,
+        ...result
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -987,13 +987,13 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         honeypots: result.honeypots.map(h => ({
           field: h.field,
           indicators: h.indicators,
-          confidence: h.confidence,
-        })),
+          confidence: h.confidence
+        }))
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -1016,12 +1016,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         success: true,
         domain: params.domain,
         state: adapter.getState(),
-        recommendedDelay: adapter.getDelay(),
+        recommendedDelay: adapter.getDelay()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -1041,12 +1041,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         success: true,
         domain: params.domain,
         state: adapter.getState(),
-        recommendedDelay: adapter.getDelay(),
+        recommendedDelay: adapter.getDelay()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -1063,18 +1063,18 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
     try {
       const adapter = getRateLimitAdapter(params.domain);
       adapter.recordRateLimit({
-        retryAfter: params.retryAfter,
+        retryAfter: params.retryAfter
       });
       return {
         success: true,
         domain: params.domain,
         state: adapter.getState(),
-        recommendedDelay: adapter.getDelay(),
+        recommendedDelay: adapter.getDelay()
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -1090,7 +1090,7 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
     return {
       success: true,
       isRateLimited: RateLimitAdapter.isRateLimited(params.statusCode),
-      statusCode: params.statusCode,
+      statusCode: params.statusCode
     };
   };
 
@@ -1107,12 +1107,12 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
       return {
         success: true,
         domain: params.domain,
-        reset: true,
+        reset: true
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -1129,19 +1129,19 @@ function registerEvasionCommands(commandHandlers, executeInRenderer) {
         adapters.push({
           domain,
           state: adapter.getState(),
-          recommendedDelay: adapter.getDelay(),
+          recommendedDelay: adapter.getDelay()
         });
       }
 
       return {
         success: true,
         adapters,
-        count: adapters.length,
+        count: adapters.length
       };
     } catch (error) {
       return {
         success: false,
-        error: error.message,
+        error: error.message
       };
     }
   };
@@ -1153,5 +1153,5 @@ module.exports = {
   registerEvasionCommands,
   initializeFingerprintManager,
   getBehavioralProfile,
-  getRateLimitAdapter,
+  getRateLimitAdapter
 };

@@ -119,7 +119,7 @@ class MockDashboardEngine extends EventEmitter {
 }
 
 // Test Suite
-describe('Dashboard Integration - Monitoring System', function() {
+describe('Dashboard Integration - Monitoring System', function () {
   this.timeout(30000);
 
   let dashboard;
@@ -131,8 +131,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     changeDetector = new MockChangeDetector();
   });
 
-  describe('Scenario 1: Single Monitor Change Detection', function() {
-    it('should register a monitor', function() {
+  describe('Scenario 1: Single Monitor Change Detection', () => {
+    it('should register a monitor', () => {
       const monitor = new MockMonitor('monitor-1', 'https://competitor1.com');
       dashboard.registerMonitor(monitor);
       monitors.push(monitor);
@@ -140,7 +140,7 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert.strictEqual(dashboard.monitors.size, 1, 'Should have 1 monitor');
     });
 
-    it('should detect changes from a monitor', function(done) {
+    it('should detect changes from a monitor', (done) => {
       const monitor = monitors[0];
 
       dashboard.once('change-added', (change) => {
@@ -152,14 +152,14 @@ describe('Dashboard Integration - Monitoring System', function() {
       monitor.check('new content here');
     });
 
-    it('should display change in dashboard', function() {
+    it('should display change in dashboard', () => {
       const changes = dashboard.getMonitorChanges('monitor-1');
 
       assert(changes.length > 0, 'Should have changes');
       assert.strictEqual(changes[0].monitorId, 'monitor-1');
     });
 
-    it('should update global timeline', function() {
+    it('should update global timeline', () => {
       const timeline = dashboard.getTimeline();
 
       assert(timeline.length > 0, 'Timeline should have entries');
@@ -167,8 +167,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 2: Multiple Monitors - Sequential Changes', function() {
-    it('should register 5 additional monitors', function() {
+  describe('Scenario 2: Multiple Monitors - Sequential Changes', () => {
+    it('should register 5 additional monitors', () => {
       for (let i = 2; i <= 6; i++) {
         const monitor = new MockMonitor(
           `monitor-${i}`,
@@ -182,7 +182,7 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert.strictEqual(dashboard.monitors.size, 6, 'Should have 6 monitors');
     });
 
-    it('should track changes from multiple monitors', function() {
+    it('should track changes from multiple monitors', () => {
       let changeCount = 0;
 
       dashboard.on('change-added', () => {
@@ -197,7 +197,7 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert(changeCount > 0, 'Should detect changes');
     });
 
-    it('should maintain separate change lists per monitor', function() {
+    it('should maintain separate change lists per monitor', () => {
       // Add second change to monitor-1
       monitors[0].check('content from monitor 0 - change 2');
 
@@ -208,7 +208,7 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert(monitor2Changes.length > 0, 'Monitor 2 should have changes');
     });
 
-    it('should order timeline by most recent', function() {
+    it('should order timeline by most recent', () => {
       const timeline = dashboard.getTimeline({ limit: 20 });
 
       for (let i = 0; i < timeline.length - 1; i++) {
@@ -218,8 +218,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 3: Concurrent Monitor Changes', function() {
-    it('should handle concurrent changes from multiple monitors', async function() {
+  describe('Scenario 3: Concurrent Monitor Changes', () => {
+    it('should handle concurrent changes from multiple monitors', async () => {
       const promises = [];
 
       for (let i = 0; i < 10; i++) {
@@ -234,7 +234,7 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert(dashboard.stats.totalChanges > 6, 'Should track all changes');
     });
 
-    it('should maintain timeline integrity with concurrent changes', function() {
+    it('should maintain timeline integrity with concurrent changes', () => {
       const timeline = dashboard.getTimeline({ limit: 100 });
       const monitorIds = new Set(timeline.map(c => c.monitorId));
 
@@ -242,8 +242,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 4: Change Detection with Change Detector', function() {
-    it('should analyze changes with detector', function() {
+  describe('Scenario 4: Change Detection with Change Detector', () => {
+    it('should analyze changes with detector', () => {
       const before = 'old content';
       const after = 'new content here';
 
@@ -253,7 +253,7 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert(detection.modified);
     });
 
-    it('should detect when content has not changed', function() {
+    it('should detect when content has not changed', () => {
       const content = 'same content';
 
       const detection = changeDetector.analyze(content, content);
@@ -261,20 +261,20 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert.strictEqual(detection.type, 'no-change');
     });
 
-    it('should track detection history', function() {
+    it('should track detection history', () => {
       assert(changeDetector.detections.length > 0, 'Should have detections');
     });
   });
 
-  describe('Scenario 5: Monitor Status Propagation', function() {
-    it('should track monitor status in dashboard', function() {
+  describe('Scenario 5: Monitor Status Propagation', () => {
+    it('should track monitor status in dashboard', () => {
       const monitor = monitors[0];
       const dashboardMonitor = dashboard.monitors.get('monitor-1');
 
       assert.strictEqual(dashboardMonitor.status, 'active');
     });
 
-    it('should reflect monitor changes in stats', function() {
+    it('should reflect monitor changes in stats', () => {
       const stats = dashboard.stats;
 
       assert(stats.totalChanges > 0, 'Should have total changes');
@@ -282,8 +282,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 6: Filtered Timeline Queries', function() {
-    it('should filter timeline by monitor', function() {
+  describe('Scenario 6: Filtered Timeline Queries', () => {
+    it('should filter timeline by monitor', () => {
       const monitor1Timeline = dashboard.getTimeline({ monitorId: 'monitor-1' });
 
       for (const entry of monitor1Timeline) {
@@ -291,21 +291,21 @@ describe('Dashboard Integration - Monitoring System', function() {
       }
     });
 
-    it('should limit timeline results', function() {
+    it('should limit timeline results', () => {
       const limited = dashboard.getTimeline({ limit: 5 });
 
       assert(limited.length <= 5, 'Should respect limit');
     });
 
-    it('should return empty timeline for non-existent monitor', function() {
+    it('should return empty timeline for non-existent monitor', () => {
       const timeline = dashboard.getTimeline({ monitorId: 'monitor-999' });
 
       assert.strictEqual(timeline.length, 0, 'Should return empty for non-existent monitor');
     });
   });
 
-  describe('Scenario 7: Change Attributes Propagation', function() {
-    it('should include all change attributes in timeline', function() {
+  describe('Scenario 7: Change Attributes Propagation', () => {
+    it('should include all change attributes in timeline', () => {
       const timeline = dashboard.getTimeline({ limit: 1 });
 
       if (timeline.length > 0) {
@@ -317,8 +317,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 8: Monitor Deregistration', function() {
-    it('should handle monitor deregistration', function() {
+  describe('Scenario 8: Monitor Deregistration', () => {
+    it('should handle monitor deregistration', () => {
       const initialSize = dashboard.monitors.size;
 
       // Remove one monitor
@@ -328,15 +328,15 @@ describe('Dashboard Integration - Monitoring System', function() {
       assert.strictEqual(dashboard.monitors.size, initialSize - 1);
     });
 
-    it('should preserve historical changes after deregistration', function() {
+    it('should preserve historical changes after deregistration', () => {
       const changes = dashboard.changes.get('monitor-2');
 
       assert(changes.length > 0, 'Should preserve changes');
     });
   });
 
-  describe('Scenario 9: Rapid Sequential Changes', function() {
-    it('should handle rapid changes from single monitor', function() {
+  describe('Scenario 9: Rapid Sequential Changes', () => {
+    it('should handle rapid changes from single monitor', () => {
       const monitor = monitors[0];
 
       for (let i = 0; i < 50; i++) {
@@ -348,8 +348,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 10: Change Detection Rate', function() {
-    it('should calculate change frequency', function() {
+  describe('Scenario 10: Change Detection Rate', () => {
+    it('should calculate change frequency', () => {
       const startTime = Date.now();
       let changeCount = 0;
 
@@ -370,8 +370,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 11: Monitor-Specific Query Performance', function() {
-    it('should retrieve monitor changes efficiently', function() {
+  describe('Scenario 11: Monitor-Specific Query Performance', () => {
+    it('should retrieve monitor changes efficiently', () => {
       const startTime = Date.now();
 
       for (let i = 0; i < 100; i++) {
@@ -383,8 +383,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 12: Change Ordering Verification', function() {
-    it('should maintain chronological order per monitor', function() {
+  describe('Scenario 12: Change Ordering Verification', () => {
+    it('should maintain chronological order per monitor', () => {
       const changes = dashboard.getMonitorChanges('monitor-1');
 
       for (let i = 0; i < changes.length - 1; i++) {
@@ -394,8 +394,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 13: Cross-Monitor Comparison', function() {
-    it('should compare changes across monitors', function() {
+  describe('Scenario 13: Cross-Monitor Comparison', () => {
+    it('should compare changes across monitors', () => {
       const comparison = {};
 
       for (const [monitorId, monitor] of dashboard.monitors) {
@@ -410,8 +410,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 14: Change Aggregation by Type', function() {
-    it('should group changes by type', function() {
+  describe('Scenario 14: Change Aggregation by Type', () => {
+    it('should group changes by type', () => {
       const byType = {};
 
       for (const change of dashboard.timeline) {
@@ -426,8 +426,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 15: Monitoring Integration Summary', function() {
-    it('should provide integration summary', function() {
+  describe('Scenario 15: Monitoring Integration Summary', () => {
+    it('should provide integration summary', () => {
       const summary = {
         totalMonitors: dashboard.monitors.size,
         totalChanges: dashboard.stats.totalChanges,
@@ -446,8 +446,8 @@ describe('Dashboard Integration - Monitoring System', function() {
     });
   });
 
-  describe('Scenario 16: Performance Under Load', function() {
-    it('should handle 1000 monitor checks efficiently', function() {
+  describe('Scenario 16: Performance Under Load', () => {
+    it('should handle 1000 monitor checks efficiently', () => {
       const monitor = monitors[0];
       const startTime = Date.now();
 

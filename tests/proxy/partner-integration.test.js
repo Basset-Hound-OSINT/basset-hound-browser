@@ -249,7 +249,7 @@ describe('Partner Integration Manager', () => {
 
       const metrics = manager.getPartnerMetrics('oxylabs');
 
-      expect(metrics.successRate).toBe(2/3);
+      expect(metrics.successRate).toBe(2 / 3);
     });
   });
 

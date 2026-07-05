@@ -24,7 +24,7 @@ class CacheManager extends EventEmitter {
       misses: 0,
       sets: 0,
       deletes: 0,
-      evictions: 0,
+      evictions: 0
     };
     this.accessCounts = new Map(); // For LFU
     this.accessTimes = new Map(); // For LRU
@@ -45,7 +45,7 @@ class CacheManager extends EventEmitter {
       ttl = this.defaultTTL,
       tier = 'memory', // memory, redis, disk, all
       tags = [],
-      compress = false,
+      compress = false
     } = options;
 
     const cacheEntry = {
@@ -55,7 +55,7 @@ class CacheManager extends EventEmitter {
       tier,
       tags,
       compress,
-      size: this._estimateSize(value),
+      size: this._estimateSize(value)
     };
 
     this.metrics.sets++;
@@ -259,7 +259,7 @@ class CacheManager extends EventEmitter {
       maxMemorySize: this.maxMemorySize,
       memoryUtilization: ((this.currentMemorySize / this.maxMemorySize) * 100).toFixed(2) + '%',
       entryCount: this.memoryCache.size,
-      tagCount: this.tags.size,
+      tagCount: this.tags.size
     };
   }
 
@@ -307,10 +307,10 @@ class CacheManager extends EventEmitter {
       memoryEntries: this.memoryCache.size,
       memorySize: this.currentMemorySize,
       diskPath: this.diskCachePath,
-      redisEnabled: !!this.redisClient,
+      redisEnabled: Boolean(this.redisClient),
       evictionPolicy: this.evictionPolicy,
       defaultTTL: this.defaultTTL,
-      metrics: this.getMetrics(),
+      metrics: this.getMetrics()
     };
   }
 
@@ -334,7 +334,9 @@ class CacheManager extends EventEmitter {
   }
 
   async _setRedisCache(key, entry) {
-    if (!this.redisClient) return;
+    if (!this.redisClient) {
+      return;
+    }
     const serialized = JSON.stringify(entry);
     const ttlSeconds = Math.ceil(entry.ttl / 1000);
     await this.redisClient.setex(this._prefixKey(key), ttlSeconds, serialized);
@@ -345,26 +347,37 @@ class CacheManager extends EventEmitter {
     const serialized = JSON.stringify(entry);
     return new Promise((resolve, reject) => {
       fs.writeFile(diskPath, serialized, 'utf-8', (err) => {
-        if (err) reject(err);
-        else resolve();
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
       });
     });
   }
 
   async _getRedisCache(key) {
-    if (!this.redisClient) return null;
+    if (!this.redisClient) {
+      return null;
+    }
     const serialized = await this.redisClient.get(this._prefixKey(key));
-    if (!serialized) return null;
+    if (!serialized) {
+      return null;
+    }
     const entry = JSON.parse(serialized);
     return this._isExpired(entry) ? null : entry.value;
   }
 
   async _getDiskCache(key) {
     const diskPath = this._getDiskPath(key);
-    if (!fs.existsSync(diskPath)) return null;
+    if (!fs.existsSync(diskPath)) {
+      return null;
+    }
     return new Promise((resolve) => {
       fs.readFile(diskPath, 'utf-8', (err, data) => {
-        if (err) return resolve(null);
+        if (err) {
+          return resolve(null);
+        }
         try {
           const entry = JSON.parse(data);
           resolve(this._isExpired(entry) ? null : entry.value);
@@ -376,7 +389,9 @@ class CacheManager extends EventEmitter {
   }
 
   _evictOne() {
-    if (this.memoryCache.size === 0) return;
+    if (this.memoryCache.size === 0) {
+      return;
+    }
 
     let keyToEvict;
     if (this.evictionPolicy === 'LRU') {

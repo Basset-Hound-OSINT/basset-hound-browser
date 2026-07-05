@@ -305,7 +305,9 @@ class NotificationSystem extends EventEmitter {
     let allFailed = true;
 
     for (const channel of notification.channels) {
-      if (channel.status !== 'pending') continue;
+      if (channel.status !== 'pending') {
+        continue;
+      }
 
       const canRetry = channel.attempts < this.maxDeliveryAttempts;
 
@@ -361,20 +363,20 @@ class NotificationSystem extends EventEmitter {
     return new Promise((resolve) => {
       setTimeout(() => {
         switch (channelName) {
-          case 'email':
-            resolve(this.sendEmail(notification));
-            break;
-          case 'sms':
-            resolve(this.sendSMS(notification));
-            break;
-          case 'in-app':
-            resolve(this.sendInApp(notification));
-            break;
-          case 'slack':
-            resolve(this.sendSlack(notification));
-            break;
-          default:
-            resolve({ success: false, error: 'Unknown channel' });
+        case 'email':
+          resolve(this.sendEmail(notification));
+          break;
+        case 'sms':
+          resolve(this.sendSMS(notification));
+          break;
+        case 'in-app':
+          resolve(this.sendInApp(notification));
+          break;
+        case 'slack':
+          resolve(this.sendSlack(notification));
+          break;
+        default:
+          resolve({ success: false, error: 'Unknown channel' });
         }
       }, 100);
     });
@@ -484,7 +486,9 @@ class NotificationSystem extends EventEmitter {
    */
   getTemplate(notificationType, channel) {
     const typeTemplate = this.templates.get(notificationType);
-    if (!typeTemplate) return null;
+    if (!typeTemplate) {
+      return null;
+    }
 
     return typeTemplate[channel];
   }
@@ -553,10 +557,18 @@ class NotificationSystem extends EventEmitter {
   updateNotificationPreference(userId, updates) {
     const prefs = this.getNotificationPreferences(userId);
 
-    if (updates.channels) prefs.channels = updates.channels;
-    if (updates.frequency) prefs.frequency = updates.frequency;
-    if (updates.doNotDisturb) prefs.doNotDisturb = updates.doNotDisturb;
-    if (updates.categories) prefs.categories = { ...prefs.categories, ...updates.categories };
+    if (updates.channels) {
+      prefs.channels = updates.channels;
+    }
+    if (updates.frequency) {
+      prefs.frequency = updates.frequency;
+    }
+    if (updates.doNotDisturb) {
+      prefs.doNotDisturb = updates.doNotDisturb;
+    }
+    if (updates.categories) {
+      prefs.categories = { ...prefs.categories, ...updates.categories };
+    }
 
     this.preferences.set(userId, prefs);
 

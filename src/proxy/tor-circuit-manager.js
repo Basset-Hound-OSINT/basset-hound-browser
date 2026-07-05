@@ -302,7 +302,9 @@ class TorCircuitManager extends EventEmitter {
    */
   shouldRotateByUsage(circuitId) {
     const circuit = this.circuits.get(circuitId);
-    if (!circuit) return false;
+    if (!circuit) {
+      return false;
+    }
 
     return circuit.requestCount >= this.usageBasedThreshold;
   }
@@ -349,7 +351,9 @@ class TorCircuitManager extends EventEmitter {
    */
   async checkCircuitHealth() {
     const circuit = this.circuits.get(this.currentCircuitId);
-    if (!circuit) return;
+    if (!circuit) {
+      return;
+    }
 
     // Simulate health check
     const isHealthy = Math.random() > 0.05; // 95% healthy chance
@@ -470,7 +474,9 @@ class TorCircuitManager extends EventEmitter {
     let maxScore = -1;
 
     for (const [circuitId, circuit] of this.circuits) {
-      if (circuit.status !== 'active') continue;
+      if (circuit.status !== 'active') {
+        continue;
+      }
 
       // Score based on failure count and age
       const score =
@@ -601,7 +607,9 @@ class TorCircuitManager extends EventEmitter {
     let oldestTime = Infinity;
 
     for (const [id, circuit] of this.circuits) {
-      if (circuit.status === 'active' && id !== this.currentCircuitId) continue;
+      if (circuit.status === 'active' && id !== this.currentCircuitId) {
+        continue;
+      }
       if (circuit.createdAt < oldestTime) {
         oldestTime = circuit.createdAt;
         oldest = id;

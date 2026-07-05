@@ -33,9 +33,9 @@ const dependencies = [];
 
 // Required permissions
 const permissions = {
-  network: 2,    // Write permission for network/headers
-  storage: 2,    // Write permission for storing rules
-  events: 1      // Read permission for events
+  network: 2, // Write permission for network/headers
+  storage: 2, // Write permission for storing rules
+  events: 1 // Read permission for events
 };
 
 // Default configuration
@@ -69,8 +69,8 @@ let isEnabled = false;
 
 // Header rules storage
 const headerRules = {
-  request: [],   // Rules for request headers
-  response: []   // Rules for response headers
+  request: [], // Rules for request headers
+  response: [] // Rules for response headers
 };
 
 // Statistics
@@ -111,13 +111,13 @@ function registerCommands() {
   // Add a header rule
   api.commands.register('add_rule', async (params) => {
     const {
-      type = 'request',     // 'request' or 'response'
-      pattern = '*',        // URL pattern (supports wildcards)
-      action = 'set',       // 'set', 'remove', or 'append'
-      headerName,           // Header name
-      headerValue,          // Header value (optional for 'remove')
-      priority = 0,         // Higher priority rules are applied first
-      description = ''      // Optional description
+      type = 'request', // 'request' or 'response'
+      pattern = '*', // URL pattern (supports wildcards)
+      action = 'set', // 'set', 'remove', or 'append'
+      headerName, // Header name
+      headerValue, // Header value (optional for 'remove')
+      priority = 0, // Higher priority rules are applied first
+      description = '' // Optional description
     } = params;
 
     if (!headerName) {
@@ -440,7 +440,9 @@ function registerHooks() {
  * @param {Object} rule - Header rule to apply
  */
 async function applyRule(rule) {
-  if (!rule.enabled) return;
+  if (!rule.enabled) {
+    return;
+  }
 
   try {
     if (rule.type === 'request') {

@@ -57,7 +57,7 @@ class TOTPGenerator {
     // Initialize token cache (expanded to 500 entries for +10% hit rate)
     this.cache = new LRUCache({
       max: options.cacheSize || 500,
-      maxAge: options.cacheMaxAge || 60000, // 60 seconds TTL
+      maxAge: options.cacheMaxAge || 60000 // 60 seconds TTL
     });
   }
 

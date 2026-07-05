@@ -95,7 +95,7 @@ class MonitoringConsentManager {
   getConsent(clientId) {
     const consent = this.clientConsent.get(clientId);
     return {
-      success: !!consent,
+      success: Boolean(consent),
       clientId,
       consent: consent || {
         monitoring: false,

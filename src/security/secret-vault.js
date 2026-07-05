@@ -516,7 +516,9 @@ class SecretVault {
    */
   _checkAccessControl(secretId, accessorId) {
     const secret = this.secrets.get(secretId);
-    if (!secret) return false;
+    if (!secret) {
+      return false;
+    }
 
     return secret.accessControl.allowedAccessors.some(a => a.accessorId === accessorId);
   }

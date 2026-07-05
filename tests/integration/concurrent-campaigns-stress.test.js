@@ -20,7 +20,7 @@ const TEST_CONFIG = {
   results_dir: path.join(__dirname, '..', 'results'),
   numCampaigns: 50,
   campaignDuration: 30000, // 30 seconds for testing
-  operationsPerCampaign: 100,
+  operationsPerCampaign: 100
 };
 
 // Ensure results directory exists
@@ -32,7 +32,7 @@ if (!fs.existsSync(TEST_CONFIG.results_dir)) {
 const testResults = {
   passed: 0,
   failed: 0,
-  total: 0,
+  total: 0
 };
 
 /**
@@ -43,8 +43,11 @@ function logResult(testName, passed, details = '') {
   const color = passed ? '\x1b[32m' : '\x1b[31m';
   console.log(`${color}${status}\x1b[0m ${testName} ${details}`);
 
-  if (passed) testResults.passed++;
-  else testResults.failed++;
+  if (passed) {
+    testResults.passed++;
+  } else {
+    testResults.failed++;
+  }
   testResults.total++;
 }
 
@@ -63,7 +66,7 @@ class Campaign {
       successCount: 0,
       failureCount: 0,
       totalLatency: 0,
-      peakMemory: 0,
+      peakMemory: 0
     };
   }
 
@@ -100,20 +103,20 @@ class Campaign {
       ...this.metrics,
       duration: this.getDuration(),
       avgLatency: this.metrics.totalLatency / this.metrics.operationCount,
-      successRate: (this.metrics.successCount / this.metrics.operationCount) * 100,
+      successRate: (this.metrics.successCount / this.metrics.operationCount) * 100
     };
   }
 }
 
 describe('Concurrent Campaign Stress Test', () => {
-  let campaigns = [];
-  let systemMetrics = {
+  const campaigns = [];
+  const systemMetrics = {
     startTime: Date.now(),
     endTime: null,
     totalThroughput: 0,
     avgLatency: 0,
     peakMemory: 0,
-    cpuUsage: 0,
+    cpuUsage: 0
   };
 
   beforeAll(() => {
@@ -144,7 +147,7 @@ describe('Concurrent Campaign Stress Test', () => {
         cpuMonitoring: true,
         memoryMonitoring: true,
         throughputTracking: true,
-        latencyTracking: true,
+        latencyTracking: true
       };
 
       assert(monitoring.cpuMonitoring === true);
@@ -156,7 +159,7 @@ describe('Concurrent Campaign Stress Test', () => {
         concurrentCampaigns: TEST_CONFIG.numCampaigns,
         opsPerCampaign: TEST_CONFIG.operationsPerCampaign,
         failureRate: 0.05,
-        duration: TEST_CONFIG.campaignDuration,
+        duration: TEST_CONFIG.campaignDuration
       };
 
       assert.strictEqual(stressConfig.concurrentCampaigns, 50);
@@ -175,7 +178,7 @@ describe('Concurrent Campaign Stress Test', () => {
       systemMetrics.degradationAnalysis = {
         latencyProgression: [],
         memoryProgression: [],
-        cpuProgression: [],
+        cpuProgression: []
       };
 
       assert(systemMetrics.degradationAnalysis);
@@ -186,7 +189,7 @@ describe('Concurrent Campaign Stress Test', () => {
       systemMetrics.baseline = {
         latency: 100,
         memory: 100,
-        throughput: 100,
+        throughput: 100
       };
 
       assert(systemMetrics.baseline.latency === 100);
@@ -198,7 +201,7 @@ describe('Concurrent Campaign Stress Test', () => {
         maxLatency: 5000,
         maxMemory: 80,
         minThroughput: 10,
-        maxFailureRate: 0.2,
+        maxFailureRate: 0.2
       };
 
       assert(systemMetrics.alertThresholds.maxLatency === 5000);
@@ -359,7 +362,7 @@ describe('Concurrent Campaign Stress Test', () => {
       const throughputs = systemMetrics.campaignMetrics.map(m => ({
         ops: m.operationCount,
         duration: m.duration,
-        rate: m.operationCount / (m.duration / 1000),
+        rate: m.operationCount / (m.duration / 1000)
       }));
 
       const rates = throughputs.map(t => t.rate).sort((a, b) => a - b);
@@ -459,13 +462,13 @@ describe('Concurrent Campaign Stress Test', () => {
           avgLatency: systemMetrics.avgLatency,
           peakMemory: systemMetrics.peakMemory,
           cpuUsage: systemMetrics.cpuUsage,
-          throughput: systemMetrics.totalThroughput,
+          throughput: systemMetrics.totalThroughput
         },
         degradation: {
           latency: systemMetrics.latencyDegradation,
           memory: systemMetrics.memoryDegradation,
-          throughput: systemMetrics.throughputDegradation,
-        },
+          throughput: systemMetrics.throughputDegradation
+        }
       };
 
       assert(report.timestamp);
@@ -475,7 +478,7 @@ describe('Concurrent Campaign Stress Test', () => {
     it('should save results to disk', (done) => {
       const report = {
         campaignMetrics: systemMetrics.campaignMetrics,
-        systemMetrics: systemMetrics,
+        systemMetrics: systemMetrics
       };
 
       const reportPath = path.join(TEST_CONFIG.results_dir, `stress-test-${Date.now()}.json`);
@@ -497,7 +500,7 @@ describe('Concurrent Campaign Stress Test', () => {
         allCampleted: campaigns.every(c => c.status === 'completed'),
         latencyAcceptable: systemMetrics.avgLatency < systemMetrics.alertThresholds.maxLatency,
         memoryAcceptable: systemMetrics.peakMemory < 80,
-        failureRateAcceptable: (systemMetrics.campaignMetrics.reduce((sum, m) => sum + m.failureCount, 0) / systemMetrics.campaignMetrics.reduce((sum, m) => sum + m.operationCount, 0)) < 0.2,
+        failureRateAcceptable: (systemMetrics.campaignMetrics.reduce((sum, m) => sum + m.failureCount, 0) / systemMetrics.campaignMetrics.reduce((sum, m) => sum + m.operationCount, 0)) < 0.2
       };
 
       const allMet = Object.values(success).every(v => v === true);

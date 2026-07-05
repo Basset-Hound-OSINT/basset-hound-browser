@@ -1,3 +1,5 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. No MCP server exists on disk (`browser_mcp/server.py` / `mcp/server.py` are absent — MCP is a planned step, not delivered), so any "Evidence: browser_mcp/server.py line NNN" citations here are fictional. Also note the browser DOES boot and drive headless, contrary to any "requires GUI" claim below.
+
 # basset-hound-browser Integration Readiness
 
 **Last Updated**: 2026-05-06

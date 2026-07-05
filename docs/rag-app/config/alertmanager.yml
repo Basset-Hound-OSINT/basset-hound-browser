@@ -1,0 +1,97 @@
+# ==============================================================================
+# Alertmanager Configuration
+# ==============================================================================
+# Routes alerts from Prometheus to various notification channels.
+# Supports: email, Slack, PagerDuty, Webhooks, etc.
+# ==============================================================================
+
+global:
+  resolve_timeout: 5m
+  slack_api_url: '${SLACK_WEBHOOK_URL}'  # Set via environment variable
+
+# Define where to send notifications (templates)
+templates: []
+
+# Define alert routes (how alerts are handled and grouped)
+route:
+  # Default receiver
+  receiver: 'default-receiver'
+
+  # Group alerts by these labels to prevent alert storms
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s      # Wait 10s before sending first alert
+  group_interval: 10s  # Wait 10s before sending aggregated updates
+  repeat_interval: 4h  # Re-send alerts every 4 hours if not resolved
+
+  # Sub-routes for specific alert types
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 0s       # No wait - send immediately
+      repeat_interval: 1h  # Re-send every 1 hour
+
+    # Warning alerts - less frequent
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      group_wait: 30s
+      repeat_interval: 4h
+
+# Define receivers (where to send alerts)
+receivers:
+  # Default receiver: logs to stdout (visible in Docker logs)
+  - name: 'default-receiver'
+    # Email configuration (uncomment and configure to enable)
+    # email_configs:
+    #   - to: 'alerts@example.com'
+    #     from: 'alertmanager@example.com'
+    #     smarthost: 'smtp.example.com:587'
+    #     auth_username: 'alertmanager'
+    #     auth_password: '${SMTP_PASSWORD}'
+
+    # Webhook configuration (uncomment and configure to enable)
+    # webhook_configs:
+    #   - url: 'http://localhost:5001/webhook'
+    #     send_resolved: true
+
+  # Critical receiver: urgent notifications
+  - name: 'critical-receiver'
+    # Slack for critical alerts
+    slack_configs:
+      - channel: '#rag-alerts-critical'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'danger'
+
+    # Page on-call (requires PagerDuty integration)
+    # pagerduty_configs:
+    #   - service_key: '${PAGERDUTY_SERVICE_KEY}'
+    #     description: '{{ .GroupLabels.alertname }}'
+
+  # Warning receiver: moderate priority
+  - name: 'warning-receiver'
+    slack_configs:
+      - channel: '#rag-alerts-warnings'
+        title: '⚠️  WARNING: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}'
+        send_resolved: true
+        color: 'warning'
+
+# Inhibition rules (suppress certain alerts under conditions)
+inhibit_rules:
+  # Don't alert on warnings if a critical alert is already firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+  # Don't alert on unavailable if already alerting on down
+  - source_match:
+      alertname: 'ServiceDown'
+    target_match:
+      severity: 'warning'
+    equal: ['job', 'instance']

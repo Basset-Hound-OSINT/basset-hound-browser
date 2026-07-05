@@ -23,24 +23,24 @@ describe('Wave 14 Feature Integration - Command Registration', () => {
       stateManager: {
         snapshots: new Map(),
         transactionStack: [],
-        saveSnapshot: function(id, snapshot) {
+        saveSnapshot: function (id, snapshot) {
           this.snapshots.set(id, snapshot);
         },
-        discardSnapshot: function(id) {
+        discardSnapshot: function (id) {
           this.snapshots.delete(id);
         },
-        restoreSnapshot: async function(id) {
+        restoreSnapshot: async function (id) {
           return this.snapshots.has(id);
         },
-        listSnapshots: function() {
+        listSnapshots: function () {
           return Array.from(this.snapshots.values());
         },
-        beginTransaction: function() {
+        beginTransaction: function () {
           const txId = `tx-${Date.now()}`;
           this.transactionStack.push({ id: txId, snapshots: [] });
           return txId;
         },
-        commitTransaction: function() {
+        commitTransaction: function () {
           if (this.transactionStack.length > 0) {
             this.transactionStack.pop();
             return true;

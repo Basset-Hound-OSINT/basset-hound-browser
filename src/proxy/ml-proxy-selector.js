@@ -15,14 +15,14 @@
 class MLProxySelector {
   constructor(options = {}) {
     this.maxHistoryPerProxy = options.maxHistoryPerProxy || 100;
-    this.trainingThreshold = options.trainingThreshold || 10;  // Min samples to train model
+    this.trainingThreshold = options.trainingThreshold || 10; // Min samples to train model
     this.modelUpdateInterval = options.modelUpdateInterval || 5000; // Retrain every 5s
     this.learningRate = options.learningRate || 0.01;
 
     // Tracking data
-    this.proxyHistory = new Map();                    // proxyId -> [{result, destination, timestamp}]
-    this.destinationStats = new Map();                // destination -> {totalRequests, successCount}
-    this.proxyDestinationStats = new Map();           // "proxyId:destination" -> stats
+    this.proxyHistory = new Map(); // proxyId -> [{result, destination, timestamp}]
+    this.destinationStats = new Map(); // destination -> {totalRequests, successCount}
+    this.proxyDestinationStats = new Map(); // "proxyId:destination" -> stats
 
     // Model parameters
     this.model = {
@@ -136,7 +136,9 @@ class MLProxySelector {
 
     const destStats = this.destinationStats.get(destKey);
     destStats.totalRequests++;
-    if (success) destStats.successCount++;
+    if (success) {
+      destStats.successCount++;
+    }
 
     // Update proxy-destination stats
     const key = `${proxyId}:${destKey}`;
@@ -146,7 +148,9 @@ class MLProxySelector {
 
     const stats = this.proxyDestinationStats.get(key);
     stats.totalRequests++;
-    if (success) stats.successCount++;
+    if (success) {
+      stats.successCount++;
+    }
 
     // Verify prediction accuracy
     this._verifyPredictionAccuracy(proxyId, destination, success);
@@ -279,7 +283,9 @@ class MLProxySelector {
     // Collect training samples
     const samples = [];
     for (const [key, stats] of this.proxyDestinationStats) {
-      if (stats.totalRequests < 3) continue; // Skip low-count entries
+      if (stats.totalRequests < 3) {
+        continue;
+      } // Skip low-count entries
 
       const [proxyId, destination] = key.split(':');
       const proxy = { id: proxyId, reputation: 0.5 };

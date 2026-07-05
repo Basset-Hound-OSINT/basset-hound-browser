@@ -178,9 +178,15 @@ function sleep(ms = 1000) {
  * @returns {any} Cloned object
  */
 function deepClone(obj) {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (obj instanceof Date) return new Date(obj.getTime());
-  if (obj instanceof Array) return obj.map(item => deepClone(item));
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  if (obj instanceof Date) {
+    return new Date(obj.getTime());
+  }
+  if (obj instanceof Array) {
+    return obj.map(item => deepClone(item));
+  }
   if (obj instanceof Object) {
     const cloned = {};
     for (const key in obj) {
@@ -210,10 +216,14 @@ function deepMerge(...objects) {
   const result = {};
 
   for (const obj of objects) {
-    if (!obj || typeof obj !== 'object') continue;
+    if (!obj || typeof obj !== 'object') {
+      continue;
+    }
 
     for (const key in obj) {
-      if (!obj.hasOwnProperty(key)) continue;
+      if (!obj.hasOwnProperty(key)) {
+        continue;
+      }
 
       if (result[key] && typeof result[key] === 'object' && typeof obj[key] === 'object') {
         result[key] = deepMerge(result[key], obj[key]);
@@ -232,10 +242,18 @@ function deepMerge(...objects) {
  * @returns {boolean} True if empty
  */
 function isEmpty(value) {
-  if (value === null || value === undefined) return true;
-  if (typeof value === 'string') return value.length === 0;
-  if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === 'object') return Object.keys(value).length === 0;
+  if (value === null || value === undefined) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return value.length === 0;
+  }
+  if (Array.isArray(value)) {
+    return value.length === 0;
+  }
+  if (typeof value === 'object') {
+    return Object.keys(value).length === 0;
+  }
   return false;
 }
 
@@ -301,7 +319,9 @@ function safeJsonStringify(obj, fallback = '{}') {
  * @returns {any} Value or fallback
  */
 function getNestedValue(obj, path, fallback = null) {
-  if (!obj || typeof obj !== 'object') return fallback;
+  if (!obj || typeof obj !== 'object') {
+    return fallback;
+  }
 
   const keys = path.split('.');
   let value = obj;
@@ -350,7 +370,9 @@ function flattenObject(obj, prefix = '') {
   const result = {};
 
   for (const key in obj) {
-    if (!obj.hasOwnProperty(key)) continue;
+    if (!obj.hasOwnProperty(key)) {
+      continue;
+    }
 
     const newKey = prefix ? `${prefix}.${key}` : key;
 

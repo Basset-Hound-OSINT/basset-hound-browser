@@ -19,16 +19,16 @@ class DynamicPoolManager {
     this.initialPoolSize = options.initialPoolSize || 16;
 
     // Scaling thresholds
-    this.latencyThreshold = options.latencyThreshold || 50;      // ms, trigger scale-up
+    this.latencyThreshold = options.latencyThreshold || 50; // ms, trigger scale-up
     this.queueDepthThreshold = options.queueDepthThreshold || 10; // max queue depth
-    this.idleTimeThreshold = options.idleTimeThreshold || 30000;  // ms, trigger scale-down
-    this.scaleUpCooldown = options.scaleUpCooldown || 5000;       // ms between scale-ups
-    this.scaleDownCooldown = options.scaleDownCooldown || 60000;  // ms between scale-downs
+    this.idleTimeThreshold = options.idleTimeThreshold || 30000; // ms, trigger scale-down
+    this.scaleUpCooldown = options.scaleUpCooldown || 5000; // ms between scale-ups
+    this.scaleDownCooldown = options.scaleDownCooldown || 60000; // ms between scale-downs
 
     // Pool state
     this.currentPoolSize = this.initialPoolSize;
     this.activeWorkers = 0;
-    this.workerIdleMap = new Map();                              // workerId -> lastActiveTime
+    this.workerIdleMap = new Map(); // workerId -> lastActiveTime
 
     // Metrics
     this.metrics = {
@@ -201,7 +201,9 @@ class DynamicPoolManager {
    * @private
    */
   _getAverageLatency() {
-    if (this.latencyWindow.length === 0) return 0;
+    if (this.latencyWindow.length === 0) {
+      return 0;
+    }
     const sum = this.latencyWindow.reduce((a, b) => a + b, 0);
     return sum / this.latencyWindow.length;
   }
@@ -211,7 +213,9 @@ class DynamicPoolManager {
    * @private
    */
   _getAllWorkersIdle(idleThreshold) {
-    if (this.workerIdleMap.size === 0) return true;
+    if (this.workerIdleMap.size === 0) {
+      return true;
+    }
 
     const now = Date.now();
     for (const lastActiveTime of this.workerIdleMap.values()) {
@@ -235,10 +239,18 @@ class DynamicPoolManager {
    */
   getTargetPoolSize(currentLoad) {
     // currentLoad: 0-1 (0=idle, 1=saturated)
-    if (currentLoad < 0.3) return this.minPoolSize;
-    if (currentLoad < 0.5) return Math.floor(this.initialPoolSize * 0.75);
-    if (currentLoad < 0.7) return this.initialPoolSize;
-    if (currentLoad < 0.9) return Math.floor(this.maxPoolSize * 0.75);
+    if (currentLoad < 0.3) {
+      return this.minPoolSize;
+    }
+    if (currentLoad < 0.5) {
+      return Math.floor(this.initialPoolSize * 0.75);
+    }
+    if (currentLoad < 0.7) {
+      return this.initialPoolSize;
+    }
+    if (currentLoad < 0.9) {
+      return Math.floor(this.maxPoolSize * 0.75);
+    }
     return this.maxPoolSize;
   }
 
@@ -332,7 +344,9 @@ class DynamicPoolManager {
    * @private
    */
   _calculateEfficiency() {
-    if (this.latencyWindow.length < 10) return 0;
+    if (this.latencyWindow.length < 10) {
+      return 0;
+    }
 
     const avgLatency = this._getAverageLatency();
     const targetLatency = this.latencyThreshold / 2;
@@ -347,7 +361,9 @@ class DynamicPoolManager {
    * @private
    */
   _calculateHealthScore() {
-    if (this.latencyWindow.length === 0) return 50;
+    if (this.latencyWindow.length === 0) {
+      return 50;
+    }
 
     const avgLatency = this._getAverageLatency();
     const latencyScore = Math.max(0, 100 - (avgLatency / 2));

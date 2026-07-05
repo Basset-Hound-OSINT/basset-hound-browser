@@ -331,7 +331,7 @@ class BehavioralPatterns {
 
       // Natural typing variation
       const keyTime = avgKeyTime * (0.7 + Math.random() * 0.6);
-      const holdTime = pattern.typing.keyHoldTime * (0.5 + Math.random() * 1.0);
+      const holdTime = pattern.typing.keyHoldTime * (0.5 + Number(Math.random()));
 
       // Occasional typos and corrections
       const hasTypo = Math.random() < pattern.typing.errorRate;
@@ -461,7 +461,9 @@ class BehavioralPatterns {
    */
   adjustPattern(sessionId, service) {
     const session = this.sessions.get(sessionId);
-    if (!session) return;
+    if (!session) {
+      return;
+    }
 
     const pattern = session.pattern;
 
@@ -483,7 +485,9 @@ class BehavioralPatterns {
    */
   getEvasionScore(patternName, service = null) {
     const pattern = this.patterns[patternName];
-    if (!pattern) return 0;
+    if (!pattern) {
+      return 0;
+    }
 
     if (service) {
       const evasionKey = `${service.toLowerCase()}`;

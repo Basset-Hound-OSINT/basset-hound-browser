@@ -8,12 +8,12 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
 const {
   registerEvidencePackagingCommands,
-  initializePackageBuilder,
+  initializePackageBuilder
 } = require('../../websocket/commands/evidence-packaging');
 const {
   EvidenceCollector,
   EVIDENCE_TYPES,
-  ARCHIVE_FORMATS,
+  ARCHIVE_FORMATS
 } = require('../../evidence/evidence-collector');
 
 describe('Evidence Packaging Workflow', () => {
@@ -35,7 +35,7 @@ describe('Evidence Packaging Workflow', () => {
     const manifestResult = await commandHandlers.create_evidence_manifest({
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     expect(manifestResult.success).toBe(true);
@@ -47,7 +47,7 @@ describe('Evidence Packaging Workflow', () => {
       url: 'https://example.com',
       title: 'Example Page',
       viewport: { width: 1920, height: 1080 },
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     const har = evidenceCollector.captureNetworkHAR(
@@ -55,9 +55,9 @@ describe('Evidence Packaging Workflow', () => {
         log: {
           version: '1.2.0',
           entries: [
-            { request: { method: 'GET', url: 'https://example.com' } },
-          ],
-        },
+            { request: { method: 'GET', url: 'https://example.com' } }
+          ]
+        }
       },
       { url: 'https://example.com', capturedBy: 'investigator_john' }
     );
@@ -65,7 +65,7 @@ describe('Evidence Packaging Workflow', () => {
     const dom = evidenceCollector.captureDOMSnapshot('<html><body>Example</body></html>', {
       url: 'https://example.com',
       nodeCount: 3,
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     // Step 3: Add evidence to manifest
@@ -75,7 +75,7 @@ describe('Evidence Packaging Workflow', () => {
       type: EVIDENCE_TYPES.SCREENSHOT,
       data: Buffer.from('image_data'),
       url: 'https://example.com',
-      size: 1024,
+      size: 1024
     });
 
     const addEv2 = await commandHandlers.add_to_manifest({
@@ -83,7 +83,7 @@ describe('Evidence Packaging Workflow', () => {
       evidenceId: har.id,
       type: EVIDENCE_TYPES.NETWORK_HAR,
       data: har.data,
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const addEv3 = await commandHandlers.add_to_manifest({
@@ -91,7 +91,7 @@ describe('Evidence Packaging Workflow', () => {
       evidenceId: dom.id,
       type: EVIDENCE_TYPES.DOM_SNAPSHOT,
       data: dom.data,
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     expect(addEv1.success).toBe(true);
@@ -100,7 +100,7 @@ describe('Evidence Packaging Workflow', () => {
 
     // Step 4: Get manifest to verify
     const getManifest = await commandHandlers.get_manifest({
-      manifestId,
+      manifestId
     });
 
     expect(getManifest.success).toBe(true);
@@ -111,7 +111,7 @@ describe('Evidence Packaging Workflow', () => {
     const pkgResult = await commandHandlers.create_evidence_package({
       manifestId,
       capturedBy: 'investigator_john',
-      autoSeal: false,
+      autoSeal: false
     });
 
     expect(pkgResult.success).toBe(true);
@@ -121,7 +121,7 @@ describe('Evidence Packaging Workflow', () => {
     // Step 6: Seal package
     const sealResult = await commandHandlers.seal_evidence_package({
       packageId,
-      sealedBy: 'investigator_john',
+      sealedBy: 'investigator_john'
     });
 
     expect(sealResult.success).toBe(true);
@@ -130,7 +130,7 @@ describe('Evidence Packaging Workflow', () => {
 
     // Step 7: Verify package integrity
     const verifyResult = await commandHandlers.verify_evidence_package({
-      packageId,
+      packageId
     });
 
     expect(verifyResult.success).toBe(true);
@@ -141,7 +141,7 @@ describe('Evidence Packaging Workflow', () => {
     const exportCourt = await commandHandlers.export_evidence_package({
       packageId,
       format: 'court',
-      destination: 'court_evidence_storage',
+      destination: 'court_evidence_storage'
     });
 
     expect(exportCourt.success).toBe(true);
@@ -153,7 +153,7 @@ describe('Evidence Packaging Workflow', () => {
     // Step 9: Export as JSON
     const exportJSON = await commandHandlers.export_evidence_package({
       packageId,
-      format: 'json',
+      format: 'json'
     });
 
     expect(exportJSON.success).toBe(true);
@@ -164,7 +164,7 @@ describe('Evidence Packaging Workflow', () => {
     // Step 10: Export as XML
     const exportXML = await commandHandlers.export_evidence_package({
       packageId,
-      format: 'xml',
+      format: 'xml'
     });
 
     expect(exportXML.success).toBe(true);
@@ -178,35 +178,35 @@ describe('Evidence Packaging Workflow', () => {
     const manifest1 = await commandHandlers.create_evidence_manifest({
       sessionId: 'multi_session_001',
       url: 'https://example1.com',
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     const manifest2 = await commandHandlers.create_evidence_manifest({
       sessionId: 'multi_session_002',
       url: 'https://example2.com',
-      capturedBy: 'investigator_jane',
+      capturedBy: 'investigator_jane'
     });
 
     const manifest3 = await commandHandlers.create_evidence_manifest({
       sessionId: 'multi_session_003',
       url: 'https://example3.com',
-      capturedBy: 'analyst_bob',
+      capturedBy: 'analyst_bob'
     });
 
     // Create packages from each manifest
     const pkg1 = await commandHandlers.create_evidence_package({
       manifestId: manifest1.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const pkg2 = await commandHandlers.create_evidence_package({
       manifestId: manifest2.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const pkg3 = await commandHandlers.create_evidence_package({
       manifestId: manifest3.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     // List all manifests - should have at least 3
@@ -231,7 +231,7 @@ describe('Evidence Packaging Workflow', () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'session_integ_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     const manifestId = manifest.manifestId;
@@ -241,7 +241,7 @@ describe('Evidence Packaging Workflow', () => {
       { id: 'ev_001', type: 'screenshot', data: 'image_data' },
       { id: 'ev_002', type: 'har', data: { log: { entries: [] } } },
       { id: 'ev_003', type: 'dom', data: '<html></html>' },
-      { id: 'ev_004', type: 'console_log', data: ['log1', 'log2'] },
+      { id: 'ev_004', type: 'console_log', data: ['log1', 'log2'] }
     ];
 
     for (const ev of evidenceTypes) {
@@ -250,14 +250,14 @@ describe('Evidence Packaging Workflow', () => {
         evidenceId: ev.id,
         type: ev.type,
         data: ev.data,
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     }
 
     // Create package without auto-seal
     const pkgResult = await commandHandlers.create_evidence_package({
       manifestId,
-      autoSeal: false,
+      autoSeal: false
     });
 
     const packageId = pkgResult.packageId;
@@ -265,7 +265,7 @@ describe('Evidence Packaging Workflow', () => {
     // Now explicitly seal it
     const sealResult = await commandHandlers.seal_evidence_package({
       packageId,
-      sealedBy: 'investigator',
+      sealedBy: 'investigator'
     });
 
     expect(sealResult.success).toBe(true);
@@ -294,7 +294,7 @@ describe('Evidence Packaging Workflow', () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     const manifestId = manifest.manifestId;
@@ -305,18 +305,18 @@ describe('Evidence Packaging Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     // Create and seal package
     const pkg = await commandHandlers.create_evidence_package({
       manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     // Get custody chain for the manifest
     const custodyResult = await commandHandlers.get_custody_chain({
-      evidenceId: manifestId,
+      evidenceId: manifestId
     });
 
     expect(custodyResult.success).toBe(true);
@@ -326,12 +326,12 @@ describe('Evidence Packaging Workflow', () => {
     // Generate custody report
     const reportJSON = await commandHandlers.generate_custody_report({
       evidenceId: manifestId,
-      format: 'json',
+      format: 'json'
     });
 
     const reportText = await commandHandlers.generate_custody_report({
       evidenceId: manifestId,
-      format: 'text',
+      format: 'text'
     });
 
     expect(reportJSON.success).toBe(true);
@@ -345,7 +345,7 @@ describe('Evidence Packaging Workflow', () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'session_001',
       url: 'https://example.com',
-      capturedBy: 'investigator',
+      capturedBy: 'investigator'
     });
 
     // Add evidence
@@ -354,19 +354,19 @@ describe('Evidence Packaging Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     // Create package
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: false,
+      autoSeal: false
     });
 
     // Export for analysis
     const exportAnalysis = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'analysis',
+      format: 'analysis'
     });
 
     expect(exportAnalysis.success).toBe(true);
@@ -376,7 +376,7 @@ describe('Evidence Packaging Workflow', () => {
     expect(data.packageId).toBeDefined();
     expect(data.manifest.summary).toBeDefined();
     expect(data.evidence).toBeDefined();
-    expect(data.manifest.compliance).toBeUndefined();  // Not in analysis format
+    expect(data.manifest.compliance).toBeUndefined(); // Not in analysis format
   });
 
   it('should handle error cases gracefully', async () => {
@@ -385,7 +385,7 @@ describe('Evidence Packaging Workflow', () => {
       manifestId: 'invalid_manifest',
       evidenceId: 'ev_001',
       type: 'screenshot',
-      data: 'image_data',
+      data: 'image_data'
     });
 
     expect(badAdd.success).toBe(false);
@@ -393,7 +393,7 @@ describe('Evidence Packaging Workflow', () => {
 
     // Try to create package from non-existent manifest
     const badPackage = await commandHandlers.create_evidence_package({
-      manifestId: 'invalid_manifest',
+      manifestId: 'invalid_manifest'
     });
 
     expect(badPackage.success).toBe(false);
@@ -402,7 +402,7 @@ describe('Evidence Packaging Workflow', () => {
     // Try to export non-existent package
     const badExport = await commandHandlers.export_evidence_package({
       packageId: 'invalid_package',
-      format: 'json',
+      format: 'json'
     });
 
     expect(badExport.success).toBe(false);
@@ -410,16 +410,16 @@ describe('Evidence Packaging Workflow', () => {
 
     // Try unsupported export format
     const manifest = await commandHandlers.create_evidence_manifest({
-      sessionId: 'session_001',
+      sessionId: 'session_001'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
-      manifestId: manifest.manifestId,
+      manifestId: manifest.manifestId
     });
 
     const badFormat = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'invalid_format',
+      format: 'invalid_format'
     });
 
     expect(badFormat.success).toBe(false);
@@ -430,7 +430,7 @@ describe('Evidence Packaging Workflow', () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'session_001',
       url: 'https://example.com/target',
-      capturedBy: 'investigator_john',
+      capturedBy: 'investigator_john'
     });
 
     // Add evidence with detailed metadata
@@ -438,7 +438,7 @@ describe('Evidence Packaging Workflow', () => {
       url: 'https://example.com/target',
       annotations: ['Important section', 'Suspicious pattern'],
       priority: 'high',
-      tags: ['evidence', 'critical'],
+      tags: ['evidence', 'critical']
     };
 
     await commandHandlers.add_to_manifest({
@@ -447,18 +447,18 @@ describe('Evidence Packaging Workflow', () => {
       type: 'screenshot',
       data: 'image_data',
       size: 2048,
-      metadata: customMetadata,
+      metadata: customMetadata
     });
 
     // Create package and export
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const exported = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'json',
+      format: 'json'
     });
 
     const data = JSON.parse(exported.data);
@@ -473,7 +473,7 @@ describe('Evidence Packaging Workflow', () => {
     // Create and seal package
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     await commandHandlers.add_to_manifest({
@@ -481,28 +481,28 @@ describe('Evidence Packaging Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     // Export in all formats
     const json = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'json',
+      format: 'json'
     });
 
     const xml = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'xml',
+      format: 'xml'
     });
 
     const analysis = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'analysis',
+      format: 'analysis'
     });
 
     // Parse JSON and XML to compare hashes
@@ -533,7 +533,7 @@ describe('Performance Tests', () => {
     // Create manifest with multiple evidence items
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'perf_test_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const manifestId = manifest.manifestId;
@@ -545,31 +545,31 @@ describe('Performance Tests', () => {
         evidenceId: `ev_${i}`,
         type: 'screenshot',
         data: 'test_data_' + i,
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     }
 
     // Create and seal
     const pkg = await commandHandlers.create_evidence_package({
       manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     // Export
     const exportStart = Date.now();
     await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'json',
+      format: 'json'
     });
     const exportTime = Date.now() - exportStart;
 
-    expect(exportTime).toBeLessThan(500);  // Target: <500ms
+    expect(exportTime).toBeLessThan(500); // Target: <500ms
   });
 
   it('should handle large manifests efficiently', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'large_test_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const startTime = Date.now();
@@ -581,18 +581,18 @@ describe('Performance Tests', () => {
         evidenceId: `ev_${i}`,
         type: i % 3 === 0 ? 'screenshot' : i % 3 === 1 ? 'har' : 'dom',
         data: 'data_' + i,
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     }
 
     const duration = Date.now() - startTime;
 
     // Should handle 100 items reasonably quickly
-    expect(duration).toBeLessThan(5000);  // Less than 5 seconds
+    expect(duration).toBeLessThan(5000); // Less than 5 seconds
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     expect(pkg.success).toBe(true);
@@ -601,7 +601,7 @@ describe('Performance Tests', () => {
   it('should complete <500ms export for 20 items', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'perf_test_small',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const manifestId = manifest.manifestId;
@@ -613,19 +613,19 @@ describe('Performance Tests', () => {
         evidenceId: `ev_${i}`,
         type: 'screenshot',
         data: 'test_data',
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
     }
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const exportStart = Date.now();
     const result = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'json',
+      format: 'json'
     });
     const exportDuration = Date.now() - exportStart;
 
@@ -651,7 +651,7 @@ describe('RFC 3161 Timestamp Workflow', () => {
   it('should request RFC 3161 timestamp during sealing', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'rfc_session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     await commandHandlers.add_to_manifest({
@@ -659,19 +659,19 @@ describe('RFC 3161 Timestamp Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: false,
+      autoSeal: false
     });
 
     const sealResult = await commandHandlers.seal_evidence_package({
       packageId: pkg.packageId,
       sealedBy: 'investigator',
       requestRFC3161: true,
-      rfc3161Authority: 'freetsa.org',
+      rfc3161Authority: 'freetsa.org'
     });
 
     expect(sealResult.success).toBe(true);
@@ -683,7 +683,7 @@ describe('RFC 3161 Timestamp Workflow', () => {
   it('should request RFC 3161 timestamp separately for sealed package', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'rfc_session_002',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     await commandHandlers.add_to_manifest({
@@ -691,17 +691,17 @@ describe('RFC 3161 Timestamp Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const timestampResult = await commandHandlers.request_rfc3161_timestamp({
       packageId: pkg.packageId,
-      authority: 'custom-tsa.example.com',
+      authority: 'custom-tsa.example.com'
     });
 
     expect(timestampResult.success).toBe(true);
@@ -712,11 +712,11 @@ describe('RFC 3161 Timestamp Workflow', () => {
   it('should check manifest timestamp readiness', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'rfc_session_003',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const readiness = await commandHandlers.check_timestamp_readiness({
-      manifestId: manifest.manifestId,
+      manifestId: manifest.manifestId
     });
 
     expect(readiness.success).toBe(true);
@@ -729,11 +729,11 @@ describe('RFC 3161 Timestamp Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const readiness2 = await commandHandlers.check_timestamp_readiness({
-      manifestId: manifest.manifestId,
+      manifestId: manifest.manifestId
     });
 
     expect(readiness2.readiness.ready).toBe(true);
@@ -759,7 +759,7 @@ describe('Compliance Report Workflow', () => {
     for (let i = 0; i < 3; i++) {
       const manifest = await commandHandlers.create_evidence_manifest({
         sessionId: `compliance_session_${i}`,
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       await commandHandlers.add_to_manifest({
@@ -767,12 +767,12 @@ describe('Compliance Report Workflow', () => {
         evidenceId: `ev_${i}`,
         type: 'screenshot',
         data: 'data',
-        url: 'https://example.com',
+        url: 'https://example.com'
       });
 
       const pkg = await commandHandlers.create_evidence_package({
         manifestId: manifest.manifestId,
-        autoSeal: true,
+        autoSeal: true
       });
     }
 
@@ -805,7 +805,7 @@ describe('ZIP Export Workflow', () => {
   it('should export package as ZIP', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'zip_session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     await commandHandlers.add_to_manifest({
@@ -813,17 +813,17 @@ describe('ZIP Export Workflow', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const zipResult = await commandHandlers.export_evidence_package_zip({
       packageId: pkg.packageId,
-      destination: 'archive_storage',
+      destination: 'archive_storage'
     });
 
     expect(zipResult.success).toBe(true);
@@ -849,7 +849,7 @@ describe('Advanced Validation & Error Handling', () => {
   it('should validate evidence data before adding to manifest', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'valid_session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     // Missing data
@@ -858,7 +858,7 @@ describe('Advanced Validation & Error Handling', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       // data: missing!
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     expect(badResult1.success).toBe(false);
@@ -866,10 +866,10 @@ describe('Advanced Validation & Error Handling', () => {
 
     // Invalid manifestId
     const badResult2 = await commandHandlers.add_to_manifest({
-      manifestId: 123,  // Not a string
+      manifestId: 123, // Not a string
       evidenceId: 'ev_001',
       type: 'screenshot',
-      data: 'image_data',
+      data: 'image_data'
     });
 
     expect(badResult2.success).toBe(false);
@@ -878,7 +878,7 @@ describe('Advanced Validation & Error Handling', () => {
   it('should prevent sealing already sealed packages', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'seal_session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     await commandHandlers.add_to_manifest({
@@ -886,18 +886,18 @@ describe('Advanced Validation & Error Handling', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: false,
+      autoSeal: false
     });
 
     // Seal first time
     const seal1 = await commandHandlers.seal_evidence_package({
       packageId: pkg.packageId,
-      sealedBy: 'investigator',
+      sealedBy: 'investigator'
     });
 
     expect(seal1.success).toBe(true);
@@ -905,7 +905,7 @@ describe('Advanced Validation & Error Handling', () => {
     // Try to seal again
     const seal2 = await commandHandlers.seal_evidence_package({
       packageId: pkg.packageId,
-      sealedBy: 'someone_else',
+      sealedBy: 'someone_else'
     });
 
     expect(seal2.success).toBe(false);
@@ -915,7 +915,7 @@ describe('Advanced Validation & Error Handling', () => {
   it('should handle invalid export formats gracefully', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'export_session_001',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     await commandHandlers.add_to_manifest({
@@ -923,17 +923,17 @@ describe('Advanced Validation & Error Handling', () => {
       evidenceId: 'ev_001',
       type: 'screenshot',
       data: 'image_data',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: true,
+      autoSeal: true
     });
 
     const badFormat = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
-      format: 'invalid_format_xyz',
+      format: 'invalid_format_xyz'
     });
 
     expect(badFormat.success).toBe(false);
@@ -943,17 +943,17 @@ describe('Advanced Validation & Error Handling', () => {
   it('should require sealing for RFC 3161 timestamp', async () => {
     const manifest = await commandHandlers.create_evidence_manifest({
       sessionId: 'rfc_error_session',
-      url: 'https://example.com',
+      url: 'https://example.com'
     });
 
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
-      autoSeal: false,  // Don't seal
+      autoSeal: false // Don't seal
     });
 
     const badTimestamp = await commandHandlers.request_rfc3161_timestamp({
       packageId: pkg.packageId,
-      authority: 'freetsa.org',
+      authority: 'freetsa.org'
     });
 
     expect(badTimestamp.success).toBe(false);
@@ -983,8 +983,8 @@ describe('End-to-End Workflows', () => {
       capturedBy: 'investigator_alice',
       metadata: {
         caseId: 'CASE-2026-001',
-        jurisdiction: 'US-Federal',
-      },
+        jurisdiction: 'US-Federal'
+      }
     });
 
     expect(manifest.success).toBe(true);
@@ -993,7 +993,7 @@ describe('End-to-End Workflows', () => {
     const evidenceItems = [
       { id: 'ev_001', type: 'screenshot', data: 'screenshot_data_here' },
       { id: 'ev_002', type: 'har', data: JSON.stringify({ log: { entries: [] } }) },
-      { id: 'ev_003', type: 'dom', data: '<html><body>Evidence</body></html>' },
+      { id: 'ev_003', type: 'dom', data: '<html><body>Evidence</body></html>' }
     ];
 
     for (const item of evidenceItems) {
@@ -1003,14 +1003,14 @@ describe('End-to-End Workflows', () => {
         type: item.type,
         data: item.data,
         url: 'https://evidence.example.com',
-        metadata: { caseReference: 'CASE-2026-001' },
+        metadata: { caseReference: 'CASE-2026-001' }
       });
       expect(result.success).toBe(true);
     }
 
     // Check timestamp readiness
     const readiness = await commandHandlers.check_timestamp_readiness({
-      manifestId: manifest.manifestId,
+      manifestId: manifest.manifestId
     });
     expect(readiness.readiness.ready).toBe(true);
 
@@ -1018,7 +1018,7 @@ describe('End-to-End Workflows', () => {
     const pkg = await commandHandlers.create_evidence_package({
       manifestId: manifest.manifestId,
       capturedBy: 'investigator_alice',
-      autoSeal: false,
+      autoSeal: false
     });
     expect(pkg.success).toBe(true);
 
@@ -1027,14 +1027,14 @@ describe('End-to-End Workflows', () => {
       packageId: pkg.packageId,
       sealedBy: 'investigator_alice',
       requestRFC3161: true,
-      rfc3161Authority: 'freetsa.org',
+      rfc3161Authority: 'freetsa.org'
     });
     expect(sealResult.success).toBe(true);
     expect(sealResult.rfc3161Token).toBeDefined();
 
     // Verify integrity
     const verification = await commandHandlers.verify_evidence_package({
-      packageId: pkg.packageId,
+      packageId: pkg.packageId
     });
     expect(verification.valid).toBe(true);
 
@@ -1042,39 +1042,39 @@ describe('End-to-End Workflows', () => {
     const exportCourt = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
       format: 'court',
-      destination: 'court_evidence_vault',
+      destination: 'court_evidence_vault'
     });
     expect(exportCourt.success).toBe(true);
 
     const exportJSON = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
       format: 'json',
-      destination: 'analysis_system',
+      destination: 'analysis_system'
     });
     expect(exportJSON.success).toBe(true);
 
     const exportXML = await commandHandlers.export_evidence_package({
       packageId: pkg.packageId,
       format: 'xml',
-      destination: 'archive_system',
+      destination: 'archive_system'
     });
     expect(exportXML.success).toBe(true);
 
     const exportZip = await commandHandlers.export_evidence_package_zip({
       packageId: pkg.packageId,
-      destination: 'portable_storage',
+      destination: 'portable_storage'
     });
     expect(exportZip.success).toBe(true);
 
     // Generate custody reports
     const custodyChain = await commandHandlers.get_custody_chain({
-      evidenceId: manifest.manifestId,
+      evidenceId: manifest.manifestId
     });
     expect(custodyChain.success).toBe(true);
 
     const custodyReport = await commandHandlers.generate_custody_report({
       evidenceId: manifest.manifestId,
-      format: 'text',
+      format: 'text'
     });
     expect(custodyReport.success).toBe(true);
 
@@ -1098,7 +1098,7 @@ describe('End-to-End Workflows', () => {
         sessionId: `case_${caseId}`,
         url: `https://evidence-${caseId}.example.com`,
         capturedBy: 'investigator_team',
-        metadata: { caseId },
+        metadata: { caseId }
       });
 
       // Add evidence
@@ -1108,14 +1108,14 @@ describe('End-to-End Workflows', () => {
         type: 'screenshot',
         data: `Case ${caseId} evidence`,
         url: `https://evidence-${caseId}.example.com`,
-        metadata: { caseId },
+        metadata: { caseId }
       });
 
       // Create and seal package
       const pkg = await commandHandlers.create_evidence_package({
         manifestId: manifest.manifestId,
         autoSeal: true,
-        capturedBy: 'investigator_team',
+        capturedBy: 'investigator_team'
       });
 
       packages.push(pkg);

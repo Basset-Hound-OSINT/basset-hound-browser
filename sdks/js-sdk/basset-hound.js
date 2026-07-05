@@ -627,13 +627,17 @@ class BrowserClient {
 
   async identifyCms(html = null) {
     const params = {};
-    if (html) params.html = html;
+    if (html) {
+      params.html = html;
+    }
     return this.sendCommand('identify_cms', params);
   }
 
   async identifyAnalytics(html = null) {
     const params = {};
-    if (html) params.html = html;
+    if (html) {
+      params.html = html;
+    }
     return this.sendCommand('identify_analytics', params);
   }
 

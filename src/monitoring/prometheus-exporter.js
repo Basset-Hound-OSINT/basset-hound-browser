@@ -133,7 +133,9 @@ class PrometheusExporter extends EventEmitter {
     const metrics = this.appMetrics.getAllMetrics();
 
     for (const [name, metric] of Object.entries(metrics)) {
-      if (!metric) continue;
+      if (!metric) {
+        continue;
+      }
 
       // HELP and TYPE
       output += `# HELP ${name} ${metric.help}\n`;
@@ -290,7 +292,9 @@ class PrometheusExporter extends EventEmitter {
   getMetric(name) {
     if (this.appMetrics) {
       const metric = this.appMetrics.getMetric(name);
-      if (metric) return metric;
+      if (metric) {
+        return metric;
+      }
     }
 
     return null;

@@ -651,8 +651,12 @@ describe('Certificate Generator Module', () => {
       // Cleanup
       gen1.deleteCertificates();
       gen2.deleteCertificates();
-      try { fs.rmSync(testDir1, { recursive: true, force: true }); } catch (e) { /* ignore */ }
-      try { fs.rmSync(testDir2, { recursive: true, force: true }); } catch (e) { /* ignore */ }
+      try {
+        fs.rmSync(testDir1, { recursive: true, force: true });
+      } catch (e) { /* ignore */ }
+      try {
+        fs.rmSync(testDir2, { recursive: true, force: true });
+      } catch (e) { /* ignore */ }
     });
 
     test('should handle custom validity period', async () => {

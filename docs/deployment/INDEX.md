@@ -14,23 +14,16 @@ This directory contains deployment guides, runbooks, and validation documentatio
 ## Deployment Guides
 
 ### Quick Start
-- **DEPLOYMENT-QUICK-START.md** - Get started in 5 minutes
-  - Prerequisites
-  - Basic setup
-  - Testing deployment
-  - Troubleshooting
+- `DEPLOYMENT-QUICK-START.md` - Get started in 5 minutes
+- `DEPLOYMENT-GUIDE.md` - Complete deployment walkthrough
+- `DOCKER-QUICK-START.md` - Docker container basics
 
-### Comprehensive Guide
-- **DEPLOYMENT.md** (root docs/) - Full deployment documentation
-  - Docker deployment
-  - Configuration options
-  - Environment variables
-  - Health checks
-  - Monitoring setup
-
-### Version-Specific Plans
-- **V12.1.0-DEPLOYMENT-PLAN.md** - v12.1.0 deployment planning
-- **MIGRATION-GUIDE-v11.3.0-to-v12.0.0.md** - Version migration guide
+### Core Deployment
+- `DEPLOYMENT-AUTOMATION-GUIDE.md` - Automation setup and CI/CD
+- `KUBERNETES-DEPLOYMENT.md` - Kubernetes orchestration
+- `ZERO-DOWNTIME-UPGRADES.md` - Blue-green deployment strategies
+- `DOCKER-ADVANCED.md` - Advanced Docker configuration
+- `DOCKER-CI-CD.md` - Docker in CI/CD pipelines
 
 ---
 

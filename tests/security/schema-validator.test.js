@@ -285,7 +285,7 @@ describe('SchemaValidator', () => {
     it('should report failures in batch validation', () => {
       const commands = [
         { command: 'navigate', params: { url: 'https://example.com' } },
-        { command: 'navigate', params: {} },  // Missing URL
+        { command: 'navigate', params: {} }, // Missing URL
         { command: 'click', params: { selector: 'button' } }
       ];
 

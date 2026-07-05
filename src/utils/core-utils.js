@@ -111,8 +111,12 @@ function formatValue(value, pretty = false) {
  * @returns {string} Truncated string
  */
 function truncateString(str, maxLength = 100, suffix = '...') {
-  if (!str || typeof str !== 'string') return str;
-  if (str.length <= maxLength) return str;
+  if (!str || typeof str !== 'string') {
+    return str;
+  }
+  if (str.length <= maxLength) {
+    return str;
+  }
   return str.substring(0, maxLength - suffix.length) + suffix;
 }
 
@@ -122,7 +126,9 @@ function truncateString(str, maxLength = 100, suffix = '...') {
  * @returns {string} Human readable size (e.g., "1.5 MB")
  */
 function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
 
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -137,8 +143,12 @@ function formatBytes(bytes) {
  * @returns {string} Human readable time (e.g., "1.5s", "250ms")
  */
 function formatDuration(ms) {
-  if (ms < 1000) return `${Math.round(ms)}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(2)}s`;
+  if (ms < 1000) {
+    return `${Math.round(ms)}ms`;
+  }
+  if (ms < 60000) {
+    return `${(ms / 1000).toFixed(2)}s`;
+  }
   return `${(ms / 60000).toFixed(2)}m`;
 }
 

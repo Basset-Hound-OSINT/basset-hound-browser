@@ -534,11 +534,21 @@ class ThreatIntelligence extends EventEmitter {
    * @private
    */
   classifyIndicator(value) {
-    if (value.includes('@')) return 'email';
-    if (value.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) return 'ip';
-    if (value.match(/^[a-f0-9]{64}$/)) return 'hash';
-    if (value.match(/^[a-f0-9]{32}$/)) return 'hash';
-    if (value.includes('.')) return 'domain';
+    if (value.includes('@')) {
+      return 'email';
+    }
+    if (value.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) {
+      return 'ip';
+    }
+    if (value.match(/^[a-f0-9]{64}$/)) {
+      return 'hash';
+    }
+    if (value.match(/^[a-f0-9]{32}$/)) {
+      return 'hash';
+    }
+    if (value.includes('.')) {
+      return 'domain';
+    }
     return 'unknown';
   }
 
@@ -607,7 +617,9 @@ class ThreatIntelligence extends EventEmitter {
    * @private
    */
   calculateAverageRiskScore() {
-    if (this.threatActors.size === 0) return 0;
+    if (this.threatActors.size === 0) {
+      return 0;
+    }
 
     const total = Array.from(this.threatActors.values())
       .reduce((sum, actor) => sum + actor.riskScore, 0);

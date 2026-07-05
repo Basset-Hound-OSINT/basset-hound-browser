@@ -176,7 +176,7 @@ class GeoConsistencyEngine {
     const regionBoundary = this.regionBoundaries[targetRegion];
 
     // Filter proxies by region
-    let candidates = availableProxies.filter(proxy => {
+    const candidates = availableProxies.filter(proxy => {
       // Must be in target region
       if (proxy.region !== targetRegion) {
         return false;

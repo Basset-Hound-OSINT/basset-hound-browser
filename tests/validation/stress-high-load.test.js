@@ -23,12 +23,12 @@ const TEST_RESULTS = {
   operations: {
     total: 0,
     successful: 0,
-    failed: 0,
+    failed: 0
   },
   throughput: {
     messagesPerSecond: 0,
     peakMPS: 0,
-    averageMPS: 0,
+    averageMPS: 0
   },
   latency: {
     min: Infinity,
@@ -36,16 +36,16 @@ const TEST_RESULTS = {
     average: 0,
     p50: 0,
     p95: 0,
-    p99: 0,
+    p99: 0
   },
   resources: {
     peakMemoryUsage: 0,
     averageMemoryUsage: 0,
     peakCPUUsage: 0,
-    averageCPUUsage: 0,
+    averageCPUUsage: 0
   },
   errors: [],
-  checkpoints: [],
+  checkpoints: []
 };
 
 /**
@@ -88,11 +88,15 @@ class StressTestClient {
         });
 
         this.ws.on('error', (err) => {
-          if (!this.connected) reject(err);
+          if (!this.connected) {
+            reject(err);
+          }
         });
 
         setTimeout(() => {
-          if (!this.connected) reject(new Error('Connection timeout'));
+          if (!this.connected) {
+            reject(new Error('Connection timeout'));
+          }
         }, 5000);
       } catch (err) {
         reject(err);
@@ -101,7 +105,9 @@ class StressTestClient {
   }
 
   async sendCommand(command, params = {}) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     const requestId = ++this.requestId;
     return new Promise((resolve, reject) => {
@@ -116,7 +122,7 @@ class StressTestClient {
           this.operationCount++;
           resolve(msg);
         },
-        startTime: Date.now(),
+        startTime: Date.now()
       });
 
       try {
@@ -149,7 +155,7 @@ class StressTestClient {
       max: sorted[sorted.length - 1],
       avg: sum / sorted.length,
       p95: sorted[Math.floor(sorted.length * 0.95)],
-      p99: sorted[Math.floor(sorted.length * 0.99)],
+      p99: sorted[Math.floor(sorted.length * 0.99)]
     };
   }
 }
@@ -176,7 +182,7 @@ async function createClients(count) {
       errors.push({
         clientId: i,
         error: err.message,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString()
       });
     }
   }
@@ -202,7 +208,7 @@ async function runStressOperations(clients, durationMs) {
   const startTime = Date.now();
   const endTime = startTime + durationMs;
   const operations = ['navigate', 'screenshot', 'getContent', 'executeJavaScript'];
-  let operationCount = 0;
+  const operationCount = 0;
   let lastCheckpointTime = startTime;
   let lastOperationCount = 0;
 
@@ -210,24 +216,26 @@ async function runStressOperations(clients, durationMs) {
     const promises = [];
 
     for (const client of clients) {
-      if (!client.connected) continue;
+      if (!client.connected) {
+        continue;
+      }
 
       const operation = operations[Math.floor(Math.random() * operations.length)];
       const promise = (async () => {
         try {
           switch (operation) {
-            case 'navigate':
-              await client.sendCommand('navigate', { url: 'https://example.com' });
-              break;
-            case 'screenshot':
-              await client.sendCommand('screenshot', {});
-              break;
-            case 'getContent':
-              await client.sendCommand('getContent', { selector: 'body' });
-              break;
-            case 'executeJavaScript':
-              await client.sendCommand('executeJavaScript', { code: '1+1' });
-              break;
+          case 'navigate':
+            await client.sendCommand('navigate', { url: 'https://example.com' });
+            break;
+          case 'screenshot':
+            await client.sendCommand('screenshot', {});
+            break;
+          case 'getContent':
+            await client.sendCommand('getContent', { selector: 'body' });
+            break;
+          case 'executeJavaScript':
+            await client.sendCommand('executeJavaScript', { code: '1+1' });
+            break;
           }
           TEST_RESULTS.operations.successful++;
         } catch (err) {
@@ -235,7 +243,7 @@ async function runStressOperations(clients, durationMs) {
           TEST_RESULTS.errors.push({
             clientId: client.id,
             operation,
-            error: err.message,
+            error: err.message
           });
         }
         TEST_RESULTS.operations.total++;
@@ -263,7 +271,7 @@ async function runStressOperations(clients, durationMs) {
           100
         ).toFixed(2),
         msgPerSecond: mps.toFixed(2),
-        activeConnections: clients.filter((c) => c.connected).length,
+        activeConnections: clients.filter((c) => c.connected).length
       });
 
       console.log(

@@ -637,7 +637,9 @@ class PatternRecognitionManager {
    * Quick form type detection
    */
   detectFormTypes(pageData) {
-    if (!pageData.forms) return [];
+    if (!pageData.forms) {
+      return [];
+    }
     return pageData.forms.map(form => this.formDetector.detectFormType(form));
   }
 

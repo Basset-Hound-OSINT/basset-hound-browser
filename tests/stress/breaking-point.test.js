@@ -191,7 +191,9 @@ class BreakingPointTest {
         // Send operations
         const connectedInIteration = newConnections.filter(c => c && c.connected);
         for (const conn of connectedInIteration) {
-          if (!conn.ws || conn.ws.readyState !== WebSocket.OPEN) continue;
+          if (!conn.ws || conn.ws.readyState !== WebSocket.OPEN) {
+            continue;
+          }
 
           const messageStart = performance.now();
           const msg = {
@@ -260,7 +262,9 @@ class BreakingPointTest {
 
   generateRecommendations() {
     const iterations = this.results.iterations;
-    if (iterations.length === 0) return;
+    if (iterations.length === 0) {
+      return;
+    }
 
     const maxSuccessful = Math.max(...iterations.map(i => i.successfulConnections));
     const breakingIteration = iterations.find(i =>

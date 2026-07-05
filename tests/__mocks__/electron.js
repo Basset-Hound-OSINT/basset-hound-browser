@@ -601,8 +601,12 @@ const createEmptyImage = () => ({
   getSize: jest.fn().mockReturnValue({ width: 0, height: 0 }),
   setTemplateImage: jest.fn(),
   isTemplateImage: jest.fn().mockReturnValue(false),
-  crop: jest.fn().mockImplementation(function() { return this; }),
-  resize: jest.fn().mockImplementation(function() { return this; }),
+  crop: jest.fn().mockImplementation(function () {
+    return this;
+  }),
+  resize: jest.fn().mockImplementation(function () {
+    return this;
+  }),
   getAspectRatio: jest.fn().mockReturnValue(1),
   getScaleFactors: jest.fn().mockReturnValue([1]),
   addRepresentation: jest.fn()

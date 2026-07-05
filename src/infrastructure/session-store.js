@@ -23,7 +23,7 @@ class SessionStore extends EventEmitter {
       accessed: 0,
       updated: 0,
       deleted: 0,
-      errors: 0,
+      errors: 0
     };
 
     // Session schema validation
@@ -40,7 +40,7 @@ class SessionStore extends EventEmitter {
       is_authenticated: 'boolean',
       metadata: 'object',
       capture_state: 'object',
-      monitoring_config: 'object',
+      monitoring_config: 'object'
     };
   }
 
@@ -75,7 +75,7 @@ class SessionStore extends EventEmitter {
 
     return {
       isValid: errors.length === 0,
-      errors,
+      errors
     };
   }
 
@@ -113,7 +113,7 @@ class SessionStore extends EventEmitter {
       this.emit('session:created', {
         sessionId: sessionData.session_id,
         userId: sessionData.user_id,
-        timestamp: now,
+        timestamp: now
       });
 
       return sessionData;
@@ -150,13 +150,13 @@ class SessionStore extends EventEmitter {
         // Update both stores
         await this.redisManager.updateSession(sessionId, {
           last_accessed: session.last_accessed,
-          activity_count: session.activity_count,
+          activity_count: session.activity_count
         });
 
         if (this.dbPool) {
           await this.updateSessionInDb(sessionId, {
             last_accessed: session.last_accessed,
-            activity_count: session.activity_count,
+            activity_count: session.activity_count
           });
         }
 
@@ -177,7 +177,7 @@ class SessionStore extends EventEmitter {
   async updateSession(sessionId, updates) {
     try {
       // Get current session
-      let session = await this.getSession(sessionId);
+      const session = await this.getSession(sessionId);
       if (!session) {
         throw new Error(`Session not found: ${sessionId}`);
       }
@@ -204,7 +204,7 @@ class SessionStore extends EventEmitter {
       this.emit('session:updated', {
         sessionId,
         updates,
-        timestamp: Date.now(),
+        timestamp: Date.now()
       });
 
       return updated;
@@ -233,7 +233,7 @@ class SessionStore extends EventEmitter {
       this.sessionStats.deleted++;
       this.emit('session:deleted', {
         sessionId,
-        timestamp: Date.now(),
+        timestamp: Date.now()
       });
 
       return true;
@@ -272,10 +272,10 @@ class SessionStore extends EventEmitter {
 
       const results = {
         sessionId,
-        inRedis: !!redisSession,
-        inDatabase: !!dbSession,
+        inRedis: Boolean(redisSession),
+        inDatabase: Boolean(dbSession),
         consistent: true,
-        issues: [],
+        issues: []
       };
 
       if (redisSession && dbSession) {
@@ -334,7 +334,9 @@ class SessionStore extends EventEmitter {
    */
 
   async writeSessionToDb(sessionData) {
-    if (!this.dbPool) return;
+    if (!this.dbPool) {
+      return;
+    }
 
     try {
       const query = `
@@ -362,7 +364,7 @@ class SessionStore extends EventEmitter {
         expiresAt,
         true,
         sessionData.activity_count,
-        JSON.stringify(sessionData.metadata || {}),
+        JSON.stringify(sessionData.metadata || {})
       ]);
     } catch (err) {
       // Log but don't throw - cache is sufficient
@@ -371,7 +373,9 @@ class SessionStore extends EventEmitter {
   }
 
   async getSessionFromDb(sessionId) {
-    if (!this.dbPool) return null;
+    if (!this.dbPool) {
+      return null;
+    }
 
     try {
       const query = `
@@ -379,7 +383,9 @@ class SessionStore extends EventEmitter {
       `;
 
       const result = await this.dbPool.query(query, [sessionId]);
-      if (result.rows.length === 0) return null;
+      if (result.rows.length === 0) {
+        return null;
+      }
 
       const row = result.rows[0];
       return {
@@ -391,7 +397,7 @@ class SessionStore extends EventEmitter {
         last_accessed: row.last_accessed.getTime(),
         activity_count: row.activity_count,
         is_active: row.is_active,
-        metadata: row.metadata,
+        metadata: row.metadata
       };
     } catch (err) {
       this.emit('db:error', err);
@@ -400,7 +406,9 @@ class SessionStore extends EventEmitter {
   }
 
   async updateSessionInDb(sessionId, updates) {
-    if (!this.dbPool) return;
+    if (!this.dbPool) {
+      return;
+    }
 
     try {
       const setClauses = [];
@@ -421,7 +429,9 @@ class SessionStore extends EventEmitter {
         paramIdx++;
       }
 
-      if (setClauses.length === 0) return;
+      if (setClauses.length === 0) {
+        return;
+      }
 
       const query = `
         UPDATE sessions SET ${setClauses.join(', ')}
@@ -435,7 +445,9 @@ class SessionStore extends EventEmitter {
   }
 
   async deleteSessionFromDb(sessionId) {
-    if (!this.dbPool) return;
+    if (!this.dbPool) {
+      return;
+    }
 
     try {
       const query = `DELETE FROM sessions WHERE session_id = $1`;
@@ -451,7 +463,7 @@ class SessionStore extends EventEmitter {
   getStats() {
     return {
       sessions: { ...this.sessionStats },
-      timestamp: Date.now(),
+      timestamp: Date.now()
     };
   }
 }

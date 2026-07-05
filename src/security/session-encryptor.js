@@ -16,7 +16,7 @@ class SessionEncryptor {
    * @param {object} options Configuration options
    */
   constructor(options = {}) {
-    this.masterKeyPath = options.masterKeyPath || path.join(process.env.HOME || '/tmp', '.basset-hound', 'keys', 'master.key');
+    this.masterKeyPath = options.masterKeyPath || path.join(process.env.HOME || '/tmp', 'tmp', '.basset-hound', 'keys', 'master.key');
     this.algorithm = 'aes-256-gcm';
     this.keyLength = 32; // 256 bits
     this.saltLength = 16; // 128 bits

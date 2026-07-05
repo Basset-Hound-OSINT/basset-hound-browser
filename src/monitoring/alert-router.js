@@ -327,7 +327,9 @@ Count: ${alert.count}
     const suppressionKey = `${alert.ruleId}:${alert.metric}`;
     const suppression = this.suppressedAlerts.get(suppressionKey);
 
-    if (!suppression) return false;
+    if (!suppression) {
+      return false;
+    }
 
     if (Date.now() - suppression.timestamp > this.options.suppressionDuration) {
       this.suppressedAlerts.delete(suppressionKey);
@@ -345,7 +347,9 @@ Count: ${alert.count}
     const deduplicationKey = `${alert.ruleId}:${alert.metric}`;
     const lastSent = this.sentAlerts.get(deduplicationKey);
 
-    if (!lastSent) return false;
+    if (!lastSent) {
+      return false;
+    }
 
     if (Date.now() - lastSent > this.options.deduplicationWindow) {
       return false;
@@ -361,7 +365,9 @@ Count: ${alert.count}
   _getRoutingRule(alert) {
     // Check for specific rule
     for (const rule of this.routingRules.values()) {
-      if (!rule.enabled) continue;
+      if (!rule.enabled) {
+        continue;
+      }
 
       if (rule.severity === alert.severity) {
         if (!rule.condition || rule.condition(alert)) {

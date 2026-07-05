@@ -639,7 +639,9 @@ class TicketManager extends EventEmitter {
    */
   updateSLADeadlines(ticketId) {
     const ticket = this.tickets.get(ticketId);
-    if (!ticket) return;
+    if (!ticket) {
+      return;
+    }
 
     const slaConfig = {
       critical: { response: 1 * 60, resolution: 4 * 60 },
@@ -660,7 +662,9 @@ class TicketManager extends EventEmitter {
    */
   checkSLAResponse(ticketId) {
     const ticket = this.tickets.get(ticketId);
-    if (!ticket || ticket.firstResponseAt === null) return;
+    if (!ticket || ticket.firstResponseAt === null) {
+      return;
+    }
 
     const deadline = new Date(ticket.sla.responseDeadline);
     const responseTime = new Date(ticket.firstResponseAt);
@@ -700,7 +704,9 @@ class TicketManager extends EventEmitter {
    */
   checkSLAResolution(ticketId) {
     const ticket = this.tickets.get(ticketId);
-    if (!ticket || ticket.resolvedAt === null) return;
+    if (!ticket || ticket.resolvedAt === null) {
+      return;
+    }
 
     const deadline = new Date(ticket.sla.resolutionDeadline);
     const resolutionTime = new Date(ticket.resolvedAt);
@@ -820,7 +826,9 @@ class TicketManager extends EventEmitter {
     userTickets.sort((a, b) => {
       const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
       const priorityDiff = (priorityOrder[a.priority] || 4) - (priorityOrder[b.priority] || 4);
-      if (priorityDiff !== 0) return priorityDiff;
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
@@ -836,7 +844,9 @@ class TicketManager extends EventEmitter {
    */
   getTicketsByAgent(agentId) {
     const agent = this.agents.get(agentId);
-    if (!agent) return [];
+    if (!agent) {
+      return [];
+    }
 
     return agent.currentTickets.map(ticketId => this.tickets.get(ticketId)).filter(Boolean);
   }
@@ -846,7 +856,9 @@ class TicketManager extends EventEmitter {
    */
   getSLAStatus(ticketId) {
     const ticket = this.tickets.get(ticketId);
-    if (!ticket) return null;
+    if (!ticket) {
+      return null;
+    }
 
     const now = new Date();
     const responseDeadline = new Date(ticket.sla.responseDeadline);

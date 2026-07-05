@@ -121,7 +121,9 @@ class Tab {
    * @param {string} url - URL to add
    */
   addToHistory(url) {
-    if (url === this.url) return;
+    if (url === this.url) {
+      return;
+    }
 
     // Truncate forward history if navigating from middle
     if (this.historyIndex < this.history.length - 1) {
@@ -147,7 +149,9 @@ class Tab {
    * @returns {string|null} Previous URL or null if cannot go back
    */
   goBack() {
-    if (this.historyIndex <= 0) return null;
+    if (this.historyIndex <= 0) {
+      return null;
+    }
 
     this.historyIndex--;
     this.url = this.history[this.historyIndex];
@@ -163,7 +167,9 @@ class Tab {
    * @returns {string|null} Next URL or null if cannot go forward
    */
   goForward() {
-    if (this.historyIndex >= this.history.length - 1) return null;
+    if (this.historyIndex >= this.history.length - 1) {
+      return null;
+    }
 
     this.historyIndex++;
     this.url = this.history[this.historyIndex];

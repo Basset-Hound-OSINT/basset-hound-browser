@@ -202,12 +202,16 @@ class FingerprintIsolation {
    * @private
    */
   compareMaps(obj1, obj2) {
-    if (!obj1 || !obj2) return 0;
+    if (!obj1 || !obj2) {
+      return 0;
+    }
 
     const keys1 = Object.keys(obj1);
     const keys2 = Object.keys(obj2);
 
-    if (keys1.length === 0) return 0;
+    if (keys1.length === 0) {
+      return 0;
+    }
 
     let matches = 0;
     for (const key of keys1) {

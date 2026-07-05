@@ -17,13 +17,13 @@ const TEST_PORT = process.env.BASSET_PORT || 8765;
 const WS_URL = `ws://${TEST_HOST}:${TEST_PORT}`;
 
 // Test results tracking
-let testResults = {
+const testResults = {
   timestamp: new Date().toISOString(),
   environment: {
     host: TEST_HOST,
     port: TEST_PORT,
     wsUrl: WS_URL,
-    nodeVersion: process.version,
+    nodeVersion: process.version
   },
   tests: [],
   summary: {
@@ -49,7 +49,7 @@ const log = {
   error: (msg) => console.log(`${colors.red}✗${colors.reset} ${msg}`),
   info: (msg) => console.log(`${colors.blue}ℹ${colors.reset} ${msg}`),
   test: (msg) => console.log(`${colors.cyan}→${colors.reset} ${msg}`),
-  section: (msg) => console.log(`\n${colors.cyan}═══ ${msg} ═══${colors.reset}\n`),
+  section: (msg) => console.log(`\n${colors.cyan}═══ ${msg} ═══${colors.reset}\n`)
 };
 
 class WebSocketClient {

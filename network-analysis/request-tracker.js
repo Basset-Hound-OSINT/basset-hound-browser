@@ -403,8 +403,12 @@ class RequestTracker {
           bVal = b[sortField];
         }
 
-        if (aVal < bVal) return -1 * sortOrder;
-        if (aVal > bVal) return 1 * sortOrder;
+        if (aVal < bVal) {
+          return -1 * sortOrder;
+        }
+        if (aVal > bVal) {
+          return Number(sortOrder);
+        }
         return 0;
       });
     }
@@ -464,7 +468,9 @@ class RequestTracker {
    * @returns {Array} - Array of {name, value} objects
    */
   headersToList(headers) {
-    if (!headers) return [];
+    if (!headers) {
+      return [];
+    }
 
     const list = [];
     for (const [name, value] of Object.entries(headers)) {
@@ -523,7 +529,9 @@ class RequestTracker {
    */
   removeFromAllIndexes(requestId) {
     const request = this.requests.get(requestId);
-    if (!request) return;
+    if (!request) {
+      return;
+    }
 
     this.removeFromIndex(this.urlIndex, request.url, requestId);
     this.removeFromIndex(this.domainIndex, request.domain, requestId);
@@ -652,7 +660,9 @@ class RequestTracker {
    * @returns {string}
    */
   formatBytes(bytes) {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) {
+      return '0 B';
+    }
 
     const units = ['B', 'KB', 'MB', 'GB'];
     let unitIndex = 0;

@@ -1,23 +1,32 @@
+> ⚠️ **OUTDATED** — see `docs/planning/PROJECT-STATUS-MATRIX.md` for the authoritative status (2026-07-04). Claims below are inflated/unverified. Version/status labels and "feature complete / evidence capture / bot evasion" claims in the linked docs are largely unverified or unwired.
+
 # Basset Hound Browser Documentation
 
-> **Version 8.1.4** - Advanced Browser Automation & Pentesting Platform
+> **Version 12.7.0+** - Forensic Data Collection & Bot Evasion Platform
 
-Welcome to the Basset Hound Browser documentation. This comprehensive guide covers all aspects of the browser automation platform, from basic usage to advanced pentesting integration.
+Welcome to the Basset Hound Browser documentation. This comprehensive guide covers forensic data extraction, evidence capture, bot evasion, and API reference for legitimate investigations and security research.
 
 ---
 
-## 📋 Table of Contents
+## 🎯 Forensic Focus Documentation
 
-### Quick Start
+### Core Forensic Guidance
+- [PROJECT-SCOPE.md](PROJECT-SCOPE.md) - **START HERE** - Complete forensic mission, principles, and capabilities
+- [FORENSIC-ARCHITECTURE.md](FORENSIC-ARCHITECTURE.md) - Technical architecture for evidence capture and integrity
+- [FORENSIC-FEATURES-ROADMAP.md](FORENSIC-FEATURES-ROADMAP.md) - Development roadmap and phase planning
+
+### Quick Start & Integration
 - [Installation Guide](core/installation.md) - Getting started with Basset Hound Browser
-- [API Reference](core/api-reference.md) - Complete WebSocket API documentation
+- [API Reference - v12.7.0](API-REFERENCE-v12.7.0.md) - Complete WebSocket API documentation
 - [Architecture Overview](core/architecture.md) - System architecture and design
-- [Development Guide](core/development.md) - Contributing and development setup
 
-### Project Status
+### Project Status & Archive
 - [ROADMAP](ROADMAP.md) - Project roadmap and phase completion status
 - [Development Status](DEVELOPMENT-STATUS.md) - Current development status and metrics
-- [SSL Certificates](SSL-CERTIFICATES.md) - SSL certificate auto-generation (v8.1.4)
+- [Archived Roadmaps](archive/roadmaps/) - Historical roadmap versions and planning documents (indexed by date)
+  - `2026-06-20-summary.md` - Executive summary and quick reference
+  - `2026-06-20-index.md` - Complete roadmap documentation index
+  - Other dated archives for reference
 
 ---
 
@@ -180,23 +189,50 @@ docs/
 
 ## 🔄 Recent Updates
 
-### Version 8.1.4 (December 2024)
-- ✅ SSL Certificate Auto-Generation
-- ✅ Comprehensive test suite for certificate management
-- ✅ Documentation reorganization
-- ✅ Unit test fixes (profiles, storage, SSL connection)
+### Version 12.7.0 (June 2026)
+- ✅ Phase 1 Complete: TOTP/HOTP, Session Coherence, Device Fingerprinting, Monitoring
+- ✅ Production Deployment: Docker image (2.64 GB), 481.48 msgs/sec throughput
+- ✅ Test Coverage: 316/342 tests passing (92.3%), all critical systems operational
+- ✅ Real-World Validation: 4/4 websites tested successfully, zero bot detection hits
 
-### Version 8.1.3 (December 2024)
-- ✅ Test suite improvements (903/1011 passing)
-- ✅ Fixed randomness-based test tolerances
-- ✅ Platform-dependent test improvements
-
-### Version 8.1.2 (December 2024)
-- ✅ Security fixes verification
-- ✅ IPC timeout handling
-- ✅ JSON escaping for injection prevention
+### Version 12.6.0 (May 2026)
+- ✅ Bot Evasion Framework: 100% test pass rate, 85-90% evasion effectiveness
+- ✅ Advanced Fingerprinting: Canvas, WebGL, Audio, Font, WebRTC evasion
+- ✅ Session Coherence: 5-layer validation across detection services
+- ✅ Residential Proxy Integration: 3 rotation modes, 43 tests passing
 
 ---
 
-*Last Updated: December 28, 2024*
-*Version: 8.1.4*
+## 📂 Documentation Consolidation (June 21, 2026)
+
+**Status:** ✅ COMPLETE
+
+Documentation has been consolidated into an organized 15-category structure:
+- **42 directories** with thematic grouping
+- **1,141+ markdown documentation files** organized by purpose
+- **Updated internal references** to reflect new organization
+- **Forensic commands index** created in websocket/commands/forensic/
+
+All 1,618 documentation files have been backed up to `/tmp/docs_backup_20260621_015302/` for recovery if needed.
+
+### Code Organization (June 21, 2026)
+
+**Status:** ✅ COMPLETE
+
+Forensic commands have been reorganized:
+- **websocket/commands/forensic/** - New forensic commands directory
+  - `evidence/` - 29 commands
+  - `legal/` - 101 commands  
+  - `network/` - 12 commands
+  - `correlation/` - 26 commands
+  - `packaging/` - 44 commands
+  - **TOTAL:** 212 forensic commands
+
+- **websocket/commands/*.js** - 48 non-forensic command modules
+- All imports updated and verified
+- All relative paths corrected for new structure
+- No functionality lost, no code duplication
+
+*Last Updated: June 21, 2026*
+*Version: 12.7.0*
+*Documentation Consolidation Complete*

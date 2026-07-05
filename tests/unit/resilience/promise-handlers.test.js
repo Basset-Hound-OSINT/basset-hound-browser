@@ -66,7 +66,7 @@ describe('PromiseHandlers', () => {
           operationName: 'Test',
           rethrow: true
         });
-        expect(true).toBe(false);  // Should have thrown
+        expect(true).toBe(false); // Should have thrown
       } catch (e) {
         expect(e).toBe(error);
         expect(logger.error).toHaveBeenCalled();
@@ -121,7 +121,7 @@ describe('PromiseHandlers', () => {
 
       try {
         await wrapped();
-        expect(true).toBe(false);  // Should have thrown
+        expect(true).toBe(false); // Should have thrown
       } catch (error) {
         expect(error.message).toBe('Wrapped function error');
         expect(logger.error).toHaveBeenCalled();
@@ -157,7 +157,7 @@ describe('PromiseHandlers', () => {
 
       try {
         await PromiseHandlers.executeWithErrorHandling(fn, 500, { logger });
-        expect(true).toBe(false);  // Should have timed out
+        expect(true).toBe(false); // Should have timed out
       } catch (error) {
         expect(error.message).toContain('timed out');
         expect(logger.error).toHaveBeenCalled();
@@ -193,7 +193,7 @@ describe('PromiseHandlers', () => {
 
       try {
         await promise;
-        expect(true).toBe(false);  // Should have thrown
+        expect(true).toBe(false); // Should have thrown
       } catch (error) {
         expect(error.message).toBe('Executor error');
         expect(logger.error).toHaveBeenCalled();
@@ -222,7 +222,7 @@ describe('PromiseHandlers', () => {
           logger,
           continueOnError: false
         });
-        expect(true).toBe(false);  // Should have thrown
+        expect(true).toBe(false); // Should have thrown
       } catch (error) {
         expect(error.message).toBe('Test error');
         expect(logger.error).toHaveBeenCalled();
@@ -271,7 +271,7 @@ describe('PromiseHandlers', () => {
 
       try {
         await PromiseHandlers.raceWithErrorHandling(promises, { logger });
-        expect(true).toBe(false);  // Should have rejected
+        expect(true).toBe(false); // Should have rejected
       } catch (error) {
         expect(error.message).toBe('First error');
         expect(logger.error).toHaveBeenCalled();
@@ -293,7 +293,7 @@ describe('PromiseHandlers', () => {
 
       try {
         await PromiseHandlers.withTimeout(promise, 100, { logger });
-        expect(true).toBe(false);  // Should have timed out
+        expect(true).toBe(false); // Should have timed out
       } catch (error) {
         expect(error.message).toContain('timed out');
       }
@@ -345,10 +345,10 @@ describe('PromiseHandlers', () => {
           maxRetries: 2,
           initialDelay: 10
         });
-        expect(true).toBe(false);  // Should have failed
+        expect(true).toBe(false); // Should have failed
       } catch (error) {
         expect(error.message).toBe('Persistent error');
-        expect(fn).toHaveBeenCalledTimes(3);  // Initial + 2 retries
+        expect(fn).toHaveBeenCalledTimes(3); // Initial + 2 retries
         expect(logger.error).toHaveBeenCalled();
       }
     });
@@ -439,7 +439,7 @@ describe('PromiseHandlers', () => {
 
       try {
         await wrapped();
-        expect(true).toBe(false);  // Should have thrown
+        expect(true).toBe(false); // Should have thrown
       } catch (error) {
         expect(error.code).toBe('CUSTOM_ERROR');
         expect(logger.error).toHaveBeenCalled();

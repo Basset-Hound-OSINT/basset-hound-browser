@@ -410,10 +410,18 @@ class AccessControlManager {
    */
   getAccessLogs(filters = {}) {
     return this.accessLog.filter(entry => {
-      if (filters.principal && entry.principal !== filters.principal) return false;
-      if (filters.role && entry.role !== filters.role) return false;
-      if (filters.resource && entry.resource !== filters.resource) return false;
-      if (filters.allowed !== undefined && entry.allowed !== filters.allowed) return false;
+      if (filters.principal && entry.principal !== filters.principal) {
+        return false;
+      }
+      if (filters.role && entry.role !== filters.role) {
+        return false;
+      }
+      if (filters.resource && entry.resource !== filters.resource) {
+        return false;
+      }
+      if (filters.allowed !== undefined && entry.allowed !== filters.allowed) {
+        return false;
+      }
       return true;
     });
   }

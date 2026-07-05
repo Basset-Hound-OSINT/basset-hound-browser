@@ -29,23 +29,23 @@ const TEMPLATE_CATEGORIES = {
  * Risk levels for profiles
  */
 const RISK_LEVELS = {
-  LOW: 'low',           // Minimal evasion, normal user
-  MEDIUM: 'medium',     // Standard evasion
-  HIGH: 'high',         // Aggressive evasion
-  PARANOID: 'paranoid'  // Maximum evasion
+  LOW: 'low', // Minimal evasion, normal user
+  MEDIUM: 'medium', // Standard evasion
+  HIGH: 'high', // Aggressive evasion
+  PARANOID: 'paranoid' // Maximum evasion
 };
 
 /**
  * Activity patterns
  */
 const ACTIVITY_PATTERNS = {
-  CASUAL: 'casual',           // Slow, exploratory browsing
-  RESEARCHER: 'researcher',   // Methodical, note-taking behavior
-  SHOPPER: 'shopper',         // Browse products, compare
+  CASUAL: 'casual', // Slow, exploratory browsing
+  RESEARCHER: 'researcher', // Methodical, note-taking behavior
+  SHOPPER: 'shopper', // Browse products, compare
   NEWS_READER: 'news_reader', // Scan headlines, read articles
-  SOCIAL: 'social',           // Social media interactions
-  POWER_USER: 'power_user',   // Fast, keyboard shortcuts
-  AUTOMATED: 'automated'      // Minimal human-like behavior
+  SOCIAL: 'social', // Social media interactions
+  POWER_USER: 'power_user', // Fast, keyboard shortcuts
+  AUTOMATED: 'automated' // Minimal human-like behavior
 };
 
 /**

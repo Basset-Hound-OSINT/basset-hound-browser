@@ -81,9 +81,9 @@ class SafeJavaScriptExecutor {
    * Default configuration
    */
   static DEFAULT_CONFIG = {
-    timeout: 30000,  // 30 seconds
+    timeout: 30000, // 30 seconds
     sandbox: true,
-    codeLimit: 1048576,  // 1MB
+    codeLimit: 1048576, // 1MB
     allowStrictMode: true,
     checkBlocklist: true,
     enableMonitoring: true
@@ -410,12 +410,18 @@ class SafeJavaScriptExecutor {
    * @returns {boolean} True if code appears safe
    */
   static quickValidate(snippet) {
-    if (typeof snippet !== 'string') return false;
-    if (snippet.length === 0 || snippet.length > 1048576) return false;
+    if (typeof snippet !== 'string') {
+      return false;
+    }
+    if (snippet.length === 0 || snippet.length > 1048576) {
+      return false;
+    }
 
     // Quick blocklist check
     for (const pattern of SafeJavaScriptExecutor.CODE_BLOCKLIST) {
-      if (pattern.test(snippet)) return false;
+      if (pattern.test(snippet)) {
+        return false;
+      }
     }
 
     return true;

@@ -191,68 +191,68 @@ class FailureRecoveryManager {
 
     // Determine next action based on failure type
     switch (failureType) {
-      case 'rate_limit':
-        const backoffMs = this._calculateBackoff(sessionId, retryCount);
-        recovery.nextAction = 'wait_and_retry';
-        recovery.backoffMs = backoffMs;
-        recovery.retryAfter = Math.ceil(backoffMs / 1000);
+    case 'rate_limit':
+      const backoffMs = this._calculateBackoff(sessionId, retryCount);
+      recovery.nextAction = 'wait_and_retry';
+      recovery.backoffMs = backoffMs;
+      recovery.retryAfter = Math.ceil(backoffMs / 1000);
 
-        // Update backoff state
-        this.backoffState.set(sessionId, {
-          nextRetryTime: Date.now() + backoffMs,
-          backoffMs,
-          retryCount
-        });
-        recovery.metadata = { backoffMs, retryAfter: recovery.retryAfter };
-        break;
+      // Update backoff state
+      this.backoffState.set(sessionId, {
+        nextRetryTime: Date.now() + backoffMs,
+        backoffMs,
+        retryCount
+      });
+      recovery.metadata = { backoffMs, retryAfter: recovery.retryAfter };
+      break;
 
-      case 'bot_detection':
-        recovery.nextAction = 'rotate_and_retry';
-        recovery.strategies = [
-          { action: 'rotate_fingerprint', priority: 1 },
-          { action: 'rotate_proxy', priority: 2 },
-          { action: 'rotate_user_agent', priority: 3 },
-          { action: 'wait', duration: 300000, priority: 4 }
-        ];
-        recovery.metadata = { suggestBehavioralSimulation: true };
-        break;
+    case 'bot_detection':
+      recovery.nextAction = 'rotate_and_retry';
+      recovery.strategies = [
+        { action: 'rotate_fingerprint', priority: 1 },
+        { action: 'rotate_proxy', priority: 2 },
+        { action: 'rotate_user_agent', priority: 3 },
+        { action: 'wait', duration: 300000, priority: 4 }
+      ];
+      recovery.metadata = { suggestBehavioralSimulation: true };
+      break;
 
-      case 'auth_denied':
-        recovery.nextAction = 'rotate_and_retry';
-        recovery.strategies = [
-          { action: 'rotate_user_agent', priority: 1 },
-          { action: 'rotate_proxy', priority: 2 },
-          { action: 'clear_cookies', priority: 3 },
-          { action: 'rotate_fingerprint', priority: 4 }
-        ];
-        recovery.metadata = { clearAuth: true };
-        break;
+    case 'auth_denied':
+      recovery.nextAction = 'rotate_and_retry';
+      recovery.strategies = [
+        { action: 'rotate_user_agent', priority: 1 },
+        { action: 'rotate_proxy', priority: 2 },
+        { action: 'clear_cookies', priority: 3 },
+        { action: 'rotate_fingerprint', priority: 4 }
+      ];
+      recovery.metadata = { clearAuth: true };
+      break;
 
-      case 'server_error':
-        const serverBackoffMs = this._calculateBackoff(sessionId, retryCount);
-        recovery.nextAction = 'wait_and_retry';
-        recovery.backoffMs = serverBackoffMs;
-        recovery.retryAfter = Math.ceil(serverBackoffMs / 1000);
-        this.backoffState.set(sessionId, {
-          nextRetryTime: Date.now() + serverBackoffMs,
-          backoffMs: serverBackoffMs,
-          retryCount
-        });
-        break;
+    case 'server_error':
+      const serverBackoffMs = this._calculateBackoff(sessionId, retryCount);
+      recovery.nextAction = 'wait_and_retry';
+      recovery.backoffMs = serverBackoffMs;
+      recovery.retryAfter = Math.ceil(serverBackoffMs / 1000);
+      this.backoffState.set(sessionId, {
+        nextRetryTime: Date.now() + serverBackoffMs,
+        backoffMs: serverBackoffMs,
+        retryCount
+      });
+      break;
 
-      case 'connection_lost':
-        recovery.nextAction = 'restore_and_retry';
-        recovery.restoreFromCheckpoint = lastCheckpoint;
-        recovery.strategies = [
-          { action: 'restore_from_snapshot', priority: 1, checkpoint: lastCheckpoint },
-          { action: 'retry', duration: 5000, priority: 2 }
-        ];
-        recovery.metadata = { waitBeforeRetry: 5000 };
-        break;
+    case 'connection_lost':
+      recovery.nextAction = 'restore_and_retry';
+      recovery.restoreFromCheckpoint = lastCheckpoint;
+      recovery.strategies = [
+        { action: 'restore_from_snapshot', priority: 1, checkpoint: lastCheckpoint },
+        { action: 'retry', duration: 5000, priority: 2 }
+      ];
+      recovery.metadata = { waitBeforeRetry: 5000 };
+      break;
 
-      default:
-        recovery.nextAction = 'wait_and_retry';
-        recovery.backoffMs = this._calculateBackoff(sessionId, retryCount);
+    default:
+      recovery.nextAction = 'wait_and_retry';
+      recovery.backoffMs = this._calculateBackoff(sessionId, retryCount);
     }
 
     // Increment retry counter

@@ -9,10 +9,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="basset-hound-client",
-    version="1.0.0",
+    version="1.2.0",
     author="Basset Hound Team",
     author_email="team@bassethound.dev",
-    description="Python client for Basset Hound Browser automation",
+    description="Python client for Basset Hound Browser automation and forensic exports",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/basset-hound/browser",
@@ -30,6 +30,8 @@ setup(
         "Programming Language :: Python :: 3.12",
         "Topic :: Internet :: WWW/HTTP :: Browsers",
         "Topic :: Software Development :: Testing",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+        "Topic :: Utilities",
     ],
     python_requires=">=3.8",
     install_requires=[
@@ -42,11 +44,13 @@ setup(
             "pytest-asyncio>=0.20.0",
             "black>=23.0.0",
             "mypy>=1.0.0",
+            "flake8>=4.0.0",
         ],
     },
-    keywords="browser automation websocket osint scraping",
+    keywords="browser automation websocket forensic-analysis data-extraction network-capture fingerprinting",
     project_urls={
         "Bug Reports": "https://github.com/basset-hound/browser/issues",
         "Source": "https://github.com/basset-hound/browser",
+        "Documentation": "https://github.com/basset-hound/browser/tree/main/clients/python",
     },
 )

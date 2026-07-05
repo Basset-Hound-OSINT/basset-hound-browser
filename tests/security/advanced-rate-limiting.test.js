@@ -101,7 +101,7 @@ describe('Advanced Rate Limiting', () => {
 
     test('Sensitive endpoints have lower limits', () => {
       const result = limiter.checkPerEndpoint('client2', 'execute_javascript');
-      expect(result.limit).toBeLessThan(50);  // execute_javascript has limit of 10
+      expect(result.limit).toBeLessThan(50); // execute_javascript has limit of 10
     });
 
     test('Per-endpoint limits are independent', () => {
@@ -165,7 +165,7 @@ describe('Advanced Rate Limiting', () => {
       const result2 = limiter.checkPerIdentity(id2);
 
       expect(result1.allowed).toBe(true);
-      expect(result2.allowed).toBe(true);  // Different IP should have its own limit
+      expect(result2.allowed).toBe(true); // Different IP should have its own limit
     });
   });
 
@@ -290,7 +290,7 @@ describe('Advanced Rate Limiting', () => {
         slidingWindow: {
           enabled: true,
           windowSize: 60000,
-          maxRequests: 10  // Very restrictive
+          maxRequests: 10 // Very restrictive
         }
       });
 

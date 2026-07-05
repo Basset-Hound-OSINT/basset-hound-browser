@@ -15,11 +15,11 @@ const RESULTS = {
   audio: [],
   fonts: [],
   behavioral: [],
-  detectionServices: [],
+  detectionServices: []
 };
 
-let FINGERPRINT_PROFILES = {};
-let BEHAVIORAL_PROFILES = {};
+const FINGERPRINT_PROFILES = {};
+const BEHAVIORAL_PROFILES = {};
 
 /**
  * Connect to WebSocket with message queue
@@ -49,7 +49,9 @@ class WebSocketClient {
 
       this.ws.on('error', reject);
       setTimeout(() => {
-        if (!this.connected) reject(new Error('Connection timeout'));
+        if (!this.connected) {
+          reject(new Error('Connection timeout'));
+        }
       }, 5000);
     });
   }
@@ -124,7 +126,7 @@ async function runTests() {
       const result = await client.sendCommand('create_fingerprint_profile', {
         platform: 'windows',
         timezone: 'America/New_York',
-        tier: 'medium',
+        tier: 'medium'
       });
 
       if (result.success && result.profileId) {
@@ -134,7 +136,7 @@ async function runTests() {
           status: 'PASS',
           profileId: result.profileId,
           platform: result.profile.platformType,
-          timezone: result.profile.timezone,
+          timezone: result.profile.timezone
         });
         console.log('✓ PASS');
         console.log(`  Profile ID: ${result.profileId}`);
@@ -148,7 +150,7 @@ async function runTests() {
       RESULTS.fingerprint.push({
         test: 'Create fingerprint profile',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log('✗ FAIL:', e.message);
     }
@@ -157,7 +159,7 @@ async function runTests() {
     console.log('\nTest 2: Creating regional fingerprint (UK)...');
     try {
       const result = await client.sendCommand('create_regional_fingerprint', {
-        region: 'UK',
+        region: 'UK'
       });
 
       if (result.success && result.profileId) {
@@ -166,7 +168,7 @@ async function runTests() {
           test: 'Create regional fingerprint (UK)',
           status: 'PASS',
           profileId: result.profileId,
-          region: result.region,
+          region: result.region
         });
         console.log('✓ PASS');
         console.log(`  Region: ${result.region}`);
@@ -178,7 +180,7 @@ async function runTests() {
       RESULTS.fingerprint.push({
         test: 'Create regional fingerprint',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log('✗ FAIL:', e.message);
     }
@@ -192,7 +194,7 @@ async function runTests() {
         RESULTS.fingerprint.push({
           test: 'List fingerprint profiles',
           status: 'PASS',
-          profileCount: result.profiles.length,
+          profileCount: result.profiles.length
         });
         console.log('✓ PASS');
         console.log(`  Total Profiles: ${result.count}`);
@@ -203,7 +205,7 @@ async function runTests() {
       RESULTS.fingerprint.push({
         test: 'List fingerprint profiles',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log('✗ FAIL:', e.message);
     }
@@ -220,7 +222,7 @@ async function runTests() {
       try {
         const result = await client.sendCommand('configure_canvas_noise', {
           profileId: canvasProfile,
-          level: 'aggressive',
+          level: 'aggressive'
         });
 
         if (result.success && result.canvasNoise) {
@@ -228,7 +230,7 @@ async function runTests() {
             test: 'Configure canvas noise - aggressive',
             status: 'PASS',
             level: result.canvasNoise.level,
-            intensity: result.canvasNoise.config.intensity,
+            intensity: result.canvasNoise.config.intensity
           });
           console.log('✓ PASS');
           console.log(`  Level: ${result.canvasNoise.level}`);
@@ -243,7 +245,7 @@ async function runTests() {
         RESULTS.canvas.push({
           test: 'Configure canvas noise - aggressive',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -257,7 +259,7 @@ async function runTests() {
         try {
           const result = await client.sendCommand('configure_canvas_noise', {
             profileId: canvasProfile,
-            level: level,
+            level: level
           });
           if (result.success) {
             levelResults.push({ level, success: true });
@@ -272,7 +274,7 @@ async function runTests() {
         RESULTS.canvas.push({
           test: 'Canvas noise levels',
           status: 'PASS',
-          levelsSupported: passCount,
+          levelsSupported: passCount
         });
         console.log(`✓ PASS: All ${passCount} levels supported`);
       } else {
@@ -280,7 +282,7 @@ async function runTests() {
           test: 'Canvas noise levels',
           status: 'FAIL',
           levelsSupported: passCount,
-          totalLevels: levels.length,
+          totalLevels: levels.length
         });
         console.log(`✗ FAIL: Only ${passCount}/${levels.length} levels working`);
       }
@@ -289,14 +291,14 @@ async function runTests() {
       console.log('\nTest 3: Retrieving canvas evasion configuration...');
       try {
         const result = await client.sendCommand('get_evasion_config', {
-          profileId: canvasProfile,
+          profileId: canvasProfile
         });
 
         if (result.success && result.evasion && result.evasion.canvas) {
           RESULTS.canvas.push({
             test: 'Get canvas evasion config',
             status: 'PASS',
-            canvasLevel: result.evasion.canvas.level,
+            canvasLevel: result.evasion.canvas.level
           });
           console.log('✓ PASS');
           console.log(`  Current Level: ${result.evasion.canvas.level}`);
@@ -310,7 +312,7 @@ async function runTests() {
         RESULTS.canvas.push({
           test: 'Get canvas evasion config',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -328,14 +330,14 @@ async function runTests() {
       try {
         const result = await client.sendCommand('configure_webgl_noise', {
           profileId: webglProfile,
-          level: 'aggressive',
+          level: 'aggressive'
         });
 
         if (result.success && result.webglNoise) {
           RESULTS.webgl.push({
             test: 'Configure WebGL noise - aggressive',
             status: 'PASS',
-            level: result.webglNoise.level,
+            level: result.webglNoise.level
           });
           console.log('✓ PASS');
           console.log(`  Level: ${result.webglNoise.level}`);
@@ -355,7 +357,7 @@ async function runTests() {
         RESULTS.webgl.push({
           test: 'Configure WebGL noise - aggressive',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -369,7 +371,7 @@ async function runTests() {
         try {
           const result = await client.sendCommand('configure_webgl_noise', {
             profileId: webglProfile,
-            level: level,
+            level: level
           });
           if (result.success) {
             levelResults.push({ level, success: true });
@@ -384,7 +386,7 @@ async function runTests() {
         RESULTS.webgl.push({
           test: 'WebGL noise levels',
           status: 'PASS',
-          levelsSupported: passCount,
+          levelsSupported: passCount
         });
         console.log(`✓ PASS: All ${passCount} levels supported`);
       } else {
@@ -392,7 +394,7 @@ async function runTests() {
           test: 'WebGL noise levels',
           status: 'FAIL',
           levelsSupported: passCount,
-          totalLevels: levels.length,
+          totalLevels: levels.length
         });
         console.log(`✗ FAIL: Only ${passCount}/${levels.length} levels working`);
       }
@@ -401,14 +403,14 @@ async function runTests() {
       console.log('\nTest 3: Retrieving WebGL evasion configuration...');
       try {
         const result = await client.sendCommand('get_evasion_config', {
-          profileId: webglProfile,
+          profileId: webglProfile
         });
 
         if (result.success && result.evasion && result.evasion.webgl) {
           RESULTS.webgl.push({
             test: 'Get WebGL evasion config',
             status: 'PASS',
-            webglLevel: result.evasion.webgl.level,
+            webglLevel: result.evasion.webgl.level
           });
           console.log('✓ PASS');
           console.log(`  Current Level: ${result.evasion.webgl.level}`);
@@ -422,7 +424,7 @@ async function runTests() {
         RESULTS.webgl.push({
           test: 'Get WebGL evasion config',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -440,14 +442,14 @@ async function runTests() {
       try {
         const result = await client.sendCommand('configure_audio_noise', {
           profileId: advProfile,
-          level: 'aggressive',
+          level: 'aggressive'
         });
 
         if (result.success && result.audioNoise) {
           RESULTS.audio.push({
             test: 'Configure audio noise',
             status: 'PASS',
-            level: result.audioNoise.level,
+            level: result.audioNoise.level
           });
           console.log('✓ PASS');
           console.log(`  Level: ${result.audioNoise.level}`);
@@ -461,7 +463,7 @@ async function runTests() {
         RESULTS.audio.push({
           test: 'Configure audio noise',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -471,7 +473,7 @@ async function runTests() {
       try {
         const result = await client.sendCommand('configure_font_evasion', {
           profileId: advProfile,
-          level: 'aggressive',
+          level: 'aggressive'
         });
 
         if (result.success && result.fontEvasion) {
@@ -479,7 +481,7 @@ async function runTests() {
             test: 'Configure font evasion',
             status: 'PASS',
             level: result.fontEvasion.level,
-            fontCount: result.fontEvasion.fontCount,
+            fontCount: result.fontEvasion.fontCount
           });
           console.log('✓ PASS');
           console.log(`  Level: ${result.fontEvasion.level}`);
@@ -492,7 +494,7 @@ async function runTests() {
         RESULTS.fonts.push({
           test: 'Configure font evasion',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -508,7 +510,7 @@ async function runTests() {
       const result = await client.sendCommand('create_behavioral_profile', {
         sessionId: sessionId,
         speedMultiplier: 1.0,
-        accuracyLevel: 0.95,
+        accuracyLevel: 0.95
       });
 
       if (result.success && result.sessionId) {
@@ -517,7 +519,7 @@ async function runTests() {
           test: 'Create behavioral profile',
           status: 'PASS',
           sessionId: result.sessionId,
-          typingWPM: result.profile.typingWPM,
+          typingWPM: result.profile.typingWPM
         });
         console.log('✓ PASS');
         console.log(`  Session ID: ${result.sessionId}`);
@@ -529,7 +531,7 @@ async function runTests() {
       RESULTS.behavioral.push({
         test: 'Create behavioral profile',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log('✗ FAIL:', e.message);
     }
@@ -544,7 +546,7 @@ async function runTests() {
           sessionId: BEHAVIORAL_PROFILES.session1,
           start: { x: 100, y: 100 },
           end: { x: 500, y: 400 },
-          targetWidth: 20,
+          targetWidth: 20
         });
 
         if (result.success && result.path) {
@@ -552,7 +554,7 @@ async function runTests() {
             test: 'Generate mouse path',
             status: 'PASS',
             pointCount: result.pointCount,
-            duration: result.duration,
+            duration: result.duration
           });
           console.log('✓ PASS');
           console.log(`  Points: ${result.pointCount}`);
@@ -565,7 +567,7 @@ async function runTests() {
         RESULTS.behavioral.push({
           test: 'Generate mouse path',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -579,7 +581,7 @@ async function runTests() {
       try {
         const result = await client.sendCommand('generate_typing_events', {
           sessionId: BEHAVIORAL_PROFILES.session1,
-          text: 'Hello World Test 123',
+          text: 'Hello World Test 123'
         });
 
         if (result.success && result.events) {
@@ -587,7 +589,7 @@ async function runTests() {
             test: 'Generate typing events',
             status: 'PASS',
             eventCount: result.eventCount,
-            wpm: result.effectiveWPM,
+            wpm: result.effectiveWPM
           });
           console.log('✓ PASS');
           console.log(`  Events: ${result.eventCount}`);
@@ -600,7 +602,7 @@ async function runTests() {
         RESULTS.behavioral.push({
           test: 'Generate typing events',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -615,7 +617,7 @@ async function runTests() {
         const result = await client.sendCommand('generate_scroll_behavior', {
           sessionId: BEHAVIORAL_PROFILES.session1,
           distance: 500,
-          direction: 'down',
+          direction: 'down'
         });
 
         if (result.success && result.events !== undefined) {
@@ -623,7 +625,7 @@ async function runTests() {
             test: 'Generate scroll behavior',
             status: 'PASS',
             eventCount: result.eventCount,
-            duration: result.totalDuration,
+            duration: result.totalDuration
           });
           console.log('✓ PASS');
           console.log(`  Events: ${result.eventCount}`);
@@ -635,7 +637,7 @@ async function runTests() {
         RESULTS.behavioral.push({
           test: 'Generate scroll behavior',
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         console.log('✗ FAIL:', e.message);
       }
@@ -669,7 +671,7 @@ function generateReport() {
     ...RESULTS.webgl,
     ...RESULTS.audio,
     ...RESULTS.fonts,
-    ...RESULTS.behavioral,
+    ...RESULTS.behavioral
   ];
 
   const passCount = allResults.filter((r) => r.status === 'PASS').length;
@@ -685,7 +687,7 @@ function generateReport() {
     { name: 'WEBGL EVASION', results: RESULTS.webgl },
     { name: 'AUDIO EVASION', results: RESULTS.audio },
     { name: 'FONT EVASION', results: RESULTS.fonts },
-    { name: 'BEHAVIORAL PROFILES', results: RESULTS.behavioral },
+    { name: 'BEHAVIORAL PROFILES', results: RESULTS.behavioral }
   ];
 
   for (const cat of categories) {
@@ -718,7 +720,7 @@ function generateReport() {
       totalTests: totalCount,
       passedTests: passCount,
       failedTests: failCount,
-      passRate: `${((passCount / totalCount) * 100).toFixed(1)}%`,
+      passRate: `${((passCount / totalCount) * 100).toFixed(1)}%`
     },
     byCategory: {
       fingerprint: RESULTS.fingerprint,
@@ -726,8 +728,8 @@ function generateReport() {
       webgl: RESULTS.webgl,
       audio: RESULTS.audio,
       fonts: RESULTS.fonts,
-      behavioral: RESULTS.behavioral,
-    },
+      behavioral: RESULTS.behavioral
+    }
   };
 
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));

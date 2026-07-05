@@ -67,7 +67,7 @@ This document reports on the complete implementation of the Evidence Packaging &
 
 #### WebSocket Commands
 
-**File:** `/home/devel/basset-hound-browser/websocket/commands/evidence-packaging.js` (420 lines)
+**File:** `/home/devel/basset-hound-browser/websocket/commands/forensic/packaging/evidence-packaging.js` (420 lines)
 - **14 Commands Implemented:**
   1. `create_evidence_manifest` - Create forensic manifest
   2. `add_to_manifest` - Add evidence items

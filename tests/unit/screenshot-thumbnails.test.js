@@ -387,7 +387,7 @@ describe('ThumbnailGenerator', () => {
 
     it('should get cache statistics', async () => {
       await generator.generateThumbnail(testData);
-      await generator.generateThumbnail(testData);  // Will hit cache
+      await generator.generateThumbnail(testData); // Will hit cache
 
       const stats = generator.getStatistics();
 

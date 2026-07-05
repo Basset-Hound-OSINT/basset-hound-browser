@@ -242,7 +242,9 @@ describe('retryAsync - Boundary & Edge Cases', () => {
       let attempt = 0;
       const fn = jest.fn(async () => {
         attempt++;
-        if (attempt < 5) throw new Error('fail');
+        if (attempt < 5) {
+          throw new Error('fail');
+        }
         return 'success';
       });
 
@@ -484,9 +486,15 @@ describe('parallelAsync - Boundary & Edge Cases', () => {
       const callOrder = [];
 
       const fns = [
-        jest.fn(async () => { callOrder.push(1); return 1; }),
-        jest.fn(async () => { callOrder.push(2); return 2; }),
-        jest.fn(async () => { callOrder.push(3); return 3; })
+        jest.fn(async () => {
+          callOrder.push(1); return 1;
+        }),
+        jest.fn(async () => {
+          callOrder.push(2); return 2;
+        }),
+        jest.fn(async () => {
+          callOrder.push(3); return 3;
+        })
       ];
 
       const results = await parallelAsync(fns, 1);

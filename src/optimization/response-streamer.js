@@ -19,7 +19,7 @@ const { Transform } = require('stream');
 
 class ResponseStreamer {
   constructor(options = {}) {
-    this.chunkSize = options.chunkSize || 64 * 1024;        // 64KB chunks
+    this.chunkSize = options.chunkSize || 64 * 1024; // 64KB chunks
     this.compressionEnabled = options.compressionEnabled !== false;
     this.enabled = options.enabled !== false;
 
@@ -49,7 +49,9 @@ class ResponseStreamer {
    * @returns {boolean}
    */
   shouldStream(data) {
-    if (!this.enabled) return false;
+    if (!this.enabled) {
+      return false;
+    }
 
     const size = Buffer.byteLength(
       typeof data === 'string' ? data : JSON.stringify(data),
@@ -142,7 +144,9 @@ class ResponseStreamer {
    */
   getNextChunk(streamId) {
     const stream = this.activeStreams.get(streamId);
-    if (!stream) return null;
+    if (!stream) {
+      return null;
+    }
 
     if (stream.status === 'completed' || stream.index >= stream.totalChunks) {
       return null;
@@ -155,7 +159,9 @@ class ResponseStreamer {
     }
 
     const chunk = stream.chunks[stream.index];
-    if (!chunk) return null;
+    if (!chunk) {
+      return null;
+    }
 
     stream.index++;
     stream.stats.chunksSent++;
@@ -219,7 +225,9 @@ class ResponseStreamer {
    */
   getStreamStatus(streamId) {
     const stream = this.activeStreams.get(streamId);
-    if (!stream) return null;
+    if (!stream) {
+      return null;
+    }
 
     return {
       streamId,

@@ -57,7 +57,9 @@ class Timer {
    * @returns {number|null}
    */
   getDuration() {
-    if (!this.endTime) return null;
+    if (!this.endTime) {
+      return null;
+    }
     return Number(this.endTime - this.startTime) / 1e6;
   }
 
@@ -178,7 +180,9 @@ class Metric {
    * @returns {number}
    */
   getPercentile(p) {
-    if (this.samples.length === 0) return 0;
+    if (this.samples.length === 0) {
+      return 0;
+    }
 
     const sorted = [...this.samples].sort((a, b) => a - b);
     const index = Math.ceil((p / 100) * sorted.length) - 1;
@@ -274,7 +278,9 @@ class Profiler extends EventEmitter {
    * @returns {Timer} Timer instance
    */
   startTimer(name, metadata = {}) {
-    if (!this.enabled) return null;
+    if (!this.enabled) {
+      return null;
+    }
 
     const timer = new Timer(name, metadata);
     this.timers.set(name, timer);
@@ -293,7 +299,9 @@ class Profiler extends EventEmitter {
    * @returns {Object|null} Timer result with duration
    */
   endTimer(name) {
-    if (!this.enabled) return null;
+    if (!this.enabled) {
+      return null;
+    }
 
     const timer = this.timers.get(name);
     if (!timer) {
@@ -351,7 +359,9 @@ class Profiler extends EventEmitter {
    * @returns {Promise<*>} Function result
    */
   async measure(name, fn, metadata = {}) {
-    if (!this.enabled) return await fn();
+    if (!this.enabled) {
+      return await fn();
+    }
 
     const timer = this.startTimer(name, metadata);
 
@@ -373,7 +383,9 @@ class Profiler extends EventEmitter {
    * @returns {*} Function result
    */
   measureSync(name, fn, metadata = {}) {
-    if (!this.enabled) return fn();
+    if (!this.enabled) {
+      return fn();
+    }
 
     const timer = this.startTimer(name, metadata);
 
@@ -408,7 +420,9 @@ class Profiler extends EventEmitter {
    * @param {string} type - Metric type
    */
   recordMetric(name, value, type = METRIC_TYPES.HISTOGRAM) {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      return;
+    }
 
     const metric = this.getOrCreateMetric(name, type);
     metric.record(value);
@@ -421,7 +435,9 @@ class Profiler extends EventEmitter {
    * @param {number} value - Value to add
    */
   incrementCounter(name, value = 1) {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      return;
+    }
 
     const metric = this.getOrCreateMetric(name, METRIC_TYPES.COUNTER);
     metric.increment(value);
@@ -434,7 +450,9 @@ class Profiler extends EventEmitter {
    * @param {number} value - New value
    */
   setGauge(name, value) {
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      return;
+    }
 
     const metric = this.getOrCreateMetric(name, METRIC_TYPES.GAUGE);
     metric.set(value);

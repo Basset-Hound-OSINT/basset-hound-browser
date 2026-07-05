@@ -336,7 +336,9 @@ class APIGateway extends EventEmitter {
    * Check rate limiting for client
    */
   _checkRateLimit(clientId, limit) {
-    if (!clientId) return { allowed: true };
+    if (!clientId) {
+      return { allowed: true };
+    }
 
     const key = `rl:${clientId}`;
     const now = Date.now();

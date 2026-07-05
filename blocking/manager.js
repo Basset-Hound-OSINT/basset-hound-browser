@@ -14,7 +14,7 @@ const {
   EASYLIST_URLS,
   parseEasyList,
   getBuiltinPatterns,
-  getFilterListInfo,
+  getFilterListInfo
 } = require('./filters');
 
 /**
@@ -47,10 +47,10 @@ class BlockingManager {
         social: 0,
         cryptominers: 0,
         custom: 0,
-        filterList: 0,
+        filterList: 0
       },
       whitelistedRequests: 0,
-      sessionStartTime: null,
+      sessionStartTime: null
     };
 
     // Request handler reference
@@ -101,7 +101,7 @@ class BlockingManager {
         blockPatterns: this.blockPatterns.length,
         allowPatterns: this.allowPatterns.length,
         whitelistedDomains: this.whitelistedDomains.size,
-        enabledCategories: Array.from(this.enabledCategories),
+        enabledCategories: Array.from(this.enabledCategories)
       };
     } catch (error) {
       console.error('[BlockingManager] Error enabling blocking:', error);
@@ -146,7 +146,7 @@ class BlockingManager {
     this.blockPatterns = [
       ...patterns.blockPatterns,
       ...this.customRules.map(r => r.pattern),
-      ...this.getFilterListPatterns(),
+      ...this.getFilterListPatterns()
     ];
 
     // Remove duplicates
@@ -283,10 +283,14 @@ class BlockingManager {
    * @returns {boolean} - Whether the URL matches
    */
   matchesPattern(url, pattern) {
-    if (!pattern || !url) return false;
+    if (!pattern || !url) {
+      return false;
+    }
 
     // Exact match
-    if (pattern === url) return true;
+    if (pattern === url) {
+      return true;
+    }
 
     // Convert wildcard pattern to regex
     const regexPattern = pattern
@@ -317,7 +321,7 @@ class BlockingManager {
       pattern: pattern,
       description: options.description || '',
       enabled: options.enabled !== false,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     };
 
     this.customRules.push(rule);
@@ -332,7 +336,7 @@ class BlockingManager {
     return {
       success: true,
       rule: rule,
-      totalCustomRules: this.customRules.length,
+      totalCustomRules: this.customRules.length
     };
   }
 
@@ -360,7 +364,7 @@ class BlockingManager {
 
     return {
       success: true,
-      totalCustomRules: this.customRules.length,
+      totalCustomRules: this.customRules.length
     };
   }
 
@@ -377,9 +381,9 @@ class BlockingManager {
       loadedFilterLists: Array.from(this.loadedFilterLists.keys()).map(key => ({
         source: key,
         title: this.loadedFilterLists.get(key).title || 'Unknown',
-        patternCount: this.loadedFilterLists.get(key).blockPatterns.length,
+        patternCount: this.loadedFilterLists.get(key).blockPatterns.length
       })),
-      totalActivePatterns: this.blockPatterns.length,
+      totalActivePatterns: this.blockPatterns.length
     };
   }
 
@@ -426,7 +430,7 @@ class BlockingManager {
         blockPatterns: parsed.blockPatterns.length,
         allowPatterns: parsed.allowPatterns.length,
         elementHideRules: parsed.elementHideRules.length,
-        errors: parsed.errors.length,
+        errors: parsed.errors.length
       };
     } catch (error) {
       console.error('[BlockingManager] Error loading filter list:', error);
@@ -481,7 +485,7 @@ class BlockingManager {
         blockPatterns: parsed.blockPatterns.length,
         allowPatterns: parsed.allowPatterns.length,
         elementHideRules: parsed.elementHideRules.length,
-        errors: parsed.errors.length,
+        errors: parsed.errors.length
       };
     } catch (error) {
       console.error('[BlockingManager] Error loading local filter list:', error);
@@ -500,9 +504,9 @@ class BlockingManager {
 
       const request = client.get(url, {
         headers: {
-          'User-Agent': 'Basset Hound Browser/1.0',
+          'User-Agent': 'Basset Hound Browser/1.0'
         },
-        timeout: 30000,
+        timeout: 30000
       }, (response) => {
         // Handle redirects
         if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
@@ -554,7 +558,7 @@ class BlockingManager {
       activeAllowPatterns: this.allowPatterns.length,
       whitelistedDomains: this.whitelistedDomains.size,
       customRules: this.customRules.length,
-      loadedFilterLists: this.loadedFilterLists.size,
+      loadedFilterLists: this.loadedFilterLists.size
     };
   }
 
@@ -574,17 +578,17 @@ class BlockingManager {
         social: 0,
         cryptominers: 0,
         custom: 0,
-        filterList: 0,
+        filterList: 0
       },
       whitelistedRequests: 0,
-      sessionStartTime: this.isEnabled ? Date.now() : null,
+      sessionStartTime: this.isEnabled ? Date.now() : null
     };
 
     console.log('[BlockingManager] Statistics cleared');
 
     return {
       success: true,
-      previousStats,
+      previousStats
     };
   }
 
@@ -612,7 +616,7 @@ class BlockingManager {
     return {
       success: true,
       domain: cleanDomain,
-      totalWhitelisted: this.whitelistedDomains.size,
+      totalWhitelisted: this.whitelistedDomains.size
     };
   }
 
@@ -639,7 +643,7 @@ class BlockingManager {
     return {
       success: true,
       domain: cleanDomain,
-      totalWhitelisted: this.whitelistedDomains.size,
+      totalWhitelisted: this.whitelistedDomains.size
     };
   }
 
@@ -651,7 +655,7 @@ class BlockingManager {
     return {
       success: true,
       domains: Array.from(this.whitelistedDomains),
-      count: this.whitelistedDomains.size,
+      count: this.whitelistedDomains.size
     };
   }
 
@@ -666,7 +670,7 @@ class BlockingManager {
       return {
         success: false,
         error: `Unknown category: ${category}`,
-        availableCategories: Object.keys(BUILTIN_FILTERS),
+        availableCategories: Object.keys(BUILTIN_FILTERS)
       };
     }
 
@@ -688,7 +692,7 @@ class BlockingManager {
       success: true,
       category,
       enabled,
-      enabledCategories: Array.from(this.enabledCategories),
+      enabledCategories: Array.from(this.enabledCategories)
     };
   }
 
@@ -700,7 +704,7 @@ class BlockingManager {
     return {
       success: true,
       categories: getFilterListInfo(),
-      enabledCategories: Array.from(this.enabledCategories),
+      enabledCategories: Array.from(this.enabledCategories)
     };
   }
 
@@ -738,7 +742,7 @@ class BlockingManager {
     return {
       success: true,
       source,
-      removedPatterns: rules.blockPatterns.length + rules.allowPatterns.length,
+      removedPatterns: rules.blockPatterns.length + rules.allowPatterns.length
     };
   }
 
@@ -757,7 +761,7 @@ class BlockingManager {
 
     return {
       success: true,
-      clearedLists: count,
+      clearedLists: count
     };
   }
 
@@ -772,8 +776,8 @@ class BlockingManager {
         enabledCategories: Array.from(this.enabledCategories),
         customRules: this.customRules,
         whitelistedDomains: Array.from(this.whitelistedDomains),
-        loadedFilterListUrls: Array.from(this.loadedFilterLists.keys()),
-      },
+        loadedFilterListUrls: Array.from(this.loadedFilterLists.keys())
+      }
     };
   }
 
@@ -821,7 +825,7 @@ class BlockingManager {
         enabledCategories: Array.from(this.enabledCategories),
         customRules: this.customRules.length,
         whitelistedDomains: this.whitelistedDomains.size,
-        loadedFilterLists: this.loadedFilterLists.size,
+        loadedFilterLists: this.loadedFilterLists.size
       };
     } catch (error) {
       console.error('[BlockingManager] Error importing configuration:', error);
@@ -838,8 +842,8 @@ class BlockingManager {
       success: true,
       filterLists: Object.entries(EASYLIST_URLS).map(([name, url]) => ({
         name,
-        url,
-      })),
+        url
+      }))
     };
   }
 
@@ -862,5 +866,5 @@ const blockingManager = new BlockingManager();
 
 module.exports = {
   BlockingManager,
-  blockingManager,
+  blockingManager
 };

@@ -288,7 +288,9 @@ class TraceVisualizer extends EventEmitter {
 
     for (const traceId of (Array.isArray(traces) ? traces : [traces])) {
       const tree = this.visualizations.get(traceId);
-      if (!tree) continue;
+      if (!tree) {
+        continue;
+      }
 
       for (const [spanId, span] of tree.spanMap) {
         if (span.service) {
@@ -406,7 +408,9 @@ class TraceVisualizer extends EventEmitter {
    */
   getTraceStats(traceId) {
     const tree = this.visualizations.get(traceId);
-    if (!tree) return null;
+    if (!tree) {
+      return null;
+    }
 
     const spans = Array.from(tree.spanMap.values());
     const durations = spans.map(s => s.duration).sort((a, b) => a - b);
@@ -436,7 +440,9 @@ class TraceVisualizer extends EventEmitter {
    */
   _buildFlameGraphStack(spanId, tree, ancestorNames, flamegraph) {
     const span = tree.spanMap.get(spanId);
-    if (!span) return;
+    if (!span) {
+      return;
+    }
 
     const stackNames = [...ancestorNames, span.name];
     const stack = {

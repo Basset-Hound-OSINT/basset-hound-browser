@@ -372,7 +372,9 @@ class DemoEnvironment extends EventEmitter {
    * Start auto-refresh of demo data
    */
   startAutoRefresh() {
-    if (this.refreshTimer) return;
+    if (this.refreshTimer) {
+      return;
+    }
 
     this.refreshTimer = setInterval(() => {
       this.refreshDemoData();

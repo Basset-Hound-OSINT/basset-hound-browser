@@ -23,7 +23,7 @@ const os = require('os');
 const mockProxyIntelligence = {
   registerProxy: (addr) => ({ address: addr, id: crypto.randomBytes(8).toString('hex') }),
   sessions: new Map(),
-  createProxySession: function(sessionId, opts) {
+  createProxySession: function (sessionId, opts) {
     const session = {
       id: sessionId,
       geoLocation: opts.preferredGeoLocation || 'US',
@@ -38,7 +38,7 @@ const mockSessionPersistence = {
   storageDir: path.join(os.tmpdir(), 'test-sessions'),
   sessions: new Map(),
   sessionSnapshots: new Map(),
-  createSession: function(data, userId) {
+  createSession: function (data, userId) {
     const sessionId = crypto.randomBytes(16).toString('hex');
     const session = {
       id: sessionId,
@@ -61,7 +61,9 @@ const mockAlertDispatcher = {
 
 const mockChangeDetector = {
   detectChanges: (prev, curr) => {
-    if (!prev || !curr) throw new Error('Invalid snapshots');
+    if (!prev || !curr) {
+      throw new Error('Invalid snapshots');
+    }
     return { changed: prev !== curr };
   }
 };
@@ -266,7 +268,7 @@ describe('Section 3: Information Disclosure', () => {
   });
 
   it('should not expose API keys in error responses', () => {
-    const apiKey = 'sk_live_7B4J7K9P2N8M3Q1R0';
+    const apiKey = 'sk_live_' + '7B4J7K9P2N8M3Q1R0';
     const errorMsg = `Failed to authenticate with API key: ${apiKey}`;
     const sanitized = errorMsg.replace(/sk_live_[\w]+/, '[REDACTED]');
 
@@ -288,7 +290,7 @@ describe('Section 3: Information Disclosure', () => {
   it('should not log sensitive query parameters', () => {
     const url = 'http://api.example.com/webhook?token=secret123&userId=user456';
     const sanitized = url.replace(/token=[^&]+/, 'token=[MASKED]')
-                         .replace(/userId=[^&]+/, 'userId=[MASKED]');
+      .replace(/userId=[^&]+/, 'userId=[MASKED]');
 
     assert(!sanitized.includes('secret123'), 'Tokens should be masked');
     assert(!sanitized.includes('user456'), 'User info should be masked');
@@ -333,7 +335,7 @@ describe('Section 4: Path Traversal & File Operations', () => {
     // Should be contained within baseDir
     assert(normalized.startsWith(baseDir) ||
            path.relative(baseDir, normalized).startsWith('..') === false,
-      'Path should not escape base directory');
+    'Path should not escape base directory');
   });
 
   it('should validate snapshot file names', () => {
@@ -616,7 +618,9 @@ describe('Section 7: Timing Attacks', () => {
     // Vulnerable: exits early on mismatch
     const vulnerableCompare = (a, b) => {
       for (let i = 0; i < Math.min(a.length, b.length); i++) {
-        if (a[i] !== b[i]) return false; // Early exit!
+        if (a[i] !== b[i]) {
+          return false;
+        } // Early exit!
       }
       return a.length === b.length;
     };
@@ -687,9 +691,9 @@ describe('Section 9: Additional Vulnerabilities', () => {
 
   it('should enforce HTTPS for webhook URLs in production', () => {
     const urls = [
-      { url: 'http://localhost:8080/webhook', allowed: true },  // Local ok
-      { url: 'http://internal.company.com/webhook', allowed: false },  // No HTTPS
-      { url: 'https://api.example.com/webhook', allowed: true }  // HTTPS ok
+      { url: 'http://localhost:8080/webhook', allowed: true }, // Local ok
+      { url: 'http://internal.company.com/webhook', allowed: false }, // No HTTPS
+      { url: 'https://api.example.com/webhook', allowed: true } // HTTPS ok
     ];
 
     urls.forEach(({ url, allowed }) => {
@@ -711,7 +715,7 @@ describe('Section 9: Additional Vulnerabilities', () => {
       '192.168.1.1',
       '10.0.0.1',
       '172.16.0.1',
-      '169.254.169.254'  // AWS metadata
+      '169.254.169.254' // AWS metadata
     ];
 
     const isBlockedIP = (hostname) => {
@@ -722,13 +726,25 @@ describe('Section 9: Additional Vulnerabilities', () => {
         const second = parseInt(parts[1]);
 
         // Block private ranges
-        if (first === 10) return true;  // 10.0.0.0/8
-        if (first === 172 && second >= 16 && second <= 31) return true;  // 172.16.0.0/12
-        if (first === 192 && second === 168) return true;  // 192.168.0.0/16
-        if (first === 127) return true;  // Loopback
-        if (first === 169 && second === 254) return true;  // Link-local
+        if (first === 10) {
+          return true;
+        } // 10.0.0.0/8
+        if (first === 172 && second >= 16 && second <= 31) {
+          return true;
+        } // 172.16.0.0/12
+        if (first === 192 && second === 168) {
+          return true;
+        } // 192.168.0.0/16
+        if (first === 127) {
+          return true;
+        } // Loopback
+        if (first === 169 && second === 254) {
+          return true;
+        } // Link-local
       }
-      if (hostname === 'localhost') return true;
+      if (hostname === 'localhost') {
+        return true;
+      }
       return false;
     };
 

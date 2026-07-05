@@ -39,13 +39,17 @@ class EvasionTestClient {
 
       this.ws.on('error', reject);
       setTimeout(() => {
-        if (!this.connected) reject(new Error('Connection timeout'));
+        if (!this.connected) {
+          reject(new Error('Connection timeout'));
+        }
       }, 5000);
     });
   }
 
   async sendCommand(command, params = {}) {
-    if (!this.connected) throw new Error('Not connected');
+    if (!this.connected) {
+      throw new Error('Not connected');
+    }
 
     this.messageQueue = [];
     this.ws.send(JSON.stringify({ command, params }));
@@ -58,7 +62,9 @@ class EvasionTestClient {
         const raw = this.messageQueue.shift();
         try {
           const msg = JSON.parse(raw);
-          if (msg.type === 'status' || msg.type === 'connection') continue;
+          if (msg.type === 'status' || msg.type === 'connection') {
+            continue;
+          }
           return msg;
         } catch (e) {
           // skip invalid JSON
@@ -86,7 +92,7 @@ const tests = {
   fingerprint: [],
   evasion: [],
   behavioral: [],
-  issues: [],
+  issues: []
 };
 
 async function testFingerprintSystem(client) {
@@ -109,7 +115,7 @@ async function testFingerprintSystem(client) {
             test: `Create ${platform} profile`,
             status: 'PASS',
             profileId: result.profileId,
-            platform: result.profile.platformType,
+            platform: result.profile.platformType
           });
 
           console.log(`  ✓ ${platform}: ${result.profileId}`);
@@ -123,7 +129,7 @@ async function testFingerprintSystem(client) {
         tests.fingerprint.push({
           test: `Create ${platform} profile`,
           status: 'FAIL',
-          error: e.message,
+          error: e.message
         });
         tests.issues.push(`Failed to create ${platform} fingerprint: ${e.message}`);
         console.log(`  ✗ ${platform}: ${e.message}`);
@@ -135,22 +141,22 @@ async function testFingerprintSystem(client) {
     if (profileIds.windows) {
       const profile = client.profiles.windows;
       const checks = {
-        userAgent: !!profile.userAgent,
-        platform: !!profile.platform,
-        timezone: !!profile.timezone,
-        webglVendor: !!profile.webgl?.vendor,
-        webglRenderer: !!profile.webgl?.renderer,
+        userAgent: Boolean(profile.userAgent),
+        platform: Boolean(profile.platform),
+        timezone: Boolean(profile.timezone),
+        webglVendor: Boolean(profile.webgl?.vendor),
+        webglRenderer: Boolean(profile.webgl?.renderer),
         languages: Array.isArray(profile.languages) && profile.languages.length > 0,
-        screen: !!profile.screen,
+        screen: Boolean(profile.screen),
         plugins: Array.isArray(profile.plugins),
-        fonts: Array.isArray(profile.fonts),
+        fonts: Array.isArray(profile.fonts)
       };
 
       const allValid = Object.values(checks).every((v) => v);
       tests.fingerprint.push({
         test: 'Fingerprint property validation',
         status: allValid ? 'PASS' : 'PARTIAL',
-        checks: checks,
+        checks: checks
       });
 
       console.log(`  Properties validated:`);
@@ -180,7 +186,7 @@ async function testFingerprintSystem(client) {
       test: 'Regional fingerprints',
       status: regionalCount === regions.length ? 'PASS' : 'PARTIAL',
       supported: regionalCount,
-      total: regions.length,
+      total: regions.length
     });
 
     // Test 4: List profiles
@@ -191,7 +197,7 @@ async function testFingerprintSystem(client) {
         tests.fingerprint.push({
           test: 'List profiles',
           status: 'PASS',
-          profileCount: result.count,
+          profileCount: result.count
         });
         console.log(`  ✓ Total profiles: ${result.count}`);
       }
@@ -199,7 +205,7 @@ async function testFingerprintSystem(client) {
       tests.fingerprint.push({
         test: 'List profiles',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
     }
   } catch (e) {
@@ -232,7 +238,7 @@ async function testEvasionSystem(client) {
           status: 'PASS',
           platforms: result.platforms?.length || 0,
           timezones: result.timezones?.length || 0,
-          tiers: result.tiers?.length || 0,
+          tiers: result.tiers?.length || 0
         });
         console.log(`  ✓ Platforms: ${result.platforms?.length}`);
         console.log(`  ✓ Timezones: ${result.timezones?.length}`);
@@ -243,7 +249,7 @@ async function testEvasionSystem(client) {
       tests.evasion.push({
         test: 'Get fingerprint options',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log(`  ✗ ${e.message}`);
     }
@@ -256,7 +262,7 @@ async function testEvasionSystem(client) {
         tests.evasion.push({
           test: 'Apply fingerprint',
           status: 'PASS',
-          platformType: result.platformType,
+          platformType: result.platformType
         });
         console.log(`  ✓ Fingerprint applied`);
         console.log(`    Platform: ${result.platformType}`);
@@ -268,7 +274,7 @@ async function testEvasionSystem(client) {
       tests.evasion.push({
         test: 'Apply fingerprint',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       tests.issues.push(`Failed to apply fingerprint: ${e.message}`);
       console.log(`  ✗ ${e.message}`);
@@ -284,7 +290,7 @@ async function testEvasionSystem(client) {
         // Send to handler - need to work around params.params issue
         const result = await client.sendCommand('set_evasion_levels', {
           profileId: profileId,
-          level: level,
+          level: level
         });
 
         // The handler may have received params.params instead of params
@@ -312,14 +318,14 @@ async function testEvasionSystem(client) {
       test: 'Evasion level configuration',
       status: evasionCount > 0 ? 'PARTIAL' : 'FAIL',
       levelsConfigured: evasionCount,
-      totalLevels: evasionLevels.length,
+      totalLevels: evasionLevels.length
     });
 
     // Test 4: Get evasion config
     console.log('\nTest 4: Retrieving evasion configuration...');
     try {
       const result = await client.sendCommand('get_evasion_config', {
-        profileId,
+        profileId
       });
 
       if (
@@ -334,7 +340,7 @@ async function testEvasionSystem(client) {
           canvasLevel: result.evasion.canvas.level,
           webglLevel: result.evasion.webgl.level,
           audioLevel: result.evasion.audio?.level,
-          fontLevel: result.evasion.fonts?.level,
+          fontLevel: result.evasion.fonts?.level
         });
         console.log(`  ✓ Canvas: ${result.evasion.canvas.level}`);
         console.log(`  ✓ WebGL: ${result.evasion.webgl.level}`);
@@ -347,7 +353,7 @@ async function testEvasionSystem(client) {
       tests.evasion.push({
         test: 'Get evasion config',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       tests.issues.push(`Failed to get evasion config: ${e.message}`);
       console.log(`  ✗ ${e.message}`);
@@ -368,7 +374,7 @@ async function testBehavioralSystem(client) {
 
     try {
       const result = await client.sendCommand('create_behavioral_profile', {
-        sessionId: sessionId,
+        sessionId: sessionId
       });
 
       if (result.success && result.sessionId) {
@@ -377,7 +383,7 @@ async function testBehavioralSystem(client) {
           test: 'Create behavioral profile',
           status: 'PASS',
           sessionId: result.sessionId,
-          typingWPM: result.profile.typingWPM,
+          typingWPM: result.profile.typingWPM
         });
         console.log(`  ✓ Session: ${result.sessionId}`);
         console.log(`    Typing WPM: ${result.profile.typingWPM.toFixed(1)}`);
@@ -388,7 +394,7 @@ async function testBehavioralSystem(client) {
       tests.behavioral.push({
         test: 'Create behavioral profile',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log(`  ✗ ${e.message}`);
       return;
@@ -400,7 +406,7 @@ async function testBehavioralSystem(client) {
       const result = await client.sendCommand('generate_mouse_path', {
         sessionId: client.sessions.primary,
         start: { x: 100, y: 100 },
-        end: { x: 500, y: 400 },
+        end: { x: 500, y: 400 }
       });
 
       if (result.success && result.path) {
@@ -408,7 +414,7 @@ async function testBehavioralSystem(client) {
           test: 'Generate mouse path',
           status: 'PASS',
           points: result.pointCount,
-          duration: result.duration,
+          duration: result.duration
         });
         console.log(`  ✓ Mouse path generated`);
         console.log(`    Points: ${result.pointCount}`);
@@ -421,7 +427,7 @@ async function testBehavioralSystem(client) {
       tests.behavioral.push({
         test: 'Generate mouse path',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       tests.issues.push(`Mouse generation failed: ${e.message}`);
       console.log(`  ✗ ${e.message}`);
@@ -432,7 +438,7 @@ async function testBehavioralSystem(client) {
     try {
       const result = await client.sendCommand('generate_typing_events', {
         sessionId: client.sessions.primary,
-        text: 'Hello World',
+        text: 'Hello World'
       });
 
       if (result.success && result.events) {
@@ -440,7 +446,7 @@ async function testBehavioralSystem(client) {
           test: 'Generate typing events',
           status: 'PASS',
           events: result.eventCount,
-          wpm: parseFloat(result.effectiveWPM),
+          wpm: parseFloat(result.effectiveWPM)
         });
         console.log(`  ✓ Typing simulated`);
         console.log(`    Events: ${result.eventCount}`);
@@ -452,7 +458,7 @@ async function testBehavioralSystem(client) {
       tests.behavioral.push({
         test: 'Generate typing events',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       tests.issues.push(`Typing generation failed: ${e.message}`);
       console.log(`  ✗ ${e.message}`);
@@ -464,7 +470,7 @@ async function testBehavioralSystem(client) {
       const result = await client.sendCommand('generate_scroll_behavior', {
         sessionId: client.sessions.primary,
         distance: 500,
-        direction: 'down',
+        direction: 'down'
       });
 
       if (result.success && result.events !== undefined) {
@@ -472,7 +478,7 @@ async function testBehavioralSystem(client) {
           test: 'Generate scroll behavior',
           status: 'PASS',
           events: result.eventCount,
-          duration: result.totalDuration,
+          duration: result.totalDuration
         });
         console.log(`  ✓ Scroll behavior generated`);
         console.log(`    Events: ${result.eventCount}`);
@@ -484,7 +490,7 @@ async function testBehavioralSystem(client) {
       tests.behavioral.push({
         test: 'Generate scroll behavior',
         status: 'FAIL',
-        error: e.message,
+        error: e.message
       });
       console.log(`  ✗ ${e.message}`);
     }
@@ -493,7 +499,7 @@ async function testBehavioralSystem(client) {
     console.log('\nTest 5: Testing rate limit adaptation...');
     try {
       const result = await client.sendCommand('get_rate_limit_state', {
-        domain: 'example.com',
+        domain: 'example.com'
       });
 
       if (result.success && result.state !== undefined) {
@@ -501,7 +507,7 @@ async function testBehavioralSystem(client) {
           test: 'Rate limit state management',
           status: 'PASS',
           domain: result.domain,
-          recommendedDelay: result.recommendedDelay,
+          recommendedDelay: result.recommendedDelay
         });
         console.log(`  ✓ Rate limit management active`);
         console.log(`    Recommended delay: ${result.recommendedDelay}ms`);
@@ -590,14 +596,14 @@ function generateFinalReport() {
       passedTests: passCount,
       partialTests: partialCount,
       failedTests: failCount,
-      successRate: `${((passCount / total) * 100).toFixed(1)}%`,
+      successRate: `${((passCount / total) * 100).toFixed(1)}%`
     },
     systems: {
       fingerprint: tests.fingerprint,
       evasion: tests.evasion,
-      behavioral: tests.behavioral,
+      behavioral: tests.behavioral
     },
-    issues: tests.issues,
+    issues: tests.issues
   };
 
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));

@@ -22,7 +22,7 @@ class Migrations extends EventEmitter {
       name,
       upSql,
       downSql,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     });
   }
 

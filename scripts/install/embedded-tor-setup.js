@@ -37,7 +37,7 @@ const DOWNLOAD_URLS = {
 
 // SHA256 checksums for verification (update with actual values from Tor Project)
 const CHECKSUMS = {
-  'linux-x64': null,  // Will be fetched from .sha256sum files
+  'linux-x64': null, // Will be fetched from .sha256sum files
   'darwin-x64': null,
   'darwin-arm64': null,
   'win32-x64': null,
@@ -58,10 +58,18 @@ function log(message, color = colors.reset) {
   console.log(`${color}${message}${colors.reset}`);
 }
 
-function logSuccess(msg) { log(`✅ ${msg}`, colors.green); }
-function logError(msg) { log(`❌ ${msg}`, colors.red); }
-function logInfo(msg) { log(`ℹ️  ${msg}`, colors.blue); }
-function logWarning(msg) { log(`⚠️  ${msg}`, colors.yellow); }
+function logSuccess(msg) {
+  log(`✅ ${msg}`, colors.green);
+}
+function logError(msg) {
+  log(`❌ ${msg}`, colors.red);
+}
+function logInfo(msg) {
+  log(`ℹ️  ${msg}`, colors.blue);
+}
+function logWarning(msg) {
+  log(`⚠️  ${msg}`, colors.yellow);
+}
 
 /**
  * Get platform key for downloads
@@ -117,7 +125,7 @@ function downloadFile(url, destPath) {
 
       file.on('finish', () => {
         file.close();
-        console.log('');  // New line after progress
+        console.log(''); // New line after progress
         logSuccess(`Downloaded: ${path.basename(destPath)}`);
         resolve(destPath);
       });
@@ -129,7 +137,9 @@ function downloadFile(url, destPath) {
       });
     }).on('error', (err) => {
       file.close();
-      if (fs.existsSync(destPath)) fs.unlinkSync(destPath);
+      if (fs.existsSync(destPath)) {
+        fs.unlinkSync(destPath);
+      }
       reject(err);
     });
   });
@@ -139,7 +149,9 @@ function downloadFile(url, destPath) {
  * Format bytes to human readable
  */
 function formatBytes(bytes) {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) {
+    return '0 B';
+  }
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -440,7 +452,7 @@ async function testEmbeddedTor(torDir) {
 
   // Check if default ports are in use and pick alternatives
   const socksPort = await findAvailablePort(9050);
-  const controlPort = await findAvailablePort(socksPort + 1);  // Start after SOCKS port
+  const controlPort = await findAvailablePort(socksPort + 1); // Start after SOCKS port
 
   logInfo(`Using SOCKS port: ${socksPort}`);
   logInfo(`Using Control port: ${controlPort}`);
@@ -487,7 +499,9 @@ CircuitBuildTimeout 30
         logError('Bootstrap timeout (120s)');
         torProcess.kill();
         // Cleanup test data
-        try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch (e) {}
+        try {
+          fs.rmSync(dataDir, { recursive: true, force: true });
+        } catch (e) {}
         resolve({ success: false, error: 'timeout', output });
       }
     }, 120000);
@@ -530,14 +544,18 @@ CircuitBuildTimeout 30
           clearTimeout(timeout);
           console.log('');
           logSuccess('Tor bootstrapped successfully!');
-          setTimeout(() => { torProcess.kill('SIGTERM'); }, 2000);
+          setTimeout(() => {
+            torProcess.kill('SIGTERM');
+          }, 2000);
         }
       }
     });
 
     torProcess.on('exit', (code) => {
       // Cleanup test data
-      try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch (e) {}
+      try {
+        fs.rmSync(dataDir, { recursive: true, force: true });
+      } catch (e) {}
 
       if (bootstrapComplete) {
         logSuccess('Embedded Tor test passed!');
@@ -546,7 +564,7 @@ CircuitBuildTimeout 30
         logError(`Tor exited with code ${code}`);
         if (output) {
           console.log('\nTor output:');
-          console.log(output.slice(-1000));  // Last 1000 chars
+          console.log(output.slice(-1000)); // Last 1000 chars
         }
         resolve({ success: false, code, output });
       }
@@ -555,7 +573,9 @@ CircuitBuildTimeout 30
     torProcess.on('error', (error) => {
       clearTimeout(timeout);
       logError(`Process error: ${error.message}`);
-      try { fs.rmSync(dataDir, { recursive: true, force: true }); } catch (e) {}
+      try {
+        fs.rmSync(dataDir, { recursive: true, force: true });
+      } catch (e) {}
       resolve({ success: false, error: error.message });
     });
   });
@@ -586,7 +606,7 @@ async function findAvailablePort(startPort) {
     }
     port++;
   }
-  return startPort + 100;  // Fallback
+  return startPort + 100; // Fallback
 }
 
 // CLI entry point
@@ -609,7 +629,9 @@ if (require.main === module) {
   } else {
     setup({ force, targetDir })
       .then((result) => {
-        if (!result.success) process.exit(1);
+        if (!result.success) {
+          process.exit(1);
+        }
       })
       .catch((err) => {
         logError(err.message);

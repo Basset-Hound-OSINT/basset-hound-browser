@@ -488,7 +488,7 @@ class CensysAdvanced extends EventEmitter {
             expired: data.expired || [],
             expiringSoon: data.expiringCoon || [],
             valid: data.certificates ? data.certificates.filter(c => !c.issues || c.issues.length === 0) : []
-          }},
+          } },
           { title: 'Key Analysis', content: data.summary || {} },
           { title: 'Chain Analysis', content: data.chainAnalysis || [] }
         ];
@@ -520,13 +520,13 @@ class CensysAdvanced extends EventEmitter {
             network: data.network,
             discoveredHosts: data.discoveredHosts,
             activeServices: data.summary.activeServices
-          }},
+          } },
           { title: 'Host Distribution', content: data.hosts ? data.hosts.slice(0, 20) : [] },
           { title: 'Service Analysis', content: data.services || {} },
           { title: 'Risk Assessment', content: {
             critical: data.hosts ? data.hosts.filter(h => h.riskScore > 80).length : 0,
             high: data.hosts ? data.hosts.filter(h => h.riskScore > 60).length : 0
-          }}
+          } }
         ];
 
         report.recommendations = [
@@ -654,9 +654,15 @@ class CensysAdvanced extends EventEmitter {
    * @private
    */
   calculateTrustLevel(cert) {
-    if (cert.issuer.includes('self-signed')) return 'UNTRUSTED';
-    if (cert.issuer.includes('Let\'s Encrypt')) return 'HIGH';
-    if (cert.issuer.includes('DigiCert')) return 'HIGH';
+    if (cert.issuer.includes('self-signed')) {
+      return 'UNTRUSTED';
+    }
+    if (cert.issuer.includes('Let\'s Encrypt')) {
+      return 'HIGH';
+    }
+    if (cert.issuer.includes('DigiCert')) {
+      return 'HIGH';
+    }
     return 'MEDIUM';
   }
 
@@ -717,9 +723,15 @@ class CensysAdvanced extends EventEmitter {
   calculateHostRiskScore(host) {
     let score = 0;
 
-    if (host.ports && host.ports.length > 5) score += 20;
-    if (host.protocols && host.protocols.length > 2) score += 15;
-    if (host.certificates && host.certificates.length > 0) score += 10;
+    if (host.ports && host.ports.length > 5) {
+      score += 20;
+    }
+    if (host.protocols && host.protocols.length > 2) {
+      score += 15;
+    }
+    if (host.certificates && host.certificates.length > 0) {
+      score += 10;
+    }
 
     return Math.min(score, 100);
   }

@@ -1,0 +1,14 @@
+{
+  "env": "test",
+  "require": [],
+  "timeout": 10000,
+  "slow": 5000,
+  "bail": false,
+  "reporter": "spec",
+  "ui": "bdd",
+  "recursive": true,
+  "check-leaks": true,
+  "parallel": false,
+  "retries": 1,
+  "globals": []
+}

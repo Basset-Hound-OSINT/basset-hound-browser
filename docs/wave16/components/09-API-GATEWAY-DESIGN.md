@@ -78,7 +78,7 @@ GET  /oauth/userinfo
 
 **API Key (Programmatic access):**
 ```
-Header: X-API-Key: sk_test_abc123xyz789
+Header: X-API-Key: sk_test_REDACTED_EXAMPLE
 ```
 
 **mTLS (Service-to-service):**

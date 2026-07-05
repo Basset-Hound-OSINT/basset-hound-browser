@@ -388,20 +388,38 @@ class BrowserStateCapture {
     const missing = [];
 
     // Check required fields
-    if (!state.capturedAt) missing.push('capturedAt');
-    if (!state.sessionId) missing.push('sessionId');
-    if (!state.url) warnings.push('url is missing or empty');
+    if (!state.capturedAt) {
+      missing.push('capturedAt');
+    }
+    if (!state.sessionId) {
+      missing.push('sessionId');
+    }
+    if (!state.url) {
+      warnings.push('url is missing or empty');
+    }
 
     // Check state components
-    if (!Array.isArray(state.cookies)) warnings.push('cookies is not an array');
-    if (typeof state.localStorage !== 'object') warnings.push('localStorage is not an object');
-    if (typeof state.sessionStorage !== 'object') warnings.push('sessionStorage is not an object');
-    if (!state.metadata) warnings.push('metadata is missing');
+    if (!Array.isArray(state.cookies)) {
+      warnings.push('cookies is not an array');
+    }
+    if (typeof state.localStorage !== 'object') {
+      warnings.push('localStorage is not an object');
+    }
+    if (typeof state.sessionStorage !== 'object') {
+      warnings.push('sessionStorage is not an object');
+    }
+    if (!state.metadata) {
+      warnings.push('metadata is missing');
+    }
 
     // Check metadata
     if (state.metadata) {
-      if (!state.metadata.timestamp) warnings.push('metadata.timestamp is missing');
-      if (state.metadata.version !== 1) warnings.push(`Unexpected version: ${state.metadata.version}`);
+      if (!state.metadata.timestamp) {
+        warnings.push('metadata.timestamp is missing');
+      }
+      if (state.metadata.version !== 1) {
+        warnings.push(`Unexpected version: ${state.metadata.version}`);
+      }
     }
 
     return {

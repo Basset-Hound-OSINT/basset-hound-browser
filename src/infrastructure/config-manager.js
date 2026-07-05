@@ -141,7 +141,7 @@ class ConfigManager extends EventEmitter {
 
     return {
       valid: errors.length === 0,
-      errors,
+      errors
     };
   }
 
@@ -187,7 +187,7 @@ class ConfigManager extends EventEmitter {
     this.emit('config:changed', {
       path,
       oldValue,
-      newValue: value,
+      newValue: value
     });
   }
 
@@ -219,7 +219,7 @@ class ConfigManager extends EventEmitter {
               if (!validation.valid) {
                 this.emit('config:reload-failed', {
                   name,
-                  errors: validation.errors,
+                  errors: validation.errors
                 });
                 return;
               }
@@ -231,7 +231,7 @@ class ConfigManager extends EventEmitter {
             this.emit('config:reloaded', {
               name,
               oldConfig,
-              newConfig,
+              newConfig
             });
           } catch (err) {
             this.emit('config:reload-failed', { name, error: err });
@@ -279,7 +279,7 @@ class ConfigManager extends EventEmitter {
     return {
       isInitialized: this.isInitialized,
       configCount: Object.keys(this.config).length,
-      watchingFiles: Array.from(this.watchers.keys()),
+      watchingFiles: Array.from(this.watchers.keys())
     };
   }
 

@@ -348,7 +348,9 @@ class PatternDetector extends EventEmitter {
    * @private
    */
   generatePatternPredictions(monitorId, patterns) {
-    if (patterns.length === 0) return;
+    if (patterns.length === 0) {
+      return;
+    }
 
     // Use highest confidence pattern for prediction
     const topPattern = patterns.reduce((best, current) =>
@@ -386,7 +388,7 @@ class PatternDetector extends EventEmitter {
    */
   predictNextWeeklyDay(targetDayOfWeek) {
     const now = new Date();
-    let next = new Date(now);
+    const next = new Date(now);
     const dayOffset = (targetDayOfWeek - now.getDay() + 7) % 7 || 7;
     next.setDate(next.getDate() + dayOffset);
     next.setHours(0, 0, 0, 0);
@@ -429,7 +431,9 @@ class PatternDetector extends EventEmitter {
    * @private
    */
   calculateDaySpan(history) {
-    if (history.length < 2) return 0;
+    if (history.length < 2) {
+      return 0;
+    }
     const timespan = history[history.length - 1].timestamp - history[0].timestamp;
     return timespan / (24 * 60 * 60 * 1000);
   }
@@ -470,7 +474,9 @@ class PatternDetector extends EventEmitter {
    */
   getTimeUntilNextChange(monitorId) {
     const prediction = this.patternPredictions.get(monitorId);
-    if (!prediction) return null;
+    if (!prediction) {
+      return null;
+    }
 
     const timeLeft = prediction.nextExpected - Date.now();
     return timeLeft > 0 ? timeLeft : null;

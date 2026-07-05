@@ -66,7 +66,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Expired session fails', () => {
       const session = {
-        createdAt: Date.now() - 4000000,  // 4000 seconds old
+        createdAt: Date.now() - 4000000, // 4000 seconds old
         lastActivityAt: Date.now()
       };
 
@@ -78,7 +78,7 @@ describe('Security Policy Enforcer', () => {
     test('Idle session fails', () => {
       const session = {
         createdAt: Date.now(),
-        lastActivityAt: Date.now() - 2000000  // 2000 seconds idle
+        lastActivityAt: Date.now() - 2000000 // 2000 seconds idle
       };
 
       const result = enforcer.validateSession(session);
@@ -117,7 +117,7 @@ describe('Security Policy Enforcer', () => {
     test('Oversized request fails', () => {
       const request = {
         protocol: 'https',
-        contentLength: 100 * 1024 * 1024  // 100MB
+        contentLength: 100 * 1024 * 1024 // 100MB
       };
 
       const result = enforcer.validateAPIRequest(request);
@@ -202,7 +202,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Excessive memory fails', () => {
       const resources = {
-        memoryMb: 2000  // Exceeds 1024MB limit
+        memoryMb: 2000 // Exceeds 1024MB limit
       };
 
       const result = enforcer.validateResourceUsage(resources);
@@ -212,7 +212,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Excessive CPU fails', () => {
       const resources = {
-        cpuPercent: 90  // Exceeds 80% limit
+        cpuPercent: 90 // Exceeds 80% limit
       };
 
       const result = enforcer.validateResourceUsage(resources);
@@ -221,7 +221,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Too many connections fails', () => {
       const resources = {
-        openConnections: 2000  // Exceeds 1000 limit
+        openConnections: 2000 // Exceeds 1000 limit
       };
 
       const result = enforcer.validateResourceUsage(resources);
@@ -230,7 +230,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Execution timeout fails', () => {
       const resources = {
-        executionTimeMs: 90000  // Exceeds 60000ms limit
+        executionTimeMs: 90000 // Exceeds 60000ms limit
       };
 
       const result = enforcer.validateResourceUsage(resources);
@@ -256,7 +256,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Any policy violation blocks', () => {
       const context = {
-        request: { protocol: 'http' },  // Violates API policy
+        request: { protocol: 'http' }, // Violates API policy
         session: {
           createdAt: Date.now(),
           lastActivityAt: Date.now()
@@ -279,7 +279,7 @@ describe('Security Policy Enforcer', () => {
 
     test('Update policy', () => {
       enforcer.updatePolicy('password.minLength', 20);
-      const result = enforcer.validatePassword('Str0ng!Pass');  // 11 chars
+      const result = enforcer.validatePassword('Str0ng!Pass'); // 11 chars
       expect(result.valid).toBe(false);
     });
 

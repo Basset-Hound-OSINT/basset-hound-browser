@@ -13,7 +13,7 @@ PRODUCTION_VERSION="12.5.0"
 ROLLBACK_VERSION="12.2.0"
 IMAGE_NAME="basset-hound-browser"
 CONTAINER_NAME="basset-hound-browser-prod"
-COMPOSE_FILE="docker-compose.production.yml"
+COMPOSE_FILE="config/docker/docker-compose.production.yml"
 PORT=8765
 
 # Colors

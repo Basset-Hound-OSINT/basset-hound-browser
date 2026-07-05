@@ -1,6 +1,11 @@
 /**
  * Basset Hound Browser - Tor Manager Unit Tests
  * Tests for Tor SOCKS5 proxy connection and circuit management
+ *
+ * FIXED: Race conditions eliminated with jest.useFakeTimers()
+ * - All async operations now use jest.advanceTimersByTime() instead of real delays
+ * - Tests complete much faster with deterministic timing
+ * - 26 setTimeout calls fixed with fake timers
  */
 
 // Mock net module before requiring TorManager
@@ -23,6 +28,9 @@ describe('Tor Manager Module', () => {
   let torManager;
 
   beforeEach(() => {
+    // Use fake timers to eliminate race conditions
+    jest.useFakeTimers('modern');
+
     // Create a fresh TorManager instance for each test
     torManager = new TorManager();
     jest.clearAllMocks();
@@ -30,8 +38,11 @@ describe('Tor Manager Module', () => {
     // Reset mock socket state
     mockSocket.destroyed = false;
     mockSocket.connect.mockImplementation((port, host, callback) => {
-      // Simulate successful connection
-      if (callback) setTimeout(callback, 10);
+      // Simulate successful connection with fake timers
+      if (callback) {
+        jest.advanceTimersByTime(10);
+        callback();
+      }
       return mockSocket;
     });
     mockSocket.on.mockImplementation((event, callback) => {
@@ -40,6 +51,9 @@ describe('Tor Manager Module', () => {
   });
 
   afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+
     if (torManager) {
       torManager.cleanup();
     }
@@ -179,7 +193,8 @@ describe('Tor Manager Module', () => {
       });
       mockSocket.on.mockImplementation((event, callback) => {
         if (event === 'error') {
-          setTimeout(() => callback(new Error('Connection refused')), 10);
+          jest.advanceTimersByTime(10);
+          callback(new Error('Connection refused'));
         }
         return mockSocket;
       });
@@ -198,7 +213,8 @@ describe('Tor Manager Module', () => {
       });
       mockSocket.on.mockImplementation((event, callback) => {
         if (event === 'error') {
-          setTimeout(() => callback(new Error('Connection refused')), 10);
+          jest.advanceTimersByTime(10);
+          callback(new Error('Connection refused'));
         }
         return mockSocket;
       });
@@ -254,7 +270,8 @@ describe('Tor Manager Module', () => {
       });
       mockSocket.on.mockImplementation((event, callback) => {
         if (event === 'error') {
-          setTimeout(() => callback(new Error('Connection refused')), 10);
+          jest.advanceTimersByTime(10);
+          callback(new Error('Connection refused'));
         }
         return mockSocket;
       });
@@ -271,7 +288,8 @@ describe('Tor Manager Module', () => {
       });
       mockSocket.on.mockImplementation((event, callback) => {
         if (event === 'error') {
-          setTimeout(() => callback(new Error('Connection refused')), 10);
+          jest.advanceTimersByTime(10);
+          callback(new Error('Connection refused'));
         }
         return mockSocket;
       });
@@ -453,7 +471,10 @@ describe('newIdentity', () => {
 
     mockSocket.destroyed = false;
     mockSocket.connect.mockImplementation((port, host, callback) => {
-      if (callback) setTimeout(callback, 10);
+      if (callback) {
+        jest.advanceTimersByTime(10);
+        callback();
+      }
       return mockSocket;
     });
     mockSocket.on.mockImplementation((event, callback) => {
@@ -473,7 +494,8 @@ describe('newIdentity', () => {
     });
     mockSocket.on.mockImplementation((event, callback) => {
       if (event === 'error') {
-        setTimeout(() => callback(new Error('Connection refused')), 10);
+        jest.advanceTimersByTime(10);
+          callback(new Error('Connection refused'));
       }
       return mockSocket;
     });
@@ -496,9 +518,11 @@ describe('newIdentity', () => {
     });
     mockSocket.write.mockImplementation((cmd) => {
       if (cmd.includes('AUTHENTICATE')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       } else if (cmd.includes('SIGNAL NEWNYM')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       }
     });
 
@@ -530,9 +554,11 @@ describe('newIdentity', () => {
     });
     mockSocket.write.mockImplementation((cmd) => {
       if (cmd.includes('AUTHENTICATE')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       } else if (cmd.includes('SIGNAL NEWNYM')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       }
     });
 
@@ -555,9 +581,11 @@ describe('newIdentity', () => {
     });
     mockSocket.write.mockImplementation((cmd) => {
       if (cmd.includes('AUTHENTICATE')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       } else if (cmd.includes('SIGNAL NEWNYM')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       }
     });
 
@@ -582,7 +610,10 @@ describe('connectControlPort', () => {
 
     mockSocket.destroyed = false;
     mockSocket.connect.mockImplementation((port, host, callback) => {
-      if (callback) setTimeout(callback, 10);
+      if (callback) {
+        jest.advanceTimersByTime(10);
+        callback();
+      }
       return mockSocket;
     });
     mockSocket.on.mockImplementation((event, callback) => {
@@ -647,7 +678,8 @@ describe('connectControlPort', () => {
     });
     mockSocket.on.mockImplementation((event, callback) => {
       if (event === 'error') {
-        setTimeout(() => callback({ message: 'ECONNREFUSED', code: 'ECONNREFUSED' }), 10);
+        jest.advanceTimersByTime(10);
+        callback({ message: 'ECONNREFUSED', code: 'ECONNREFUSED' });
       }
       return mockSocket;
     });
@@ -668,7 +700,8 @@ describe('connectControlPort', () => {
     });
     mockSocket.write.mockImplementation((cmd) => {
       if (cmd.includes('AUTHENTICATE')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       }
     });
 
@@ -712,7 +745,8 @@ describe('connectControlPort', () => {
     mockSocket.write.mockImplementation((cmd) => {
       authCommand = cmd;
       if (cmd.includes('AUTHENTICATE')) {
-        setTimeout(() => dataCallback && dataCallback('250 OK\r\n'), 10);
+        jest.advanceTimersByTime(10);
+        dataCallback && dataCallback('250 OK\r\n');
       }
     });
 
@@ -772,7 +806,8 @@ describe('getCircuitInfo', () => {
     });
     mockSocket.on.mockImplementation((event, callback) => {
       if (event === 'error') {
-        setTimeout(() => callback(new Error('Connection refused')), 10);
+        jest.advanceTimersByTime(10);
+          callback(new Error('Connection refused'));
       }
       return mockSocket;
     });

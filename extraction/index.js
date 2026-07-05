@@ -66,6 +66,15 @@ const {
   IMAGE_ORPHAN_MAPPINGS
 } = require('./image-metadata-extractor');
 
+const {
+  HtmlCaptureManager
+} = require('./html-capture-manager');
+
+const {
+  ExportTemplateEngine,
+  BUILT_IN_TRANSFORMS
+} = require('./export-templates');
+
 module.exports = {
   // Main extraction manager
   ExtractionManager,
@@ -84,6 +93,15 @@ module.exports = {
   IMAGE_EXTRACTOR_OPTIONS,
   IMAGE_ORPHAN_MAPPINGS,
 
-  // Factory function for convenience
-  createExtractor: () => new ExtractionManager()
+  // Advanced HTML capture (v12.8.0+)
+  HtmlCaptureManager,
+
+  // Export templates engine (Category 2 - Export & Analysis)
+  ExportTemplateEngine,
+  BUILT_IN_TRANSFORMS,
+
+  // Factory functions for convenience
+  createExtractor: () => new ExtractionManager(),
+  createHtmlCaptureManager: () => new HtmlCaptureManager(),
+  createExportTemplateEngine: () => new ExportTemplateEngine()
 };

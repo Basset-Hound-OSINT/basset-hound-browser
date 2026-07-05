@@ -97,7 +97,7 @@ class HealthChecker extends EventEmitter {
     this.registerCheck('filesystem', async () => {
       try {
         const fs = require('fs').promises;
-        const tmpFile = `/tmp/.basset-hound-health-${Date.now()}`;
+        const tmpFile = `/tmp/.basset-hound/health-${Date.now()}`;
         await fs.writeFile(tmpFile, 'health-check');
         await fs.unlink(tmpFile);
 

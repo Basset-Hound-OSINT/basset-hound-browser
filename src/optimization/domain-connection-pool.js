@@ -144,7 +144,9 @@ class DomainConnectionPool {
    * @param {Object} connection - Connection to release
    */
   releaseConnection(connection) {
-    if (!connection) return;
+    if (!connection) {
+      return;
+    }
 
     const domain = connection.domain;
     connection.state = 'idle';

@@ -458,7 +458,9 @@ class SetupWizard extends EventEmitter {
     const errors = [];
 
     for (const field of step.fields) {
-      if (field.type === 'button' || field.type === 'static') continue;
+      if (field.type === 'button' || field.type === 'static') {
+        continue;
+      }
 
       // Check conditional visibility
       if (field.conditional) {

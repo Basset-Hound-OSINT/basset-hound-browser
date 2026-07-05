@@ -650,21 +650,39 @@ class LocationManager extends EventEmitter {
 
     if (longitude >= -180 && longitude < -52.5) {
       // Americas
-      if (latitude > 45) return 'America/Toronto';
-      if (longitude >= -125) return 'America/Los_Angeles';
-      if (longitude >= -105) return 'America/Chicago';
-      if (longitude >= -75) return 'America/New_York';
+      if (latitude > 45) {
+        return 'America/Toronto';
+      }
+      if (longitude >= -125) {
+        return 'America/Los_Angeles';
+      }
+      if (longitude >= -105) {
+        return 'America/Chicago';
+      }
+      if (longitude >= -75) {
+        return 'America/New_York';
+      }
       return 'America/Sao_Paulo';
     } else if (longitude >= -52.5 && longitude < 37.5) {
       // Europe/Africa
-      if (latitude > 50) return 'Europe/London';
-      if (longitude < 15) return 'Europe/Paris';
+      if (latitude > 50) {
+        return 'Europe/London';
+      }
+      if (longitude < 15) {
+        return 'Europe/Paris';
+      }
       return 'Europe/Berlin';
     } else if (longitude >= 37.5 && longitude < 142.5) {
       // Asia
-      if (longitude < 75) return 'Asia/Dubai';
-      if (longitude < 90) return 'Asia/Kolkata';
-      if (longitude < 120) return 'Asia/Singapore';
+      if (longitude < 75) {
+        return 'Asia/Dubai';
+      }
+      if (longitude < 90) {
+        return 'Asia/Kolkata';
+      }
+      if (longitude < 120) {
+        return 'Asia/Singapore';
+      }
       return 'Asia/Tokyo';
     } else {
       // Pacific

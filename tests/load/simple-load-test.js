@@ -2,7 +2,7 @@
 
 /**
  * Simple Load Test - Integrated Execution
- * 
+ *
  * Tests WebSocket server performance with configurable load levels
  * Runs mock server internally and executes a complete load test
  */
@@ -64,13 +64,15 @@ class SimpleLoadTest {
         connId++;
         const id = connId;
         this.serverConnections.set(id, { ws, messageCount: 0, connectedAt: Date.now() });
-        
+
         console.log(`[MOCK-SERVER] Connection ${id} established (total: ${this.wss.clients.size})`);
 
         ws.on('message', (data) => {
           this.serverMessages++;
           const conn = this.serverConnections.get(id);
-          if (conn) conn.messageCount++;
+          if (conn) {
+            conn.messageCount++;
+          }
 
           try {
             const msg = JSON.parse(data.toString());
@@ -84,7 +86,7 @@ class SimpleLoadTest {
                 timestamp: new Date().toISOString(),
                 result: { processed: true, messageId: this.serverMessages }
               };
-              
+
               ws.send(JSON.stringify(response));
             }, responseDelay);
 
@@ -139,7 +141,7 @@ class SimpleLoadTest {
 
   async runLoadTest() {
     console.log(`\n[LOAD-TEST] Starting load test with ${this.concurrentConnections} concurrent connections`);
-    console.log(`[LOAD-TEST] Duration: ${this.testDuration}ms (${this.testDuration/1000}s)`);
+    console.log(`[LOAD-TEST] Duration: ${this.testDuration}ms (${this.testDuration / 1000}s)`);
 
     const startTime = performance.now();
     this.results.metrics.startTime = new Date().toISOString();
@@ -156,7 +158,7 @@ class SimpleLoadTest {
 
     // Wait for all connections to establish
     const connResults = await Promise.allSettled(connections);
-    
+
     this.results.metrics.totalConnections = connResults.length;
     this.results.metrics.successfulConnections = connResults.filter(r => r.status === 'fulfilled').length;
     this.results.metrics.failedConnections = connResults.filter(r => r.status === 'rejected').length;
@@ -192,11 +194,11 @@ class SimpleLoadTest {
 
     this.results.status = 'COMPLETED';
 
-    console.log(`\n[LOAD-TEST] Test completed in ${(this.results.metrics.duration/1000).toFixed(2)}s`);
+    console.log(`\n[LOAD-TEST] Test completed in ${(this.results.metrics.duration / 1000).toFixed(2)}s`);
     console.log(`[LOAD-TEST] Total messages: ${this.results.metrics.totalMessages}`);
     console.log(`[LOAD-TEST] Success rate: ${((this.results.metrics.successfulMessages / this.results.metrics.totalMessages) * 100).toFixed(2)}%`);
     console.log(`[LOAD-TEST] Memory delta: ${(this.results.metrics.memoryAfter - this.results.metrics.memoryBefore).toFixed(2)}MB`);
-    
+
     if (this.results.metrics.latencies) {
       console.log(`[LOAD-TEST] Latency P50: ${this.results.metrics.latencies.p50?.toFixed(2) || 'N/A'}ms`);
       console.log(`[LOAD-TEST] Latency P95: ${this.results.metrics.latencies.p95?.toFixed(2) || 'N/A'}ms`);
@@ -207,7 +209,7 @@ class SimpleLoadTest {
   createConnection(connIndex, latencies) {
     return new Promise((resolve, reject) => {
       const url = `ws://localhost:${this.port}`;
-      
+
       try {
         const ws = new WebSocket(url);
 
@@ -259,7 +261,7 @@ class SimpleLoadTest {
 
       const loadInterval = setInterval(() => {
         const elapsed = Date.now() - startTime;
-        
+
         if (elapsed >= this.testDuration) {
           clearInterval(loadInterval);
           console.log(`[LOAD-TEST] Load generation complete: ${messagesSent} messages sent`);
@@ -289,7 +291,7 @@ class SimpleLoadTest {
         // Log progress every 10 seconds
         if (elapsed % 10000 < 500) {
           const throughput = (messagesSent / (elapsed / 1000)).toFixed(2);
-          console.log(`[LOAD-TEST] Progress: ${elapsed/1000}s, messages: ${messagesSent}, throughput: ${throughput} msg/s`);
+          console.log(`[LOAD-TEST] Progress: ${elapsed / 1000}s, messages: ${messagesSent}, throughput: ${throughput} msg/s`);
         }
 
       }, 100); // Send every 100ms
@@ -329,7 +331,7 @@ class SimpleLoadTest {
 
     const file = filename || path.join(resultsDir, `load-test-${Date.now()}.json`);
     fs.writeFileSync(file, JSON.stringify(this.results, null, 2));
-    
+
     console.log(`\n[LOAD-TEST] Results saved: ${file}`);
     return file;
   }
@@ -345,7 +347,7 @@ class SimpleLoadTest {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for server to be ready
 
       await this.runLoadTest();
-      
+
       this.saveResults();
 
       console.log('\n╔════════════════════════════════════════════════════════════════════════════╗');
@@ -369,7 +371,7 @@ class SimpleLoadTest {
 const args = process.argv.slice(2);
 const options = {
   concurrent: 50,
-  duration: 60000  // 1 minute default
+  duration: 60000 // 1 minute default
 };
 
 for (const arg of args) {

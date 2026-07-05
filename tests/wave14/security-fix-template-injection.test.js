@@ -364,7 +364,7 @@ describe('CVE-W14-005: Template Injection in Version Detection', () => {
         '*',
         '*)(|(cn=*',
         'admin*',
-        '*', // wildcards
+        '*' // wildcards
       ];
 
       for (const attack of attacks) {

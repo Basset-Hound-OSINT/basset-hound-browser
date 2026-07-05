@@ -25,7 +25,7 @@ describe('Optimization 1: Connection Pool', () => {
   const { ConnectionPool } = require('../../websocket/connection-pool');
 
   let pool;
-  let executionTimes = [];
+  const executionTimes = [];
 
   before(() => {
     const executor = async (request) => {
@@ -57,7 +57,7 @@ describe('Optimization 1: Connection Pool', () => {
       pool2.acquire({ req: 1 }),
       pool2.acquire({ req: 2 }),
       pool2.acquire({ req: 3 }), // This should queue
-      pool2.acquire({ req: 4 })  // This should queue
+      pool2.acquire({ req: 4 }) // This should queue
     ]);
 
     const elapsed = Date.now() - startTime;
@@ -98,7 +98,9 @@ describe('Optimization 1: Connection Pool', () => {
     for (let i = 0; i < 10; i++) {
       promises.push(
         pool4.acquire({ req: i })
-          .catch(() => { rejectionCount++; })
+          .catch(() => {
+            rejectionCount++;
+          })
       );
     }
 

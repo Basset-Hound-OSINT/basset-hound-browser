@@ -483,7 +483,7 @@ describe('Data Stream Manager', () => {
 
   describe('Data Streaming', () => {
     test('should stream data', async () => {
-      let chunks = [];
+      const chunks = [];
 
       for await (const chunk of manager.streamData('changes', {}, 'json')) {
         chunks.push(chunk);
@@ -495,7 +495,7 @@ describe('Data Stream Manager', () => {
     test('should stream with compression', async () => {
       manager.options.compressionEnabled = true;
 
-      let chunks = [];
+      const chunks = [];
       for await (const chunk of manager.streamData('changes', {}, 'json')) {
         chunks.push(chunk);
       }

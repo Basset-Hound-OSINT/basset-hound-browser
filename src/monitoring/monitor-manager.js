@@ -13,11 +13,11 @@ const EventEmitter = require('events');
  * Frequency intervals in milliseconds
  */
 const FREQUENCY_INTERVALS = {
-  'hourly': 3600000,      // 1 hour
+  'hourly': 3600000, // 1 hour
   'twice-daily': 43200000, // 12 hours
-  'daily': 86400000,      // 24 hours
-  'weekly': 604800000,    // 7 days
-  'monthly': 2592000000   // 30 days
+  'daily': 86400000, // 24 hours
+  'weekly': 604800000, // 7 days
+  'monthly': 2592000000 // 30 days
 };
 
 /**
@@ -38,7 +38,7 @@ class MonitorManager extends EventEmitter {
   constructor(options = {}) {
     super();
 
-    this.dataDir = options.dataDir || path.join(process.cwd(), '.basset-hound', 'monitoring');
+    this.dataDir = options.dataDir || path.join(process.cwd(), 'tmp', '.basset-hound', 'monitoring');
     this.monitorsFile = path.join(this.dataDir, 'monitors.json');
     this.configFile = path.join(this.dataDir, 'config.json');
 
@@ -252,7 +252,9 @@ class MonitorManager extends EventEmitter {
     }
 
     // Apply updates
-    if (name) monitor.name = name;
+    if (name) {
+      monitor.name = name;
+    }
     if (frequency) {
       monitor.frequency = frequency;
       monitor.frequencyMs = FREQUENCY_INTERVALS[frequency];
@@ -261,9 +263,15 @@ class MonitorManager extends EventEmitter {
     if (alerts) {
       monitor.alerts = { ...monitor.alerts, ...alerts };
     }
-    if (tags) monitor.tags = tags;
-    if (metadata) monitor.metadata = { ...monitor.metadata, ...metadata };
-    if (status) monitor.status = status;
+    if (tags) {
+      monitor.tags = tags;
+    }
+    if (metadata) {
+      monitor.metadata = { ...monitor.metadata, ...metadata };
+    }
+    if (status) {
+      monitor.status = status;
+    }
 
     monitor.updatedAt = Date.now();
 
@@ -326,7 +334,9 @@ class MonitorManager extends EventEmitter {
    */
   updateCheckStatus(monitorId, checkResult) {
     const monitor = this.monitors.get(monitorId);
-    if (!monitor) return;
+    if (!monitor) {
+      return;
+    }
 
     monitor.lastCheckAt = Date.now();
     monitor.nextCheckAt = Date.now() + monitor.frequencyMs;
