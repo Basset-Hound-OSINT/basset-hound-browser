@@ -4,26 +4,32 @@ A running RAG instance that indexes this repo's `docs/` tree. Query it to find
 and answer questions about the Basset Hound Browser documentation without
 reading files by hand.
 
-> **Migrated 2026-07-05 to the rag-bootstrap image-mode model.** The instance
-> now consumes prebuilt Docker images + a tiny consumer dir; the old forked
-> template (`docs/rag-app/`, ~96 MB) was deleted from this repo. Deployment lives
-> **outside** the repo so it no longer pollutes the corpus.
+> **Migrated 2026-07-06 to the rag-bootstrap image-mode + `rag`-CLI model.** The
+> instance consumes prebuilt Docker images + a tiny deployment dir it owns; the
+> old forked template (`docs/rag-app/`, ~96 MB) was deleted from this repo. All
+> data (DB + cache + docs) lives on the **quickiespace** drive via **direct-path
+> volumes — no symlink, no root-disk footprint.** Managed by a single `rag` CLI
+> (the old `deploy.sh` / `build_images.sh` / `new_consumer.sh` scripts are gone).
 
 - **Base URL:** `http://localhost:10080`
-- **Consumer dir (deployment, OUTSIDE this repo):** `~/rag-consumers/basset-hound-docs-rag`
-  — holds only `docker-compose.yml` (image refs), `.env`, `client/ragq.py`,
-  `agent_hints/`, `ops/`, `RUN.md`. Zero template source, zero template docs.
+- **Deployment dir (its own dedicated folder on quickiespace, OUTSIDE this repo):**
+  `/mnt/quickiespace/rag-instances/basset-hound-docs-rag/` — holds only
+  `docker-compose.yml` (image refs), `.env`, `config.yaml`, `client/ragq.py`,
+  a local `rag` CLI, `ops/`, `RUN.md`. Zero template source, zero template docs.
+- **Data location:** all under `/mnt/quickiespace/rag-instances/basset-hound-docs-rag/data/`
+  (postgres/embeddings + docs/cache/logs) — a real directory on the mounted
+  drive, **no symlink layer**. Nothing else on quickiespace is touched.
 - **Compose project:** `basset-hound-docs-rag` (isolated; do NOT touch the other
   RAG stacks on this host)
 - **Corpus:** `/home/devel/basset-hound-browser/docs`
 - **Embeddings:** `nomic-embed-text` @ 768 dims (Ollama) · **LLM:** `llama3.2:3b`
-- **Images:** `rag-bootstrap-{api,frontend}:0.3.0` — built from the canonical
-  template at `~/exudeai/rag-bootstrap` (`scripts/build_images.sh`).
+- **Images:** `rag-bootstrap-{api,frontend}:0.3.0` — built once, centrally, from
+  the canonical template at `~/exudeai/rag-bootstrap` (`rag build`). This
+  deployment builds nothing; it only references the pinned image tag.
 - **Excluded from the corpus:** `archive/`, `archives/`, `**/deprecated/` (via
-  `ingestion.exclude` in the consumer's `config.yaml`, mounted `:ro` at
-  `/src/config/config.yaml`) — keeps superseded docs out of results. Changing the
-  exclude list requires a purge + re-ingest (`exclude` blocks ingest but does not
-  delete already-indexed chunks).
+  `ingestion.exclude` in `config.yaml`, mounted `:ro` at `/src/config/config.yaml`)
+  — keeps superseded docs out of results. Changing the exclude list needs a purge
+  + re-ingest (`exclude` blocks ingest but does not delete already-indexed chunks).
 
 > Agents: query this RAG **before** manual doc research (grep + Read over
 > `docs/`). One `/api/search` or `/api/ask` call returns the relevant chunks
@@ -32,18 +38,17 @@ reading files by hand.
 ## Content self-heals — no redeploy, no re-ingest
 The stack auto-reconciles every ~300 s: **add / edit / delete / move** a doc
 under `docs/` and it is picked up automatically within one interval — no
-redeploy, no re-ingest command, no cache clear (GPU-free on unchanged files;
-fail-soft). Force it now:
+redeploy, no re-ingest command, no cache clear. Force it now:
 
 ```bash
-curl -X POST http://localhost:10080/api/reconcile -H 'Content-Type: application/json' -d '{}'
+cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag && ./rag sync
+# or: curl -X POST http://localhost:10080/api/reconcile -H 'Content-Type: application/json' -d '{}'
 ```
 
 **Structural changes are different.** Changing the embedding model/dimension or
-chunking needs a deliberate rebuild — from the consumer dir:
-`docker compose down -v && docker compose up -d`, then re-ingest
-(POST `/api/reconcile`). Dimension changes hard-fail at startup, so you cannot
-silently mismatch.
+chunking needs a rebuild: from the deployment dir, `./rag reset` (wipe) then
+`./rag up`, then re-ingest (`./rag sync`). Dimension changes hard-fail at
+startup, so you cannot silently mismatch.
 
 ## Query — HTTP API (the source of truth)
 
@@ -70,36 +75,55 @@ true cosine is the separate `cosine` field.
 ## Query — shipped CLI client
 
 ```bash
-cd ~/rag-consumers/basset-hound-docs-rag/client
+cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag/client
 RAG_ENDPOINT_URL=http://localhost:10080 python3 ragq.py "websocket api commands"
 RAG_ENDPOINT_URL=http://localhost:10080 python3 ragq.py -n 3 -m semantic --json "forensic capture"
 RAG_ENDPOINT_URL=http://localhost:10080 python3 ragq.py --health
 ```
 
-## Operate the instance
+## Operate the instance — the `rag` CLI
 
 ```bash
-cd ~/rag-consumers/basset-hound-docs-rag
-docker compose ps                 # status
-docker compose up -d              # start
-docker compose down               # stop (keep the index)
-docker compose down -v            # stop + wipe index (safe: only regenerable
-                                  #   embeddings; your docs are never touched)
-docker compose logs -f api        # tail api logs
+cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag
+./rag status        # service status + health
+./rag up            # start (preflight + compose up + dim guard + health gate)
+./rag down          # stop (keeps data)
+./rag sync          # force an immediate reconcile (freshness)
+./rag diagnose      # currency checkup: image mode, self-healing, data-on-drive
+./rag logs api      # tail a service's logs
+./rag --help        # full command list
 ```
+
+`docker compose <cmd>` from the same dir still works; `rag` wraps it with the
+preflight/health-gate/dim-guard the new model expects.
 
 ## Rebuild / recreate from scratch
 
 The instance holds **only regenerable embeddings** — deleting it loses nothing;
-your source docs live in this repo and are never in the instance. To recreate:
+your source docs live in this repo and are never in the instance. To recreate a
+clean instance on the drive (from the canonical template):
 
 ```bash
-cd ~/rag-consumers/basset-hound-docs-rag && docker compose down -v
-bash ~/exudeai/rag-bootstrap/scripts/new_consumer.sh basset-hound-docs-rag <free-port> \
-  /home/devel/basset-hound-browser/docs --mode single --tag 0.3.0 \
-  --out ~/rag-consumers/basset-hound-docs-rag
-cd ~/rag-consumers/basset-hound-docs-rag && docker compose up -d   # auto-ingests
+# images (once, if not already built on this host):
+~/exudeai/rag-bootstrap/rag build
+# scaffold a clean image-mode instance with direct-path data on quickiespace:
+~/exudeai/rag-bootstrap/rag new-consumer basset-hound-docs-rag 10080 \
+  /home/devel/basset-hound-browser/docs --mode single \
+  --data-root /mnt/quickiespace/rag-instances/basset-hound-docs-rag/data \
+  --tag 0.3.0 --out /mnt/quickiespace/rag-instances/basset-hound-docs-rag
+# add config.yaml (archive exclusion) + its :ro mount, then:
+cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag && ./rag up   # auto-ingests
 ```
 
+`~/exudeai/rag-bootstrap/rag migrate` automates moving an OLD deployment to this
+clean shape in one command (dry-run by default; `--apply` to execute).
+
+**Ollama note:** the api reaches host Ollama via `host.docker.internal:11434`.
+Ollama binds `127.0.0.1`, so a rootless forwarder (`ollama-rag-bridge.service`,
+bind `172.17.0.1:11434`) bridges the docker gateway to it. If `./rag diagnose`
+shows embeddings unreachable, check that forwarder (`~/exudeai/rag-bootstrap/rag
+ollama-forwarder` prints the setup).
+
 Template + full deployment docs: `~/exudeai/rag-bootstrap/docs/deployment/`
-(`MIGRATION.md`, `DEV_NOTE_2026-07-05.md`, `DISTRIBUTION.md`, `SELF_HEALING.md`).
+(`DEV_MIGRATION_NOTE.md`, `DISTRIBUTION.md`, `CUSTOMIZING_YOUR_INSTANCE.md`,
+`IMAGE_CONTRACT.md`, `SELF_HEALING.md`, `MIGRATION.md`).
