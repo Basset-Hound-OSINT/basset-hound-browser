@@ -19,6 +19,11 @@ reading files by hand.
 - **Embeddings:** `nomic-embed-text` @ 768 dims (Ollama) · **LLM:** `llama3.2:3b`
 - **Images:** `rag-bootstrap-{api,frontend}:0.3.0` — built from the canonical
   template at `~/exudeai/rag-bootstrap` (`scripts/build_images.sh`).
+- **Excluded from the corpus:** `archive/`, `archives/`, `**/deprecated/` (via
+  `ingestion.exclude` in the consumer's `config.yaml`, mounted `:ro` at
+  `/src/config/config.yaml`) — keeps superseded docs out of results. Changing the
+  exclude list requires a purge + re-ingest (`exclude` blocks ingest but does not
+  delete already-indexed chunks).
 
 > Agents: query this RAG **before** manual doc research (grep + Read over
 > `docs/`). One `/api/search` or `/api/ask` call returns the relevant chunks
