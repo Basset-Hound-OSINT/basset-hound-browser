@@ -10,7 +10,14 @@ scope: docs/architecture/SCOPE.md — deterministic capture/control tool; NO int
 # Next-Session Playbook — START HERE
 
 > Read this first, then verify (3 commands), then pick up the phased roadmap.
-> Everything below is **UNCOMMITTED** in the working tree (operator policy: no commits).
+>
+> **⚠️ Workspace hygiene (enforced via `CLAUDE.md`):** never write scratch /
+> diagnostics / logs / ad-hoc harness scripts to `~/`, `/home/devel/`, or the repo
+> root — send them to **`tmp/`** (gitignored) or the session scratchpad. `cd` into
+> this repo before any one-off command and redirect into `tmp/`, never `> ~/foo.txt`
+> or a bare `> foo.txt` at the root. This is exactly what leaked the `bhb-*` files
+> into `~/` (see `docs/archives/session_records/2026-07-06_HOME-DIR-CLEANUP.md`);
+> full rule in `docs/DATA-ORGANIZATION-ENFORCEMENT.md`.
 
 ## 1. Current state in 5 lines
 

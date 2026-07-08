@@ -4,6 +4,8 @@
 
 > **CURRENT STATUS (2026-07-05):** MVP complete + proven — boots/drives headless + GUI (`npm run smoke:mvp` = **15/15**), **18-tool MCP** incl. `forensic_capture`, Tor/proxy anonymity + coherent stealth identity proven, all 13 files >1200 lines modularized to <1200 (`websocket/server.js` 12,096→1,110, 904 commands preserved), security hardened. Repo hygiene pass (2026-07-05): fake-secret test/doc fixtures scrubbed, ~45 MB of test-artifact/screenshot junk untracked + gitignored, dev TLS certs untracked. **Authoritative live status → [../planning/PROJECT-STATUS-MATRIX.md](../planning/PROJECT-STATUS-MATRIX.md).** The scope boundaries below (§0 blacklist, in/out-of-scope) are **UNCHANGED** and remain in force. Known still-present blacklist violations, DEFERRED: `src/agents/orchestrator.js`, `src/features/ai-analysis.js`.
 
+> **Workspace hygiene (in-scope rule):** scratch / diagnostics / logs / ad-hoc harness scripts NEVER go to `~/`, `/home/devel/`, or the repo root — only `tmp/` (gitignored) or the session scratchpad. `cd` into the repo before one-off commands; redirect into `tmp/`, never `> ~/foo.txt`. Enforced via `CLAUDE.md`; full rule `docs/DATA-ORGANIZATION-ENFORCEMENT.md`. (Root cause of the 2026-07-06 `bhb-*` home-dir leak.)
+
 ---
 
 ## Purpose
