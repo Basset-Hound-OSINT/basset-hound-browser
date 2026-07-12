@@ -30,7 +30,7 @@ Complete video recording and playback system for Basset Hound Browser. Supports 
 - **READ THIS FIRST for complete understanding**
 
 #### **API Reference**
-📄 [`docs/VIDEO-API-REFERENCE.md`](./VIDEO-API-REFERENCE.md)
+📄 [`docs/VIDEO-API-REFERENCE.md`](archive/deprecated/VIDEO-API-REFERENCE.md)
 - Complete WebSocket API documentation
 - 14 command specifications
 - Parameter details and examples
@@ -40,7 +40,7 @@ Complete video recording and playback system for Basset Hound Browser. Supports 
 - **USE THIS for API implementation**
 
 #### **Codec Selection Guide**
-📄 [`docs/VIDEO-CODEC-GUIDE.md`](./VIDEO-CODEC-GUIDE.md)
+📄 [`docs/VIDEO-CODEC-GUIDE.md`](guides/user-guides/VIDEO-CODEC-GUIDE.md)
 - Codec comparison matrix
 - Quality mapping for each codec
 - Performance characteristics
@@ -50,7 +50,7 @@ Complete video recording and playback system for Basset Hound Browser. Supports 
 - **REFER TO THIS when choosing codecs**
 
 #### **Integration Guide**
-📄 [`docs/VIDEO-INTEGRATION-GUIDE.md`](./VIDEO-INTEGRATION-GUIDE.md)
+📄 [`docs/VIDEO-INTEGRATION-GUIDE.md`](guides/user-guides/VIDEO-INTEGRATION-GUIDE.md)
 - Step-by-step integration instructions
 - Module overview and usage
 - Integration patterns and examples
@@ -273,7 +273,7 @@ npm test -- tests/unit/video-recording.test.js
 ```
 
 ### Preset Configurations
-See [`docs/VIDEO-INTEGRATION-GUIDE.md`](./VIDEO-INTEGRATION-GUIDE.md#configuration-examples) for:
+See [`docs/VIDEO-INTEGRATION-GUIDE.md`](guides/user-guides/VIDEO-INTEGRATION-GUIDE.md#configuration-examples) for:
 - Development Configuration
 - Production Configuration
 - Forensic Configuration
@@ -356,31 +356,31 @@ npm test -- tests/unit/video-recording.test.js
 **Recommended Config:** `codec: 'vp9', fps: 30, quality: 20`
 - Output: 100-140 MB/hour
 - Best for: Legal proceedings, detailed analysis
-- [See docs](./VIDEO-CODEC-GUIDE.md#forensic-investigation-high-fidelity)
+- [See docs](guides/user-guides/VIDEO-CODEC-GUIDE.md#forensic-investigation-high-fidelity)
 
 ### OSINT Research (Default)
 **Recommended Config:** `codec: 'vp9', fps: 24, quality: 32`
 - Output: 140-180 MB/hour
 - Best for: Most general use cases
-- [See docs](./VIDEO-CODEC-GUIDE.md#osint-research-balanced---recommended-default)
+- [See docs](guides/user-guides/VIDEO-CODEC-GUIDE.md#osint-research-balanced---recommended-default)
 
 ### Evidence Capture
 **Recommended Config:** `codec: 'h264', fps: 24, quality: 23`
 - Output: 200-280 MB/hour
 - Best for: Universal compatibility
-- [See docs](./VIDEO-CODEC-GUIDE.md#evidence-capture-compliance)
+- [See docs](guides/user-guides/VIDEO-CODEC-GUIDE.md#evidence-capture-compliance)
 
 ### Quick Analysis
 **Recommended Config:** `codec: 'vp9', fps: 10, quality: 40`
 - Output: 40-60 MB/hour
 - Best for: Preview, bandwidth-limited
-- [See docs](./VIDEO-CODEC-GUIDE.md#quick-analysis-low-bandwidth)
+- [See docs](guides/user-guides/VIDEO-CODEC-GUIDE.md#quick-analysis-low-bandwidth)
 
 ### Long-Term Archive
 **Recommended Config:** `codec: 'h265', fps: 24, quality: 28`
 - Output: 80-120 MB/hour
 - Best for: Cold storage, cloud backup
-- [See docs](./VIDEO-CODEC-GUIDE.md#long-term-archive-minimal-space)
+- [See docs](guides/user-guides/VIDEO-CODEC-GUIDE.md#long-term-archive-minimal-space)
 
 ---
 
@@ -435,7 +435,7 @@ await websocket.send({
 });
 ```
 
-See [VIDEO-API-REFERENCE.md](./VIDEO-API-REFERENCE.md) for complete API documentation.
+See [VIDEO-API-REFERENCE.md](archive/deprecated/VIDEO-API-REFERENCE.md) for complete API documentation.
 
 ---
 
@@ -473,7 +473,7 @@ new VideoEncoder({ chunkSize: 50 })
 { codec: 'vp8', fps: 10, quality: 8 }
 ```
 
-See [VIDEO-INTEGRATION-GUIDE.md](./VIDEO-INTEGRATION-GUIDE.md#troubleshooting-checklist) for more troubleshooting.
+See [VIDEO-INTEGRATION-GUIDE.md](guides/user-guides/VIDEO-INTEGRATION-GUIDE.md#troubleshooting-checklist) for more troubleshooting.
 
 ---
 
@@ -511,9 +511,9 @@ basset-hound-browser/
 | Document | Purpose | Link |
 |----------|---------|------|
 | **Implementation Complete** | Full overview and architecture | [Read](./handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md) |
-| **API Reference** | WebSocket API documentation | [Read](./VIDEO-API-REFERENCE.md) |
-| **Codec Guide** | Codec selection and comparison | [Read](./VIDEO-CODEC-GUIDE.md) |
-| **Integration Guide** | Step-by-step integration | [Read](./VIDEO-INTEGRATION-GUIDE.md) |
+| **API Reference** | WebSocket API documentation | [Read](archive/deprecated/VIDEO-API-REFERENCE.md) |
+| **Codec Guide** | Codec selection and comparison | [Read](guides/user-guides/VIDEO-CODEC-GUIDE.md) |
+| **Integration Guide** | Step-by-step integration | [Read](guides/user-guides/VIDEO-INTEGRATION-GUIDE.md) |
 
 ---
 
@@ -596,9 +596,9 @@ Storage mgmt:   ~10 MB
 
 ## Getting Help
 
-1. **Quick answers:** Check [VIDEO-API-REFERENCE.md](./VIDEO-API-REFERENCE.md)
-2. **Codec questions:** See [VIDEO-CODEC-GUIDE.md](./VIDEO-CODEC-GUIDE.md)
-3. **Integration help:** Follow [VIDEO-INTEGRATION-GUIDE.md](./VIDEO-INTEGRATION-GUIDE.md)
+1. **Quick answers:** Check [VIDEO-API-REFERENCE.md](archive/deprecated/VIDEO-API-REFERENCE.md)
+2. **Codec questions:** See [VIDEO-CODEC-GUIDE.md](guides/user-guides/VIDEO-CODEC-GUIDE.md)
+3. **Integration help:** Follow [VIDEO-INTEGRATION-GUIDE.md](guides/user-guides/VIDEO-INTEGRATION-GUIDE.md)
 4. **Architecture deep-dive:** Read [Implementation Complete](./handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md)
 
 ---

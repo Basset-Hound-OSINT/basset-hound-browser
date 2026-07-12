@@ -531,7 +531,7 @@ bash examples/docker-tls-setup.sh prod --domain browser.example.com
 |----------|---------|
 | [TLS-SETUP.md](./TLS-SETUP.md) | Comprehensive TLS setup guide (400+ lines) |
 | [API-REFERENCE.md](./API-REFERENCE.md) | Full WebSocket API documentation |
-| [DEPLOYMENT-COMPLETE-2026-05-11.md](./DEPLOYMENT-COMPLETE-2026-05-11.md) | Production deployment details |
+| [DEPLOYMENT-COMPLETE-2026-05-11.md](archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md) | Production deployment details |
 | [CONNECTION-POOL.md](./CONNECTION-POOL.md) | Connection pooling for WSS |
 | examples/tls-client.js | Node.js WSS client example |
 | examples/tls-client.py | Python WSS client example |

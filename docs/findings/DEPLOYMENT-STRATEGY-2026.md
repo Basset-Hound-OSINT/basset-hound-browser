@@ -1204,11 +1204,11 @@ KPI: 95% of issues detected < 3 minutes
 
 ### C. Related Documentation
 
-- [DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md](/docs/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md)
+- [DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md](../guides/user-guides/DEPLOYMENT-AUTOMATION-GUIDE-v12.7.0.md)
 - [CANARY-DEPLOYMENT-RUNBOOK.md](/docs/runbooks/CANARY-DEPLOYMENT-RUNBOOK.md)
-- [PRE-DEPLOYMENT-VALIDATION.md](/docs/PRE-DEPLOYMENT-VALIDATION.md)
+- [PRE-DEPLOYMENT-VALIDATION.md](../archives/prune-2026-07-06/PRE-DEPLOYMENT-VALIDATION.md)
 - [API-REFERENCE.md](/docs/API-REFERENCE.md)
-- [ROADMAP.md](/docs/ROADMAP.md)
+- [ROADMAP.md](../roadmap/ROADMAP.md)
 
 ### D. Version History
 

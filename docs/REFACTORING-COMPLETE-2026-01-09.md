@@ -480,4 +480,4 @@ This separation of concerns enables each component to focus on its core competen
 **New Version:** 10.0.0
 **Status:** ✅ PRODUCTION READY
 
-For questions or issues, see [SCOPE.md](SCOPE.md) for architectural guidance.
+For questions or issues, see [SCOPE.md](architecture/SCOPE.md) for architectural guidance.

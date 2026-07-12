@@ -446,20 +446,20 @@ docker-compose build       # Build Docker image
 ### User Documentation
 
 - ✅ [README.md](../README.md) - Quick start and overview
-- ✅ [INSTALLATION.md](INSTALLATION.md) - Installation guide
+- ✅ [INSTALLATION.md](../core/installation.md) - Installation guide
 - ✅ [API.md](API.md) - WebSocket API reference
-- ✅ [EVASION.md](EVASION.md) - Bot detection evasion guide
+- ✅ [EVASION.md](../features/evasion.md) - Bot detection evasion guide
 - ✅ [TOR_SETUP.md](TOR_SETUP.md) - Tor configuration guide
 - ✅ [SSL-CERTIFICATES.md](SSL-CERTIFICATES.md) - SSL certificate guide
-- ✅ [AUTO-UPDATE.md](AUTO-UPDATE.md) - Update system guide
-- ✅ [DISTRIBUTION.md](DISTRIBUTION.md) - Build and deployment guide
+- ✅ [AUTO-UPDATE.md](../features/auto-update.md) - Update system guide
+- ✅ [DISTRIBUTION.md](../deployment/distribution.md) - Build and deployment guide
 
 ### Developer Documentation
 
-- ✅ [DEVELOPMENT.md](DEVELOPMENT.md) - Development setup
+- ✅ [DEVELOPMENT.md](../core/development.md) - Development setup
 - ✅ [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
-- ✅ [TESTING.md](TESTING.md) - Testing guide
-- ✅ [ROADMAP.md](ROADMAP.md) - Development roadmap
+- ✅ [TESTING.md](../archives/prune-2026-07-06/wiki/development/TESTING.md) - Testing guide
+- ✅ [ROADMAP.md](../roadmap/ROADMAP.md) - Development roadmap
 
 ### API Documentation
 
@@ -478,7 +478,7 @@ The project follows standard open-source contribution practices:
 3. Make changes with tests
 4. Submit a pull request
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed contribution guidelines.
+See [DEVELOPMENT.md](../core/development.md) for detailed contribution guidelines.
 
 ---
 

@@ -776,7 +776,7 @@ docker inspect basset-hound-instance-1001 | jq # Container details
 
 - [DEPLOYMENT-AUTOMATION-RUNBOOK.md](./DEPLOYMENT-AUTOMATION-RUNBOOK.md) - Detailed procedures
 - [COMMUNICATION-TEMPLATES.md](./COMMUNICATION-TEMPLATES.md) - Notification templates
-- [DOCKER-DEPLOYMENT.md](../DOCKER-DEPLOYMENT.md) - Docker configuration
+- [DOCKER-DEPLOYMENT.md](../operations/DOCKER-DEPLOYMENT.md) - Docker configuration
 - [docs/API-REFERENCE.md](../API-REFERENCE.md) - WebSocket API reference
 
 ---

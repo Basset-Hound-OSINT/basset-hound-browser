@@ -525,5 +525,5 @@ console.log('Timeline (event order):', analysis.layers.timeline.status);
 ## Related Documentation
 
 - [Session Coherence Validation - Integration Guide](../integration/SESSION-COHERENCE-VALIDATION-INTEGRATION-GUIDE.md)
-- [Session Coherence Validation - API Reference](../api/SESSION-COHERENCE-VALIDATION-API-REFERENCE.md)
+- [Session Coherence Validation - API Reference](../archive/deprecated/SESSION-COHERENCE-VALIDATION-API-REFERENCE.md)
 - [Session Coherence Validation - Architecture](../technical/SESSION-COHERENCE-VALIDATION-ARCHITECTURE.md)

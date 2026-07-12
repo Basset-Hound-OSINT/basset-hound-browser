@@ -682,7 +682,7 @@ docker volume rm basset-hound_data
 - [Client Libraries](../integrations/README.md)
 
 **Troubleshooting:**
-- [Troubleshooting Guide](./TROUBLESHOOTING.md)
+- [Troubleshooting Guide](../support/TROUBLESHOOTING.md)
 - GitHub Issues
 - Project Documentation
 

@@ -204,8 +204,8 @@ There are two distinct concepts:
 
 - [TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md](TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md) - Initial verification
 - [DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md](DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md) - Docker setup research
-- [SCOPE.md](../SCOPE.md) - Project scope with Tor clarifications
-- [ROADMAP.md](../ROADMAP.md) - Roadmap with Tor section
+- [SCOPE.md](../architecture/SCOPE.md) - Project scope with Tor clarifications
+- [ROADMAP.md](../roadmap/ROADMAP.md) - Roadmap with Tor section
 
 ---
 

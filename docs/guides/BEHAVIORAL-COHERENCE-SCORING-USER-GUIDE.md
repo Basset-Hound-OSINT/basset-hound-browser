@@ -461,6 +461,6 @@ console.log(`New score: ${newScore.data.overallScore}`);
 
 ## Related Documentation
 
-- [Behavioral Coherence Scoring - Integration Guide](../integration/BEHAVIORAL-COHERENCE-SCORING-INTEGRATION-GUIDE.md)
-- [Behavioral Coherence Scoring - API Reference](../api/BEHAVIORAL-COHERENCE-SCORING-API-REFERENCE.md)
-- [Behavioral Coherence Scoring - Architecture](../technical/BEHAVIORAL-COHERENCE-SCORING-ARCHITECTURE.md)
+- [Behavioral Coherence Scoring - Integration Guide](../archives/prune-2026-07-06/integration/BEHAVIORAL-COHERENCE-SCORING-INTEGRATION-GUIDE.md)
+- [Behavioral Coherence Scoring - API Reference](../archive/deprecated/BEHAVIORAL-COHERENCE-SCORING-API-REFERENCE.md)
+- [Behavioral Coherence Scoring - Architecture](../archives/prune-2026-07-06/technical/BEHAVIORAL-COHERENCE-SCORING-ARCHITECTURE.md)

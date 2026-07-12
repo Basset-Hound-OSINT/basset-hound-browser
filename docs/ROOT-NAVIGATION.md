@@ -106,7 +106,7 @@ basset-hound-browser/
 | `.gitignore` | Git ignore patterns | ✅ REQUIRED |
 | `.dockerignore` | Docker ignore patterns | ✅ OPTIONAL |
 
-**All other documentation organized in `docs/` subdirectories per [DOCUMENTATION-STRUCTURE.md](./docs/DOCUMENTATION-STRUCTURE.md)**
+**All other documentation organized in `docs/` subdirectories per [DOCUMENTATION-STRUCTURE.md](DOCUMENTATION-STRUCTURE.md)**
 
 ---
 
@@ -119,11 +119,11 @@ basset-hound-browser/
 
 ### 📖 Documentation
 - **[docs/](./docs/)** - Main documentation directory
-- **[docs/DOCUMENTATION-STRUCTURE.md](./docs/DOCUMENTATION-STRUCTURE.md)** - Documentation organization standards
-- **[docs/AGENT-DOCUMENTATION-STANDARDS.md](./docs/AGENT-DOCUMENTATION-STANDARDS.md)** - Standards for agent handoffs
+- **[docs/DOCUMENTATION-STRUCTURE.md](DOCUMENTATION-STRUCTURE.md)** - Documentation organization standards
+- **[docs/AGENT-DOCUMENTATION-STANDARDS.md](AGENT-DOCUMENTATION-STANDARDS.md)** - Standards for agent handoffs
 - **[docs/API-REFERENCE.md](./docs/API-REFERENCE.md)** - WebSocket API documentation (164 commands)
-- **[docs/ROADMAP.md](./docs/ROADMAP.md)** - Complete project roadmap
-- **[docs/SCOPE.md](./docs/SCOPE.md)** - Architecture boundaries
+- **[docs/ROADMAP.md](roadmap/ROADMAP.md)** - Complete project roadmap
+- **[docs/SCOPE.md](architecture/SCOPE.md)** - Architecture boundaries
 - **[docs/findings/](./docs/findings/)** - Analysis reports & validation results
 - **[docs/handoffs/](./docs/handoffs/)** - Agent task completion reports
 - **[docs/releases/](./docs/releases/)** - Release notes by version
@@ -335,7 +335,7 @@ For detailed architecture information, see `/docs/SCOPE.md` and `/docs/ROADMAP.m
 
 **Last Cleanup:** June 15, 2026  
 **Status:** ✅ Complete - Root directory cleaned, v12.7.0 Phase 1-2 planning organized  
-**Standards:** See [DOCUMENTATION-STRUCTURE.md](./docs/DOCUMENTATION-STRUCTURE.md) and [AGENT-DOCUMENTATION-STANDARDS.md](./docs/AGENT-DOCUMENTATION-STANDARDS.md)
+**Standards:** See [DOCUMENTATION-STRUCTURE.md](DOCUMENTATION-STRUCTURE.md) and [AGENT-DOCUMENTATION-STANDARDS.md](AGENT-DOCUMENTATION-STANDARDS.md)
 
 ---
 

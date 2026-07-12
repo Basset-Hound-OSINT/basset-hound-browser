@@ -272,13 +272,13 @@ Platform Integration Diagrams (2):
 ## For Different Audiences
 
 ### New Users
-- [Getting Started](GETTING-STARTED.md) (5 min)
-- [Installation](core/installation.md)
+- [Getting Started](../GETTING-STARTED.md) (5 min)
+- [Installation](../core/installation.md)
 - [First Steps](FIRST-STEPS.md)
 
 ### Developers
 - [Architecture](ARCHITECTURE.md)
-- [Development Guide](core/development.md)
+- [Development Guide](../core/development.md)
 - [API Reference](API-REFERENCE.md)
 
 ### Integration Teams
@@ -287,9 +287,9 @@ Platform Integration Diagrams (2):
 - [Node.js Client](integrations/README.md)
 
 ### DevOps/SRE
-- [Deployment Guide](deployment/DEPLOYMENT-QUICK-START.md)
+- [Deployment Guide](../deployment/DEPLOYMENT-QUICK-START.md)
 - [Monitoring](monitoring/)
-- [Troubleshooting](TROUBLESHOOTING.md)
+- [Troubleshooting](../support/TROUBLESHOOTING.md)
 
 ### Security Teams
 - [Security Documentation](security/)
@@ -297,7 +297,7 @@ Platform Integration Diagrams (2):
 
 ## By Feature
 - [Feature Index](features/)
-- [Technology Detection](V12.1.0-FEATURES-INDEX-2026-05-31.md)
+- [Technology Detection](../reference/V12.1.0-FEATURES-INDEX-2026-05-31.md)
 - [Forensic Export](docs/FORENSIC-EVIDENCE-EXPORT-GUIDE-2026-05-31.md)
 - [Platform Integrations](docs/PLATFORM-INTEGRATIONS-QUICK-START.md)
 
@@ -306,7 +306,7 @@ Platform Integration Diagrams (2):
 
 ## Latest Updates
 - v12.1.0: May 31, 2026
-- [Release Notes](RELEASE-NOTES-v12.1.0.md)
+- [Release Notes](../releases/RELEASE-NOTES-v12.1.0.md)
 - [What's New](README.md#whats-new)
 ```
 

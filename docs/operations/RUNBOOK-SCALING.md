@@ -936,4 +936,4 @@ Scaling is successful when:
 - [Monitoring Runbook](./RUNBOOK-MONITORING.md)
 - [Maintenance Runbook](./RUNBOOK-MAINTENANCE.md)
 - [Infrastructure README](../infrastructure/README.md)
-- [Performance Baseline](../PERFORMANCE-BASELINE-SUMMARY.md)
+- [Performance Baseline](../archive/generated/PERFORMANCE-BASELINE-SUMMARY.md)

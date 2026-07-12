@@ -10,19 +10,19 @@
 ## Quick Navigation
 
 ### For Developers
-1. **Quick Start:** [API-ENHANCEMENTS-QUICK-REFERENCE.md](API-ENHANCEMENTS-QUICK-REFERENCE.md)
-2. **Full Reference:** [API-ENHANCEMENTS-SUMMARY.md](API-ENHANCEMENTS-SUMMARY.md)
-3. **Command Index:** [NEW-COMMANDS-INDEX.md](NEW-COMMANDS-INDEX.md)
+1. **Quick Start:** [API-ENHANCEMENTS-QUICK-REFERENCE.md](archive/deprecated/API-ENHANCEMENTS-QUICK-REFERENCE.md)
+2. **Full Reference:** [API-ENHANCEMENTS-SUMMARY.md](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
+3. **Command Index:** [NEW-COMMANDS-INDEX.md](archive/deprecated/NEW-COMMANDS-INDEX.md)
 
 ### For Operations
 1. **Implementation Report:** [../API-ENHANCEMENTS-COMPLETION.txt](../API-ENHANCEMENTS-COMPLETION.txt)
-2. **Integration Guide:** [API-ENHANCEMENTS-SUMMARY.md#integration-points](API-ENHANCEMENTS-SUMMARY.md)
-3. **Deployment Checklist:** [API-ENHANCEMENTS-QUICK-REFERENCE.md#integration-checklist](API-ENHANCEMENTS-QUICK-REFERENCE.md)
+2. **Integration Guide:** [API-ENHANCEMENTS-SUMMARY.md#integration-points](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
+3. **Deployment Checklist:** [API-ENHANCEMENTS-QUICK-REFERENCE.md#integration-checklist](archive/deprecated/API-ENHANCEMENTS-QUICK-REFERENCE.md)
 
 ### For Architects
-1. **Architecture Overview:** [API-ENHANCEMENTS-SUMMARY.md#implementation-notes](API-ENHANCEMENTS-SUMMARY.md)
-2. **Performance Specs:** [API-ENHANCEMENTS-SUMMARY.md#performance-characteristics](API-ENHANCEMENTS-SUMMARY.md)
-3. **Scalability:** [NEW-COMMANDS-INDEX.md#integration-checklist](NEW-COMMANDS-INDEX.md)
+1. **Architecture Overview:** [API-ENHANCEMENTS-SUMMARY.md#implementation-notes](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
+2. **Performance Specs:** [API-ENHANCEMENTS-SUMMARY.md#performance-characteristics](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
+3. **Scalability:** [NEW-COMMANDS-INDEX.md#integration-checklist](archive/deprecated/NEW-COMMANDS-INDEX.md)
 
 ---
 
@@ -70,7 +70,7 @@
 - Distributed Monitoring (4): `get_distributed_status`, `assign_target_to_instance`, `trigger_failover`, `migrate_monitor`
 - Real-time Alerting (5): `create_alert_rule`, `get_active_alerts`, `escalate_alert`, `acknowledge_alert`, `set_alert_thresholds`
 
-**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-26-advanced-monitoring-commands](API-ENHANCEMENTS-SUMMARY.md)
+**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-26-advanced-monitoring-commands](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
 
 ### Phase 27: Performance Metrics (12 commands)
 
@@ -81,7 +81,7 @@
 - Cache Management (3): `configure_cache`, `clear_cache`, `get_batch_performance`
 - Benchmarks & Optimization (2): `run_performance_benchmark`, `get_optimization_recommendations`
 
-**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-27-performance-metrics-commands](API-ENHANCEMENTS-SUMMARY.md)
+**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-27-performance-metrics-commands](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
 
 ### Phase 28: Session Management (16 commands)
 
@@ -91,7 +91,7 @@
 - Session Analytics (4): `get_session_analytics`, `get_aggregate_analytics`, `get_session_performance_report`, `export_session_analytics`
 - Clustering (5): `get_cluster_status`, `migrate_session`, `get_instance_metrics`, `enable_cluster_mode`, `list_instances`
 
-**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-28-session-management-commands](API-ENHANCEMENTS-SUMMARY.md)
+**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-28-session-management-commands](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
 
 ### Phase 29: Advanced Analytics (12 commands)
 
@@ -102,7 +102,7 @@
 - Report Generation (3): `generate_report`, `generate_custom_report`, `export_analytics`
 - Historical Data (3): `get_historical_data`, `query_analytics`, `compare_periods`
 
-**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-29-advanced-analytics-commands](API-ENHANCEMENTS-SUMMARY.md)
+**Document:** See [API-ENHANCEMENTS-SUMMARY.md#phase-29-advanced-analytics-commands](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
 
 ---
 
@@ -253,20 +253,20 @@ docs/
 ## Support & Resources
 
 ### Need to Understand a Command?
-1. Check [NEW-COMMANDS-INDEX.md](NEW-COMMANDS-INDEX.md) for quick lookup
-2. See [API-ENHANCEMENTS-SUMMARY.md](API-ENHANCEMENTS-SUMMARY.md) for full details
+1. Check [NEW-COMMANDS-INDEX.md](archive/deprecated/NEW-COMMANDS-INDEX.md) for quick lookup
+2. See [API-ENHANCEMENTS-SUMMARY.md](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md) for full details
 3. Review JSDoc in source file for implementation
 
 ### Looking for a Use Case?
-1. Check [API-ENHANCEMENTS-QUICK-REFERENCE.md](API-ENHANCEMENTS-QUICK-REFERENCE.md) scenarios section
-2. Search [API-ENHANCEMENTS-SUMMARY.md](API-ENHANCEMENTS-SUMMARY.md) for "Use Case"
+1. Check [API-ENHANCEMENTS-QUICK-REFERENCE.md](archive/deprecated/API-ENHANCEMENTS-QUICK-REFERENCE.md) scenarios section
+2. Search [API-ENHANCEMENTS-SUMMARY.md](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md) for "Use Case"
 
 ### Need Integration Help?
-1. Read integration notes in [API-ENHANCEMENTS-SUMMARY.md#integration-points](API-ENHANCEMENTS-SUMMARY.md)
-2. Review deployment checklist in [API-ENHANCEMENTS-QUICK-REFERENCE.md](API-ENHANCEMENTS-QUICK-REFERENCE.md)
+1. Read integration notes in [API-ENHANCEMENTS-SUMMARY.md#integration-points](archive/deprecated/API-ENHANCEMENTS-SUMMARY.md)
+2. Review deployment checklist in [API-ENHANCEMENTS-QUICK-REFERENCE.md](archive/deprecated/API-ENHANCEMENTS-QUICK-REFERENCE.md)
 
 ### Troubleshooting Issues?
-1. Check troubleshooting section in [API-ENHANCEMENTS-QUICK-REFERENCE.md](API-ENHANCEMENTS-QUICK-REFERENCE.md)
+1. Check troubleshooting section in [API-ENHANCEMENTS-QUICK-REFERENCE.md](archive/deprecated/API-ENHANCEMENTS-QUICK-REFERENCE.md)
 2. Review error codes in command source files
 
 ---

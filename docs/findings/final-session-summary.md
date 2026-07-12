@@ -138,8 +138,8 @@ docs/
 
 ### Key Documents
 - [README.md](../README.md) - Documentation index
-- [ROADMAP.md](../ROADMAP.md) - Project roadmap (v8.1.4)
-- [DEVELOPMENT-STATUS.md](../DEVELOPMENT-STATUS.md) - Current status
+- [ROADMAP.md](../roadmap/ROADMAP.md) - Project roadmap (v8.1.4)
+- [DEVELOPMENT-STATUS.md](../technical/DEVELOPMENT-STATUS.md) - Current status
 - [SSL-CERTIFICATES.md](../SSL-CERTIFICATES.md) - SSL feature guide
 
 ---

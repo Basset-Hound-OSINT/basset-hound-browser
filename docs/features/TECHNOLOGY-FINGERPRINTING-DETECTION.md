@@ -801,5 +801,5 @@ detection.detections.forEach(t => {
 
 - [Technology Detection Implementation](../handoffs/TECH-FINGERPRINTING-IMPLEMENTATION.md)
 - [Technology Detection Guide](../guides/TECHNOLOGY-DETECTION-GUIDE-2026-05-31.md)
-- [Competitor Monitoring](features/COMPETITOR-MONITORING.md)
+- [Competitor Monitoring](COMPETITOR-MONITORING.md)
 - [Technology Fingerprints Database](../../technology/fingerprints.js)

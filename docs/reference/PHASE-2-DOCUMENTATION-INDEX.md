@@ -314,8 +314,8 @@ Report documentation bugs or improvements:
 ## Related Resources
 
 - [API Reference](/docs/API-REFERENCE.md) - Complete 164-command reference
-- [ROADMAP](/docs/ROADMAP.md) - Future features and enhancements
-- [SCOPE](/docs/SCOPE.md) - What's in/out of scope
+- [ROADMAP](../roadmap/ROADMAP.md) - Future features and enhancements
+- [SCOPE](../architecture/SCOPE.md) - What's in/out of scope
 - [README.md](/README.md) - Project overview
 
 ---

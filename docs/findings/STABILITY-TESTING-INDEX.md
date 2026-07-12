@@ -3,7 +3,7 @@
 ## Quick Navigation
 
 ### Start Here
-- **Quick Start Guide:** [`/STABILITY-TESTING-QUICKSTART.md`](/STABILITY-TESTING-QUICKSTART.md)
+- **Quick Start Guide:** [`/STABILITY-TESTING-QUICKSTART.md`](../archives/validation-reports/STABILITY-TESTING-QUICKSTART.md)
 - **Test Suite README:** [`/tests/stability/README.md`](/tests/stability/README.md)
 
 ### Comprehensive Documentation

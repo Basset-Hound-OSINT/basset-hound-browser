@@ -12,7 +12,7 @@
 #### Get Started Quickly
 1. **First Time User?** → [Tutorial 1: Getting Started](/docs/tutorials/TUTORIAL-01-GETTING-STARTED.md)
 2. **See Basic Example?** → [Basic Connection Example](/docs/examples/01-basic-connection.js)
-3. **Understand Architecture?** → [Architecture Overview](/docs/SCOPE.md)
+3. **Understand Architecture?** → [Architecture Overview](architecture/SCOPE.md)
 
 #### Deploy & Operate
 1. **Deploy to Production** → [Deployment Guide](/docs/DEPLOYMENT-GUIDE.md)
@@ -21,7 +21,7 @@
 
 #### Integrate & Extend
 1. **Custom Integration** → [Integration Guide](/docs/CUSTOM-INTEGRATION-GUIDE.md)
-2. **API Reference** → [Complete API Reference](/docs/API-REFERENCE-COMPLETE.md)
+2. **API Reference** → [Complete API Reference](reference/API-REFERENCE-COMPLETE.md)
 
 #### Optimize Performance
 1. **Improve Speed** → [Performance Tuning Guide](/docs/advanced/PERFORMANCE-TUNING-COMPLETE-GUIDE.md)
@@ -37,13 +37,13 @@
 
 ### Getting Started (30 minutes)
 - [Tutorial 1: Getting Started](/docs/tutorials/TUTORIAL-01-GETTING-STARTED.md)
-- [Quick Start - v12.1.0](/docs/QUICKSTART-V12.1.0-2026-05-31.md)
-- [Architecture Overview](/docs/SCOPE.md)
+- [Quick Start - v12.1.0](deployment/QUICKSTART-V12.1.0-2026-05-31.md)
+- [Architecture Overview](architecture/SCOPE.md)
 
 ### Core Documentation
 - [Modules Index](/docs/modules/MODULES-INDEX.md)
-- [Complete API Reference](/docs/API-REFERENCE-COMPLETE.md)
-- [REST API Reference](/docs/REST-API-REFERENCE.md)
+- [Complete API Reference](reference/API-REFERENCE-COMPLETE.md)
+- [REST API Reference](reference/REST-API-REFERENCE.md)
 
 ### Deployment & Operations
 - [Deployment Guide](/docs/DEPLOYMENT-GUIDE.md)

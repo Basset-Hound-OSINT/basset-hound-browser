@@ -449,15 +449,15 @@ asyncio.run(main())
 ## Next Steps
 
 ### Learn More
-1. **Full Scope:** Read [PROJECT-SCOPE.md](PROJECT-SCOPE.md)
+1. **Full Scope:** Read [PROJECT-SCOPE.md](../../archives/prune-2026-07-06/PROJECT-SCOPE.md)
 2. **Technical Details:** Read [FORENSIC-ARCHITECTURE.md](FORENSIC-ARCHITECTURE.md)
-3. **All Commands:** Reference [API-REFERENCE-v12.7.0.md](API-REFERENCE-v12.7.0.md)
+3. **All Commands:** Reference [API-REFERENCE-v12.7.0.md](../../archive/deprecated/API-REFERENCE-v12.7.0.md)
 4. **Integration Patterns:** Read [CUSTOM-INTEGRATION-GUIDE.md](CUSTOM-INTEGRATION-GUIDE.md)
 
 ### Common Questions
 
 **Q: Is the browser legal to use?**
-A: Yes, for legitimate investigations where you have proper authorization. See [PROJECT-SCOPE.md](PROJECT-SCOPE.md) for details.
+A: Yes, for legitimate investigations where you have proper authorization. See [PROJECT-SCOPE.md](../../archives/prune-2026-07-06/PROJECT-SCOPE.md) for details.
 
 **Q: How do I extract evidence admissible in court?**
 A: Follow chain of custody requirements. See [FORENSIC-CHAIN-OF-CUSTODY-GUIDE.md](FORENSIC-CHAIN-OF-CUSTODY-GUIDE.md).
@@ -469,14 +469,14 @@ A: Use `set_evasion_profile` command with behavioral AI enabled.
 A: Yes, the browser supports 200+ concurrent connections.
 
 **Q: What formats can I export to?**
-A: JSON, CSV, HAR, WARC, SQLite, Markdown, XML. See [FORENSIC-EXPORTS-API-REFERENCE.md](FORENSIC-EXPORTS-API-REFERENCE.md).
+A: JSON, CSV, HAR, WARC, SQLite, Markdown, XML. See [FORENSIC-EXPORTS-API-REFERENCE.md](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md).
 
 ---
 
 ## Support
 
 - **Documentation:** See [FORENSIC-DOCUMENTATION-INDEX.md](FORENSIC-DOCUMENTATION-INDEX.md)
-- **API Reference:** See [API-REFERENCE-v12.7.0.md](API-REFERENCE-v12.7.0.md)
+- **API Reference:** See [API-REFERENCE-v12.7.0.md](../../archive/deprecated/API-REFERENCE-v12.7.0.md)
 - **Integration Help:** See [CUSTOM-INTEGRATION-GUIDE.md](CUSTOM-INTEGRATION-GUIDE.md)
 
 ---

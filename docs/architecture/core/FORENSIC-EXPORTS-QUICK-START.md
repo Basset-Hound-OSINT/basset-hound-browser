@@ -487,7 +487,7 @@ send({
 
 ## Next Steps
 
-- **Read the [API Reference](./FORENSIC-EXPORTS-API-REFERENCE.md)** for detailed parameter documentation
+- **Read the [API Reference](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md)** for detailed parameter documentation
 - **Check [Usage Examples](./FORENSIC-EXPORTS-EXAMPLES.md)** for 8+ real-world patterns
 - **See [Troubleshooting Guide](./FORENSIC-EXPORTS-TROUBLESHOOTING.md)** for error recovery
 - **Review [Best Practices](./FORENSIC-EXPORTS-BEST-PRACTICES.md)** for security and performance

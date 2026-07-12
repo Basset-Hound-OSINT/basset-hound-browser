@@ -625,7 +625,7 @@ npm test -- tests/unit/dom-snapshot-handlers.test.js
 ## Related Documentation
 
 - [WebSocket API Reference](./API-REFERENCE.md) - All WebSocket commands
-- [Extraction Overview](./SCOPE.md#extraction) - Data extraction capabilities
+- [Extraction Overview](architecture/SCOPE.md#extraction) - Data extraction capabilities
 - [Browser Automation](./API-REFERENCE.md#navigation) - Navigation and interaction
 
 ## Version History

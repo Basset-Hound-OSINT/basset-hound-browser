@@ -506,6 +506,6 @@ console.log('Evidence never modified after capture');
 
 ## Related Documentation
 
-- [Evidence Packaging - Integration Guide](../integration/EVIDENCE-PACKAGING-INTEGRATION-GUIDE.md)
-- [Evidence Packaging - API Reference](../api/EVIDENCE-PACKAGING-API-REFERENCE.md)
+- [Evidence Packaging - Integration Guide](../archives/prune-2026-07-06/integration/EVIDENCE-PACKAGING-INTEGRATION-GUIDE.md)
+- [Evidence Packaging - API Reference](../archive/deprecated/EVIDENCE-PACKAGING-API-REFERENCE.md)
 - [Evidence Packaging - Architecture](../technical/EVIDENCE-PACKAGING-ARCHITECTURE.md)

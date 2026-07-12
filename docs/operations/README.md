@@ -396,8 +396,8 @@ kubectl scale deployment basset-hound-browser --replicas=5 -n basset-hound
 ### Related Documentation
 - [Infrastructure README](../infrastructure/README.md) - Container orchestration details
 - [API Reference](../API-REFERENCE.md) - WebSocket API documentation
-- [SECURITY.md](../SECURITY.md) - Security features and configuration
-- [PERFORMANCE Baseline](../PERFORMANCE-BASELINE-SUMMARY.md) - Performance characteristics
+- [SECURITY.md](../security/SECURITY.md) - Security features and configuration
+- [PERFORMANCE Baseline](../archive/generated/PERFORMANCE-BASELINE-SUMMARY.md) - Performance characteristics
 
 ### External Links
 - **Status Page**: https://status.basset-hound.example.com

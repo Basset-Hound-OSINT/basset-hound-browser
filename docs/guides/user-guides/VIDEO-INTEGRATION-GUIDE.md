@@ -610,9 +610,9 @@ setInterval(async () => {
 
 ## Documentation References
 
-- **API Reference**: [VIDEO-API-REFERENCE.md](./VIDEO-API-REFERENCE.md)
+- **API Reference**: [VIDEO-API-REFERENCE.md](../../archive/deprecated/VIDEO-API-REFERENCE.md)
 - **Codec Guide**: [VIDEO-CODEC-GUIDE.md](./VIDEO-CODEC-GUIDE.md)
-- **Implementation Details**: [docs/handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md](./handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md)
+- **Implementation Details**: [docs/handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md](../../handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md)
 
 ## Support & Troubleshooting
 

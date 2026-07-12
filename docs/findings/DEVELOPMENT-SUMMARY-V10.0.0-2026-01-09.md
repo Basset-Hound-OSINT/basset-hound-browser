@@ -29,7 +29,7 @@ Basset Hound Browser has undergone a major architectural transformation in v10.0
 ### Documentation Created
 
 #### 1. **SCOPE.md** (Clear Architectural Boundaries)
-**Location:** [docs/SCOPE.md](../SCOPE.md)
+**Location:** [docs/SCOPE.md](../architecture/SCOPE.md)
 
 Defines what basset-hound-browser IS and IS NOT:
 
@@ -50,12 +50,12 @@ Defines what basset-hound-browser IS and IS NOT:
 **Key Principle:** *The browser is a tool with capabilities, not an intelligent system.*
 
 #### 2. **ROADMAP-ARCHIVE-V1.md** (Historical Context)
-**Location:** [docs/ROADMAP-ARCHIVE-V1.md](../ROADMAP-ARCHIVE-V1.md)
+**Location:** [docs/ROADMAP-ARCHIVE-V1.md](../roadmap/ROADMAP-ARCHIVE-V1.md)
 
 Archived Phases 1-11 (foundation work) for historical reference without cluttering current roadmap.
 
 #### 3. **ROADMAP.md** (Clean Current Roadmap)
-**Location:** [docs/ROADMAP.md](../ROADMAP.md)
+**Location:** [docs/ROADMAP.md](../roadmap/ROADMAP.md)
 
 Refocused on current development:
 - Phase 14: Forensic Image Capabilities (✅ COMPLETED)
@@ -481,11 +481,11 @@ AI Agents (palletai) ─┬─► Browser (Automation Tool)
 
 ### New Documentation (6 files)
 
-1. **[SCOPE.md](../SCOPE.md)** - Architectural boundaries (1,200 lines)
-2. **[ROADMAP-ARCHIVE-V1.md](../ROADMAP-ARCHIVE-V1.md)** - Historical phases (850 lines)
-3. **[ROADMAP.md](../ROADMAP.md)** - Current roadmap (500 lines, refactored)
-4. **[CLEANUP-PLAN.md](../CLEANUP-PLAN.md)** - Detailed removal plan (1,500 lines)
-5. **[CLEANUP-LOG.md](../CLEANUP-LOG.md)** - File deletion summary (227 lines)
+1. **[SCOPE.md](../architecture/SCOPE.md)** - Architectural boundaries (1,200 lines)
+2. **[ROADMAP-ARCHIVE-V1.md](../roadmap/ROADMAP-ARCHIVE-V1.md)** - Historical phases (850 lines)
+3. **[ROADMAP.md](../roadmap/ROADMAP.md)** - Current roadmap (500 lines, refactored)
+4. **[CLEANUP-PLAN.md](../planning/CLEANUP-PLAN.md)** - Detailed removal plan (1,500 lines)
+5. **[CLEANUP-LOG.md](../planning/CLEANUP-LOG.md)** - File deletion summary (227 lines)
 6. **[REFACTORING-COMPLETE-2026-01-09.md](../REFACTORING-COMPLETE-2026-01-09.md)** - Complete refactoring report (1,800 lines)
 
 ### Enhancement Documentation (4 files)
@@ -497,7 +497,7 @@ AI Agents (palletai) ─┬─► Browser (Automation Tool)
 
 ### Updated Documentation
 
-11. **[docs/ROADMAP.md](../ROADMAP.md)** - Updated version references
+11. **[docs/ROADMAP.md](../roadmap/ROADMAP.md)** - Updated version references
 
 **Total Documentation:** ~12,000 lines across 11 files
 
@@ -643,12 +643,12 @@ This separation enables each component to focus on its core competency, improvin
 
 ## Related Documentation
 
-- [SCOPE.md](../SCOPE.md) - Architectural boundaries
-- [ROADMAP.md](../ROADMAP.md) - Current development roadmap
+- [SCOPE.md](../architecture/SCOPE.md) - Architectural boundaries
+- [ROADMAP.md](../roadmap/ROADMAP.md) - Current development roadmap
 - [MIGRATION-V10.md](../MIGRATION-V10.md) - Upgrade guide
 - [REFACTORING-COMPLETE-2026-01-09.md](../REFACTORING-COMPLETE-2026-01-09.md) - Detailed refactoring report
 
-For questions or issues, see [SCOPE.md](../SCOPE.md) for architectural guidance.
+For questions or issues, see [SCOPE.md](../architecture/SCOPE.md) for architectural guidance.
 
 ---
 

@@ -1612,8 +1612,8 @@ emails = re.findall(r'[\w\.-]+@[\w\.-]+\.\w+', text)
 
 ### Documentation
 
-- **[SCOPE.md](SCOPE.md)** - Architectural boundaries and scope definition
-- **[ROADMAP.md](ROADMAP.md)** - Current development roadmap
+- **[SCOPE.md](../../architecture/SCOPE.md)** - Architectural boundaries and scope definition
+- **[ROADMAP.md](../../roadmap/ROADMAP.md)** - Current development roadmap
 - **[API Reference](core/api-reference.md)** - Complete WebSocket API documentation
 - **[REFACTORING-COMPLETE-2026-01-09.md](REFACTORING-COMPLETE-2026-01-09.md)** - Detailed refactoring summary
 
@@ -1664,7 +1664,7 @@ For enterprise migrations or custom implementation:
 
 ### Next Steps
 
-1. Read [SCOPE.md](SCOPE.md) to understand new architecture
+1. Read [SCOPE.md](../../architecture/SCOPE.md) to understand new architecture
 2. Test your current usage against v10.0.0
 3. Implement agent-layer pattern detection
 4. Implement investigation management if needed

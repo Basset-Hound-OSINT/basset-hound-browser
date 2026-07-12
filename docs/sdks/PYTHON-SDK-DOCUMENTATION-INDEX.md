@@ -16,13 +16,13 @@ Complete index of all Python SDK documentation and resources.
 → Start with [PYTHON-SDK-GETTING-STARTED.md](./PYTHON-SDK-GETTING-STARTED.md)
 
 **Need API Details?**
-→ Check [PYTHON-SDK-API-REFERENCE.md](./PYTHON-SDK-API-REFERENCE.md)
+→ Check [PYTHON-SDK-API-REFERENCE.md](../archive/deprecated/PYTHON-SDK-API-REFERENCE.md)
 
 **Looking for Examples?**
-→ See [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md)
+→ See [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md)
 
 **Want to Understand the Design?**
-→ Read [PYTHON-SDK-ARCHITECTURE.md](./PYTHON-SDK-ARCHITECTURE.md)
+→ Read [PYTHON-SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md)
 
 **Upgrading from v1.0.0?**
 → See [PYTHON-SDK-CHANGELOG.md](./PYTHON-SDK-CHANGELOG.md) - Fully backward compatible!
@@ -30,10 +30,10 @@ Complete index of all Python SDK documentation and resources.
 ### For Developers
 
 **Implementation Details**
-→ [PYTHON-SDK-ARCHITECTURE.md](./PYTHON-SDK-ARCHITECTURE.md) - Deep dive
+→ [PYTHON-SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md) - Deep dive
 
 **Testing & Validation**
-→ [handoffs/PYTHON-SDK-IMPLEMENTATION-COMPLETE.md](./handoffs/PYTHON-SDK-IMPLEMENTATION-COMPLETE.md) - Phase 7 report
+→ [handoffs/PYTHON-SDK-IMPLEMENTATION-COMPLETE.md](../handoffs/PYTHON-SDK-IMPLEMENTATION-COMPLETE.md) - Phase 7 report
 
 **Source Code**
 - Main SDK: `/sdks/python-sdk/basset_hound.py` (1,123 lines)
@@ -535,14 +535,14 @@ async with pool.acquire() as client:
 ### Path 1: Quick Start (30 minutes)
 1. Read: [PYTHON-SDK-GETTING-STARTED.md](./PYTHON-SDK-GETTING-STARTED.md) - Intro (5 min)
 2. Read: [PYTHON-SDK-GETTING-STARTED.md](./PYTHON-SDK-GETTING-STARTED.md) - Quick Start (10 min)
-3. Run: Example 1 from [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md) (5 min)
-4. Explore: Example 2 from [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md) (10 min)
+3. Run: Example 1 from [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md) (5 min)
+4. Explore: Example 2 from [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md) (10 min)
 
 ### Path 2: Complete Learning (2 hours)
 1. [PYTHON-SDK-GETTING-STARTED.md](./PYTHON-SDK-GETTING-STARTED.md) - Full (30 min)
-2. [PYTHON-SDK-API-REFERENCE.md](./PYTHON-SDK-API-REFERENCE.md) - Core sections (30 min)
-3. [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md) - Examples 1-5 (30 min)
-4. [PYTHON-SDK-ARCHITECTURE.md](./PYTHON-SDK-ARCHITECTURE.md) - Sections 1-5 (30 min)
+2. [PYTHON-SDK-API-REFERENCE.md](../archive/deprecated/PYTHON-SDK-API-REFERENCE.md) - Core sections (30 min)
+3. [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md) - Examples 1-5 (30 min)
+4. [PYTHON-SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md) - Sections 1-5 (30 min)
 
 ### Path 3: Expert Deep Dive (4+ hours)
 1. All getting started sections
@@ -561,7 +561,7 @@ async with pool.acquire() as client:
 
 ### Project Documentation
 - [/docs/README.md](./README.md) - Project overview
-- [/docs/ROADMAP.md](./ROADMAP.md) - Development roadmap
+- [/docs/ROADMAP.md](../roadmap/ROADMAP.md) - Development roadmap
 
 ### Test Results
 - Run tests: `pytest tests/sdks/test_python_sdk*.py -v`
@@ -578,16 +578,16 @@ async with pool.acquire() as client:
    → See "Troubleshooting" in [PYTHON-SDK-GETTING-STARTED.md](./PYTHON-SDK-GETTING-STARTED.md)
 
 2. **API questions**
-   → Check [PYTHON-SDK-API-REFERENCE.md](./PYTHON-SDK-API-REFERENCE.md)
+   → Check [PYTHON-SDK-API-REFERENCE.md](../archive/deprecated/PYTHON-SDK-API-REFERENCE.md)
 
 3. **Code examples**
-   → Find similar in [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md)
+   → Find similar in [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md)
 
 4. **Architecture/design**
-   → Read [PYTHON-SDK-ARCHITECTURE.md](./PYTHON-SDK-ARCHITECTURE.md)
+   → Read [PYTHON-SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md)
 
 5. **Performance issues**
-   → See "Performance Characteristics" in [PYTHON-SDK-ARCHITECTURE.md](./PYTHON-SDK-ARCHITECTURE.md)
+   → See "Performance Characteristics" in [PYTHON-SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md)
 
 6. **Upgrading from v1.0.0**
    → See [PYTHON-SDK-CHANGELOG.md](./PYTHON-SDK-CHANGELOG.md)
@@ -596,7 +596,7 @@ async with pool.acquire() as client:
 
 - Review source: `/sdks/python-sdk/basset_hound.py`
 - Check tests: `/tests/sdks/test_python_sdk*.py`
-- Run examples: Copy code from [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md)
+- Run examples: Copy code from [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md)
 
 ---
 
@@ -614,9 +614,9 @@ async with pool.acquire() as client:
 
 1. Choose your learning path above
 2. Follow the documentation in order
-3. Run the examples from [PYTHON-SDK-EXAMPLES.md](./PYTHON-SDK-EXAMPLES.md)
+3. Run the examples from [PYTHON-SDK-EXAMPLES.md](../archive/deprecated/PYTHON-SDK-EXAMPLES.md)
 4. Build your application
-5. Monitor performance using metrics in [PYTHON-SDK-ARCHITECTURE.md](./PYTHON-SDK-ARCHITECTURE.md)
+5. Monitor performance using metrics in [PYTHON-SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md)
 
 Happy coding! 🚀
 

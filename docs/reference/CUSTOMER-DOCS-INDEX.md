@@ -9,41 +9,41 @@ Complete guide to customer-facing documentation for Wave 15 launch.
 ### Getting Started (Choose Your Path)
 
 **I have 10 minutes:**
-→ [Quick-Start Guide](customer-success/QUICK-START.md) - Get your first monitor running
+→ [Quick-Start Guide](../customer-success/QUICK-START.md) - Get your first monitor running
 
 **I want to explore the dashboard:**
-→ [Dashboard Guide](customer-success/DASHBOARD-GUIDE.md) - Complete UI walkthrough
+→ [Dashboard Guide](../customer-success/DASHBOARD-GUIDE.md) - Complete UI walkthrough
 
 **I want to monitor right:**
-→ [Best Practices Guide](customer-success/BEST-PRACTICES.md) - Professional tips
+→ [Best Practices Guide](../customer-success/BEST-PRACTICES.md) - Professional tips
 
 **I need to see examples:**
-→ [Use Cases](customer-success/USE-CASES.md) - 6 real-world scenarios
+→ [Use Cases](../customer-success/USE-CASES.md) - 6 real-world scenarios
 
 ### Support & Troubleshooting
 
 **I have a question:**
-→ [FAQ](support/FAQ.md) - 55+ questions answered
+→ [FAQ](../support/FAQ.md) - 55+ questions answered
 
 **Something isn't working:**
-→ [Troubleshooting Guide](support/TROUBLESHOOTING.md) - 30+ issue solutions
+→ [Troubleshooting Guide](../support/TROUBLESHOOTING.md) - 30+ issue solutions
 
 **I want to know limitations:**
-→ [Known Issues](support/KNOWN-ISSUES.md) - Honest assessment & workarounds
+→ [Known Issues](../support/KNOWN-ISSUES.md) - Honest assessment & workarounds
 
 **I need to understand security:**
-→ [Security & Privacy Guide](support/SECURITY-PRIVACY.md) - GDPR/CCPA compliant
+→ [Security & Privacy Guide](../support/SECURITY-PRIVACY.md) - GDPR/CCPA compliant
 
 ### Integration & Advanced
 
 **I want to use Slack:**
-→ [Slack Integration Guide](customer-success/SLACK-SETUP.md) - Team alerts
+→ [Slack Integration Guide](../customer-success/SLACK-SETUP.md) - Team alerts
 
 **I want to use the API:**
-→ [API Integration Guide](customer-success/API-INTEGRATION.md) - Programmatic access
+→ [API Integration Guide](../customer-success/API-INTEGRATION.md) - Programmatic access
 
 **I'm brand new:**
-→ [Onboarding Checklist](customer-success/ONBOARDING-CHECKLIST.md) - Step-by-step
+→ [Onboarding Checklist](../customer-success/ONBOARDING-CHECKLIST.md) - Step-by-step
 
 ---
 

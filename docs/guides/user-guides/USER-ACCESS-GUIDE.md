@@ -608,14 +608,14 @@ ws.on('close', connectWithRetry);
 
 ## Next Steps
 
-1. **Read the API Reference**: See [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) for all 164 available commands
+1. **Read the API Reference**: See [API-QUICK-REFERENCE.md](../../API-QUICK-REFERENCE.md) for all 164 available commands
 2. **Run Examples**: Check [examples/](examples/) directory for working code samples
-3. **Integration**: Follow [INTEGRATION-CHECKLIST.md](INTEGRATION-CHECKLIST.md) for production setup
+3. **Integration**: Follow [INTEGRATION-CHECKLIST.md](../../INTEGRATION-CHECKLIST.md) for production setup
 4. **Advanced Features**: 
    - [Evidence Chain Management](FORENSIC-CHAIN-OF-CUSTODY-GUIDE.md)
    - [Bot Evasion Framework](ADVANCED-EVASION-IMPLEMENTATION-GUIDE.md)
-   - [Session Management](SESSION-COHERENCE-IMPLEMENTATION.md)
-5. **Monitoring**: Set up monitoring with [MONITORING-SETUP.md](MONITORING-SETUP.md)
+   - [Session Management](../../archives/prune-2026-07-06/SESSION-COHERENCE-IMPLEMENTATION.md)
+5. **Monitoring**: Set up monitoring with [MONITORING-SETUP.md](../../MONITORING-SETUP.md)
 
 ---
 
@@ -623,7 +623,7 @@ ws.on('close', connectWithRetry);
 
 For issues or questions:
 
-1. Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed troubleshooting
+1. Check [TROUBLESHOOTING.md](../../support/TROUBLESHOOTING.md) for detailed troubleshooting
 2. Review [FAQ-COMPLETE.md](FAQ-COMPLETE.md) for common questions
 3. Check server logs: `docker logs basset-hound-browser`
 4. Review API reference for command parameters
@@ -633,7 +633,7 @@ For issues or questions:
 ## API Reference Quick Links
 
 - **[Full API Reference](API-REFERENCE.md)** - All 164 commands with examples
-- **[Command Categories](API-QUICK-REFERENCE.md)** - Commands grouped by function
+- **[Command Categories](../../API-QUICK-REFERENCE.md)** - Commands grouped by function
 - **[Error Recovery Guide](TROUBLESHOOTING-ADVANCED.md)** - Advanced error handling
 - **[Performance Optimization](PERFORMANCE-OPTIMIZATION-QUICK-REFERENCE.md)** - Speed up your integration
 

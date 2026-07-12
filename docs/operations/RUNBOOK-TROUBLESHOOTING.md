@@ -961,4 +961,4 @@ If critical (service down, data loss risk):
 - [Monitoring Runbook](./RUNBOOK-MONITORING.md)
 - [Maintenance Runbook](./RUNBOOK-MAINTENANCE.md)
 - [Infrastructure README](../infrastructure/README.md)
-- [SECURITY.md](../SECURITY.md)
+- [SECURITY.md](../security/SECURITY.md)

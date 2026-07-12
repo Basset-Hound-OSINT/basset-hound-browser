@@ -706,7 +706,7 @@ ws.on('message', (message) => {
 
 ## See Also
 
-- [Session Coherence Implementation](../SESSION-COHERENCE-IMPLEMENTATION.md)
+- [Session Coherence Implementation](../archives/prune-2026-07-06/SESSION-COHERENCE-IMPLEMENTATION.md)
 - [Behavioral Coherence Scoring](BEHAVIORAL-COHERENCE-SCORING.md)
 - [Evasion Framework](evasion.md)
 - [Bot Evasion Techniques](../guides/ADVANCED-EVASION-IMPLEMENTATION-GUIDE.md)

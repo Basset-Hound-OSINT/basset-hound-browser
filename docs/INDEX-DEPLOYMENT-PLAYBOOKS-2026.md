@@ -16,12 +16,12 @@ For deploying new versions to production, use these in order:
 1. **Canary Deployment** (2-3 hours)
    - File: `docs/deployment/CANARY-DEPLOYMENT-PLAYBOOK.md`
    - When: Initial 5% traffic deployment
-   - Start here: [Canary Playbook](./deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
+   - Start here: [Canary Playbook](archives/prune-2026-07-06/deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
 
 2. **Progressive Rollout** (4-6 hours)
    - File: `docs/deployment/PROGRESSIVE-ROLLOUT-PLAYBOOK.md`
    - When: After canary success, rolling out 25% → 50% → 100%
-   - Start here: [Progressive Rollout Playbook](./deployment/PROGRESSIVE-ROLLOUT-PLAYBOOK.md)
+   - Start here: [Progressive Rollout Playbook](archives/prune-2026-07-06/deployment/PROGRESSIVE-ROLLOUT-PLAYBOOK.md)
 
 3. **Rollback** (5-30 minutes)
    - File: `docs/deployment/ROLLBACK-PLAYBOOK.md`
@@ -253,7 +253,7 @@ See [Playbook Index](./operations/PLAYBOOK-INDEX.md) for full contact list.
 ## Getting Started
 
 ### For Deployments
-1. Read: [Canary Deployment Playbook](./deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
+1. Read: [Canary Deployment Playbook](archives/prune-2026-07-06/deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
 2. Use: Step-by-step checklist
 3. Monitor: Provided metrics tables
 4. Decide: Go/no-go at 90 minutes

@@ -97,7 +97,7 @@ Basset Hound Browser requires explicit user consent before collecting monitoring
 
 ### ⚠️ IMPORTANT: READ BEFORE USING EVASION FEATURES
 
-Basset Hound Browser includes powerful evasion capabilities that must be used responsibly and legally. See [EVASION-ETHICS-GUIDELINES.md](./guides/EVASION-ETHICS-GUIDELINES.md) for complete details.
+Basset Hound Browser includes powerful evasion capabilities that must be used responsibly and legally. See [EVASION-ETHICS-GUIDELINES.md](../EVASION-ETHICS-GUIDELINES.md) for complete details.
 
 **Quick Summary:**
 
@@ -439,7 +439,7 @@ If you discover a security vulnerability:
 ## 14. Resources
 
 ### Documentation
-- [EVASION-ETHICS-GUIDELINES.md](./guides/EVASION-ETHICS-GUIDELINES.md) - Ethics and responsibility guidelines
+- [EVASION-ETHICS-GUIDELINES.md](../EVASION-ETHICS-GUIDELINES.md) - Ethics and responsibility guidelines
 - [API-REFERENCE.md](./API-REFERENCE.md) - Complete API documentation
 - [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md) - Deployment instructions
 

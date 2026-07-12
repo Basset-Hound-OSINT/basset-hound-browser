@@ -733,4 +733,4 @@ const client = new BassetClient({
 
 ---
 
-**Ready to integrate?** Start with the [Quick Start Guide](/QUICK-START-GUIDE.md)
+**Ready to integrate?** Start with the [Quick Start Guide](QUICK-START-GUIDE.md)

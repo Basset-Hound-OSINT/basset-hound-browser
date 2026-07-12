@@ -130,8 +130,8 @@ docs/
 
 2. **docs/archives/V12.0.0-DEPLOYMENT-INDEX.md**
    - Updated: Line 11 (heading reference)
-   - Old: `**[DEPLOYMENT-COMPLETE-2026-05-11.md](/DEPLOYMENT-COMPLETE-2026-05-11.md)** (Root Level)`
-   - New: `**[DEPLOYMENT-COMPLETE-2026-05-11.md](../deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md)** (docs/archives/deployment-reports/)`
+   - Old: `**[DEPLOYMENT-COMPLETE-2026-05-11.md](../archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md)** (Root Level)`
+   - New: `**[DEPLOYMENT-COMPLETE-2026-05-11.md](../archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md)** (docs/archives/deployment-reports/)`
    
    - Updated: Line 52 (For Deployment Teams)
    - Old: `- Start with: /DEPLOYMENT-COMPLETE-2026-05-11.md`
@@ -223,8 +223,8 @@ Enhanced README with v12.0.0 highlights replacing the previous v11.2.0 focus:
 - Added reference to deployment report in new location
 
 ### Documentation Links Updated
-- [Deployment Report](docs/archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md) - corrected path
-- [Session Record](docs/archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md) - already correct path
+- [Deployment Report](../archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md) - corrected path
+- [Session Record](../archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md) - already correct path
 
 ---
 

@@ -15,7 +15,7 @@
 3. **Finally:** [Best Practices](./FORENSIC-EXPORTS-BEST-PRACTICES.md) for production
 
 ### For Reference
-- **API Details:** [Complete API Reference](./FORENSIC-EXPORTS-API-REFERENCE.md)
+- **API Details:** [Complete API Reference](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md)
 - **Troubleshooting:** [Troubleshooting Guide](./FORENSIC-EXPORTS-TROUBLESHOOTING.md)
 - **This Index:** You are here
 
@@ -231,7 +231,7 @@
 **Performance:** <100ms typically  
 **Docs:**
 - Quick Start: [Section](./FORENSIC-EXPORTS-QUICK-START.md#1-export-raw-html)
-- API Reference: [Full spec](./FORENSIC-EXPORTS-API-REFERENCE.md#export_raw_html)
+- API Reference: [Full spec](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md#export_raw_html)
 - Examples: [Examples 1, 8](./FORENSIC-EXPORTS-EXAMPLES.md#example-1-connect-and-capture-full-page)
 - Troubleshooting: [Issues](./FORENSIC-EXPORTS-TROUBLESHOOTING.md#problem-1-export_raw_html-returns-empty-or-truncated-html)
 
@@ -255,7 +255,7 @@
 **Performance:** 10-50ms typically  
 **Docs:**
 - Quick Start: [Section](./FORENSIC-EXPORTS-QUICK-START.md#2-export-network-log)
-- API Reference: [Full spec](./FORENSIC-EXPORTS-API-REFERENCE.md#export_network_log)
+- API Reference: [Full spec](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md#export_network_log)
 - Examples: [Examples 2, 8, 9](./FORENSIC-EXPORTS-EXAMPLES.md#example-2-extract-and-filter-network-requests)
 - Troubleshooting: [Issues](./FORENSIC-EXPORTS-TROUBLESHOOTING.md#problem-2-export_network_log-shows-no-or-few-requests)
 
@@ -281,7 +281,7 @@
 **Performance:** <50ms typically  
 **Docs:**
 - Quick Start: [Section](./FORENSIC-EXPORTS-QUICK-START.md#3-export-device-ids)
-- API Reference: [Full spec](./FORENSIC-EXPORTS-API-REFERENCE.md#export_device_ids)
+- API Reference: [Full spec](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md#export_device_ids)
 - Examples: [Examples 3, 5](./FORENSIC-EXPORTS-EXAMPLES.md#example-3-verify-evasion-fingerprints)
 - Troubleshooting: [Issues](./FORENSIC-EXPORTS-TROUBLESHOOTING.md#problem-3-export_device_ids-returns-missing-fingerprint-data)
 
@@ -305,7 +305,7 @@
 **Performance:** <10ms typically  
 **Docs:**
 - Quick Start: [Section](./FORENSIC-EXPORTS-QUICK-START.md#4-modify-element)
-- API Reference: [Full spec](./FORENSIC-EXPORTS-API-REFERENCE.md#modify_element)
+- API Reference: [Full spec](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md#modify_element)
 - Examples: [Example 4](./FORENSIC-EXPORTS-EXAMPLES.md#example-4-modify-elements-for-testing)
 - Troubleshooting: [Issues](./FORENSIC-EXPORTS-TROUBLESHOOTING.md#problem-1-export_raw_html-returns-empty-or-truncated-html)
 
@@ -334,7 +334,7 @@
 → [Quick Start Guide](./FORENSIC-EXPORTS-QUICK-START.md)
 
 **Understand the API in detail**
-→ [API Reference](./FORENSIC-EXPORTS-API-REFERENCE.md)
+→ [API Reference](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md)
 
 **See working code examples**
 → [Usage Examples](./FORENSIC-EXPORTS-EXAMPLES.md)

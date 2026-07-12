@@ -3,13 +3,13 @@
 ## Quick Navigation
 
 ### 📚 Getting Started (5-10 minutes)
-1. **[Quick Reference Guide](docs/LOGGING-MIDDLEWARE-QUICK-REFERENCE.md)** - Start here for quick setup
+1. **[Quick Reference Guide](LOGGING-MIDDLEWARE-QUICK-REFERENCE.md)** - Start here for quick setup
 2. **[Practical Demo](examples/logging-middleware-demo.js)** - See it in action: `node examples/logging-middleware-demo.js`
 3. **[Integration Example](websocket/logging-middleware-integration.example.js)** - Copy-paste integration code
 
 ### 📖 Complete Documentation (30-45 minutes)
-- **[Full Guide](docs/LOGGING-MIDDLEWARE-GUIDE.md)** - Comprehensive documentation with all features
-- **[Implementation Summary](LOGGING-MIDDLEWARE-IMPLEMENTATION-SUMMARY.md)** - Overview and success criteria
+- **[Full Guide](LOGGING-MIDDLEWARE-GUIDE.md)** - Comprehensive documentation with all features
+- **[Implementation Summary](archives/prune-2026-07-06/LOGGING-MIDDLEWARE-IMPLEMENTATION-SUMMARY.md)** - Overview and success criteria
 
 ### 💻 Implementation Details (Developers)
 - **[Core Module](websocket/logging-middleware.js)** - Main WebSocketLoggingMiddleware class
@@ -511,4 +511,4 @@ console.log(stats.currentLogFile);
 
 ---
 
-**Ready to get started?** → Start with [Quick Reference](docs/LOGGING-MIDDLEWARE-QUICK-REFERENCE.md)
+**Ready to get started?** → Start with [Quick Reference](LOGGING-MIDDLEWARE-QUICK-REFERENCE.md)

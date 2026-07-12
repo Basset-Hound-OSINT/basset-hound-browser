@@ -310,9 +310,9 @@ asyncio.run(stream_large_content())
 
 ## Next Steps
 
-- **[API Reference](./PYTHON-SDK-API-REFERENCE.md)** - Complete method documentation
-- **[Examples](./PYTHON-SDK-EXAMPLES.md)** - Detailed examples covering common use cases
-- **[Architecture Guide](./PYTHON-SDK-ARCHITECTURE.md)** - Design patterns and internals
+- **[API Reference](../archive/deprecated/PYTHON-SDK-API-REFERENCE.md)** - Complete method documentation
+- **[Examples](../archive/deprecated/PYTHON-SDK-EXAMPLES.md)** - Detailed examples covering common use cases
+- **[Architecture Guide](../architecture/core/PYTHON-SDK-ARCHITECTURE.md)** - Design patterns and internals
 
 ## License
 

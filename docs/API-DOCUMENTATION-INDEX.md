@@ -229,7 +229,7 @@ README.md (from /docs/api/)
 #### Developers
 1. Start: [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md)
 2. Learn: [EXAMPLES.md](EXAMPLES.md)
-3. Reference: [openapi.yaml](openapi.yaml) or [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md)
+3. Reference: [openapi.yaml](openapi.yaml) or [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md)
 
 #### DevOps / Integration Engineers
 1. Start: [INTEGRATION-GUIDE.md](INTEGRATION-GUIDE.md)
@@ -239,10 +239,10 @@ README.md (from /docs/api/)
 #### Tool/SDK Developers
 1. Use: [openapi.yaml](openapi.yaml)
 2. Generate clients
-3. Reference: [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md) for feature overview
+3. Reference: [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md) for feature overview
 
 #### Security/Architecture Review
-1. Reference: [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md)
+1. Reference: [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md)
 2. Details: [openapi.yaml](openapi.yaml) (security schemes)
 3. Versions: [API-VERSIONS.md](API-VERSIONS.md) (stability guarantees)
 
@@ -330,7 +330,7 @@ A: They're archived indefinitely for reference. Developers should not use them g
 ### Q: What if I can't find something?
 A: Check these in order:
 1. [EXAMPLES.md](EXAMPLES.md) - Most common use cases
-2. [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md) - Feature overview
+2. [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md) - Feature overview
 3. [openapi.yaml](openapi.yaml) - Complete spec
 4. [INTEGRATION-GUIDE.md](INTEGRATION-GUIDE.md) - Deployment
 5. [API-VERSIONS.md](API-VERSIONS.md) - Version-specific info
@@ -353,7 +353,7 @@ A: Check these in order:
 
 ## Quick Links
 
-- **API Summary:** [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md)
+- **API Summary:** [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md)
 - **Getting Started:** [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md)
 - **Code Examples:** [EXAMPLES.md](EXAMPLES.md)
 - **Deploy to Production:** [INTEGRATION-GUIDE.md](INTEGRATION-GUIDE.md)
@@ -364,4 +364,4 @@ A: Check these in order:
 
 ---
 
-**Questions?** See [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md) or submit an issue on GitHub.
+**Questions?** See [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md) or submit an issue on GitHub.

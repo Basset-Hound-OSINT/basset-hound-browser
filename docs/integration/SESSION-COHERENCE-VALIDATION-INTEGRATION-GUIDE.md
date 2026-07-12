@@ -760,8 +760,8 @@ async function monitorAndRecover(sessionId) {
 
 ## Related Documentation
 
-- [Session Coherence Validation - API Reference](../api/SESSION-COHERENCE-VALIDATION-API-REFERENCE.md)
+- [Session Coherence Validation - API Reference](../archive/deprecated/SESSION-COHERENCE-VALIDATION-API-REFERENCE.md)
 - [Session Coherence Validation - Architecture](../technical/SESSION-COHERENCE-VALIDATION-ARCHITECTURE.md)
 - [Session Coherence Validation - User Guide](../guides/SESSION-COHERENCE-VALIDATION-USER-GUIDE.md)
-- [Evidence Packaging & Chain of Custody](../integration/EVIDENCE-PACKAGING-INTEGRATION-GUIDE.md)
-- [Behavioral Coherence Scoring](../integration/BEHAVIORAL-COHERENCE-SCORING-INTEGRATION-GUIDE.md)
+- [Evidence Packaging & Chain of Custody](../archives/prune-2026-07-06/integration/EVIDENCE-PACKAGING-INTEGRATION-GUIDE.md)
+- [Behavioral Coherence Scoring](../archives/prune-2026-07-06/integration/BEHAVIORAL-COHERENCE-SCORING-INTEGRATION-GUIDE.md)

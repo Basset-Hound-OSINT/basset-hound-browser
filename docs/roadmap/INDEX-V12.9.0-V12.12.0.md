@@ -13,8 +13,8 @@
 | Document | Purpose | Scope |
 |----------|---------|-------|
 | **[V12.9.0-V12.12.0-MASTER-ROADMAP.md](./V12.9.0-V12.12.0-MASTER-ROADMAP.md)** | COMPREHENSIVE PLAN | Everything - all 4 releases, all features, timelines, resources, success criteria |
-| **[V12.9.0-FEATURE-PLAN.md](../wiki/roadmap/V12.9.0-FEATURE-PLAN.md)** | v12.9.0 Details | 5 quick-win handlers, detailed specs, sprint plan |
-| **[V12.9.0-PRIORITIZATION-MATRIX.md](../wiki/roadmap/V12.9.0-PRIORITIZATION-MATRIX.md)** | v12.9.0 Priorities | P0/P1/P2 tiers, business impact, risk assessment |
+| **[V12.9.0-FEATURE-PLAN.md](../archives/prune-2026-07-06/wiki/roadmap/V12.9.0-FEATURE-PLAN.md)** | v12.9.0 Details | 5 quick-win handlers, detailed specs, sprint plan |
+| **[V12.9.0-PRIORITIZATION-MATRIX.md](../archives/prune-2026-07-06/wiki/roadmap/V12.9.0-PRIORITIZATION-MATRIX.md)** | v12.9.0 Priorities | P0/P1/P2 tiers, business impact, risk assessment |
 | **ROADMAP.md** | Project Overview | Current version status, release history, next milestones |
 
 ---
@@ -279,19 +279,19 @@ Customer Growth:
 ## 🔗 RELATED DOCUMENTS
 
 ### V12.9.0 Specific
-- [V12.9.0-FEATURE-PLAN.md](../wiki/roadmap/V12.9.0-FEATURE-PLAN.md) - Detailed feature specifications
-- [V12.9.0-PRIORITIZATION-MATRIX.md](../wiki/roadmap/V12.9.0-PRIORITIZATION-MATRIX.md) - P0/P1/P2 analysis
+- [V12.9.0-FEATURE-PLAN.md](../archives/prune-2026-07-06/wiki/roadmap/V12.9.0-FEATURE-PLAN.md) - Detailed feature specifications
+- [V12.9.0-PRIORITIZATION-MATRIX.md](../archives/prune-2026-07-06/wiki/roadmap/V12.9.0-PRIORITIZATION-MATRIX.md) - P0/P1/P2 analysis
 
 ### V12.8.0 & Earlier
 - [ROADMAP.md](./ROADMAP.md) - Full project history and current status
-- [PROJECT-COMPLETION-PATH.md](../PROJECT-COMPLETION-PATH.md) - Pre-v12.9.0 work items
+- [PROJECT-COMPLETION-PATH.md](../archives/prune-2026-07-06/PROJECT-COMPLETION-PATH.md) - Pre-v12.9.0 work items
 
 ### Infrastructure & Deployment
 - [docs/guides/V12.8.0-EXECUTION-GUIDE.md](../guides/V12.8.0-EXECUTION-GUIDE.md) - Deployment procedures
 - [docs/releases/GATE-DECISIONS-MATRIX.md](../releases/GATE-DECISIONS-MATRIX.md) - Gate review framework
 
 ### Architecture
-- [docs/PROJECT-SCOPE.md](../PROJECT-SCOPE.md) - Architectural boundaries
+- [docs/PROJECT-SCOPE.md](../archives/prune-2026-07-06/PROJECT-SCOPE.md) - Architectural boundaries
 - [docs/API-REFERENCE.md](../API-REFERENCE.md) - WebSocket API documentation
 
 ---

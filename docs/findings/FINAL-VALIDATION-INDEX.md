@@ -11,7 +11,7 @@
 
 ### Key Reports (Start Here)
 1. **Executive Summary:** [FINAL-VALIDATION-COMPLETE.txt](../../tests/results/FINAL-VALIDATION-COMPLETE.txt) (Quick read, 2 min)
-2. **Detailed Assessment:** [PRODUCTION-READINESS-FINAL-REPORT.md](./PRODUCTION-READINESS-FINAL-REPORT.md) (Complete analysis, 15 min)
+2. **Detailed Assessment:** [PRODUCTION-READINESS-FINAL-REPORT.md](../archives/prune-2026-07-06/findings/PRODUCTION-READINESS-FINAL-REPORT.md) (Complete analysis, 15 min)
 3. **Test Data:** [FINAL-VALIDATION-RESULTS.json](../../tests/results/FINAL-VALIDATION-RESULTS.json) (Structured metrics)
 
 ---
@@ -250,7 +250,7 @@ No critical issues identified.
 ## Appendices
 
 ### A. Referenced Documentation
-- [Production Readiness Report](./PRODUCTION-READINESS-FINAL-REPORT.md) - Comprehensive 5,000+ line assessment
+- [Production Readiness Report](../archives/prune-2026-07-06/findings/PRODUCTION-READINESS-FINAL-REPORT.md) - Comprehensive 5,000+ line assessment
 - [Validation Summary](../../tests/results/FINAL-VALIDATION-COMPLETE.txt) - Executive summary
 - [Test Results Data](../../tests/results/FINAL-VALIDATION-RESULTS.json) - Structured metrics
 
@@ -285,7 +285,7 @@ No critical issues identified.
 ## Document Links
 
 **Quick Start:** [FINAL-VALIDATION-COMPLETE.txt](../../tests/results/FINAL-VALIDATION-COMPLETE.txt)  
-**Full Report:** [PRODUCTION-READINESS-FINAL-REPORT.md](./PRODUCTION-READINESS-FINAL-REPORT.md)  
+**Full Report:** [PRODUCTION-READINESS-FINAL-REPORT.md](../archives/prune-2026-07-06/findings/PRODUCTION-READINESS-FINAL-REPORT.md)  
 **Test Data:** [FINAL-VALIDATION-RESULTS.json](../../tests/results/FINAL-VALIDATION-RESULTS.json)  
 
 ---

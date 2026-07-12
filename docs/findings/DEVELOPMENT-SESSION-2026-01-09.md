@@ -34,7 +34,7 @@ This development session focused on two major objectives:
 - Browser should be a pure automation tool, not an analysis platform
 
 **Solution Implemented:**
-- Created [SCOPE.md](../SCOPE.md) defining clear boundaries
+- Created [SCOPE.md](../architecture/SCOPE.md) defining clear boundaries
 - Removed all intelligence analysis code
 - Kept pure browser automation and forensic data capture
 
@@ -75,22 +75,22 @@ This development session focused on two major objectives:
 
 ### Documentation Created
 
-1. **[SCOPE.md](../SCOPE.md)** (400 lines)
+1. **[SCOPE.md](../architecture/SCOPE.md)** (400 lines)
    - Clear IN vs OUT of scope definitions
    - Architecture diagrams
    - Boundary examples
    - Design principles
 
-2. **[ROADMAP-ARCHIVE-V1.md](../ROADMAP-ARCHIVE-V1.md)** (1,200 lines)
+2. **[ROADMAP-ARCHIVE-V1.md](../roadmap/ROADMAP-ARCHIVE-V1.md)** (1,200 lines)
    - Archived Phases 1-11
    - Historical reference
 
-3. **[ROADMAP.md](../ROADMAP.md)** (500 lines)
+3. **[ROADMAP.md](../roadmap/ROADMAP.md)** (500 lines)
    - Clean current roadmap
    - Focused on browser automation
    - Phases 12-22
 
-4. **[CLEANUP-PLAN.md](../CLEANUP-PLAN.md)** (600 lines)
+4. **[CLEANUP-PLAN.md](../planning/CLEANUP-PLAN.md)** (600 lines)
    - Detailed removal plan
    - Migration guide
    - Breaking changes
@@ -558,7 +558,7 @@ await browser.send('fill_form', {
 ## Team Communication
 
 ### For Project Maintainers
-- Review [SCOPE.md](../SCOPE.md) for architectural boundaries
+- Review [SCOPE.md](../architecture/SCOPE.md) for architectural boundaries
 - Check [MIGRATION-V10.md](../MIGRATION-V10.md) for breaking changes
 - Test new implementations before merge
 - Update roadmap with progress

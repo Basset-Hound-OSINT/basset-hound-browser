@@ -8,11 +8,11 @@
 
 ### Start Here
 1. **[DUAL-DEPLOYMENT-INFRASTRUCTURE-SUMMARY.txt](DUAL-DEPLOYMENT-INFRASTRUCTURE-SUMMARY.txt)** - Executive overview
-2. **[RELEASE-NOTES-v12.3.0.md](RELEASE-NOTES-v12.3.0.md)** - What's new in v12.3.0
+2. **[RELEASE-NOTES-v12.3.0.md](../releases/RELEASE-NOTES-v12.3.0.md)** - What's new in v12.3.0
 
 ### Documentation
-- **[docs/DEPLOYMENT-RUNBOOK-v12.3.0.md](docs/DEPLOYMENT-RUNBOOK-v12.3.0.md)** - Complete runbook
-- **[docs/handoffs/DUAL-DEPLOYMENT-SETUP-COMPLETE-2026-06-14.md](docs/handoffs/DUAL-DEPLOYMENT-SETUP-COMPLETE-2026-06-14.md)** - Handoff document
+- **[docs/DEPLOYMENT-RUNBOOK-v12.3.0.md](DEPLOYMENT-RUNBOOK-v12.3.0.md)** - Complete runbook
+- **[docs/handoffs/DUAL-DEPLOYMENT-SETUP-COMPLETE-2026-06-14.md](../archives/prune-2026-07-06/handoffs/DUAL-DEPLOYMENT-SETUP-COMPLETE-2026-06-14.md)** - Handoff document
 
 ## Directory Structure
 

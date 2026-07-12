@@ -66,7 +66,7 @@ This document summarizes all development work completed in this session for the 
 - Advanced configuration
 
 #### Development Status Report
-**File**: [docs/DEVELOPMENT-STATUS.md](docs/DEVELOPMENT-STATUS.md)
+**File**: [docs/DEVELOPMENT-STATUS.md](../technical/DEVELOPMENT-STATUS.md)
 
 **Contents**:
 - Project overview and current version (8.1.4)
@@ -199,7 +199,7 @@ Fixed three test files to match actual implementation behavior:
 
 ### 5. ROADMAP Updates ✅
 
-**File**: [docs/ROADMAP.md](docs/ROADMAP.md)
+**File**: [docs/ROADMAP.md](../roadmap/ROADMAP.md)
 
 **Changes**:
 - Added Phase 10.4: SSL Certificate Auto-Generation
@@ -485,8 +485,8 @@ This session successfully:
 
 ### Primary Documentation
 - [SSL Certificates Guide](docs/SSL-CERTIFICATES.md)
-- [Development Status](docs/DEVELOPMENT-STATUS.md)
-- [Roadmap](docs/ROADMAP.md)
+- [Development Status](../technical/DEVELOPMENT-STATUS.md)
+- [Roadmap](../roadmap/ROADMAP.md)
 - [Test Report](tests/CERT-GENERATOR-TEST-REPORT.md)
 - [Test Guide](tests/README-CERT-TESTS.md)
 - [Test Fixes Summary](TEST_FIXES_SUMMARY.md)

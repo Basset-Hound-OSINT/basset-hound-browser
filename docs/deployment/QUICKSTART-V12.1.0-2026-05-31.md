@@ -89,7 +89,7 @@ Detected Technologies:
 
 ### Next Steps
 
-- See [Technology Detection Complete Guide](V12.1.0-FEATURES-INDEX-2026-05-31.md#technology-detection-module)
+- See [Technology Detection Complete Guide](../reference/V12.1.0-FEATURES-INDEX-2026-05-31.md#technology-detection-module)
 - Export findings to Shodan/Maltego using Platform Integrations
 - Automate scanning with JavaScript loop
 
@@ -187,7 +187,7 @@ evidence-2026-12345.zip
 
 ### Next Steps
 
-- See [Forensic Export Complete Guide](V12.1.0-FEATURES-INDEX-2026-05-31.md#forensic-evidence-export)
+- See [Forensic Export Complete Guide](../reference/V12.1.0-FEATURES-INDEX-2026-05-31.md#forensic-evidence-export)
 - Review legal admissibility checklist
 - Integrate with law enforcement workflows
 
@@ -278,7 +278,7 @@ ws.send(JSON.stringify({
 
 ### Next Steps
 
-- See [Platform Integrations Complete Guide](V12.1.0-FEATURES-INDEX-2026-05-31.md#platform-integrations)
+- See [Platform Integrations Complete Guide](../reference/V12.1.0-FEATURES-INDEX-2026-05-31.md#platform-integrations)
 - Setup webhooks for real-time alerting
 - Automate multi-platform exports
 
@@ -378,7 +378,7 @@ ws.on('message', (data) => {
 
 ### Next Steps
 
-- See [Advanced JavaScript Complete Guide](V12.1.0-FEATURES-INDEX-2026-05-31.md#advanced-javascript-execution)
+- See [Advanced JavaScript Complete Guide](../reference/V12.1.0-FEATURES-INDEX-2026-05-31.md#advanced-javascript-execution)
 - Create custom templates for your apps
 - Deploy custom payloads safely
 
@@ -545,11 +545,11 @@ execute_script({
 
 ## Related Documentation
 
-- [Full Features Index](V12.1.0-FEATURES-INDEX-2026-05-31.md) - Complete guides
+- [Full Features Index](../reference/V12.1.0-FEATURES-INDEX-2026-05-31.md) - Complete guides
 - [API Reference](API-REFERENCE.md) - All commands
-- [Sprint Plan](V12.1.0-SPRINT-PLAN-2026-05-31.md) - Development timeline
+- [Sprint Plan](../planning/V12.1.0-SPRINT-PLAN-2026-05-31.md) - Development timeline
 - [QA Reports](V12.1.0-QA-INDEX-2026-05-31.md) - Test results
-- [Deployment Plan](deployment/V12.1.0-DEPLOYMENT-PLAN.md) - How to deploy
+- [Deployment Plan](../archives/prune-2026-07-06/deployment/V12.1.0-DEPLOYMENT-PLAN.md) - How to deploy
 
 ---
 

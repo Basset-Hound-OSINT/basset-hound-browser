@@ -449,7 +449,7 @@ npm start -- --disable-gpu
 
 ### Getting Help
 
-- Check [docs/DEVELOPMENT.md](DEVELOPMENT.md) for development setup
+- Check [docs/DEVELOPMENT.md](development.md) for development setup
 - Check [docs/API.md](API.md) for WebSocket API reference
 - Open an issue on GitHub for bugs
 

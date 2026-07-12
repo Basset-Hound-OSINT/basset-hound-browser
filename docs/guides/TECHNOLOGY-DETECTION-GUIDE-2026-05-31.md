@@ -611,7 +611,7 @@ ws.send(JSON.stringify({
 
 **Features that work well with Technology Detection:**
 
-- [Bot Evasion](./BOT-EVASION.md) - Combine tech detection with evasion for stealthy reconnaissance
+- [Bot Evasion](../archives/prune-2026-07-06/wiki/guides/BOT-EVASION.md) - Combine tech detection with evasion for stealthy reconnaissance
 - [Network Analysis](./API-REFERENCE.md) - Monitor network traffic while detecting technologies
 - [Metadata Extraction](./API-REFERENCE.md) - Extract detailed metadata alongside technology detection
 - [Forensic Export](./FORENSIC-EVIDENCE-EXPORT.md) - Include technology detection in evidence packages

@@ -11,8 +11,8 @@
 | Need | Resource | Purpose |
 |------|----------|---------|
 | **🚀 Getting Started** | [README.md](README.md) | Installation, quick start, feature overview |
-| **📋 Current Roadmap** | [ROADMAP.md](ROADMAP.md) | Active development, v12.1.0, v12.2.0 plans |
-| **🎯 Architecture** | [SCOPE.md](SCOPE.md) | Architectural boundaries, scope clarification |
+| **📋 Current Roadmap** | [ROADMAP.md](roadmap/ROADMAP.md) | Active development, v12.1.0, v12.2.0 plans |
+| **🎯 Architecture** | [SCOPE.md](architecture/SCOPE.md) | Architectural boundaries, scope clarification |
 | **📝 Task List** | [TODO.md](TODO.md) | Current issues, next steps, priorities |
 
 ---
@@ -138,7 +138,7 @@ These directories were already organized and remain unchanged:
 
 ### Archived Versions
 - **[archives/roadmap_v1_2026-06-13.md](archives/roadmap_v1_2026-06-13.md)** - Complete v1.0-v12.0.0 history
-- **[ROADMAP-ARCHIVE-V1.md](ROADMAP-ARCHIVE-V1.md)** - Phases 1-11 detailed history
+- **[ROADMAP-ARCHIVE-V1.md](roadmap/ROADMAP-ARCHIVE-V1.md)** - Phases 1-11 detailed history
 
 These contain the complete historical context for development phases that were completed before v12.0.0.
 
@@ -157,7 +157,7 @@ These contain the complete historical context for development phases that were c
 3. Review [reference/API-REFERENCE.md](reference/API-REFERENCE.md)
 
 ### I'm Troubleshooting Issues
-1. Start with [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)
+1. Start with [guides/TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 2. Go deeper with [guides/TROUBLESHOOTING-ADVANCED.md](guides/TROUBLESHOOTING-ADVANCED.md)
 3. Check [operations/INCIDENT-RESPONSE.md](operations/INCIDENT-RESPONSE.md)
 
@@ -166,12 +166,12 @@ These contain the complete historical context for development phases that were c
 2. Python: [guides/PYTHON-SDK-COMPLETE.md](guides/PYTHON-SDK-COMPLETE.md)
 
 ### I Want to Understand the Roadmap
-1. Current: [ROADMAP.md](ROADMAP.md)
+1. Current: [ROADMAP.md](roadmap/ROADMAP.md)
 2. Strategy: [planning/V12.2.0-STRATEGIC-PLAN-2026-05-31.md](planning/V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
 3. History: [archives/roadmap_v1_2026-06-13.md](archives/roadmap_v1_2026-06-13.md)
 
 ### I'm Building/Developing
-1. Architecture: [SCOPE.md](SCOPE.md)
+1. Architecture: [SCOPE.md](architecture/SCOPE.md)
 2. Implementation: [specifications/PHASE-1-IMPLEMENTATION-SPEC.md](specifications/PHASE-1-IMPLEMENTATION-SPEC.md)
 3. Code Quality: [technical/CODE-QUALITY-IMPROVEMENTS-2026-05-31.md](technical/CODE-QUALITY-IMPROVEMENTS-2026-05-31.md)
 4. Status: [technical/DEVELOPMENT-STATUS.md](technical/DEVELOPMENT-STATUS.md)
@@ -207,7 +207,7 @@ These contain the complete historical context for development phases that were c
 
 ### Using This Index
 - Each category folder has its own **INDEX.md** for quick reference
-- **[ROADMAP.md](ROADMAP.md)** is the current, active development roadmap
+- **[ROADMAP.md](roadmap/ROADMAP.md)** is the current, active development roadmap
 - **[archived/roadmap_v1_2026-06-13.md](archives/roadmap_v1_2026-06-13.md)** has complete historical context
 - Use **Ctrl+F** to search within this file for keywords
 

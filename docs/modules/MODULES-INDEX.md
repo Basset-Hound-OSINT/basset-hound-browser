@@ -312,7 +312,7 @@ All source modules are documented with:
 - **Key Files:** dashboard-engine.js, metric-renderer.js
 - **Status:** Production-ready (v12.2+)
 - **Dashboards:** Performance, Security, Operations, Analytics
-- **Documentation:** [Dashboard Guide](./dashboard-guide.md)
+- **Documentation:** [Dashboard Guide](../customer-success/DASHBOARD-GUIDE.md)
 
 ### 35. Streaming & Recording (4 files)
 **Path:** `src/streaming/` + `src/recording/`
@@ -434,7 +434,7 @@ All source modules are documented with:
 1. Start: [Security Hardening Guide](/docs/security/HARDENING-GUIDE.md)
 2. Review: [Compliance Guide](./compliance-guide.md)
 3. Implement: [Evasion & Detection Guides](./evasion-framework-guide.md)
-4. Monitor: [Security Monitoring](/docs/security/MONITORING.md)
+4. Monitor: [Security Monitoring](../archives/prune-2026-07-06/wiki/deployment/MONITORING.md)
 
 ### For Integration Partners
 1. Start: [Integrations Guide](./integrations-guide.md)

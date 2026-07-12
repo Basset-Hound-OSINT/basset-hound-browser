@@ -10,7 +10,7 @@
 
 ### New to Basset Hound Browser?
 
-**START HERE** → [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)
+**START HERE** → [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)
 
 This 15-minute guide covers:
 - Connection details and authentication
@@ -26,7 +26,7 @@ This 15-minute guide covers:
 
 **Path**: Getting Started → Quick Reference → Examples → Full Reference
 
-1. **[USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)** (15 min read)
+1. **[USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)** (15 min read)
    - How to connect
    - Authentication
    - Basic examples
@@ -74,7 +74,7 @@ This 15-minute guide covers:
 
 **Path**: Deployment → Monitoring → Troubleshooting → Maintenance
 
-1. **[DOCKER-QUICK-START.md](DOCKER-QUICK-START.md)**
+1. **[DOCKER-QUICK-START.md](deployment/DOCKER-QUICK-START.md)**
    - Container deployment
    - Configuration
    - Health checks
@@ -84,7 +84,7 @@ This 15-minute guide covers:
    - Alerting
    - Performance dashboards
 
-3. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**
+3. **[TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)**
    - Common issues
    - Solutions
    - Debug procedures
@@ -102,7 +102,7 @@ This 15-minute guide covers:
 
 | Document | Size | Audience | Time |
 |----------|------|----------|------|
-| [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) | 14 KB | Everyone | 15 min |
+| [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) | 14 KB | Everyone | 15 min |
 | [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) | 17 KB | Developers | 10 min |
 | [INTEGRATION-CHECKLIST.md](INTEGRATION-CHECKLIST.md) | 16 KB | Engineers | 30 min |
 
@@ -123,7 +123,7 @@ This 15-minute guide covers:
 | [examples/README.md](examples/README.md) | Examples index | 8.7 KB |
 | [examples/RESPONSE-FORMATS.json](examples/RESPONSE-FORMATS.json) | Response examples | 11 KB |
 | [API-REFERENCE.md](API-REFERENCE.md) | Complete API docs | 44 KB |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Problem solving | 14 KB |
+| [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md) | Problem solving | 14 KB |
 | [FAQ-COMPLETE.md](FAQ-COMPLETE.md) | Frequently asked | 16 KB |
 
 ---
@@ -132,7 +132,7 @@ This 15-minute guide covers:
 
 ### "I want to get started quickly"
 
-1. Read: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) (15 min)
+1. Read: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) (15 min)
 2. Run: [examples/01-python-hello-world.py](examples/01-python-hello-world.py) (5 min)
 3. Explore: [examples/](examples/) for your language
 4. Reference: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md)
@@ -141,7 +141,7 @@ This 15-minute guide covers:
 
 ### "I need to scrape websites"
 
-1. Read: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) section "Extract Page Content"
+1. Read: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) section "Extract Page Content"
 2. Run: [examples/03-python-web-scraping.py](examples/03-python-web-scraping.py)
 3. Reference: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) section "Content Extraction"
 4. Adapt: Modify example for your use case
@@ -150,7 +150,7 @@ This 15-minute guide covers:
 
 ### "I need to automate forms"
 
-1. Read: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) section "Fill and Submit a Form"
+1. Read: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) section "Fill and Submit a Form"
 2. Run: [examples/05-form-automation.py](examples/05-form-automation.py)
 3. Reference: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) section "Page Interaction"
 4. Build: Your automation workflow
@@ -159,7 +159,7 @@ This 15-minute guide covers:
 
 ### "I need to integrate with bot evasion"
 
-1. Read: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) section "Handle Bot Detection Evasion"
+1. Read: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) section "Handle Bot Detection Evasion"
 2. Reference: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) section "Bot Evasion"
 3. Study: [ADVANCED-EVASION-IMPLEMENTATION-GUIDE.md](ADVANCED-EVASION-IMPLEMENTATION-GUIDE.md)
 4. Build: Custom evasion strategy
@@ -177,7 +177,7 @@ This 15-minute guide covers:
 
 ### "I need to troubleshoot an issue"
 
-1. Check: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+1. Check: [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 2. Search: [FAQ-COMPLETE.md](FAQ-COMPLETE.md)
 3. Test: [examples/04-bash-curl-examples.sh](examples/04-bash-curl-examples.sh)
 4. Debug: Check server logs and error messages
@@ -253,16 +253,16 @@ Need to find a specific command? Use [API-QUICK-REFERENCE.md](API-QUICK-REFERENC
 
 ### Getting Help
 
-1. **Read the docs**: Start with [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)
+1. **Read the docs**: Start with [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)
 2. **Check examples**: See [examples/](examples/) for your use case
 3. **Search FAQ**: Look in [FAQ-COMPLETE.md](FAQ-COMPLETE.md)
-4. **Troubleshoot**: Use [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+4. **Troubleshoot**: Use [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 5. **Reference API**: Check [API-REFERENCE.md](API-REFERENCE.md) for details
 
 ### Common Questions
 
 **Q: How do I connect?**  
-A: See [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) section "Connection Details"
+A: See [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) section "Connection Details"
 
 **Q: What commands are available?**  
 A: See [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) for all 164 commands
@@ -277,7 +277,7 @@ A: See [examples/05-form-automation.py](examples/05-form-automation.py)
 A: See [INTEGRATION-CHECKLIST.md](INTEGRATION-CHECKLIST.md)
 
 **Q: Why is my command failing?**  
-A: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+A: See [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 
 ---
 
@@ -364,7 +364,7 @@ Production deployment + maintenance
 3. Click the first link
 
 ### Next 15 minutes
-1. Read [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)
+1. Read [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)
 2. Understand connection and basic concepts
 3. Know where to find help
 
@@ -382,22 +382,22 @@ Production deployment + maintenance
 
 ## Next Steps
 
-1. **Read**: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) (recommended starting point)
+1. **Read**: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) (recommended starting point)
 2. **Run**: Example matching your language ([examples/](examples/))
 3. **Reference**: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) while building
 4. **Integrate**: Follow [INTEGRATION-CHECKLIST.md](INTEGRATION-CHECKLIST.md) for production
 5. **Monitor**: Set up monitoring with [MONITORING-SETUP.md](MONITORING-SETUP.md)
-6. **Support**: Use [TROUBLESHOOTING.md](TROUBLESHOOTING.md) and [FAQ-COMPLETE.md](FAQ-COMPLETE.md) for help
+6. **Support**: Use [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md) and [FAQ-COMPLETE.md](FAQ-COMPLETE.md) for help
 
 ---
 
 ## Footer
 
 **Need Help?**
-- Start: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)
+- Start: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)
 - Reference: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md)
 - Examples: [examples/](examples/)
-- Troubleshoot: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- Troubleshoot: [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 - FAQ: [FAQ-COMPLETE.md](FAQ-COMPLETE.md)
 
 **Status**: ✅ Production Ready  

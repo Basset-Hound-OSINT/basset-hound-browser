@@ -883,4 +883,4 @@ Use this for each maintenance window:
 - [Monitoring Runbook](./RUNBOOK-MONITORING.md)
 - [Troubleshooting Runbook](./RUNBOOK-TROUBLESHOOTING.md)
 - [Infrastructure README](../infrastructure/README.md)
-- [SECURITY.md](../SECURITY.md)
+- [SECURITY.md](../security/SECURITY.md)

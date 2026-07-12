@@ -438,7 +438,7 @@ Format:
 ### For Operations
 - [Deployment Security Guide](../deployment/DEPLOYMENT-QUICK-START.md#security)
 - [Monitoring and Alerting](../monitoring/)
-- [Incident Response](../INCIDENT-RESPONSE.md)
+- [Incident Response](../operations/INCIDENT-RESPONSE.md)
 
 ### For Security Teams
 - [Security Audit Report](../SECURITY-DEEP-DIVE-AUDIT-2026-05-31.md)

@@ -481,5 +481,5 @@ Located in `tests/coherence-validation/`:
 ## Related Documentation
 
 - [Session Coherence Validation - Integration Guide](../integration/SESSION-COHERENCE-VALIDATION-INTEGRATION-GUIDE.md)
-- [Session Coherence Validation - API Reference](../api/SESSION-COHERENCE-VALIDATION-API-REFERENCE.md)
+- [Session Coherence Validation - API Reference](../archive/deprecated/SESSION-COHERENCE-VALIDATION-API-REFERENCE.md)
 - [Session Coherence Validation - User Guide](../guides/SESSION-COHERENCE-VALIDATION-USER-GUIDE.md)

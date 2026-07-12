@@ -468,5 +468,5 @@ search_technologies(query, searchIn)
 
 ## Related Documentation
 
-- [Technology Fingerprinting - Integration Guide](../integration/TECHNOLOGY-FINGERPRINTING-INTEGRATION-GUIDE.md)
-- [Technology Fingerprinting - API Reference](../api/TECHNOLOGY-FINGERPRINTING-API-REFERENCE.md)
+- [Technology Fingerprinting - Integration Guide](../archives/prune-2026-07-06/integration/TECHNOLOGY-FINGERPRINTING-INTEGRATION-GUIDE.md)
+- [Technology Fingerprinting - API Reference](../archive/deprecated/TECHNOLOGY-FINGERPRINTING-API-REFERENCE.md)

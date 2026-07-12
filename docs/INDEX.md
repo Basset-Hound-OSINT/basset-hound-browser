@@ -11,7 +11,7 @@
 ## Quick Navigation
 
 ### 🚀 Current Status: v12.0.0 Production Live (May 11, 2026)
-- **[Roadmap](ROADMAP.md)** - Full project roadmap with v12.0.0, v12.1.0, v12.2.0 planning
+- **[Roadmap](roadmap/ROADMAP.md)** - Full project roadmap with v12.0.0, v12.1.0, v12.2.0 planning
 - **[TODO](TODO.md)** - Action items for v12.1.0 (June 15) and v12.2.0 (July 15)
 - **[Session Records](archives/session_records/INDEX.md)** - Complete chronological list of all work sessions
 
@@ -23,7 +23,7 @@
 ### 📋 Core Documentation
 - **[API Reference](API-REFERENCE.md)** - WebSocket API (164 commands) for browser control
 - **[Deployment Guide](DEPLOYMENT-GUIDE.md)** - Docker deployment and troubleshooting
-- **[Architecture & Scope](SCOPE.md)** - Boundaries and design principles
+- **[Architecture & Scope](architecture/SCOPE.md)** - Boundaries and design principles
 
 ---
 
@@ -166,21 +166,21 @@ Key Sessions:
 - Technology Detection (50+ tech signatures)
 - Platform Integrations (Shodan, Maltego, MISP, Censys)
 - Forensic Evidence Export with chain of custody
-- See [V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md](V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md)
+- See [V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md](planning/V12.1.0-PRODUCTION-READINESS-PACKAGE-2026-05-31.md)
 
 ### 📋 v12.2.0: Market Leadership (July 15, 2026)
 - Forensic Excellence with ISO/IEC 27037 certification
 - Multi-Target Monitoring with change detection
 - Agent SDKs (Python, JS, TypeScript)
-- See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
+- See [V12.2.0-STRATEGIC-PLAN-2026-05-31.md](planning/V12.2.0-STRATEGIC-PLAN-2026-05-31.md)
 
 ---
 
 ## Documentation Navigation
 
 ### For Project Overview
-- **[ROADMAP.md](ROADMAP.md)** - Full roadmap with v12.0.0, v12.1.0, v12.2.0
-- **[SCOPE.md](SCOPE.md)** - Architectural boundaries and design principles
+- **[ROADMAP.md](roadmap/ROADMAP.md)** - Full roadmap with v12.0.0, v12.1.0, v12.2.0
+- **[SCOPE.md](architecture/SCOPE.md)** - Architectural boundaries and design principles
 - **[API-REFERENCE.md](API-REFERENCE.md)** - Complete WebSocket API (164 commands)
 
 ### For Development Work

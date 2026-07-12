@@ -11,18 +11,18 @@ Welcome to the Basset Hound Browser documentation. This comprehensive guide cove
 ## 🎯 Forensic Focus Documentation
 
 ### Core Forensic Guidance
-- [PROJECT-SCOPE.md](PROJECT-SCOPE.md) - **START HERE** - Complete forensic mission, principles, and capabilities
-- [FORENSIC-ARCHITECTURE.md](FORENSIC-ARCHITECTURE.md) - Technical architecture for evidence capture and integrity
-- [FORENSIC-FEATURES-ROADMAP.md](FORENSIC-FEATURES-ROADMAP.md) - Development roadmap and phase planning
+- [PROJECT-SCOPE.md](archives/prune-2026-07-06/PROJECT-SCOPE.md) - **START HERE** - Complete forensic mission, principles, and capabilities
+- [FORENSIC-ARCHITECTURE.md](architecture/core/FORENSIC-ARCHITECTURE.md) - Technical architecture for evidence capture and integrity
+- [FORENSIC-FEATURES-ROADMAP.md](architecture/core/FORENSIC-FEATURES-ROADMAP.md) - Development roadmap and phase planning
 
 ### Quick Start & Integration
 - [Installation Guide](core/installation.md) - Getting started with Basset Hound Browser
-- [API Reference - v12.7.0](API-REFERENCE-v12.7.0.md) - Complete WebSocket API documentation
+- [API Reference - v12.7.0](archive/deprecated/API-REFERENCE-v12.7.0.md) - Complete WebSocket API documentation
 - [Architecture Overview](core/architecture.md) - System architecture and design
 
 ### Project Status & Archive
-- [ROADMAP](ROADMAP.md) - Project roadmap and phase completion status
-- [Development Status](DEVELOPMENT-STATUS.md) - Current development status and metrics
+- [ROADMAP](roadmap/ROADMAP.md) - Project roadmap and phase completion status
+- [Development Status](technical/DEVELOPMENT-STATUS.md) - Current development status and metrics
 - [Archived Roadmaps](archive/roadmaps/) - Historical roadmap versions and planning documents (indexed by date)
   - `2026-06-20-summary.md` - Executive summary and quick reference
   - `2026-06-20-index.md` - Complete roadmap documentation index

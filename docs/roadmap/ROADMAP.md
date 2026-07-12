@@ -17,7 +17,7 @@
 **Timeline:** July 1, 2026 (External GA Release target)  
 **Effort:** 35-45 hours remaining
 
-**→ [PROJECT-COMPLETION-PATH.md](../PROJECT-COMPLETION-PATH.md)** — Detailed plan for finishing this project:
+**→ [PROJECT-COMPLETION-PATH.md](../archives/prune-2026-07-06/PROJECT-COMPLETION-PATH.md)** — Detailed plan for finishing this project:
 - Current state (what works, what doesn't)
 - 5 CRITICAL blockers (11-14 hours to fix)
 - 8 HIGH-priority items (15-25 hours)
@@ -82,7 +82,7 @@
 - ✅ **Performance:** <100ms average execution, 1.15% memory utilization
 - ✅ **Documentation:** 15+ comprehensive guides and API references
 - **Status:** PRODUCTION READY - IMMEDIATE DEPLOYMENT APPROVED
-- **Details:** [RELEASE-NOTES-v12.8.0.md](../wiki/releases/RELEASE-NOTES-v12.8.0.md) | [Version History](../wiki/releases/VERSION-HISTORY.md)
+- **Details:** [RELEASE-NOTES-v12.8.0.md](../archives/prune-2026-07-06/wiki/releases/RELEASE-NOTES-v12.8.0.md) | [Version History](../archives/prune-2026-07-06/wiki/releases/VERSION-HISTORY.md)
 
 ## Future: v12.9.0 (July 2026)
 
@@ -112,7 +112,7 @@
 - ✅ **Release Materials:** Comprehensive docs (160 KB), deployment checklist, API reference
 - **Total:** 288+ tests (100% pass), 6,212 LOC, production-ready
 - **Status:** PRODUCTION DEPLOYED - Superseded by v12.8.0
-- **Details:** [Session Record](archives/session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md)
+- **Details:** [Session Record](../archives/session_records/2026-06-15_V12.7.0-PHASE1-AND-PLANNING.md)
 
 ---
 
@@ -133,7 +133,7 @@
 - ✅ **Advanced Testing:** 6 suites, 95 tests, 98.9% pass, zero critical issues
 - **Total Delivered:** 75,000+ lines, 12 parallel agents, A+/A quality grade
 - **Status:** PRODUCTION-READY for v12.1.0 deployment
-- **Details:** [Session Record](archives/session_records/2026-06-02_WAVE15-COMPLETION-AND-WAVE16-FOUNDATION.md)
+- **Details:** [Session Record](../archives/session_records/2026-06-02_WAVE15-COMPLETION-AND-WAVE16-FOUNDATION.md)
 
 ---
 
@@ -147,7 +147,7 @@
   - Phase 3: 100% production (5 instances) → COMPLETE
 - ✅ **Performance:** Throughput +22-27%, Memory -60-80%, Latency improvements
 - ✅ **Production Status:** LIVE & STABLE - 99.7% confidence
-- **Details:** See [Session Records](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md)
+- **Details:** See [Session Records](../archives/session_records/2026-05-11_V12.0.0-PRODUCTION-ROLLOUT-COMPLETE.md)
 
 ---
 
@@ -182,7 +182,7 @@
 - ✅ **MCP Server Verified:** 164 tools remaining, all in-scope
 - ✅ **.onion Detection:** Helpful error when navigating to .onion without TOR_MODE
 - ✅ **Performance Analysis:** 15 lazy-loading opportunities identified (520-890ms potential savings)
-- 📄 See [findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md](findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md)
+- 📄 See [findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md](../findings/SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md)
 
 ### January 21, 2026 - Deployment Testing Complete ✅
 - ✅ Docker build and deployment validated
@@ -191,8 +191,8 @@
 - ✅ All page-dependent commands work with proper timing (wait 2-4s after navigation)
 - ✅ Deployment scripts created: `scripts/deploy.sh` and `scripts/redeploy.sh`
 - 📄 See [integration_readiness.md](integration_readiness.md) for full status
-- 📄 See [findings/DEPLOYMENT-FIXES-2026-01-21.md](findings/DEPLOYMENT-FIXES-2026-01-21.md) for fixes
-- 📄 See [findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md](findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md) for timing requirements
+- 📄 See [findings/DEPLOYMENT-FIXES-2026-01-21.md](../findings/DEPLOYMENT-FIXES-2026-01-21.md) for fixes
+- 📄 See [findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md](../findings/WEBVIEW-TIMING-REQUIREMENTS-2026-01-21.md) for timing requirements
 
 ### Key Insight: Webview Timing
 Commands like `get_page_state`, `screenshot`, `get_content` require the page to load first. Wait 2-4 seconds after `navigate` or use `wait_for_element`. This is standard browser automation behavior (same as Puppeteer, Playwright, Selenium).
@@ -206,9 +206,9 @@ Commands like `get_page_state`, `screenshot`, `get_content` require the page to 
 - ✅ **NEW:** Dynamic Tor toggle (`tor_enable`, `tor_disable`, `tor_toggle`)
 - ✅ **NEW:** Exit node configuration (`tor_get_exit_info`, `tor_set_exit_country`)
 - ✅ **NEW:** Fixed race condition - tab creation now waits for renderer
-- 📄 See [findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md](findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md) for full details
-- 📄 See [findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md](findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md)
-- 📄 See [findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md](findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md) for Docker setup options
+- 📄 See [findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md](../findings/TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md) for full details
+- 📄 See [findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md](../findings/TOR-ONION-INTEGRATION-VERIFIED-2026-01-21.md)
+- 📄 See [findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md](../findings/DOCKER-TOR-SETUP-RESEARCH-2026-01-21.md) for Docker setup options
 
 ---
 
@@ -368,7 +368,7 @@ Basset Hound Browser is a **focused data collection tool** - a custom browser de
 
 ### Scope Boundaries
 
-See [SCOPE.md](SCOPE.md) for detailed architectural boundaries:
+See [SCOPE.md](../architecture/SCOPE.md) for detailed architectural boundaries:
 - **IN SCOPE:** Browser automation, data extraction, forensic capture, evasion, network control
 - **OUT OF SCOPE:** Intelligence analysis, investigation management, data processing, external integrations
 

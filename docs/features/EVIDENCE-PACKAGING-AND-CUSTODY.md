@@ -838,7 +838,7 @@ async function captureAndPackageEvidence(sessionId, url, investigator) {
 
 ## See Also
 
-- [Evidence Packaging Implementation](../EVIDENCE-PACKAGING-IMPLEMENTATION-COMPLETE-2026-06-13.md)
-- [Quick Start Guide](../EVIDENCE-PACKAGING-QUICK-START.md)
+- [Evidence Packaging Implementation](../operations/EVIDENCE-PACKAGING-IMPLEMENTATION-COMPLETE-2026-06-13.md)
+- [Quick Start Guide](../guides/EVIDENCE-PACKAGING-QUICK-START.md)
 - [Chain of Custody Guide](../guides/FORENSIC-CHAIN-OF-CUSTODY-GUIDE.md)
 - [Forensic Evidence Export Guide](../guides/FORENSIC-EVIDENCE-EXPORT-GUIDE-2026-05-31.md)

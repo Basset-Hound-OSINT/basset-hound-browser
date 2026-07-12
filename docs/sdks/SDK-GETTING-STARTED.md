@@ -555,11 +555,11 @@ const client = new BrowserClient('ws://localhost:8765', {
 
 ## API Reference
 
-See [SDK-API-REFERENCE.md](./SDK-API-REFERENCE.md) for complete method documentation.
+See [SDK-API-REFERENCE.md](../archive/deprecated/SDK-API-REFERENCE.md) for complete method documentation.
 
 ## Examples
 
-See [SDK-EXAMPLES.md](./SDK-EXAMPLES.md) for advanced examples and use cases.
+See [SDK-EXAMPLES.md](../archive/deprecated/SDK-EXAMPLES.md) for advanced examples and use cases.
 
 ## Architecture
 

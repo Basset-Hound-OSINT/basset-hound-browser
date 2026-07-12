@@ -16,22 +16,22 @@ For deploying new versions to production, use these in order:
 1. **Canary Deployment** (2-3 hours)
    - File: `docs/deployment/CANARY-DEPLOYMENT-PLAYBOOK.md`
    - When: Initial 5% traffic deployment
-   - Start here: [Canary Playbook](./deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
+   - Start here: [Canary Playbook](../archives/prune-2026-07-06/deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
 
 2. **Progressive Rollout** (4-6 hours)
    - File: `docs/deployment/PROGRESSIVE-ROLLOUT-PLAYBOOK.md`
    - When: After canary success, rolling out 25% → 50% → 100%
-   - Start here: [Progressive Rollout Playbook](./deployment/PROGRESSIVE-ROLLOUT-PLAYBOOK.md)
+   - Start here: [Progressive Rollout Playbook](../archives/prune-2026-07-06/deployment/PROGRESSIVE-ROLLOUT-PLAYBOOK.md)
 
 3. **Rollback** (5-30 minutes)
    - File: `docs/deployment/ROLLBACK-PLAYBOOK.md`
    - When: If deployment issues detected
-   - Start here: [Rollback Playbook](./deployment/ROLLBACK-PLAYBOOK.md)
+   - Start here: [Rollback Playbook](ROLLBACK-PLAYBOOK.md)
 
 4. **Database Migration** (1-2 hours)
    - File: `docs/deployment/DATABASE-MIGRATION-PLAYBOOK.md`
    - When: Schema changes required
-   - Start here: [Database Migration Playbook](./deployment/DATABASE-MIGRATION-PLAYBOOK.md)
+   - Start here: [Database Migration Playbook](DATABASE-MIGRATION-PLAYBOOK.md)
 
 ---
 
@@ -44,28 +44,28 @@ When production incidents occur, use the appropriate playbook:
 - Trigger: P99 latency > 500ms
 - Time to Resolution: 15-30 minutes
 - Diagnostic Paths: App / Database / Infrastructure / External
-- Start here: [High Latency Playbook](./operations/HIGH-LATENCY-INCIDENT.md)
+- Start here: [High Latency Playbook](../operations/HIGH-LATENCY-INCIDENT.md)
 
 **High Error Rate (Requests Failing)**
 - File: `docs/operations/HIGH-ERROR-RATE-INCIDENT.md`
 - Trigger: >1% of requests failing
 - Time to Resolution: 15-30 minutes
 - Error Categories: 4xx / 5xx / Timeout / Dependency
-- Start here: [High Error Rate Playbook](./operations/HIGH-ERROR-RATE-INCIDENT.md)
+- Start here: [High Error Rate Playbook](../operations/HIGH-ERROR-RATE-INCIDENT.md)
 
 **Data Loss / Corruption**
 - File: `docs/operations/DATA-LOSS-INCIDENT.md`
 - Trigger: Data integrity issues detected
 - Time to Resolution: 30-120 minutes
 - Recovery Paths: Backup / Binlog / Manual
-- Start here: [Data Loss Playbook](./operations/DATA-LOSS-INCIDENT.md)
+- Start here: [Data Loss Playbook](../operations/DATA-LOSS-INCIDENT.md)
 
 **Security Incident**
 - File: `docs/operations/SECURITY-INCIDENT.md`
 - Trigger: Breach, malware, DDoS
 - Time to Resolution: Ongoing (hours-days)
 - Incident Types: Access / Malware / DDoS
-- Start here: [Security Incident Playbook](./operations/SECURITY-INCIDENT.md)
+- Start here: [Security Incident Playbook](../operations/SECURITY-INCIDENT.md)
 
 ---
 
@@ -77,13 +77,13 @@ For on-call teams and incident coordination:
 - File: `docs/operations/ON-CALL-EXTENDED-RUNBOOK.md`
 - Purpose: Daily on-call procedures
 - Contains: Alert triage, common issues, escalation paths
-- Start here: [On-Call Runbook](./operations/ON-CALL-EXTENDED-RUNBOOK.md)
+- Start here: [On-Call Runbook](../operations/ON-CALL-EXTENDED-RUNBOOK.md)
 
 **War Room Procedures**
 - File: `docs/operations/WAR-ROOM-PROCEDURES.md`
 - Purpose: Coordinate response during P1 incidents
 - Contains: Roles, communication cadence, escalation
-- Start here: [War Room Procedures](./operations/WAR-ROOM-PROCEDURES.md)
+- Start here: [War Room Procedures](../operations/WAR-ROOM-PROCEDURES.md)
 
 ---
 
@@ -93,20 +93,20 @@ For on-call teams and incident coordination:
 - File: `docs/operations/PLAYBOOK-TRAINING-GUIDE.md`
 - Roles: L1 / L2 / L3 / Manager
 - Certification paths for each role
-- Start here: [Training Guide](./operations/PLAYBOOK-TRAINING-GUIDE.md)
+- Start here: [Training Guide](../operations/PLAYBOOK-TRAINING-GUIDE.md)
 
 **Playbook Index**
 - File: `docs/operations/PLAYBOOK-INDEX.md`
 - Quick decision tree for incidents
 - Contact information
 - Tool references
-- Start here: [Playbook Index](./operations/PLAYBOOK-INDEX.md)
+- Start here: [Playbook Index](../operations/PLAYBOOK-INDEX.md)
 
 **Post-Incident Review**
 - File: `docs/operations/POST-INCIDENT-REVIEW.md`
 - Purpose: Blameless postmortem process
 - Contains: 5-Why analysis, action items
-- Start here: [Post-Incident Review](./operations/POST-INCIDENT-REVIEW.md)
+- Start here: [Post-Incident Review](../operations/POST-INCIDENT-REVIEW.md)
 
 ---
 
@@ -207,7 +207,7 @@ When minor issues detected:
 | L3 (Infra Lead) | Emergency auth | VP Eng | 30 min |
 | VP Engineering | P1 decisions | CEO | 60 min |
 
-See [Playbook Index](./operations/PLAYBOOK-INDEX.md) for full contact list.
+See [Playbook Index](../operations/PLAYBOOK-INDEX.md) for full contact list.
 
 ---
 
@@ -215,21 +215,21 @@ See [Playbook Index](./operations/PLAYBOOK-INDEX.md) for full contact list.
 
 **On-Call Engineer (L1)**
 - Duration: 4 hours
-- See: [Training Guide - L1 Path](./operations/PLAYBOOK-TRAINING-GUIDE.md)
+- See: [Training Guide - L1 Path](../operations/PLAYBOOK-TRAINING-GUIDE.md)
 
 **Engineering Lead (L2)**
 - Duration: 6 hours
 - Prerequisites: L1 completion
-- See: [Training Guide - L2 Path](./operations/PLAYBOOK-TRAINING-GUIDE.md)
+- See: [Training Guide - L2 Path](../operations/PLAYBOOK-TRAINING-GUIDE.md)
 
 **Infrastructure Lead (L3)**
 - Duration: 8 hours
 - Prerequisites: L2 completion
-- See: [Training Guide - L3 Path](./operations/PLAYBOOK-TRAINING-GUIDE.md)
+- See: [Training Guide - L3 Path](../operations/PLAYBOOK-TRAINING-GUIDE.md)
 
 **Manager / Incident Coordinator**
 - Duration: 4 hours
-- See: [Training Guide - Manager Path](./operations/PLAYBOOK-TRAINING-GUIDE.md)
+- See: [Training Guide - Manager Path](../operations/PLAYBOOK-TRAINING-GUIDE.md)
 
 ---
 
@@ -253,14 +253,14 @@ See [Playbook Index](./operations/PLAYBOOK-INDEX.md) for full contact list.
 ## Getting Started
 
 ### For Deployments
-1. Read: [Canary Deployment Playbook](./deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
+1. Read: [Canary Deployment Playbook](../archives/prune-2026-07-06/deployment/CANARY-DEPLOYMENT-PLAYBOOK.md)
 2. Use: Step-by-step checklist
 3. Monitor: Provided metrics tables
 4. Decide: Go/no-go at 90 minutes
 5. Proceed: Progressive rollout if green
 
 ### For Incidents
-1. Go to: [Playbook Index](./operations/PLAYBOOK-INDEX.md)
+1. Go to: [Playbook Index](../operations/PLAYBOOK-INDEX.md)
 2. Find: Your incident type using decision tree
 3. Read: Selected incident playbook
 4. Follow: Step-by-step procedures
@@ -268,7 +268,7 @@ See [Playbook Index](./operations/PLAYBOOK-INDEX.md) for full contact list.
 6. Learn: Schedule postmortem if P1/P2
 
 ### For On-Call
-1. Read: [On-Call Runbook](./operations/ON-CALL-EXTENDED-RUNBOOK.md)
+1. Read: [On-Call Runbook](../operations/ON-CALL-EXTENDED-RUNBOOK.md)
 2. Know: Escalation paths & contacts
 3. Use: Quick reference for common issues
 4. Join: War room procedures if P1
@@ -286,7 +286,7 @@ For updates and improvements, see individual documents.
 
 ## Questions or Feedback?
 
-See [Playbook Index](./operations/PLAYBOOK-INDEX.md) "Feedback" section.
+See [Playbook Index](../operations/PLAYBOOK-INDEX.md) "Feedback" section.
 
 ---
 

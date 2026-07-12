@@ -631,36 +631,36 @@ sed -i 's|docs/core/api-reference.md|docs/API-REFERENCE.md|g' docs/**/*.md
 v12.1.0 (May 31, 2026)
 
 ## Quick Links
-- [Getting Started](GETTING-STARTED.md) - 5-minute setup
+- [Getting Started](../GETTING-STARTED.md) - 5-minute setup
 - [API Reference](API-REFERENCE.md) - Command documentation
 - [Architecture](ARCHITECTURE.md) - System design
-- [Deployment](deployment/DEPLOYMENT-QUICK-START.md) - Production setup
-- [Troubleshooting](TROUBLESHOOTING.md) - Common issues
+- [Deployment](../deployment/DEPLOYMENT-QUICK-START.md) - Production setup
+- [Troubleshooting](../support/TROUBLESHOOTING.md) - Common issues
 
 ## By Audience
 
 ### New Users
-1. [Getting Started](GETTING-STARTED.md)
-2. [Installation](core/installation.md)
+1. [Getting Started](../GETTING-STARTED.md)
+2. [Installation](../core/installation.md)
 3. [First Steps](FIRST-STEPS.md)
 4. [API Reference](API-REFERENCE.md)
 
 ### Developers
 1. [Architecture](ARCHITECTURE.md)
-2. [Development Guide](core/development.md)
+2. [Development Guide](../core/development.md)
 3. [Feature Index](features/)
 4. [Testing Guide](testing/)
 
 ### DevOps / SRE
-1. [Deployment Guide](deployment/DEPLOYMENT-QUICK-START.md)
+1. [Deployment Guide](../deployment/DEPLOYMENT-QUICK-START.md)
 2. [Operations Runbooks](operations/)
 3. [Monitoring](monitoring/)
-4. [Performance Tuning](operations/PERFORMANCE-TUNING.md)
+4. [Performance Tuning](../archives/prune-2026-07-06/wiki/deployment/PERFORMANCE-TUNING.md)
 
 ### Security Teams
 1. [Security Overview](security/)
-2. [Evasion Framework](features/TOR-INTEGRATION.md)
-3. [Security Audit](findings/DOCUMENTATION-AUDIT-2026-05-31.md)
+2. [Evasion Framework](../archives/prune-2026-07-06/features/TOR-INTEGRATION.md)
+3. [Security Audit](DOCUMENTATION-AUDIT-2026-05-31.md)
 
 ### Integration Teams
 1. [Integration Guide](integration/)
@@ -671,19 +671,19 @@ v12.1.0 (May 31, 2026)
 - [Technology Detection](features/)
 - [Forensic Export](features/FORENSIC-EXPORT.md)
 - [Platform Integrations](features/PLATFORM-INTEGRATIONS.md)
-- [Tor Integration](features/TOR-INTEGRATION.md)
+- [Tor Integration](../archives/prune-2026-07-06/features/TOR-INTEGRATION.md)
 - [All Features](features/)
 
 ## Documentation
-- [v12.1.0 Release Notes](RELEASE-NOTES-v12.1.0.md)
-- [Roadmap](planning/ROADMAP.md)
+- [v12.1.0 Release Notes](../releases/RELEASE-NOTES-v12.1.0.md)
+- [Roadmap](../roadmap/ROADMAP.md)
 - [All Documentation](planning/releases/v12.1.0/)
 
 ## Search
 [Future search interface if implemented]
 
 ## Contributing
-See [Contributing Guide](../../CONTRIBUTING.md)
+See [Contributing Guide](../archives/prune-2026-07-06/wiki/development/CONTRIBUTING.md)
 ```
 
 ---

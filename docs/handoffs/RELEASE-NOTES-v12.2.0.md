@@ -363,7 +363,7 @@ const { ForensicGenerator } = require('./src/reporting/forensic-generator');
 ## Support & Documentation
 
 ### Documentation
-- [Complete API Reference](/docs/API-REFERENCE-COMPLETE.md)
+- [Complete API Reference](../reference/API-REFERENCE-COMPLETE.md)
 - [Deployment Guide](/docs/DEPLOYMENT-GUIDE.md)
 - [Security Hardening](/docs/security/HARDENING-GUIDE.md)
 - [Performance Tuning](/docs/advanced/PERFORMANCE-TUNING-COMPLETE-GUIDE.md)

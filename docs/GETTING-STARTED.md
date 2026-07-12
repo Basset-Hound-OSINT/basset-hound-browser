@@ -365,7 +365,7 @@ curl --insecure https://...
    - Profile/Identity (set_user_agent, set_proxy, set_cookies)
 
 2. **Read Quick Reference:**
-   - [API-DOCUMENTATION-SUMMARY.md](API-DOCUMENTATION-SUMMARY.md) - Overview
+   - [API-DOCUMENTATION-SUMMARY.md](archives/prune-2026-07-06/API-DOCUMENTATION-SUMMARY.md) - Overview
    - [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md) - Full guide with examples
    - [API-REFERENCE-AUTHORITATIVE.md](API-REFERENCE-AUTHORITATIVE.md) - Complete command reference
 

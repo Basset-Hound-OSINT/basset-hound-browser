@@ -631,7 +631,7 @@ All test artifacts (screenshots, reports, logs) must be written to `tests/output
 - Implement cleanup in `afterEach()` blocks
 - Never commit `.mypy_cache/`, `.pytest_cache/`, `.coverage`, or `htmlcov/`
 
-See [Test Artifact Management Guide](./guides/TEST-ARTIFACT-MANAGEMENT.md) for details.
+See [Test Artifact Management Guide](../guides/TEST-ARTIFACT-MANAGEMENT.md) for details.
 ```
 
 ---

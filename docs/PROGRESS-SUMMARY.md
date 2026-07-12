@@ -99,24 +99,24 @@
 ## Key Files & References
 
 ### Session Records
-- **This Session:** [2026-06-04_WAVE16-PHASE2-5-IMPLEMENTATION-AND-VALIDATION.md](docs/archives/session_records/2026-06-04_WAVE16-PHASE2-5-IMPLEMENTATION-AND-VALIDATION.md)
+- **This Session:** [2026-06-04_WAVE16-PHASE2-5-IMPLEMENTATION-AND-VALIDATION.md](archives/session_records/2026-06-04_WAVE16-PHASE2-5-IMPLEMENTATION-AND-VALIDATION.md)
 - **All Sessions:** [docs/archives/session_records/](docs/archives/session_records/)
 
 ### Deployment & Operations
-- **Staged Rollout:** [docs/deployment/STAGED-ROLLOUT-COMPLETE.md](docs/deployment/STAGED-ROLLOUT-COMPLETE.md)
-- **Deployment Readiness:** [docs/deployment/PRE-PRODUCTION-DEPLOYMENT-READINESS-2026-06-04.md](docs/deployment/PRE-PRODUCTION-DEPLOYMENT-READINESS-2026-06-04.md)
-- **Kubernetes Deploy:** [docs/deployment/KUBERNETES-DEPLOYMENT.md](docs/deployment/KUBERNETES-DEPLOYMENT.md)
+- **Staged Rollout:** [docs/deployment/STAGED-ROLLOUT-COMPLETE.md](deployment/STAGED-ROLLOUT-COMPLETE.md)
+- **Deployment Readiness:** [docs/deployment/PRE-PRODUCTION-DEPLOYMENT-READINESS-2026-06-04.md](archives/prune-2026-07-06/deployment/PRE-PRODUCTION-DEPLOYMENT-READINESS-2026-06-04.md)
+- **Kubernetes Deploy:** [docs/deployment/KUBERNETES-DEPLOYMENT.md](deployment/KUBERNETES-DEPLOYMENT.md)
 
 ### Testing & Validation
 - **Final Validation:** [docs/findings/FINAL-VALIDATION-COMPLETE.txt](docs/findings/FINAL-VALIDATION-COMPLETE.txt)
 - **Integration Results:** [docs/findings/MULTI-WAVE-INTEGRATION-COMPLETE.txt](docs/findings/MULTI-WAVE-INTEGRATION-COMPLETE.txt)
 
 ### Performance
-- **Tuning Guide:** [docs/archives/performance-analysis/PERFORMANCE-TUNING-SUMMARY.md](docs/archives/performance-analysis/PERFORMANCE-TUNING-SUMMARY.md)
-- **Quick Reference:** [docs/archives/performance-analysis/OPTIMIZATION-QUICK-REFERENCE.md](docs/archives/performance-analysis/OPTIMIZATION-QUICK-REFERENCE.md)
+- **Tuning Guide:** [docs/archives/performance-analysis/PERFORMANCE-TUNING-SUMMARY.md](archives/performance-analysis/PERFORMANCE-TUNING-SUMMARY.md)
+- **Quick Reference:** [docs/archives/performance-analysis/OPTIMIZATION-QUICK-REFERENCE.md](findings/OPTIMIZATION-QUICK-REFERENCE.md)
 
 ### API & Customer Documentation
-- **API Reference:** [docs/API-REFERENCE-COMPLETE.md](docs/API-REFERENCE-COMPLETE.md)
+- **API Reference:** [docs/API-REFERENCE-COMPLETE.md](reference/API-REFERENCE-COMPLETE.md)
 - **Customer Success:** [docs/customer-success/](docs/customer-success/)
 - **Onboarding:** [docs/CUSTOMER-ONBOARDING-SYSTEM.md](docs/CUSTOMER-ONBOARDING-SYSTEM.md)
 

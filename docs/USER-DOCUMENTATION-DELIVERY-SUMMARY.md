@@ -166,10 +166,10 @@ Comprehensive user access documentation has been created for production deployme
 
 All examples link to and cross-reference:
 - [API-REFERENCE.md](API-REFERENCE.md) - Complete command documentation
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Problem solving
+- [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md) - Problem solving
 - [FAQ-COMPLETE.md](FAQ-COMPLETE.md) - Frequently asked questions
 - [MONITORING-SETUP.md](MONITORING-SETUP.md) - Production monitoring
-- [DOCKER-QUICK-START.md](DOCKER-QUICK-START.md) - Container deployment
+- [DOCKER-QUICK-START.md](deployment/DOCKER-QUICK-START.md) - Container deployment
 
 ---
 
@@ -231,7 +231,7 @@ All examples link to and cross-reference:
 ## Usage Guide
 
 ### For New Users
-1. **Start**: Read [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md) (15 min)
+1. **Start**: Read [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md) (15 min)
 2. **Run**: Execute [examples/01-python-hello-world.py](examples/01-python-hello-world.py) (5 min)
 3. **Learn**: Review [examples/README.md](examples/README.md) (10 min)
 4. **Reference**: Use [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md) while building
@@ -243,9 +243,9 @@ All examples link to and cross-reference:
 4. **Reference**: Consult [API-REFERENCE.md](API-REFERENCE.md) for details
 
 ### For DevOps/Operations
-1. **Setup**: [DOCKER-QUICK-START.md](DOCKER-QUICK-START.md)
+1. **Setup**: [DOCKER-QUICK-START.md](deployment/DOCKER-QUICK-START.md)
 2. **Monitor**: [MONITORING-SETUP.md](MONITORING-SETUP.md)
-3. **Troubleshoot**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+3. **Troubleshoot**: [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 4. **Maintain**: [INTEGRATION-CHECKLIST.md](INTEGRATION-CHECKLIST.md) Phase 12
 
 ---
@@ -386,7 +386,7 @@ cat docs/examples/README.md
 ## Support Resources
 
 ### Documentation
-- **Getting Started**: [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)
+- **Getting Started**: [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)
 - **Command Reference**: [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md)
 - **Full API Docs**: [API-REFERENCE.md](API-REFERENCE.md)
 - **Integration Guide**: [INTEGRATION-CHECKLIST.md](INTEGRATION-CHECKLIST.md)
@@ -398,7 +398,7 @@ cat docs/examples/README.md
 - **Bash/cURL**: 04-bash-curl-examples.sh
 
 ### Reference
-- **Troubleshooting**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- **Troubleshooting**: [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md)
 - **FAQ**: [FAQ-COMPLETE.md](FAQ-COMPLETE.md)
 - **Response Formats**: [examples/RESPONSE-FORMATS.json](examples/RESPONSE-FORMATS.json)
 - **Monitoring**: [MONITORING-SETUP.md](MONITORING-SETUP.md)

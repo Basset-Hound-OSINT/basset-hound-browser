@@ -511,8 +511,8 @@ controlHost: '0.0.0.0',  // Don't do this!
 
 ## Related Documentation
 
-- [TOR-INTEGRATION.md](TOR-INTEGRATION.md) - Tor integration overview
-- [TOR-SETUP-GUIDE.md](../deployment/TOR-SETUP-GUIDE.md) - System Tor setup
+- [TOR-INTEGRATION.md](../archives/prune-2026-07-06/features/TOR-INTEGRATION.md) - Tor integration overview
+- [TOR-SETUP-GUIDE.md](../archives/prune-2026-07-06/deployment/TOR-SETUP-GUIDE.md) - System Tor setup
 - [PROXY.md](PROXY.md) - General proxy configuration
 - [API.md](../core/API.md) - WebSocket API reference
 

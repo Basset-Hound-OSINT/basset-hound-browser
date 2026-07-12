@@ -236,8 +236,8 @@ await browser.send_command("set_tor_mode", {"mode": "on"})
 
 - [TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md](TOR-IMPLEMENTATION-COMPLETE-2026-01-21.md) - Full Tor integration
 - [SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md](SCOPE-CLEANUP-AND-PERFORMANCE-2026-01-21.md) - Scope cleanup
-- [ROADMAP.md](../ROADMAP.md) - Project roadmap
-- [SCOPE.md](../SCOPE.md) - Project scope definition
+- [ROADMAP.md](../roadmap/ROADMAP.md) - Project roadmap
+- [SCOPE.md](../architecture/SCOPE.md) - Project scope definition
 
 ---
 

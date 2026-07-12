@@ -10,7 +10,7 @@
 ## Quick Navigation
 
 ### Executive Materials (Read These First)
-- **[SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md](./SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md)** (1,000 lines)
+- **[SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md](../archives/prune-2026-07-06/findings/SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md)** (1,000 lines)
   - High-level findings and risk assessment
   - Pre-deployment approval status and conditions
   - Key recommendations for leadership
@@ -319,7 +319,7 @@ Estimated Time to Deploy: 1-2 hours (after npm audit fix)
 
 For security-related questions or issues:
 - Review: [SECURITY-VALIDATION-REPORT-2026-06-02.md](./SECURITY-VALIDATION-REPORT-2026-06-02.md)
-- Summary: [SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md](./SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md)
+- Summary: [SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md](../archives/prune-2026-07-06/findings/SECURITY-EXECUTIVE-SUMMARY-2026-06-02.md)
 - Checklist: [SECURITY-VALIDATION-COMPLETE.txt](./SECURITY-VALIDATION-COMPLETE.txt)
 
 ---

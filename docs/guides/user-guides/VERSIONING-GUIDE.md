@@ -10,16 +10,16 @@
 ### Primary References (Use These)
 
 1. **[README.md](../README.md)** - Main project overview and quick start
-2. **[API-REFERENCE-V12.8.0.md](API-REFERENCE-V12.8.0.md)** - Comprehensive v12.8.0 API with all 140+ commands
-3. **[API-REFERENCE-AUTHORITATIVE.md](API-REFERENCE-AUTHORITATIVE.md)** - Authoritative command reference (12.8.0)
-4. **[RELEASE-NOTES-v12.1.0.md](RELEASE-NOTES-v12.1.0.md)** - Latest production release notes
+2. **[API-REFERENCE-V12.8.0.md](../../archive/deprecated/API-REFERENCE-V12.8.0.md)** - Comprehensive v12.8.0 API with all 140+ commands
+3. **[API-REFERENCE-AUTHORITATIVE.md](../../API-REFERENCE-AUTHORITATIVE.md)** - Authoritative command reference (12.8.0)
+4. **[RELEASE-NOTES-v12.1.0.md](../../releases/RELEASE-NOTES-v12.1.0.md)** - Latest production release notes
 
 ### Feature Documentation (Current)
 
 - [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) - Deployment for dev/production/headless
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and solutions
-- [DEVELOPMENT.md](DEVELOPMENT.md) - Development setup and guidelines
-- [ROADMAP.md](ROADMAP.md) - Project roadmap and planned features
+- [TROUBLESHOOTING.md](../../support/TROUBLESHOOTING.md) - Common issues and solutions
+- [DEVELOPMENT.md](../../core/development.md) - Development setup and guidelines
+- [ROADMAP.md](../../roadmap/ROADMAP.md) - Project roadmap and planned features
 
 ---
 
@@ -99,9 +99,9 @@ Documents below reference older versions (v12.0-v12.7) and are provided for hist
 
 **Status**: ✓ Production Release - Archived for reference  
 **Files**:
-- [RELEASE-NOTES-v12.0.0.md](RELEASE-NOTES-v12.0.0.md)
-- [DEPLOYMENT-COMPLETE-2026-05-11.md](../DEPLOYMENT-COMPLETE-2026-05-11.md)
-- [docs/archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md](archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md)
+- [RELEASE-NOTES-v12.0.0.md](../../releases/RELEASE-NOTES-v12.0.0.md)
+- [DEPLOYMENT-COMPLETE-2026-05-11.md](../../archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md)
+- [docs/archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md](../../archives/session_records/2026-05-11_V12.0.0-PRODUCTION-DEPLOYMENT-COMPLETE.md)
 
 #### Features (Still in v12.8.0):
 - Phase 3 Authentication
@@ -115,8 +115,8 @@ Documents below reference older versions (v12.0-v12.7) and are provided for hist
 
 **Status**: ✓ Research Phase Complete - Archived for reference  
 **Files**:
-- [docs/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md](PHASE-2-COMPLETION-SUMMARY-2026-05-07.md)
-- [docs/archives/roadmap_v1_2026-06-13.md](archives/roadmap_v1_2026-06-13.md)
+- [docs/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md](../../planning/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md)
+- [docs/archives/roadmap_v1_2026-06-13.md](../../archives/roadmap_v1_2026-06-13.md)
 
 ---
 
@@ -124,22 +124,22 @@ Documents below reference older versions (v12.0-v12.7) and are provided for hist
 
 ### Getting Started
 - [README.md](../README.md) - **CURRENT** - Start here
-- [QUICKSTART.md](deployment/QUICKSTART-V12.1.0-2026-05-31.md) - **CURRENT** - v12.1.0 quick start
+- [QUICKSTART.md](../../deployment/QUICKSTART-V12.1.0-2026-05-31.md) - **CURRENT** - v12.1.0 quick start
 
 ### API Reference
-- [API-REFERENCE-V12.8.0.md](API-REFERENCE-V12.8.0.md) - **CURRENT** - v12.8.0 complete reference
-- [API-REFERENCE-AUTHORITATIVE.md](API-REFERENCE-AUTHORITATIVE.md) - **CURRENT** - Command index
+- [API-REFERENCE-V12.8.0.md](../../archive/deprecated/API-REFERENCE-V12.8.0.md) - **CURRENT** - v12.8.0 complete reference
+- [API-REFERENCE-AUTHORITATIVE.md](../../API-REFERENCE-AUTHORITATIVE.md) - **CURRENT** - Command index
 - [API-REFERENCE.md](API-REFERENCE.md) - **OUTDATED** - v12.1.0 reference (for history only)
 
 ### Deployment & Operations
 - [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) - **CURRENT** - Deployment instructions
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - **CURRENT** - Common issues
-- [deployment/TOR-SETUP-GUIDE.md](deployment/TOR-SETUP-GUIDE.md) - **CURRENT** - Tor setup
+- [TROUBLESHOOTING.md](../../support/TROUBLESHOOTING.md) - **CURRENT** - Common issues
+- [deployment/TOR-SETUP-GUIDE.md](../../archives/prune-2026-07-06/deployment/TOR-SETUP-GUIDE.md) - **CURRENT** - Tor setup
 
 ### Development
-- [DEVELOPMENT.md](DEVELOPMENT.md) - **CURRENT** - Dev setup
+- [DEVELOPMENT.md](../../core/development.md) - **CURRENT** - Dev setup
 - [ARCHITECTURE.md](ARCHITECTURE.md) - **CURRENT** - Architecture overview
-- [ROADMAP.md](ROADMAP.md) - **CURRENT** - Project roadmap
+- [ROADMAP.md](../../roadmap/ROADMAP.md) - **CURRENT** - Project roadmap
 
 ### Feature Guides
 - [TECHNOLOGY-DETECTION-GUIDE-2026-05-31.md](TECHNOLOGY-DETECTION-GUIDE-2026-05-31.md) - Tech detection
@@ -149,7 +149,7 @@ Documents below reference older versions (v12.0-v12.7) and are provided for hist
 ### Historical Reference (Read Only)
 - [docs/archives/](archives/) - All archived documentation
 - [docs/research/](research/) - Research documents
-- [Phase 2 Completion](PHASE-2-COMPLETION-SUMMARY-2026-05-07.md) - Phase 2 evasion research
+- [Phase 2 Completion](../../planning/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md) - Phase 2 evasion research
 - [Session Records](archives/session_records/) - Development session records
 
 ---
@@ -226,12 +226,12 @@ Documents below reference older versions (v12.0-v12.7) and are provided for hist
 | Task | Document |
 |------|----------|
 | Get started with Basset Hound | [README.md](../README.md) |
-| Learn all commands (v12.8.0) | [API-REFERENCE-V12.8.0.md](API-REFERENCE-V12.8.0.md) |
+| Learn all commands (v12.8.0) | [API-REFERENCE-V12.8.0.md](../../archive/deprecated/API-REFERENCE-V12.8.0.md) |
 | Deploy the browser | [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md) |
-| Troubleshoot issues | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
-| Set up development | [DEVELOPMENT.md](DEVELOPMENT.md) |
+| Troubleshoot issues | [TROUBLESHOOTING.md](../../support/TROUBLESHOOTING.md) |
+| Set up development | [DEVELOPMENT.md](../../core/development.md) |
 | Understand architecture | [ARCHITECTURE.md](ARCHITECTURE.md) |
-| See what's planned | [ROADMAP.md](ROADMAP.md) |
-| Find a specific command | [API-REFERENCE-AUTHORITATIVE.md](API-REFERENCE-AUTHORITATIVE.md) |
-| Learn about v12.8.0 forensics | [API-REFERENCE-V12.8.0.md](API-REFERENCE-V12.8.0.md#phase-1-forensic-commands-new) |
+| See what's planned | [ROADMAP.md](../../roadmap/ROADMAP.md) |
+| Find a specific command | [API-REFERENCE-AUTHORITATIVE.md](../../API-REFERENCE-AUTHORITATIVE.md) |
+| Learn about v12.8.0 forensics | [API-REFERENCE-V12.8.0.md](../../archive/deprecated/API-REFERENCE-V12.8.0.md#phase-1-forensic-commands-new) |
 

@@ -851,4 +851,4 @@ async function verifyFingerprintConsistency(url, iterations = 3) {
 
 ---
 
-**Need more help?** Check the [Quick Start Guide](./FORENSIC-EXPORTS-QUICK-START.md) or [API Reference](./FORENSIC-EXPORTS-API-REFERENCE.md).
+**Need more help?** Check the [Quick Start Guide](./FORENSIC-EXPORTS-QUICK-START.md) or [API Reference](../../archive/deprecated/FORENSIC-EXPORTS-API-REFERENCE.md).

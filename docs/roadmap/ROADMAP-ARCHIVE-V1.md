@@ -514,8 +514,8 @@
 | Exit IP Verification | ✅ Pass | Exit IP: 45.84.107.47 (confirmed Tor exit) |
 
 **Documentation Added:**
-- [TOR-INTEGRATION.md](features/TOR-INTEGRATION.md) - Comprehensive integration guide
-- [TOR-SETUP-GUIDE.md](deployment/TOR-SETUP-GUIDE.md) - Cross-platform setup guide
+- [TOR-INTEGRATION.md](../archives/prune-2026-07-06/features/TOR-INTEGRATION.md) - Comprehensive integration guide
+- [TOR-SETUP-GUIDE.md](../archives/prune-2026-07-06/deployment/TOR-SETUP-GUIDE.md) - Cross-platform setup guide
 - [tor-integration-test.js](../tests/tor-integration-test.js) - Live connectivity test script
 
 ---

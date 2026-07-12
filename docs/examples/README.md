@@ -406,16 +406,16 @@ def send_with_retry(ws, request, max_retries=3):
 ## Next Steps
 
 1. **Run the examples** - Start with hello-world
-2. **Read the docs** - Check [USER-ACCESS-GUIDE.md](../USER-ACCESS-GUIDE.md)
+2. **Read the docs** - Check [USER-ACCESS-GUIDE.md](../guides/user-guides/USER-ACCESS-GUIDE.md)
 3. **API Reference** - See [API-QUICK-REFERENCE.md](../API-QUICK-REFERENCE.md)
 4. **Integration** - Follow [INTEGRATION-CHECKLIST.md](../INTEGRATION-CHECKLIST.md)
 
 ## Support
 
-- **Getting Started**: [USER-ACCESS-GUIDE.md](../USER-ACCESS-GUIDE.md)
+- **Getting Started**: [USER-ACCESS-GUIDE.md](../guides/user-guides/USER-ACCESS-GUIDE.md)
 - **All Commands**: [API-QUICK-REFERENCE.md](../API-QUICK-REFERENCE.md)
 - **Detailed Reference**: [API-REFERENCE.md](../API-REFERENCE.md)
-- **Troubleshooting**: [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- **Troubleshooting**: [TROUBLESHOOTING.md](../support/TROUBLESHOOTING.md)
 - **FAQ**: [FAQ-COMPLETE.md](../FAQ-COMPLETE.md)
 
 ---

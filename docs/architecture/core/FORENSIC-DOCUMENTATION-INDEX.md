@@ -9,10 +9,10 @@
 ## Quick Navigation
 
 ### 🎯 Start Here for Forensic Understanding
-1. **[PROJECT-SCOPE.md](PROJECT-SCOPE.md)** - Complete mission, principles, and capabilities
+1. **[PROJECT-SCOPE.md](../../archives/prune-2026-07-06/PROJECT-SCOPE.md)** - Complete mission, principles, and capabilities
 2. **[FORENSIC-ARCHITECTURE.md](FORENSIC-ARCHITECTURE.md)** - Technical design for evidence capture
 3. **[FORENSIC-FEATURES-ROADMAP.md](FORENSIC-FEATURES-ROADMAP.md)** - Development roadmap and phases
-4. **[API-REFERENCE-v12.7.0.md](API-REFERENCE-v12.7.0.md)** - Complete WebSocket API documentation
+4. **[API-REFERENCE-v12.7.0.md](../../archive/deprecated/API-REFERENCE-v12.7.0.md)** - Complete WebSocket API documentation
 
 ---
 

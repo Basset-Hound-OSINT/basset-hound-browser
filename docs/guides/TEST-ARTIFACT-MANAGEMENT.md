@@ -289,7 +289,7 @@ If deploying directly from CI:
 
 ## Related Documentation
 
-- [Testing Guide](../TESTING.md) - How to write and run tests
+- [Testing Guide](../archives/prune-2026-07-06/wiki/development/TESTING.md) - How to write and run tests
 - [CI/CD Pipeline](../CI-CD.md) - Continuous integration setup
 - [Deployment Guide](../DEPLOYMENT.md) - Production deployment procedures
 
@@ -304,7 +304,7 @@ If deploying directly from CI:
 If you have questions about test artifact management:
 
 1. Check the **Troubleshooting** section above
-2. Review the [Testing Guide](../TESTING.md)
+2. Review the [Testing Guide](../archives/prune-2026-07-06/wiki/development/TESTING.md)
 3. Search the codebase for similar patterns
 4. Ask the team in project discussions
 

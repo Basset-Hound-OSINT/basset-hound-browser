@@ -713,9 +713,9 @@ jobs:
 ### Documentation Links
 
 - [API Reference](API-REFERENCE.md) - 164 WebSocket commands
-- [Scope & Architecture](SCOPE.md) - Design principles
-- [Roadmap](ROADMAP.md) - Feature timeline
-- [Phase 2 Summary](PHASE-2-COMPLETION-SUMMARY-2026-05-07.md) - Complete deliverables
+- [Scope & Architecture](../architecture/SCOPE.md) - Design principles
+- [Roadmap](../roadmap/ROADMAP.md) - Feature timeline
+- [Phase 2 Summary](../planning/PHASE-2-COMPLETION-SUMMARY-2026-05-07.md) - Complete deliverables
 
 ### Research Guides
 

@@ -155,4 +155,4 @@ See: `/docs/FORENSIC-FEATURES-ROADMAP.md` (new document with architectural decis
 
 ---
 
-*See [ROADMAP.md](ROADMAP.md) for full project history and architecture.*
+*See [ROADMAP.md](roadmap/ROADMAP.md) for full project history and architecture.*

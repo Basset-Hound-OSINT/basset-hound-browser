@@ -34,10 +34,10 @@ Use this checklist to verify your integration with Basset Hound Browser is produ
   - [ ] Network policy documentation reviewed
 
 - [ ] **Documentation Review**
-  - [ ] Read [USER-ACCESS-GUIDE.md](USER-ACCESS-GUIDE.md)
+  - [ ] Read [USER-ACCESS-GUIDE.md](guides/user-guides/USER-ACCESS-GUIDE.md)
   - [ ] Read [API-QUICK-REFERENCE.md](API-QUICK-REFERENCE.md)
   - [ ] Review [API-REFERENCE.md](API-REFERENCE.md) for specific commands
-  - [ ] Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for known issues
+  - [ ] Check [TROUBLESHOOTING.md](support/TROUBLESHOOTING.md) for known issues
 
 ---
 
@@ -568,10 +568,10 @@ ws.on('message', (msg) => {
 
 ## Support & Resources
 
-- **[User Access Guide](USER-ACCESS-GUIDE.md)** - Getting started
+- **[User Access Guide](guides/user-guides/USER-ACCESS-GUIDE.md)** - Getting started
 - **[API Quick Reference](API-QUICK-REFERENCE.md)** - Command list
 - **[API Reference](API-REFERENCE.md)** - Detailed documentation
-- **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues
+- **[Troubleshooting](support/TROUBLESHOOTING.md)** - Common issues
 - **[FAQ](FAQ-COMPLETE.md)** - Frequently asked questions
 - **[Examples](examples/)** - Working code samples
 

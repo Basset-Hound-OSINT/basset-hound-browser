@@ -842,8 +842,8 @@ curl https://localhost:8765/metrics
 ## Related Documentation
 
 - [API-REFERENCE.md](./API-REFERENCE.md) - Full WebSocket API
-- [SCOPE.md](./SCOPE.md) - Architecture and scope
-- [DEPLOYMENT-COMPLETE-2026-05-11.md](./DEPLOYMENT-COMPLETE-2026-05-11.md) - Production deployment
+- [SCOPE.md](architecture/SCOPE.md) - Architecture and scope
+- [DEPLOYMENT-COMPLETE-2026-05-11.md](archives/deployment-reports/DEPLOYMENT-COMPLETE-2026-05-11.md) - Production deployment
 
 ---
 
