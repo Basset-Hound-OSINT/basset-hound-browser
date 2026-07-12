@@ -114,11 +114,11 @@ Additive maintenance commands (run from the deployment dir):
 > duplicates compete in retrieval.
 
 **Line-spans in citations** (`line_start`/`line_end`) populate automatically for
-docs added/modified after 0.4.x. Backfilling the *existing* corpus needs
-`./rag rechunk --all --apply` — a **destructive full re-embed** (GPU-heavy).
-**Deferred** here: single-KB rechunk skips a relative-source KB, and it should only
-run with real GPU headroom. Not required for correctness — file paths in citations
-are unaffected; only line numbers are absent until backfilled.
+docs added/modified after 0.4.x. The existing corpus was **backfilled 2026-07-12**
+via a clean `./rag reset --yes && ./rag up` + forced reconcile (a full fresh
+re-embed of the pruned corpus) — the reliable single-KB path, since `./rag rechunk`
+skips a relative-source KB. Not required for correctness — file paths in citations
+were always accurate; this added line numbers and a pristine post-prune index.
 
 ## Rebuild / recreate from scratch
 

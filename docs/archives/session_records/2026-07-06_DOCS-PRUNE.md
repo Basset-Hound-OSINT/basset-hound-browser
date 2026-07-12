@@ -29,16 +29,20 @@ everything moved to `docs/archives/prune-2026-07-06/` (MOVE-LOG.md there).**
   index **1,618 → 1,283 docs** (moved docs dropped; archive tree excluded). Live
   `docs/*.md` **1,580 → 1,241**.
 
-## Deferred
-- **Full `rag rechunk` line-spans backfill** — single-KB rechunk skips (reads a
-  relative `./data/docs`; `CONFIG_INGEST_DIRS` env didn't override — a template
-  limitation, flag to rag-bootstrap devs). Line-spans backfill **automatically**
-  as docs are edited/reconciled (`with_span` already 0→601 from the link edits);
-  full backfill deferred until the single-KB source-config is sorted + GPU headroom.
-- **328 truly-missing doc links** — repoint/stub in a follow-up.
+## Follow-up completed (2026-07-12)
+- **Remaining broken links resolved** (`f11ecd4`): the 328 truly-missing links
+  re-counted to 84 distinct targets / 141 occurrences → **34 RAG-repointed to live
+  docs** (HARDENING-GUIDE→security index, INPUT-VALIDATION→VALIDATION-INTEGRATION,
+  etc.), **107 dead/placeholder links cleaned** (text kept; `[related-feature]`
+  boilerplate + the pruned `evasion-framework-guide` refs). Zero broken links left.
+- **Line-spans backfill done** — a clean `./rag reset --yes && ./rag up` + forced
+  reconcile fresh-re-embedded the pruned corpus (the reliable single-KB path, since
+  `rag rechunk` skips a relative-source KB). Citations now carry line numbers +
+  a pristine post-prune index (no residual orphan rows).
 
 ## Commits
 - `263367e` — archive 348 + collapse wiki + 9 INDEX.md.
 - `c63f70d` — auto-repoint 526 links.
+- `f11ecd4` — resolve remaining broken links (34 repoint + 107 cleaned).
 
 Move log: `docs/archives/prune-2026-07-06/MOVE-LOG.md`.
