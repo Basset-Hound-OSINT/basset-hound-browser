@@ -35,10 +35,15 @@ everything moved to `docs/archives/prune-2026-07-06/` (MOVE-LOG.md there).**
   docs** (HARDENING-GUIDE→security index, INPUT-VALIDATION→VALIDATION-INTEGRATION,
   etc.), **107 dead/placeholder links cleaned** (text kept; `[related-feature]`
   boilerplate + the pruned `evasion-framework-guide` refs). Zero broken links left.
-- **Line-spans backfill done** — a clean `./rag reset --yes && ./rag up` + forced
-  reconcile fresh-re-embedded the pruned corpus (the reliable single-KB path, since
-  `rag rechunk` skips a relative-source KB). Citations now carry line numbers +
-  a pristine post-prune index (no residual orphan rows).
+- **Line-spans backfill done — 100% coverage** (verified 12,542/12,542 chunks
+  spanned, 0 docs missing, 0 archive leak). Method: `TRUNCATE chunks, documents
+  RESTART IDENTITY CASCADE` + forced full reconcile. **Bug found:** `./rag reset`
+  (`docker compose down -v`) does NOT wipe this deployment — postgres/redis are
+  direct-path **bind mounts**, and `-v` only drops *named* volumes, so a first
+  reset-based re-ingest no-op'd (content-hash dedup skipped the un-wiped rows,
+  leaving 88% span-less). SQL TRUNCATE is the reliable wipe (no root, unlike
+  `rm`-ing the root-owned bind dir). Flag to rag-bootstrap: reset silently no-ops
+  on direct-path deployments. Citations now carry `start_line`/`end_line`.
 
 ## Commits
 - `263367e` — archive 348 + collapse wiki + 9 INDEX.md.

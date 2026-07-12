@@ -46,9 +46,21 @@ cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag && ./rag sync
 ```
 
 **Structural changes are different.** Changing the embedding model/dimension or
-chunking needs a rebuild: from the deployment dir, `./rag reset` (wipe) then
-`./rag up`, then re-ingest (`./rag sync`). Dimension changes hard-fail at
-startup, so you cannot silently mismatch.
+chunking needs a genuine data wipe + re-ingest. **⚠️ `./rag reset` does NOT wipe
+this deployment's data** — it runs `docker compose down -v`, and `-v` only removes
+*named* Docker volumes, but our postgres/redis are **direct-path bind mounts**
+(the quickiespace flattened layout), so the data survives and `up` reconciles it
+right back. To actually force a full re-chunk/re-embed here, empty the tables via
+SQL (no root needed, unlike `rm`-ing the root-owned bind dir):
+
+```bash
+docker compose exec -T postgres psql -U raguser -d ragdb -c "TRUNCATE chunks, documents RESTART IDENTITY CASCADE;"
+curl -s -X POST http://localhost:10080/api/reconcile -H 'Content-Type: application/json' -d '{}'   # re-ingests all
+```
+
+Dimension changes still hard-fail at startup, so you cannot silently mismatch.
+(Upstream note: `reset` silently no-ops on direct-path/bind-mount deployments —
+flag to rag-bootstrap.)
 
 ## Query — HTTP API (the source of truth)
 
@@ -113,12 +125,16 @@ Additive maintenance commands (run from the deployment dir):
 > or multiple cleanup reports) — a real dedup opportunity for a future pass, since
 > duplicates compete in retrieval.
 
-**Line-spans in citations** (`line_start`/`line_end`) populate automatically for
-docs added/modified after 0.4.x. The existing corpus was **backfilled 2026-07-12**
-via a clean `./rag reset --yes && ./rag up` + forced reconcile (a full fresh
-re-embed of the pruned corpus) — the reliable single-KB path, since `./rag rechunk`
-skips a relative-source KB. Not required for correctness — file paths in citations
-were always accurate; this added line numbers and a pristine post-prune index.
+**Line-spans in citations** (the `/api/search` fields are `start_line`/`end_line`)
+populate automatically for docs ingested by the current image's default
+`chunk_text_with_spans` chunker. The existing corpus was **backfilled to 100%
+coverage 2026-07-12** (verified: 12,542/12,542 chunks spanned, 0 docs missing) via
+`TRUNCATE chunks, documents` + a forced full reconcile — **not** `./rag reset`,
+which no-ops on this bind-mount deployment (see the ⚠️ note above; a first
+reset-based attempt left 88% of chunks span-less because content-hash dedup skipped
+the un-wiped rows). `./rag rechunk` also skips this relative-source single-KB, so
+TRUNCATE+reconcile is the reliable path. Not required for correctness — file paths
+in citations were always accurate; this adds line numbers.
 
 ## Rebuild / recreate from scratch
 
