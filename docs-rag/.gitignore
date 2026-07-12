@@ -1,0 +1,6 @@
+# Safety net: never commit a real secret-bearing .env or regenerable data into
+# this config snapshot. Only .env.example (redacted) is tracked.
+.env
+.env.*
+!.env.example
+data/

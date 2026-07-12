@@ -1,0 +1,11 @@
+# Ingestion-only config for the single-KB image.
+# Mounted read-only at /src/config/config.yaml so the engine honors ingestion.exclude.
+# NO knowledge_bases stanza (single-KB is env-driven for everything else).
+ingestion:
+  exclude:
+    - ".git/"
+    - "node_modules/"
+    - "archive/"        # docs/archive/** — deprecated / superseded docs
+    - "archives/"       # docs/archives/** (plural) — session records / build artifacts
+    - "deprecated/"     # any **/deprecated/** subtree
+    - "*DEPRECATED*"    # any file whose name shouts DEPRECATED

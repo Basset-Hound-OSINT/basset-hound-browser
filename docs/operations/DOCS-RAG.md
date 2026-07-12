@@ -16,6 +16,12 @@ reading files by hand.
   `/mnt/quickiespace/rag-instances/basset-hound-docs-rag/` — holds only
   `docker-compose.yml` (image refs), `.env`, `config.yaml`, `client/ragq.py`,
   a local `rag` CLI, `ops/`, `RUN.md`. Zero template source, zero template docs.
+- **In-repo config snapshot (version-controlled reference):** [`docs-rag/`](../../docs-rag/)
+  keeps a copy of the deployment's config (`docker-compose.yml`, `config.yaml`,
+  `.env.example` with the DB secret redacted, `RUN.md`, `VERSION`, `client/`) so the
+  setup is reconstructable from git if the drive is lost. **Not** the running
+  instance; data + the real `.env` stay out. Refresh it after live config edits —
+  see [`docs-rag/README.md`](../../docs-rag/README.md).
 - **Data location:** all under `/mnt/quickiespace/rag-instances/basset-hound-docs-rag/data/`
   (postgres/embeddings + docs/cache/logs) — a real directory on the mounted
   drive, **no symlink layer**. Nothing else on quickiespace is touched.
