@@ -23,7 +23,7 @@ reading files by hand.
   RAG stacks on this host)
 - **Corpus:** `/home/devel/basset-hound-browser/docs`
 - **Embeddings:** `nomic-embed-text` @ 768 dims (Ollama) · **LLM:** `llama3.2:3b`
-- **Images:** `rag-bootstrap-{api,frontend}:0.3.0` — built once, centrally, from
+- **Images:** `rag-bootstrap-{api,frontend}:0.4.2` — built once, centrally, from
   the canonical template at `~/exudeai/rag-bootstrap` (`rag build`). This
   deployment builds nothing; it only references the pinned image tag.
 - **Excluded from the corpus:** `archive/`, `archives/`, `**/deprecated/` (via
@@ -97,6 +97,29 @@ cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag
 `docker compose <cmd>` from the same dir still works; `rag` wraps it with the
 preflight/health-gate/dim-guard the new model expects.
 
+## Corpus hygiene (0.4.x)
+
+Additive maintenance commands (run from the deployment dir):
+
+```bash
+./rag prune                  # DRY-RUN: report soft-expired ghost rows (old versions of edited docs)
+./rag prune --apply          # hard-delete those index rows (postgres only; files untouched)
+./rag duplication-map        # READ-ONLY near-duplicate document-pair map (cite-not-copy leads)
+./rag kb-sources             # READ-ONLY provenance: declared source vs actually-indexed + drift
+```
+
+> **Note (corpus quality):** `duplication-map` currently reports **~3,000 near-dup
+> pairs** in this corpus (e.g. a `docs/X.md` and its `docs/wiki/findings/x.md` copy,
+> or multiple cleanup reports) — a real dedup opportunity for a future pass, since
+> duplicates compete in retrieval.
+
+**Line-spans in citations** (`line_start`/`line_end`) populate automatically for
+docs added/modified after 0.4.x. Backfilling the *existing* corpus needs
+`./rag rechunk --all --apply` — a **destructive full re-embed** (GPU-heavy).
+**Deferred** here: single-KB rechunk skips a relative-source KB, and it should only
+run with real GPU headroom. Not required for correctness — file paths in citations
+are unaffected; only line numbers are absent until backfilled.
+
 ## Rebuild / recreate from scratch
 
 The instance holds **only regenerable embeddings** — deleting it loses nothing;
@@ -110,7 +133,7 @@ clean instance on the drive (from the canonical template):
 ~/exudeai/rag-bootstrap/rag new-consumer basset-hound-docs-rag 10080 \
   /home/devel/basset-hound-browser/docs --mode single \
   --data-root /mnt/quickiespace/rag-instances/basset-hound-docs-rag/data \
-  --tag 0.3.0 --out /mnt/quickiespace/rag-instances/basset-hound-docs-rag
+  --tag 0.4.2 --out /mnt/quickiespace/rag-instances/basset-hound-docs-rag
 # add config.yaml (archive exclusion) + its :ro mount, then:
 cd /mnt/quickiespace/rag-instances/basset-hound-docs-rag && ./rag up   # auto-ingests
 ```
