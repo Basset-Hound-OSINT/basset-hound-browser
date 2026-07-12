@@ -461,5 +461,5 @@ Minor changes may occur to:
 ## See Also
 
 - [Streams Documentation](./STREAMS.md)
-- [Reports Documentation](./REPORTS.md)
+- Reports Documentation
 - [Data Export Documentation](./EXPORT.md)

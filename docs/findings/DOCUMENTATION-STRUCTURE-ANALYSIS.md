@@ -642,7 +642,7 @@ v12.1.0 (May 31, 2026)
 ### New Users
 1. [Getting Started](../GETTING-STARTED.md)
 2. [Installation](../core/installation.md)
-3. [First Steps](FIRST-STEPS.md)
+3. First Steps
 4. [API Reference](API-REFERENCE.md)
 
 ### Developers
@@ -664,13 +664,13 @@ v12.1.0 (May 31, 2026)
 
 ### Integration Teams
 1. [Integration Guide](integration/)
-2. [Platform Integrations](features/PLATFORM-INTEGRATIONS.md)
+2. Platform Integrations
 3. [Client Libraries](../../integrations/) [external link]
 
 ## By Feature
 - [Technology Detection](features/)
-- [Forensic Export](features/FORENSIC-EXPORT.md)
-- [Platform Integrations](features/PLATFORM-INTEGRATIONS.md)
+- [Forensic Export](../architecture/core/FORENSIC-EXPORTS-QUICK-START.md)
+- Platform Integrations
 - [Tor Integration](../archives/prune-2026-07-06/features/TOR-INTEGRATION.md)
 - [All Features](features/)
 

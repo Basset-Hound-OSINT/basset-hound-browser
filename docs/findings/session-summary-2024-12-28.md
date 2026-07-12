@@ -77,7 +77,7 @@ This document summarizes all development work completed in this session for the 
 - Next steps and priorities
 
 #### Test Documentation
-**File**: [tests/CERT-GENERATOR-TEST-REPORT.md](tests/CERT-GENERATOR-TEST-REPORT.md)
+**File**: [tests/CERT-GENERATOR-TEST-REPORT.md](cert-generator-test-coverage.md)
 
 **Contents**:
 - Comprehensive test coverage details
@@ -86,7 +86,7 @@ This document summarizes all development work completed in this session for the 
 - Test statistics and recommendations
 - Production deployment guidelines
 
-**File**: [tests/README-CERT-TESTS.md](tests/README-CERT-TESTS.md)
+**File**: tests/README-CERT-TESTS.md
 
 **Contents**:
 - Quick start guide for running tests
@@ -97,7 +97,7 @@ This document summarizes all development work completed in this session for the 
 - Contributing guidelines
 
 #### Test Fixes Documentation
-**File**: [TEST_FIXES_SUMMARY.md](TEST_FIXES_SUMMARY.md)
+**File**: [TEST_FIXES_SUMMARY.md](session-summary-2024-12-28.md)
 
 **Contents**:
 - Detailed explanation of all test fixes
@@ -487,9 +487,9 @@ This session successfully:
 - [SSL Certificates Guide](docs/SSL-CERTIFICATES.md)
 - [Development Status](../technical/DEVELOPMENT-STATUS.md)
 - [Roadmap](../roadmap/ROADMAP.md)
-- [Test Report](tests/CERT-GENERATOR-TEST-REPORT.md)
-- [Test Guide](tests/README-CERT-TESTS.md)
-- [Test Fixes Summary](TEST_FIXES_SUMMARY.md)
+- [Test Report](cert-generator-test-coverage.md)
+- Test Guide
+- [Test Fixes Summary](session-summary-2024-12-28.md)
 
 ### Source Code
 - [Certificate Generator](utils/cert-generator.js)

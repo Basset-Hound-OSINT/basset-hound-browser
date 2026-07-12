@@ -513,8 +513,8 @@ controlHost: '0.0.0.0',  // Don't do this!
 
 - [TOR-INTEGRATION.md](../archives/prune-2026-07-06/features/TOR-INTEGRATION.md) - Tor integration overview
 - [TOR-SETUP-GUIDE.md](../archives/prune-2026-07-06/deployment/TOR-SETUP-GUIDE.md) - System Tor setup
-- [PROXY.md](PROXY.md) - General proxy configuration
-- [API.md](../core/API.md) - WebSocket API reference
+- PROXY.md - General proxy configuration
+- API.md - WebSocket API reference
 
 ---
 

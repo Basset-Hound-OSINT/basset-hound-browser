@@ -241,7 +241,7 @@ File operations require proper authorization:
 - **Rate Limiting**: Excessive file operation requests are rate-limited
 - **Audit Logging**: All file operations are logged for compliance
 
-See [Command Authorization Guide](COMMAND-AUTHORIZATION.md) for details.
+See Command Authorization Guide for details.
 
 ---
 
@@ -776,35 +776,35 @@ For a complete security picture, see these related features:
 - Role-based access control
 - Per-command authorization
 
-**Guide:** [COMMAND-AUTHORIZATION.md](COMMAND-AUTHORIZATION.md)
+**Guide:** COMMAND-AUTHORIZATION.md
 
 ### 🔒 Input Validation Framework
 - Comprehensive sanitization
 - Type checking
 - Format validation
 
-**Guide:** [INPUT-VALIDATION-GUIDE.md](INPUT-VALIDATION-GUIDE.md)
+**Guide:** [INPUT-VALIDATION-GUIDE.md](../guides/user-guides/VALIDATION-INTEGRATION-GUIDE.md)
 
 ### 🔒 JavaScript Execution Safety
 - Sandboxed execution environment
 - Resource limits
 - API restrictions
 
-**Guide:** [JS-EXECUTOR-SAFETY.md](JS-EXECUTOR-SAFETY.md)
+**Guide:** JS-EXECUTOR-SAFETY.md
 
 ### 🔒 HMAC Authentication
 - Request signing
 - Replay attack prevention
 - Integrity verification
 
-**Guide:** [HMAC-AUTHENTICATION.md](HMAC-AUTHENTICATION.md)
+**Guide:** HMAC-AUTHENTICATION.md
 
 ### 🔒 Data Cleaning
 - Sensitive data redaction
 - Log sanitization
 - Export data masking
 
-**Guide:** [DATA-CLEANING.md](DATA-CLEANING.md)
+**Guide:** DATA-CLEANING.md
 
 ---
 

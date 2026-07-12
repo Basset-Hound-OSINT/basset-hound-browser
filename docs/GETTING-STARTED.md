@@ -107,7 +107,7 @@ export BASSET_URL=wss://api.basset-hound.cloud
 export BASSET_TOKEN=your_api_token_here
 ```
 
-See [Cloud Deployment Guide](deployment/CLOUD-DEPLOYMENT.md) for details.
+See Cloud Deployment Guide for details.
 
 ---
 

@@ -416,7 +416,7 @@ docs/research/obscura/
 - **[AGENT-DOCUMENTATION-STANDARDS.md](./AGENT-DOCUMENTATION-STANDARDS.md)** - Standards for agent handoffs
 - **[ROOT-NAVIGATION.md](ROOT-NAVIGATION.md)** - Main project navigation
 - **[ROADMAP.md](roadmap/ROADMAP.md)** - Project roadmap
-- **[rag-app/README-BASSET-HOUND.md](./rag-app/README-BASSET-HOUND.md)** - RAG system setup
+- **rag-app/README-BASSET-HOUND.md** - RAG system setup
 - **[research/obscura/README.md](./research/obscura/README.md)** - Obscura research guidelines
 
 ---

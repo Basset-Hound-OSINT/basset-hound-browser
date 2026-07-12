@@ -132,7 +132,7 @@ Key Sessions:
 
 ### Configuration
 - Main config: `config.example.yaml` → `config.yaml`
-- Environment variables: See [Deployment Guide](DEPLOYMENT.md)
+- Environment variables: See Deployment Guide
 - Docker compose: `docker-compose.yml` for orchestration
 
 ### Testing

@@ -568,6 +568,6 @@ jest.setTimeout(120000);
 
 ## Related Documentation
 
-- [WebSocket Server API](./websocket-server.md) - WebSocket server command reference
-- [Extension Protocol](./extension-protocol.md) - Communication protocol details
+- WebSocket Server API - WebSocket server command reference
+- Extension Protocol - Communication protocol details
 - [Profile Management](../features/profiles.md) - Profile and fingerprint configuration

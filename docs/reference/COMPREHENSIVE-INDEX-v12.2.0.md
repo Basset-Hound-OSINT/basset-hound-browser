@@ -16,7 +16,7 @@
 
 #### Deploy & Operate
 1. **Deploy to Production** → [Deployment Guide](/docs/DEPLOYMENT-GUIDE.md)
-2. **Monitor & Alert** → [Monitoring Guide](/docs/modules/monitoring-observability-guide.md)
+2. **Monitor & Alert** → Monitoring Guide
 3. **Scale for Load** → [Scaling Guide](/docs/advanced/SCALING-GUIDE.md)
 
 #### Integrate & Extend
@@ -28,8 +28,8 @@
 2. **Scale Horizontally** → [Scaling Guide](/docs/advanced/SCALING-GUIDE.md)
 
 #### Security & Compliance
-1. **Harden Security** → [Security Hardening Guide](/docs/security/HARDENING-GUIDE.md)
-2. **Bot Evasion** → [Bot Evasion Guide](/docs/modules/evasion-framework-guide.md)
+1. **Harden Security** → [Security Hardening Guide](../security/SECURITY-HARDENING-DOCUMENTATION-INDEX.md)
+2. **Bot Evasion** → Bot Evasion Guide
 
 ---
 
@@ -51,8 +51,8 @@
 - [Performance Tuning](/docs/advanced/PERFORMANCE-TUNING-COMPLETE-GUIDE.md)
 
 ### Security & Evasion
-- [Security Hardening Guide](/docs/security/HARDENING-GUIDE.md)
-- [Bot Evasion Framework](/docs/modules/evasion-framework-guide.md)
+- [Security Hardening Guide](../security/SECURITY-HARDENING-DOCUMENTATION-INDEX.md)
+- Bot Evasion Framework
 
 ### Code Examples & Tutorials
 - [Example 1: Basic Connection](/docs/examples/01-basic-connection.js)

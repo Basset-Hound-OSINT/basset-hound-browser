@@ -347,9 +347,9 @@ sslCaPath = certs.caPath;
 
 ## Related Documentation
 
-- [WebSocket Server Configuration](./WEBSOCKET.md)
+- WebSocket Server Configuration
 - [Security & Authentication](security/SECURITY.md)
-- [Configuration System](./CONFIGURATION.md)
+- Configuration System
 - [Distribution & Deployment](deployment/distribution.md)
 
 ## Examples

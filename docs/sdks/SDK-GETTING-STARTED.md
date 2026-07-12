@@ -563,7 +563,7 @@ See [SDK-EXAMPLES.md](../archive/deprecated/SDK-EXAMPLES.md) for advanced exampl
 
 ## Architecture
 
-See [SDK-ARCHITECTURE.md](./SDK-ARCHITECTURE.md) for internal design details.
+See [SDK-ARCHITECTURE.md](../architecture/core/PYTHON-SDK-ARCHITECTURE.md) for internal design details.
 
 ---
 

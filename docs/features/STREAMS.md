@@ -378,5 +378,5 @@ npm test -- tests/features/streams.test.js
 ## See Also
 
 - [Webhooks Documentation](./WEBHOOKS.md)
-- [Reports Documentation](./REPORTS.md)
+- Reports Documentation
 - [Data Export Documentation](./EXPORT.md)

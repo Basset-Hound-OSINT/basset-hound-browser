@@ -1590,9 +1590,9 @@ Success: { ... }
 
 **Features that work well with [Feature Name]:**
 
-- [Related Feature 1](./[related-feature].md) - How they work together
-- [Related Feature 2](./[related-feature].md) - How they work together
-- [Related Feature 3](./[related-feature].md) - How they work together
+- Related Feature 1 - How they work together
+- Related Feature 2 - How they work together
+- Related Feature 3 - How they work together
 
 **Features that depend on [Feature Name]:**
 
@@ -1651,7 +1651,7 @@ A: Yes. [Security details].
 - `[command2]` - Description
 
 **WebSocket API:**
-See [Feature Documentation](./[FEATURE-NAME].md) for details
+See Feature Documentation for details
 
 **Performance:**
 - P50: <25ms

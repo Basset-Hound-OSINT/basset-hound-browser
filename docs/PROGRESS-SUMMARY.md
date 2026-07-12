@@ -118,7 +118,7 @@
 ### API & Customer Documentation
 - **API Reference:** [docs/API-REFERENCE-COMPLETE.md](reference/API-REFERENCE-COMPLETE.md)
 - **Customer Success:** [docs/customer-success/](docs/customer-success/)
-- **Onboarding:** [docs/CUSTOMER-ONBOARDING-SYSTEM.md](docs/CUSTOMER-ONBOARDING-SYSTEM.md)
+- **Onboarding:** [docs/CUSTOMER-ONBOARDING-SYSTEM.md](findings/CUSTOMER-ONBOARDING-COMPLETE.txt)
 
 ---
 

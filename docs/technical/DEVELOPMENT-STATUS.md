@@ -447,9 +447,9 @@ docker-compose build       # Build Docker image
 
 - ✅ [README.md](../README.md) - Quick start and overview
 - ✅ [INSTALLATION.md](../core/installation.md) - Installation guide
-- ✅ [API.md](API.md) - WebSocket API reference
+- ✅ API.md - WebSocket API reference
 - ✅ [EVASION.md](../features/evasion.md) - Bot detection evasion guide
-- ✅ [TOR_SETUP.md](TOR_SETUP.md) - Tor configuration guide
+- ✅ [TOR_SETUP.md](../findings/embedded-tor-cli-integration-2024-12-29.md) - Tor configuration guide
 - ✅ [SSL-CERTIFICATES.md](SSL-CERTIFICATES.md) - SSL certificate guide
 - ✅ [AUTO-UPDATE.md](../features/auto-update.md) - Update system guide
 - ✅ [DISTRIBUTION.md](../deployment/distribution.md) - Build and deployment guide

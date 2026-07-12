@@ -540,4 +540,4 @@ For most use cases, **VP9 with default quality (32)** provides the best balance 
 **See Also:**
 - [Video API Reference](../../archive/deprecated/VIDEO-API-REFERENCE.md)
 - [Implementation Guide](../../handoffs/VIDEO-RECORDING-IMPLEMENTATION-COMPLETE.md)
-- [Performance Tuning Guide](./VIDEO-PERFORMANCE-GUIDE.md)
+- Performance Tuning Guide

@@ -111,7 +111,7 @@ HMAC-based request signing ensures:
 - Commands are not tampered with in transit
 - Request replay attacks are prevented
 
-**Details:** [COMMAND-AUTHORIZATION.md](COMMAND-AUTHORIZATION.md)
+**Details:** COMMAND-AUTHORIZATION.md
 
 **Quick Test:**
 ```bash
@@ -133,7 +133,7 @@ Comprehensive validation ensures:
 - Character validation (whitelist approach)
 - Encoding validation (detect suspicious encoding)
 
-**Details:** [INPUT-VALIDATION-GUIDE.md](INPUT-VALIDATION-GUIDE.md)
+**Details:** [INPUT-VALIDATION-GUIDE.md](../guides/user-guides/VALIDATION-INTEGRATION-GUIDE.md)
 
 **Quick Test:**
 ```bash
@@ -154,7 +154,7 @@ Sandboxed JavaScript execution with:
 - Variable/function whitelisting
 - Console output capture
 
-**Details:** [JS-EXECUTOR-SAFETY.md](JS-EXECUTOR-SAFETY.md)
+**Details:** JS-EXECUTOR-SAFETY.md
 
 **Quick Test:**
 ```bash
@@ -175,7 +175,7 @@ Production-grade HMAC signing with:
 - Nonce support
 - Signature algorithm agility
 
-**Details:** [HMAC-AUTHENTICATION.md](HMAC-AUTHENTICATION.md)
+**Details:** HMAC-AUTHENTICATION.md
 
 **Quick Test:**
 ```bash
@@ -197,7 +197,7 @@ Automatic redaction of sensitive data:
 - Environment variable scrubbing
 - Configurable policies
 
-**Details:** [DATA-CLEANING.md](DATA-CLEANING.md)
+**Details:** DATA-CLEANING.md
 
 **Quick Test:**
 ```bash
@@ -382,11 +382,11 @@ Complete security audit covering:
 ### Security Guides
 
 - [PATH-TRAVERSAL-PREVENTION.md](PATH-TRAVERSAL-PREVENTION.md) - Directory traversal attack prevention
-- [COMMAND-AUTHORIZATION.md](COMMAND-AUTHORIZATION.md) - Request authorization and signing
-- [INPUT-VALIDATION-GUIDE.md](INPUT-VALIDATION-GUIDE.md) - Input validation framework
-- [JS-EXECUTOR-SAFETY.md](JS-EXECUTOR-SAFETY.md) - Safe JavaScript execution
-- [HMAC-AUTHENTICATION.md](HMAC-AUTHENTICATION.md) - HMAC request signing
-- [DATA-CLEANING.md](DATA-CLEANING.md) - Sensitive data redaction
+- COMMAND-AUTHORIZATION.md - Request authorization and signing
+- [INPUT-VALIDATION-GUIDE.md](../guides/user-guides/VALIDATION-INTEGRATION-GUIDE.md) - Input validation framework
+- JS-EXECUTOR-SAFETY.md - Safe JavaScript execution
+- HMAC-AUTHENTICATION.md - HMAC request signing
+- DATA-CLEANING.md - Sensitive data redaction
 
 ### Related Features
 
@@ -431,8 +431,8 @@ Format:
 ## Quick Links
 
 ### For Developers
-- [Input Validation Guide](INPUT-VALIDATION-GUIDE.md)
-- [JS Executor Safety](JS-EXECUTOR-SAFETY.md)
+- [Input Validation Guide](../guides/user-guides/VALIDATION-INTEGRATION-GUIDE.md)
+- JS Executor Safety
 - [API Reference - Security Section](../API-REFERENCE.md#security)
 
 ### For Operations
@@ -443,7 +443,7 @@ Format:
 ### For Security Teams
 - [Security Audit Report](../SECURITY-DEEP-DIVE-AUDIT-2026-05-31.md)
 - [Compliance Documentation](../compliance/)
-- [Threat Model](../THREAT-MODEL.md)
+- Threat Model
 
 ---
 

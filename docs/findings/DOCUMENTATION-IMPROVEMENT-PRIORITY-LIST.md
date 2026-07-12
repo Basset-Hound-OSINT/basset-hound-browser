@@ -274,7 +274,7 @@ Platform Integration Diagrams (2):
 ### New Users
 - [Getting Started](../GETTING-STARTED.md) (5 min)
 - [Installation](../core/installation.md)
-- [First Steps](FIRST-STEPS.md)
+- First Steps
 
 ### Developers
 - [Architecture](ARCHITECTURE.md)

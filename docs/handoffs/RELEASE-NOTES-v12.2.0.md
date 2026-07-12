@@ -365,10 +365,10 @@ const { ForensicGenerator } = require('./src/reporting/forensic-generator');
 ### Documentation
 - [Complete API Reference](../reference/API-REFERENCE-COMPLETE.md)
 - [Deployment Guide](/docs/DEPLOYMENT-GUIDE.md)
-- [Security Hardening](/docs/security/HARDENING-GUIDE.md)
+- [Security Hardening](../security/SECURITY-HARDENING-DOCUMENTATION-INDEX.md)
 - [Performance Tuning](/docs/advanced/PERFORMANCE-TUNING-COMPLETE-GUIDE.md)
 - [Integration Guide](/docs/CUSTOM-INTEGRATION-GUIDE.md)
-- [Bot Evasion Framework](/docs/modules/evasion-framework-guide.md)
+- Bot Evasion Framework
 
 ### Support Channels
 - GitHub Issues: bug reports and feature requests

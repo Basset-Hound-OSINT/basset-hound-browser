@@ -636,7 +636,7 @@ docker run ... basset-hound:12.2.0
 
 ## Related Documentation
 
-- [Monitoring Guide](/docs/operations/MONITORING-GUIDE.md) - Detailed monitoring setup
+- Monitoring Guide - Detailed monitoring setup
 - [Scaling Guide](../advanced/SCALING-GUIDE.md) - Horizontal scaling
 - [API Reference](/docs/API-REFERENCE.md) - Complete command reference
 

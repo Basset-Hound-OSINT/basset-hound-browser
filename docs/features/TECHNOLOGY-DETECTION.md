@@ -917,7 +917,7 @@ analytics.webAnalytics.forEach(service => {
 
 - [API Reference](/docs/API-REFERENCE.md) - Complete WebSocket API
 - [Competitor Monitoring](/docs/features/COMPETITOR-MONITORING.md) - Monitor tech changes
-- [Security Operations](/docs/operations/SECURITY-OPERATIONS.md) - Security best practices
+- Security Operations - Security best practices
 - [Python SDK Guide](/docs/integration/PYTHON-SDK-GUIDE.md) - SDK integration
 
 ---

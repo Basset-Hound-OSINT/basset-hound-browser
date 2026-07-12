@@ -461,4 +461,4 @@ npm test -- tests/features/export.test.js
 
 - [Webhooks Documentation](./WEBHOOKS.md)
 - [Streams Documentation](./STREAMS.md)
-- [Reports Documentation](./REPORTS.md)
+- Reports Documentation

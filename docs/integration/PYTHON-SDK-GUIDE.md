@@ -883,8 +883,8 @@ print(json.dumps(result, indent=2))
 ## Related Documentation
 
 - [API Reference](/docs/API-REFERENCE.md) - Complete command reference
-- [JavaScript SDK Guide](/docs/integration/JAVASCRIPT-SDK-GUIDE.md)
-- [palletai Integration](/docs/integration/PALLETAI-INTEGRATION.md)
+- JavaScript SDK Guide
+- palletai Integration
 
 ---
 

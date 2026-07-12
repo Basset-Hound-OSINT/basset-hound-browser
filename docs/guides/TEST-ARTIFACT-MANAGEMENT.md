@@ -290,8 +290,8 @@ If deploying directly from CI:
 ## Related Documentation
 
 - [Testing Guide](../archives/prune-2026-07-06/wiki/development/TESTING.md) - How to write and run tests
-- [CI/CD Pipeline](../CI-CD.md) - Continuous integration setup
-- [Deployment Guide](../DEPLOYMENT.md) - Production deployment procedures
+- CI/CD Pipeline - Continuous integration setup
+- Deployment Guide - Production deployment procedures
 
 ## Version History
 

@@ -754,4 +754,4 @@ Response: {
 
 ## API Reference
 
-See [PROXY-PARTNERS-API.md](./PROXY-PARTNERS-API.md) for complete API reference.
+See [PROXY-PARTNERS-API.md](PROXY-PARTNERS-GUIDE.md) for complete API reference.

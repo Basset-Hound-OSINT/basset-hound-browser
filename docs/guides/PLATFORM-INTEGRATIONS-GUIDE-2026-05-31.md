@@ -845,8 +845,8 @@ const testUrl = 'https://your-misp.example.com/api/version';
 
 - [API Reference](/docs/API-REFERENCE.md)
 - [Webhook Configuration](../features/WEBHOOKS.md)
-- [OSINT Workflows](/docs/OSINT-WORKFLOWS.md)
-- [Export Formats](/docs/EXPORT-FORMATS.md)
+- OSINT Workflows
+- [Export Formats](user-guides/EXPORT-FORMATS-GUIDE.md)
 
 ---
 

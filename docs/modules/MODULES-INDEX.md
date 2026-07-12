@@ -24,7 +24,7 @@ All source modules are documented with:
 - **Purpose:** Core browser functionality and Electron integration
 - **Key Files:** main.js, browser-context.js, event-dispatcher.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Core Module Guide](./core-module-guide.md)
+- **Documentation:** Core Module Guide
 
 ### 2. Session Management (8 files)
 **Path:** `src/session/` + `src/sessions/`
@@ -32,7 +32,7 @@ All source modules are documented with:
 - **Key Files:** session-manager.js, session-store.js, coherence-validator.js
 - **Status:** Production-ready (v12.1+)
 - **Features:** 5-layer coherence validation, persistent state, multi-instance support
-- **Documentation:** [Session Management Guide](./session-management-guide.md)
+- **Documentation:** [Session Management Guide](../handoffs/SESSION-ENHANCEMENTS.md)
 
 ### 3. WebSocket API (2 files)
 **Path:** `src/api/`
@@ -40,7 +40,7 @@ All source modules are documented with:
 - **Key Files:** service-registry.js, api-router.js
 - **Status:** Production-ready (v12.0+)
 - **Commands:** 164 total WebSocket commands
-- **Documentation:** [API Layer Guide](./api-layer-guide.md)
+- **Documentation:** [API Layer Guide](../API-DOCUMENTATION-INDEX.md)
 
 ### 4. Authentication & Authorization (2 files)
 **Path:** `src/auth/` + `src/authentication/`
@@ -48,7 +48,7 @@ All source modules are documented with:
 - **Key Files:** auth-manager.js, token-validator.js
 - **Status:** Production-ready (v12.1+)
 - **Features:** JWT support, API key management, session tokens
-- **Documentation:** [Authentication Guide](./authentication-guide.md)
+- **Documentation:** Authentication Guide
 
 ---
 
@@ -61,7 +61,7 @@ All source modules are documented with:
 - **Status:** Production-ready (v12.2+) - Advanced
 - **Features:** Canvas/WebGL/WebRTC evasion, behavioral AI, detection service bypass
 - **Effectiveness:** 85-90% against major detection services
-- **Documentation:** [Evasion Framework Guide](./evasion-framework-guide.md)
+- **Documentation:** Evasion Framework Guide
 
 ### 6. Fingerprint Profiles (Advanced)
 **Path:** `src/evasion/profiles/`
@@ -69,7 +69,7 @@ All source modules are documented with:
 - **Key Files:** fingerprint-loader.js, profile-mixer.js
 - **Status:** Production-ready (v12.1+)
 - **Profiles:** 500+ realistic device profiles
-- **Documentation:** [Fingerprinting Guide](./fingerprinting-guide.md)
+- **Documentation:** Fingerprinting Guide
 
 ### 7. Behavioral Simulation (1 file)
 **Path:** `src/behavior/`
@@ -77,7 +77,7 @@ All source modules are documented with:
 - **Key Files:** behavior-simulator.js
 - **Status:** Production-ready (v12.2+)
 - **Features:** Natural click delays, scroll patterns, mouse movements
-- **Documentation:** [Behavioral Simulation Guide](./behavioral-simulation-guide.md)
+- **Documentation:** Behavioral Simulation Guide
 
 ### 8. Detection Service Integration (11 files)
 **Path:** `src/detection/`
@@ -85,7 +85,7 @@ All source modules are documented with:
 - **Key Files:** detection-provider.js, service-registry.js, honeypot-detector.js
 - **Status:** Production-ready (v12.1+)
 - **Services:** 20+ detection services integrated
-- **Documentation:** [Detection Services Guide](./detection-services-guide.md)
+- **Documentation:** [Detection Services Guide](../features/TECHNOLOGY-DETECTION.md)
 
 ---
 
@@ -98,11 +98,11 @@ All source modules are documented with:
 - **Status:** Production-ready (v12.1+)
 - **Features:** HTTP/HTTPS/SOCKS4/5, residential proxy rotation, Tor integration
 - **Rotation Modes:** Geolocation-based, performance-based, sequential
-- **Documentation:** [Proxy Management Guide](./proxy-management-guide.md)
+- **Documentation:** Proxy Management Guide
 
 ### 10. Tor Integration (Part of Proxy)
 **Features:** Master switch (ON/OFF/AUTO), circuit management, onion routing
-- **Documentation:** [Tor Integration Guide](./tor-integration-guide.md)
+- **Documentation:** Tor Integration Guide
 
 ### 11. Residential Proxy Rotation (Part of Proxy)
 **Features:** 3 rotation modes, performance metrics, failure handling
@@ -118,7 +118,7 @@ All source modules are documented with:
 - **Key Files:** dom-extractor.js, dom-cache.js, batch-extractor.js
 - **Status:** Production-ready (v12.0+)
 - **Cache:** Integrated DOM cache for performance
-- **Documentation:** [Extraction Module Guide](./extraction-module-guide.md)
+- **Documentation:** Extraction Module Guide
 
 ### 13. Analysis & Detection (7 files)
 **Path:** `src/analysis/`
@@ -126,7 +126,7 @@ All source modules are documented with:
 - **Key Files:** tech-detector.js, forensic-report-generator.js, signature-loader.js
 - **Status:** Production-ready (v12.2+)
 - **Features:** 2000+ tech signatures, forensic chain-of-custody, change detection
-- **Documentation:** [Analysis Module Guide](./analysis-module-guide.md)
+- **Documentation:** Analysis Module Guide
 
 ### 14. Reporting (1 file)
 **Path:** `src/reporting/`
@@ -134,14 +134,14 @@ All source modules are documented with:
 - **Key Files:** report-generator.js
 - **Status:** Production-ready (v12.0+)
 - **Formats:** JSON, PDF, HTML, CSV
-- **Documentation:** [Reporting Guide](./reporting-guide.md)
+- **Documentation:** Reporting Guide
 
 ### 15. Data Processing (7 files)
 **Path:** `src/data/`
 - **Purpose:** Data transformation, validation, caching
 - **Key Files:** data-processor.js, data-validator.js, cache-manager.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Data Processing Guide](./data-processing-guide.md)
+- **Documentation:** Data Processing Guide
 
 ---
 
@@ -153,7 +153,7 @@ All source modules are documented with:
 - **Key Files:** request-deduplicator.js, message-batcher.js, buffer-manager.js
 - **Status:** Production-ready (v12.0+)
 - **Improvements:** 70-93% compression, 22-27% throughput gain, 60-80% memory reduction
-- **Documentation:** [Performance Optimization Guide](./performance-optimization-guide.md)
+- **Documentation:** [Performance Optimization Guide](../roadmap/PERFORMANCE-OPTIMIZATION-ROADMAP-2026-05-31.md)
 
 ---
 
@@ -165,7 +165,7 @@ All source modules are documented with:
 - **Key Files:** container-manager.js, health-check.js, resource-monitor.js
 - **Status:** Production-ready (v12.0+)
 - **Features:** Docker support, Kubernetes-ready, multi-instance coordination
-- **Documentation:** [Infrastructure Guide](./infrastructure-guide.md)
+- **Documentation:** Infrastructure Guide
 
 ### 18. Monitoring & Observability (25 files)
 **Path:** `src/monitoring/` + `src/observability/`
@@ -173,7 +173,7 @@ All source modules are documented with:
 - **Key Files:** metrics-collector.js, health-monitor.js, event-logger.js
 - **Status:** Production-ready (v12.1+)
 - **Metrics:** 50+ monitored metrics, real-time dashboards
-- **Documentation:** [Monitoring & Observability Guide](./monitoring-observability-guide.md)
+- **Documentation:** Monitoring & Observability Guide
 
 ### 19. Queuing & Message Handling (4 files)
 **Path:** `src/queuing/`
@@ -181,7 +181,7 @@ All source modules are documented with:
 - **Key Files:** queue-manager.js, priority-queue.js, message-handler.js
 - **Status:** Production-ready (v12.0+)
 - **Features:** Priority queues, batch coalescing, flow control
-- **Documentation:** [Queuing Guide](./queuing-guide.md)
+- **Documentation:** Queuing Guide
 
 ### 20. Task Scheduling (2 files)
 **Path:** `src/tasks/`
@@ -189,7 +189,7 @@ All source modules are documented with:
 - **Key Files:** task-scheduler.js, background-jobs.js
 - **Status:** Production-ready (v12.1+)
 - **Features:** Cron scheduling, job persistence, retry logic
-- **Documentation:** [Task Scheduling Guide](./task-scheduling-guide.md)
+- **Documentation:** Task Scheduling Guide
 
 ---
 
@@ -201,7 +201,7 @@ All source modules are documented with:
 - **Key Files:** integration-manager.js, platform-adapter.js
 - **Status:** Production-ready (v12.1+)
 - **Platforms:** Slack, email, webhooks, cloud storage
-- **Documentation:** [Integrations Guide](./integrations-guide.md)
+- **Documentation:** [Integrations Guide](../reports/IMPLEMENTATION-REPORT-PLATFORM-INTEGRATIONS.md)
 
 ### 22. Onboarding & Customer Success (8 files)
 **Path:** `src/onboarding/`
@@ -209,7 +209,7 @@ All source modules are documented with:
 - **Key Files:** onboarding-flow.js, setup-wizard.js
 - **Status:** Production-ready (v12.1+)
 - **Features:** Interactive onboarding, deployment validation
-- **Documentation:** [Onboarding Guide](./onboarding-guide.md)
+- **Documentation:** [Onboarding Guide](../findings/CUSTOMER-ONBOARDING-COMPLETE.txt)
 
 ### 23. Support Systems (8 files)
 **Path:** `src/support/`
@@ -217,7 +217,7 @@ All source modules are documented with:
 - **Key Files:** support-portal.js, ticket-manager.js, sla-engine.js
 - **Status:** Production-ready (v12.2+)
 - **Features:** Ticket tracking, SLA monitoring, knowledge base
-- **Documentation:** [Support Systems Guide](./support-systems-guide.md)
+- **Documentation:** Support Systems Guide
 
 ---
 
@@ -228,7 +228,7 @@ All source modules are documented with:
 - **Purpose:** Advanced capabilities (custom validators, forensics enhancements)
 - **Key Files:** advanced-validator.js, forensic-enhancer.js
 - **Status:** Production-ready (v12.2+)
-- **Documentation:** [Advanced Features Guide](./advanced-features-guide.md)
+- **Documentation:** Advanced Features Guide
 
 ### 25. Forensics & Evidence Management (3 files)
 **Path:** `src/forensics/`
@@ -236,7 +236,7 @@ All source modules are documented with:
 - **Key Files:** forensic-collector.js, chain-of-custody.js
 - **Status:** Production-ready (v12.1+)
 - **Features:** Immutable evidence logging, audit trails
-- **Documentation:** [Forensics Guide](./forensics-guide.md)
+- **Documentation:** Forensics Guide
 
 ### 26. Export & Data Management (8 files)
 **Path:** `src/export/`
@@ -244,7 +244,7 @@ All source modules are documented with:
 - **Key Files:** export-manager.js, format-converter.js
 - **Status:** Production-ready (v12.0+)
 - **Formats:** JSON, CSV, PDF, XML, XLSX
-- **Documentation:** [Export Guide](./export-guide.md)
+- **Documentation:** Export Guide
 
 ### 27. Compliance Framework (3 files)
 **Path:** `src/compliance/`
@@ -252,7 +252,7 @@ All source modules are documented with:
 - **Key Files:** gdpr-compliance.js, hipaa-compliance.js, soc2-compliance.js
 - **Status:** Production-ready (v12.1+)
 - **Standards:** GDPR, HIPAA, SOC2, CCPA
-- **Documentation:** [Compliance Guide](./compliance-guide.md)
+- **Documentation:** Compliance Guide
 
 ---
 
@@ -264,28 +264,28 @@ All source modules are documented with:
 - **Key Files:** cache-manager.js, distributed-cache.js
 - **Status:** Production-ready (v12.0+)
 - **Strategy:** LRU with TTL, distributed coordination
-- **Documentation:** [Caching Guide](./caching-guide.md)
+- **Documentation:** Caching Guide
 
 ### 29. Validation Framework (1 file)
 **Path:** `src/validation/`
 - **Purpose:** Input validation, schema enforcement
 - **Key Files:** validator.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Validation Guide](./validation-guide.md)
+- **Documentation:** [Validation Guide](../guides/user-guides/VALIDATION-INTEGRATION-GUIDE.md)
 
 ### 30. Utility Functions (11 files)
 **Path:** `src/utils/`
 - **Purpose:** Helper functions, common utilities
 - **Key Files:** string-utils.js, array-utils.js, crypto-utils.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Utilities Reference](./utilities-reference.md)
+- **Documentation:** Utilities Reference
 
 ### 31. Services Layer (5 files)
 **Path:** `src/services/`
 - **Purpose:** Business logic services, domain operations
 - **Key Files:** service-manager.js, operation-handler.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Services Guide](./services-guide.md)
+- **Documentation:** Services Guide
 
 ---
 
@@ -296,7 +296,7 @@ All source modules are documented with:
 - **Purpose:** Tor hidden service investigation
 - **Key Files:** tor-investigation.js
 - **Status:** Production-ready (v12.1+)
-- **Documentation:** [Dark Web Guide](./darkweb-guide.md)
+- **Documentation:** Dark Web Guide
 
 ### 33. Agent Orchestration (3 files)
 **Path:** `src/agents/`
@@ -304,7 +304,7 @@ All source modules are documented with:
 - **Key Files:** agent-coordinator.js, agent-pool.js
 - **Status:** Production-ready (v12.2+)
 - **Features:** Agent pooling, load balancing, fault tolerance
-- **Documentation:** [Agent Orchestration Guide](./agent-orchestration-guide.md)
+- **Documentation:** Agent Orchestration Guide
 
 ### 34. Dashboard Systems (7 files)
 **Path:** `src/dashboard/` + `src/dashboards/`
@@ -319,42 +319,42 @@ All source modules are documented with:
 - **Purpose:** Event streaming, session recording, log streaming
 - **Key Files:** stream-manager.js, recorder.js
 - **Status:** Production-ready (v12.1+)
-- **Documentation:** [Streaming & Recording Guide](./streaming-recording-guide.md)
+- **Documentation:** Streaming & Recording Guide
 
 ### 36. Screenshot Management (2 files)
 **Path:** `src/screenshots/`
 - **Purpose:** Efficient screenshot capture and storage
 - **Key Files:** enhanced-capture.js, parallel-processor.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Screenshots Guide](./screenshots-guide.md)
+- **Documentation:** Screenshots Guide
 
 ### 37. Search Functionality (2 files)
 **Path:** `src/search/`
 - **Purpose:** Full-text search, evidence discovery
 - **Key Files:** search-engine.js, indexer.js
 - **Status:** Production-ready (v12.1+)
-- **Documentation:** [Search Guide](./search-guide.md)
+- **Documentation:** Search Guide
 
 ### 38. Execution Environment (1 file)
 **Path:** `src/execution/`
 - **Purpose:** JavaScript execution context management
 - **Key Files:** executor.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Execution Guide](./execution-guide.md)
+- **Documentation:** Execution Guide
 
 ### 39. Resource Pooling (1 file)
 **Path:** `src/pool/`
 - **Purpose:** Connection pool management
 - **Key Files:** pool-manager.js
 - **Status:** Production-ready (v12.0+)
-- **Documentation:** [Pooling Guide](./pooling-guide.md)
+- **Documentation:** Pooling Guide
 
 ### 40. Mesh Networking (1 file)
 **Path:** `src/mesh/`
 - **Purpose:** Peer-to-peer mesh communication
 - **Key Files:** mesh-manager.js
 - **Status:** Production-ready (v12.2+)
-- **Documentation:** [Mesh Networking Guide](./mesh-networking-guide.md)
+- **Documentation:** Mesh Networking Guide
 
 ---
 
@@ -420,24 +420,24 @@ All source modules are documented with:
 ## Documentation Navigation Guide
 
 ### For Developers
-1. Start: [Core Module Guide](./core-module-guide.md)
+1. Start: Core Module Guide
 2. Understand: [Module Dependency Map](#module-dependency-map)
 3. Implement: Individual module guides for features needed
 
 ### For System Operators
-1. Start: [Infrastructure Guide](./infrastructure-guide.md)
+1. Start: Infrastructure Guide
 2. Deploy: [Deployment Guide](/docs/DEPLOYMENT-GUIDE.md)
-3. Monitor: [Monitoring & Observability Guide](./monitoring-observability-guide.md)
-4. Troubleshoot: [Module Troubleshooting Guides](./TROUBLESHOOTING-MODULES.md)
+3. Monitor: Monitoring & Observability Guide
+4. Troubleshoot: Module Troubleshooting Guides
 
 ### For Security Teams
-1. Start: [Security Hardening Guide](/docs/security/HARDENING-GUIDE.md)
-2. Review: [Compliance Guide](./compliance-guide.md)
-3. Implement: [Evasion & Detection Guides](./evasion-framework-guide.md)
+1. Start: [Security Hardening Guide](../security/SECURITY-HARDENING-DOCUMENTATION-INDEX.md)
+2. Review: Compliance Guide
+3. Implement: Evasion & Detection Guides
 4. Monitor: [Security Monitoring](../archives/prune-2026-07-06/wiki/deployment/MONITORING.md)
 
 ### For Integration Partners
-1. Start: [Integrations Guide](./integrations-guide.md)
+1. Start: [Integrations Guide](../reports/IMPLEMENTATION-REPORT-PLATFORM-INTEGRATIONS.md)
 2. Design: [Custom Integration Guide](/docs/CUSTOM-INTEGRATION-GUIDE.md)
 3. Implement: Platform-specific integration guides
 

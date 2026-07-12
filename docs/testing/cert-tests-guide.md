@@ -314,7 +314,7 @@ When adding new features to CertificateGenerator:
 ## Resources
 
 - [CertificateGenerator Source Code](/home/devel/basset-hound-browser/utils/cert-generator.js)
-- [Test Report](/home/devel/basset-hound-browser/tests/CERT-GENERATOR-TEST-REPORT.md)
+- [Test Report](../findings/cert-generator-test-coverage.md)
 - [Jest Documentation](https://jestjs.io/)
 - [OpenSSL Documentation](https://www.openssl.org/docs/)
 - [Node.js Crypto Documentation](https://nodejs.org/api/crypto.html)

@@ -396,7 +396,7 @@ INDEX.md (Top-level entry)
 
 **Standard Applied:**
 ```markdown
-**[Document Title](../path/DOCUMENT-NAME.md)** - Brief description
+**Document Title** - Brief description
 ```
 
 **Verification:** ✅ All 45+ links follow standard format
@@ -528,7 +528,7 @@ Added to key files for improved navigation:
 
 All links follow pattern:
 ```markdown
-- **[Document Title](path/DOCUMENT.md)** - Description
+- **Document Title** - Description
 ```
 
 ### Version Consistency Test

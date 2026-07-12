@@ -1406,7 +1406,7 @@ monitors = await monitoring.list_monitors(status="active")
 
 - [API Reference](/docs/API-REFERENCE.md) - All 164 WebSocket commands
 - [Session Persistence](/docs/features/SESSION-PERSISTENCE.md) - Snapshot management
-- [Alerting Best Practices](/docs/operations/MONITORING-GUIDE.md)
+- Alerting Best Practices
 - [Python SDK Guide](/docs/integration/PYTHON-SDK-GUIDE.md)
 
 ---
